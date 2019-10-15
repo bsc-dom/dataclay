@@ -10,6 +10,8 @@ dataClay Python documentation
    :maxdepth: 2
    :caption: Contents:
 
+   dataclay
+   storageapi
 
 
 Indices and tables

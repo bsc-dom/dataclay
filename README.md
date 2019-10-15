@@ -1,5 +1,6 @@
 
 [![Documentation Status](https://readthedocs.org/projects/pyclay/badge/?version=latest)](https://pyclay.readthedocs.io/en/latest/?badge=latest)
+[![PyPI version](https://badge.fury.io/py/dataClay.png)](https://badge.fury.io/py/dataClay)
 
 # dataClay Python codebase
 
