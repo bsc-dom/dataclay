@@ -1,13 +1,8 @@
-"""
-    Common library client API for dataClay.
-    ~~~~~~~~~~~~~~
+"""Common library client API for dataClay.
 
-    Runtime.
-    Note that importing this module has a basic semantic: it prepares the dataClay
-    core and sets the "client" mode for the library.
-
-    :copyright: (c) 2018 Barcelona Supercomputing Center
-    :license: BSD-2
+Runtime.
+Note that importing this module has a basic semantic: it prepares the dataClay
+core and sets the "client" mode for the library.
 """
 import logging.config
 import os.path
@@ -197,8 +192,8 @@ def init(config_file="./cfgfiles/session.properties"):
     a no-operation.
 
     :param config_file: The configuration file that will be used. If explicitly
-    set to null, then its value will be retrieved from the DATACLAYSESSIONCONFIG
-    environment variable.
+      set to null, then its value will be retrieved from the DATACLAYSESSIONCONFIG
+      environment variable.
     """
     global _initialized
 

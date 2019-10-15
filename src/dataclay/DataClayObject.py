@@ -616,20 +616,6 @@ class DataClayObject(object):
 
     def serialize(self, io_file, ignore_user_types, iface_bitmaps,
                   cur_serialized_objs, pending_objs, reference_counting):
-
-        # Put slow debugging info inside here:
-        """
-        NOTE: new implementation of ExecutionGateway assert is not needed and wrong
-        if logger.isEnabledFor(DEBUG):
-        #    klass = self.__class__
-        #    logger.debug("Serializing instance %r from class %s",
-        #                 self, klass.__name__)
-        #    logger.debug("The previous class is from module %s, in file %s",
-        #                 klass.__module__, inspect.getfile(klass))
-            # logger.debug("The class extradata is:\n%s", klass._dclay_class_extradata)
-        #    assert klass._dclay_class_extradata == self._dclay_class_extradata
-        """
-
         # Reference counting information
         # First integer represent the position in the buffer in which
         # reference counting starts. This is done to avoid "holding"

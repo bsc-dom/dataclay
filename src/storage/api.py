@@ -55,7 +55,7 @@ def initWorker(config_file_path, **kwargs):
 
     :param config_file_path: Path to storage.properties configuration file.
     :param kwargs: Additional arguments, currently unused. For future use
-    and/or other Persistent Object Library requirements.
+      and/or other Persistent Object Library requirements.
     """
     logger.info("Initialization of worker through storage.api")
     dataclay.api.pre_network_init(config_file_path)
@@ -117,7 +117,7 @@ def finishWorker(**kwargs):
     """Worker-side finalization.
 
     :param kwargs: Additional arguments, currently unused. For future use
-    and/or other Persistent Object Library requirements.
+      and/or other Persistent Object Library requirements.
     """
     logger.info("Finalization of worker through storage.api")
     # Nothing to do here, because finishWorkerPostFork is the real hero here
