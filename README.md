@@ -11,7 +11,7 @@ Environment.
 
 This package is available from PyPI, so just `pip` it:
 
-    $ pip install pyclay
+    $ pip install dataClay
 
 ## Documentation
 

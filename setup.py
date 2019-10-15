@@ -8,6 +8,9 @@ def parse_requirements(filename):
 # parse_requirements
 install_reqs = parse_requirements("./requirements.txt")
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 PYCLAY_VERSION = os.environ.get('PYCLAY_VERSION', 'trunk')
 print("** USING PYCLAY VERSION = %s" % PYCLAY_VERSION)
 setup(name='dataClay',
@@ -20,5 +23,22 @@ setup(name='dataClay',
         # All .properties files are valuable "package data"
         '': ['*.properties'],
       },
+      long_description=long_description,
+      long_description_content_type="text/markdown",
+      url="https://www.bsc.es/dataclay",
+      project_urls={
+          'Documentation': 'https://pyclay.readthedocs.io/en/latest/',
+          'Source': 'https://github.com/bsc-dom/pyclay',
+      },
+      classifiers=[
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Science/Research",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: BSD License",
+          "Programming Language :: Python",
+          "Topic :: Database :: Database Engines/Servers",
+          "Topic :: System :: Distributed Computing",
+          "Topic :: Software Development :: Libraries :: Application Frameworks",
+      ],
       )
 
