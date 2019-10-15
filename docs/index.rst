@@ -1,10 +1,18 @@
-.. pyclay documentation master file, created by
-   sphinx-quickstart on Tue Oct 15 15:10:27 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. image:: _static/dataclay-full.png
+    :width: 400px
+    :align: center
+    :alt: dataClay logo
 
-dataClay Python documentation
-=============================
+Welcome to dataClay Python documentation.
+
+User's guide
+============
+
+.. warning:: Go to the `official website <https:/bsc.es/dataclay>`_
+    to see the user's guide of dataClay.
+
+API documentation
+=================
 
 .. toctree::
    :maxdepth: 2
@@ -12,7 +20,6 @@ dataClay Python documentation
 
    dataclay
    storageapi
-
 
 Indices and tables
 ==================

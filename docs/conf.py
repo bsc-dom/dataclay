@@ -103,6 +103,7 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
+html_logo = "_static/dataclay-logo.png"
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
