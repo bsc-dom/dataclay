@@ -1,0 +1,11 @@
+enum34;python_version<"3.4"
+lru-dict
+Jinja2
+PyYAML
+decorator
+grpcio==1.22.1
+grpcio-tools==1.22.1
+protobuf
+psutil
+six
+numpy

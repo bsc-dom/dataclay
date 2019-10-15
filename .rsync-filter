@@ -1,0 +1,14 @@
+- *.pyc
+- *.pyo
+- __pycache__/
+- .gitignore
+- /src/dataClay.egg-info/
+- /build/
+- /.idea/
+- /.vscode/
+- /.pyenv*/
+- /venv/
+- .dockerignore
+- .pylintrc
+- Dockerfile*
+- *_pb2*

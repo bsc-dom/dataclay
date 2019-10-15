@@ -1,0 +1,6 @@
+tests
+test_scripts
+**/*.pyc
+build
+dist
+src/dataClay.egg-info

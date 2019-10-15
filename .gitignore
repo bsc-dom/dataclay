@@ -1,0 +1,15 @@
+virtualenv*
+build/
+deploy/
+dist/
+dataClay.egg-info/
+*.pyc
+MANIFEST
+.cache/
+.pydevproject
+dataclay.backup
+.pytest_cache
+test_scripts/cfgfiles
+tests/mock/client.properties
+.pyenv*
+/setup.py.orig
