@@ -1,0 +1,4 @@
+[submodule "dataclay-common"]
+	path = dataclay-common
+	url = https://github.com/bsc-dom/dataclay-common
+	branch = master
