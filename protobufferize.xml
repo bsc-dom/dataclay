@@ -1,0 +1,5 @@
+<ProtobufferizeConfiguration>
+	<clearOutputDirectory>false</clearOutputDirectory>
+	<outputDirectory>src</outputDirectory>
+	<protoSourceRoot>dataclay-common/protos</protoSourceRoot>
+</ProtobufferizeConfiguration>
