@@ -11,10 +11,8 @@ install_reqs = parse_requirements("./requirements.txt")
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-PYCLAY_VERSION = os.environ.get('PYCLAY_VERSION', 'trunk')
-print("** USING PYCLAY VERSION = %s" % PYCLAY_VERSION)
 setup(name='dataClay',
-      version=PYCLAY_VERSION,
+      version=2.0,
       install_requires=install_reqs,
       description='Python library for dataClay',
       packages=find_packages("src"),

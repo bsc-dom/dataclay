@@ -13,3 +13,4 @@ test_scripts/cfgfiles
 tests/mock/client.properties
 .pyenv*
 /setup.py.orig
+/.project
