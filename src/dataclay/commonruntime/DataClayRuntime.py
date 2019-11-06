@@ -29,7 +29,7 @@ class DataClayRuntime(object):
         
     """ Logger """ 
     logger = logging.getLogger('dataclay.api')
-        
+
     def __init__(self):
         """ Cache of alias """
         # TODO: un-hardcode this
@@ -548,15 +548,27 @@ class DataClayRuntime(object):
         self.ready_clients["@LM"].federate_all_objects(session_id, dest_dataclay_id)
         # FIXME: ALIAS CACHE SHOULD BE UPDATED FOR OBJECTS WITH ALIAS REMOVED?
                
-    def get_by_alias(self, alias):
+    def get_by_alias(self, alias, class_id):
         if alias in self.alias_cache :
             oid, class_id, hint = self.alias_cache[alias]
-        else :
-            oid, class_id, hint = self.ready_clients["@LM"].get_object_from_alias(self.get_session_id(), alias)
+        else:
+            oid = self.get_object_id_by_alias(alias)
+            class_id = class_id
+            hint = self.get_object_location_by_id(oid)
             self.logger.debug("Added alias %s to cache", alias)
             self.alias_cache[alias] = oid, class_id, hint
 
         return self.get_object_by_id(oid, class_id, hint)
+    
+    def get_object_id_by_alias(self, alias):
+        return uuid.uuid5(uuid.NAMESPACE_OID, alias)
+    
+    def get_object_location_by_id(self, object_id):
+        exec_envs = list(self.get_execution_environments_info())
+        return exec_envs[hash(object_id()) % len(exec_envs)]
+    
+    def get_object_location_by_alias(self, alias):
+        return self.get_object_location_by_id(self.get_object_id_by_alias(alias))
     
     def delete_alias(self, alias):
         self.ready_clients["@LM"].delete_alias(self.get_session_id(), alias)

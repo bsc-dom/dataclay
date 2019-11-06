@@ -479,7 +479,7 @@ class DataClayObject(object):
 
     @classmethod
     def get_by_alias(cls, alias):
-        return getRuntime().get_by_alias(alias)
+        return getRuntime().get_by_alias(alias, cls.get_class_extradata().class_id)
 
     @classmethod
     def delete_alias(cls, alias):

@@ -47,15 +47,14 @@ class ClientRuntime(DataClayRuntime):
         """
         # // === DEFAULT EXECUTION LOCATION === //CURRENTLY NOT SUPPORTED 
         # ToDo: remove in java (dgasull)
-        exec_envs = list(self.get_execution_environments_info())
+        
         if alias:
-            exeenv_id = exec_envs[hash(alias) % len(exec_envs)]
-            instance.update_object_id(uuid.uuid5(uuid.NAMESPACE_OID, alias))
-        else:
-            exeenv_id = exec_envs[hash(instance.get_object_id()) % len(exec_envs)]
-        instance.set_hint(exeenv_id)
-        self.logger.verbose("ExecutionEnvironmentID obtained for execution = %s", exeenv_id)
-        return exeenv_id
+            instance.update_object_id(self.get_object_id_by_alias(alias))
+        
+        exec_env_id = self.get_object_location_by_id(instance.get_object_id())
+        instance.set_hint(exec_env_id)
+        self.logger.verbose("ExecutionEnvironmentID obtained for execution = %s", exec_env_id)
+        return exec_env_id
     
     def make_persistent(self, instance, alias, backend_id, recursive):
         """ This method creates a new Persistent Object using the provided stub
