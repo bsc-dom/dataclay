@@ -409,6 +409,18 @@ class DataClayObject(object):
         """
         self.__dclay_instance_extradata.object_id = new_object_id
 
+    def update_object_id(self, new_object_id):
+        """
+        @postcondition: Set a new object id for the object and
+                        calls an update of its heap references
+        @param new_object_id: object id
+        """
+        if self.is_persistent():
+            raise DataClayException("Cannot change the id of a persistent object")
+        old_object_id = self.get_object_id()
+        self.__dclay_instance_extradata.object_id = new_object_id
+        getRuntime().update_object_id(old_object_id, new_object_id)
+
     def get_memory_pinned(self):
         """
         @postcondition: Return the memory pinned flag of the object
