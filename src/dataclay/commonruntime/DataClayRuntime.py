@@ -558,7 +558,11 @@ class DataClayRuntime(object):
             self.logger.debug("Added alias %s to cache", alias)
             self.alias_cache[alias] = oid, class_id, hint
 
-        return self.get_object_by_id(oid, class_id, hint)
+        try:
+            return self.get_object_by_id(oid, class_id, hint)
+        except:
+            oid, class_id, hint = self.ready_clients["@LM"].get_object_from_alias(self.get_session_id(), alias)
+            return self.get_object_by_id(oid, class_id, hint)
     
     def get_object_id_by_alias(self, alias):
         return uuid.uuid5(uuid.NAMESPACE_OID, alias)
