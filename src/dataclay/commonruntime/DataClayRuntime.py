@@ -166,7 +166,15 @@ class DataClayRuntime(object):
         @param dc_object: object to add to the heap 
         """
         self.dataclay_heap_manager.add_to_heap(dc_object)
-        
+    
+    def update_object_id(self, old_object_id, new_object_id):
+        """
+        @postcondition: the object references are updated into dataClay's heap
+        @param old_object_id: the old id of the object
+        @param new_object_id: the new id of the object
+        """
+        self.dataclay_heap_manager.update_object_id(old_object_id, new_object_id)
+    
     def remove_from_heap(self, object_id):
         """
         @postcondition: Remove reference from Heap. Even if we remove it from the heap, 
