@@ -202,14 +202,12 @@ def init(config_file="./cfgfiles/session.properties"):
     if _initialized:
         logger.warning("Already initialized --ignoring")
         return
-
-    if (not config_file) or (not os.path.isfile(config_file)):
-        # Fallback when either
-        #   - init has been called explicitly with falsy value
-        #   - the default file does not exist
-        config_file = os.getenv("DATACLAYSESSIONCONFIG")
-        if not config_file:
-            raise ValueError("dataClay requires a session.properties in order to initialize")
+    
+    env_config_file = os.getenv("DATACLAYSESSIONCONFIG")
+    if not env_config_file:
+        if (not config_file) or (not os.path.isfile(config_file)):
+            if not config_file:
+                raise ValueError("dataClay requires a session.properties in order to initialize")
 
     pre_network_init(config_file)
     post_network_init()
@@ -272,6 +270,7 @@ def post_network_init():
     # Synchronization events are used to merge LM traces and python EE traces. Incrementing available task id is useful to 
     # send to N EE/DS nodes.
     if settings.tracing_enabled:
+        logger.info("Initializing tracing")
         # set current available task id 
         set_current_available_task_id(int(settings.extrae_starting_task_id)) 
         # -- Do NOT add synchronization events if it is a compss worker (default case of activation) --

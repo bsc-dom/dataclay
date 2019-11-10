@@ -1,7 +1,7 @@
 
 """ Class description goes here. """
 
-from dataclay.util.management.classmgr.Type import Type
+from es.bsc.dataclay.util.management.classmgr.Type import Type
 
 
 # Deleted name from fields

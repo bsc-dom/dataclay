@@ -74,7 +74,7 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
         self._pickle_fallback = pickle_fallback
 
     def read(self, io_file):
-        from dataclay.util.management.classmgr.Utils import serialization_types
+        from es.bsc.dataclay.util.management.classmgr.Utils import serialization_types
         try:
             return serialization_types[self._signature].read(io_file)
         except KeyError:
@@ -174,7 +174,7 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
     def write(self, io_file, value):
         value = safe_wait_if_compss_future(value)
 
-        from dataclay.util.management.classmgr.Utils import serialization_types
+        from es.bsc.dataclay.util.management.classmgr.Utils import serialization_types
         try:
             serialization_types[self._signature].write(io_file, value)
             return

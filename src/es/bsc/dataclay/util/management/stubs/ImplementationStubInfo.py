@@ -2,7 +2,7 @@
 """ Class description goes here. """
 
 from dataclay.util.MgrObject import ManagementObject
-from dataclay.util.management.classmgr.Type import Type
+from es.bsc.dataclay.util.management.classmgr.Type import Type
 
 
 # Added implPosition

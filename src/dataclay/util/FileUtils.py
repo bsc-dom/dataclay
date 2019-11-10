@@ -7,13 +7,13 @@ Ensuring that the folder hierarchy and the __init__.py files are in their place
 is done in this module.
 """
 
+
 import logging
 import os.path
+from dataclay.commonruntime.Initializer import logger
 
 __author__ = ['Alex Barcelo <alex.barcelo@bsc.es']
 __copyright__ = '2016 Barcelona Supercomputing Center (BSC-CNS)'
-
-logger = logging.getLogger(__name__)
 
 # Almost hardcoded, but easily reachable... quite hacky, I know
 MAGIC_LINE_NUMBER_FOR_IMPORTS = 14
@@ -78,8 +78,8 @@ def deploy_class(namespace, full_name, source, imports, source_deploy_path, ds_d
     _ensure_package(source_deploy_path, ds_deploy)
 
     package, klass = ("%s.%s" % (namespace, full_name)).rsplit('.', 1)
-    # logger.info("Going to deploy class %s in path %s/__init__.py",
-    #             klass, package.replace(".", "/"))
+    logger.info("Going to deploy class %s in path %s/__init__.py",
+                klass, package.replace(".", "/"))
 
     current_path = source_deploy_path
     for p in package.split("."):
@@ -87,7 +87,7 @@ def deploy_class(namespace, full_name, source, imports, source_deploy_path, ds_d
         _ensure_package(current_path, ds_deploy)
 
     class_path = os.path.join(current_path, "__init__.py")
-    # logger.debug("Class destination file: %s", class_path)
+    logger.info("Class destination file: %s", class_path)
 
     if not os.path.exists(class_path):
         raise IOError("__init__.py file in package %s should have been already initialized"

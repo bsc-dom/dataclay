@@ -6,7 +6,7 @@ from importlib import import_module
 import logging
 
 from dataclay.commonruntime.ExecutionGateway import loaded_classes
-from dataclay.util.management.classmgr.UserType import UserType
+from es.bsc.dataclay.util.management.classmgr.UserType import UserType
 from dataclay.exceptions.exceptions import DataClayException
 import traceback
 __author__ = 'Alex Barcelo <alex.barcelo@bsc.es'

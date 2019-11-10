@@ -35,8 +35,8 @@ from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
 from dataclay.serialization.python.lang.DCIDWrapper import DCIDWrapper
 from dataclay.util.StubUtils import load_babel_data
 from dataclay.util.classloaders.ClassLoader import load_metaclass
-from dataclay.util.management.classmgr.Type import Type
-from dataclay.util.management.classmgr.UserType import UserType
+from es.bsc.dataclay.util.management.classmgr.Type import Type
+from es.bsc.dataclay.util.management.classmgr.UserType import UserType
 from dataclay.exceptions.exceptions import DataClayException, ImproperlyConfigured
 import six
 

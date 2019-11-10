@@ -4,8 +4,8 @@
 from lru import LRU
 
 from dataclay.util.MgrObject import ManagementObject
-from dataclay.util.management.classmgr.Type import Type
-from dataclay.util.management.classmgr.Utils import STATIC_ATTRIBUTE_FOR_EXTERNAL_INIT, stub_only_def, py_code
+from es.bsc.dataclay.util.management.classmgr.Type import Type
+from es.bsc.dataclay.util.management.classmgr.Utils import STATIC_ATTRIBUTE_FOR_EXTERNAL_INIT, stub_only_def, py_code
 
 
 # Modified abstract with isAbstract, deleted dcID and implID as internal_fields
@@ -83,7 +83,7 @@ class MetaClass(ManagementObject):
         the constructor is one of those non-Python methods, then the class is
         flagged as EXTERNAL_INIT only (see ExecutionGateway for further info).
         """
-        from dataclay.util.management.classmgr.python.PythonImplementation import PythonImplementation
+        from es.bsc.dataclay.util.management.classmgr.python.PythonImplementation import PythonImplementation
 
         imp_codes = list()
 

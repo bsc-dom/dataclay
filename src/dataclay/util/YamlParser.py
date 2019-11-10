@@ -19,39 +19,39 @@ from functools import partial
 from yaml import Loader, load, dump
 
 from dataclay.util.YamlIgnores import IGNORE_CLASSES, IGNORE_PREFIXES
-from dataclay.util.ids import _uuid
-from dataclay.util.info.VersionInfo import VersionInfo
-from dataclay.util.management.accountmgr.Account import Account
-from dataclay.util.management.classmgr.AccessedImplementation import AccessedImplementation
-from dataclay.util.management.classmgr.AccessedProperty import AccessedProperty
-from dataclay.util.management.classmgr.Implementation import Implementation
-from dataclay.util.management.classmgr.MetaClass import MetaClass
-from dataclay.util.management.classmgr.Operation import Operation
-from dataclay.util.management.classmgr.Property import Property
-from dataclay.util.management.classmgr.Type import Type
-from dataclay.util.management.classmgr.UserType import UserType
-from dataclay.util.management.classmgr.java.JavaImplementation import JavaImplementation
-from dataclay.util.management.classmgr.python.PythonClassInfo import PythonClassInfo
-from dataclay.util.management.classmgr.python.PythonImplementation import PythonImplementation
-from dataclay.util.management.contractmgr.Contract import Contract
-from dataclay.util.management.datacontractmgr.DataContract import DataContract
-from dataclay.util.management.datasetmgr.DataSet import DataSet
-from dataclay.util.management.interfacemgr.Interface import Interface
-from dataclay.util.management.metadataservice.ExecutionEnvironment import ExecutionEnvironment
-from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
-from dataclay.util.management.metadataservice.StorageLocation import StorageLocation
-from dataclay.util.management.metadataservice.DataClayInstance import DataClayInstance
-from dataclay.util.management.namespacemgr.Namespace import Namespace
-from dataclay.util.management.sessionmgr.SessionContract import SessionContract
-from dataclay.util.management.sessionmgr.SessionDataContract import SessionDataContract
-from dataclay.util.management.sessionmgr.SessionImplementation import SessionImplementation
-from dataclay.util.management.sessionmgr.SessionInfo import SessionInfo
-from dataclay.util.management.sessionmgr.SessionInterface import SessionInterface
-from dataclay.util.management.sessionmgr.SessionOperation import SessionOperation
-from dataclay.util.management.sessionmgr.SessionProperty import SessionProperty
-from dataclay.util.management.stubs.ImplementationStubInfo import ImplementationStubInfo
-from dataclay.util.management.stubs.PropertyStubInfo import PropertyStubInfo
-from dataclay.util.management.stubs.StubInfo import StubInfo
+from es.bsc.dataclay.util.ids import _uuid
+from es.bsc.dataclay.util.info.VersionInfo import VersionInfo
+from es.bsc.dataclay.util.management.accountmgr.Account import Account
+from es.bsc.dataclay.util.management.classmgr.AccessedImplementation import AccessedImplementation
+from es.bsc.dataclay.util.management.classmgr.AccessedProperty import AccessedProperty
+from es.bsc.dataclay.util.management.classmgr.Implementation import Implementation
+from es.bsc.dataclay.util.management.classmgr.MetaClass import MetaClass
+from es.bsc.dataclay.util.management.classmgr.Operation import Operation
+from es.bsc.dataclay.util.management.classmgr.Property import Property
+from es.bsc.dataclay.util.management.classmgr.Type import Type
+from es.bsc.dataclay.util.management.classmgr.UserType import UserType
+from es.bsc.dataclay.util.management.classmgr.java.JavaImplementation import JavaImplementation
+from es.bsc.dataclay.util.management.classmgr.python.PythonClassInfo import PythonClassInfo
+from es.bsc.dataclay.util.management.classmgr.python.PythonImplementation import PythonImplementation
+from es.bsc.dataclay.util.management.contractmgr.Contract import Contract
+from es.bsc.dataclay.util.management.datacontractmgr.DataContract import DataContract
+from es.bsc.dataclay.util.management.datasetmgr.DataSet import DataSet
+from es.bsc.dataclay.util.management.interfacemgr.Interface import Interface
+from es.bsc.dataclay.util.management.metadataservice.ExecutionEnvironment import ExecutionEnvironment
+from es.bsc.dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
+from es.bsc.dataclay.util.management.metadataservice.StorageLocation import StorageLocation
+from es.bsc.dataclay.util.management.metadataservice.DataClayInstance import DataClayInstance
+from es.bsc.dataclay.util.management.namespacemgr.Namespace import Namespace
+from es.bsc.dataclay.util.management.sessionmgr.SessionContract import SessionContract
+from es.bsc.dataclay.util.management.sessionmgr.SessionDataContract import SessionDataContract
+from es.bsc.dataclay.util.management.sessionmgr.SessionImplementation import SessionImplementation
+from es.bsc.dataclay.util.management.sessionmgr.SessionInfo import SessionInfo
+from es.bsc.dataclay.util.management.sessionmgr.SessionInterface import SessionInterface
+from es.bsc.dataclay.util.management.sessionmgr.SessionOperation import SessionOperation
+from es.bsc.dataclay.util.management.sessionmgr.SessionProperty import SessionProperty
+from es.bsc.dataclay.util.management.stubs.ImplementationStubInfo import ImplementationStubInfo
+from es.bsc.dataclay.util.management.stubs.PropertyStubInfo import PropertyStubInfo
+from es.bsc.dataclay.util.management.stubs.StubInfo import StubInfo
 from dataclay.communication.grpc.messages.common.common_messages_pb2 import Langs
 
 # Initialize (internal) representer/constructor for UUID
@@ -119,14 +119,14 @@ def lang_constructor(loader, node):
 Loader.add_constructor(u"tag:yaml.org,2002:value", lonely_equal_constructor)
 
 # The tuple is a bit special itself
-Loader.add_constructor(u"tag:yaml.org,2002:dataclay.util.structs.Tuple", tuple_constructor)
+Loader.add_constructor(u"tag:yaml.org,2002:es.bsc.dataclay.util.structs.Tuple", tuple_constructor)
 
 # Not needed for Python, but nice to avoid errors
-Loader.add_constructor(u"tag:yaml.org,2002:dataclay.util.management.classmgr.features.Feature$FeatureType",
+Loader.add_constructor(u"tag:yaml.org,2002:es.bsc.dataclay.util.management.classmgr.features.Feature$FeatureType",
                        feature_constructor)
 
 # The language is very special
-Loader.add_constructor(u"tag:yaml.org,2002:dataclay.communication.grpc.messages.common.CommonMessages$Langs", lang_constructor)
+Loader.add_constructor(u"tag:yaml.org,2002:es.bsc.dataclay.communication.grpc.messages.common.CommonMessages$Langs", lang_constructor)
 
 for prefix in IGNORE_PREFIXES:
     yaml_tag_prefix = u"tag:yaml.org,2002:%s" % prefix

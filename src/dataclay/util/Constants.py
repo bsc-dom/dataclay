@@ -10,7 +10,7 @@ Note that the package available here (properties) is a placeholder folder which
 contains hard links to the properties' files.
 """
 from dataclay.exceptions.ErrorDefs import ErrorCodes
-from dataclay.util.management.classmgr.PythonTypeSignatures import PythonTypeSignatures
+from es.bsc.dataclay.util.management.classmgr.PythonTypeSignatures import PythonTypeSignatures
 
 from . import properties
 

@@ -5,7 +5,7 @@ from uuid import UUID
 from yaml import Loader, Dumper
 
 JAVA_UUID_TAG = u'tag:yaml.org,2002:java.util.UUID'
-DATACLAY_ID_PREFIX = u'tag:yaml.org,2002:dataclay.util.ids'
+DATACLAY_ID_PREFIX = u'tag:yaml.org,2002:es.bsc.dataclay.util.ids'
 
 
 def uuid_representer(dumper, data):

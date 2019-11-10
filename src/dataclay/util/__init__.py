@@ -58,7 +58,7 @@ class Configuration(object):
     SLEEP_WAIT_REGISTERED = 50
     
     # CHECK ALIVE TIME OUT IN GRPC in seconds
-    GRPC_CHECK_ALIVE_TIMEOUT = 3
+    GRPC_CHECK_ALIVE_TIMEOUT = 120
     
     # Indicates where EE id is stored
     EE_PERSISTENT_INFO_PATH = os.getcwd() + "/"
