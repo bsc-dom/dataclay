@@ -26,7 +26,7 @@ class Type(ManagementObject):
         """
         
         # Imports done here to avoid circular-imports during initialization
-        from es.bsc.dataclay.util.management.classmgr.Utils import instance_types
+        from .Utils import instance_types
         from dataclay import DataClayObject
         try:
             return instance_types[type_instance]
@@ -38,7 +38,7 @@ class Type(ManagementObject):
             full_name = type_instance.get_class_extradata().full_name
             namespace = type_instance.get_class_extradata().namespace
             # TODO: Check UserType fields
-            from es.bsc.dataclay.util.management.classmgr.UserType import UserType  # Import after creation to avoid circular imports
+            from .UserType import UserType  # Import after creation to avoid circular imports
             return UserType(namespace=namespace,
                             typeName=full_name,
                             signature=("L%s;" % full_name).replace(".", "/"),
@@ -60,7 +60,7 @@ class Type(ManagementObject):
         """
         
         # Imports done here to avoid circular-imports during initialization
-        from es.bsc.dataclay.util.management.classmgr.Utils import NATIVE_PACKAGES, docstring_types
+        from .Utils import NATIVE_PACKAGES, docstring_types
         try:
             return docstring_types[type_str]
         except KeyError:
@@ -90,7 +90,7 @@ class Type(ManagementObject):
                 return Type(signature=type_str,
                             includes=[])
             else:
-                from es.bsc.dataclay.util.management.classmgr.UserType import UserType  # Import after creation to avoid circular imports
+                from .UserType import UserType  # Import after creation to avoid circular imports
                 return UserType(namespace=namespace,
                                 typeName=full_name,
                                 signature=("L%s;" % full_name).replace(".", "/"),

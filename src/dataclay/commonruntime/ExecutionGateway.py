@@ -11,13 +11,13 @@ import inspect
 from logging import getLogger
 import six
 
-from es.bsc.dataclay.util.management.classmgr.MetaClass import MetaClass
-from es.bsc.dataclay.util.management.classmgr.Operation import Operation
-from es.bsc.dataclay.util.management.classmgr.Property import Property
-from es.bsc.dataclay.util.management.classmgr.Type import Type
-from es.bsc.dataclay.util.management.classmgr.Utils import STATIC_ATTRIBUTE_FOR_EXTERNAL_INIT
-from es.bsc.dataclay.util.management.classmgr.python.PythonClassInfo import PythonClassInfo
-from es.bsc.dataclay.util.management.classmgr.python.PythonImplementation import PythonImplementation
+from dataclay.util.management.classmgr.MetaClass import MetaClass
+from dataclay.util.management.classmgr.Operation import Operation
+from dataclay.util.management.classmgr.Property import Property
+from dataclay.util.management.classmgr.Type import Type
+from dataclay.util.management.classmgr.Utils import STATIC_ATTRIBUTE_FOR_EXTERNAL_INIT
+from dataclay.util.management.classmgr.python.PythonClassInfo import PythonClassInfo
+from dataclay.util.management.classmgr.python.PythonImplementation import PythonImplementation
 from dataclay.exceptions.exceptions import DataClayException
 
 # Publicly show the dataClay method decorators

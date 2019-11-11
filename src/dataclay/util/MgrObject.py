@@ -17,7 +17,7 @@ class ManagementMetaClass(type):
     def __init__(cls, name, bases, kwds):
         """This overlaps quite a bit with YAMLObjectMetaclass."""
         if name != "ManagementObject":
-            yaml_tag = u"tag:yaml.org,2002:%s" % (cls.__module__)
+            yaml_tag = u"tag:yaml.org,2002:es.bsc.%s" % (cls.__module__)
             cls.yaml_loader = Loader
             cls.yaml_tag = yaml_tag  # used by `ManagementObject.to_yaml`
             logger.trace("YAML TAG : %s", yaml_tag)

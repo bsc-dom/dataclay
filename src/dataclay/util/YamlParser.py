@@ -19,52 +19,41 @@ from functools import partial
 from yaml import Loader, load, dump
 
 from dataclay.util.YamlIgnores import IGNORE_CLASSES, IGNORE_PREFIXES
-from es.bsc.dataclay.util.ids import _uuid
-from es.bsc.dataclay.util.info.VersionInfo import VersionInfo
-from es.bsc.dataclay.util.management.accountmgr.Account import Account
-from es.bsc.dataclay.util.management.classmgr.AccessedImplementation import AccessedImplementation
-from es.bsc.dataclay.util.management.classmgr.AccessedProperty import AccessedProperty
-from es.bsc.dataclay.util.management.classmgr.Implementation import Implementation
-from es.bsc.dataclay.util.management.classmgr.MetaClass import MetaClass
-from es.bsc.dataclay.util.management.classmgr.Operation import Operation
-from es.bsc.dataclay.util.management.classmgr.Property import Property
-from es.bsc.dataclay.util.management.classmgr.Type import Type
-from es.bsc.dataclay.util.management.classmgr.UserType import UserType
-from es.bsc.dataclay.util.management.classmgr.java.JavaImplementation import JavaImplementation
-from es.bsc.dataclay.util.management.classmgr.python.PythonClassInfo import PythonClassInfo
-from es.bsc.dataclay.util.management.classmgr.python.PythonImplementation import PythonImplementation
-from es.bsc.dataclay.util.management.contractmgr.Contract import Contract
-from es.bsc.dataclay.util.management.datacontractmgr.DataContract import DataContract
-from es.bsc.dataclay.util.management.datasetmgr.DataSet import DataSet
-from es.bsc.dataclay.util.management.interfacemgr.Interface import Interface
-from es.bsc.dataclay.util.management.metadataservice.ExecutionEnvironment import ExecutionEnvironment
-from es.bsc.dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
-from es.bsc.dataclay.util.management.metadataservice.StorageLocation import StorageLocation
-from es.bsc.dataclay.util.management.metadataservice.DataClayInstance import DataClayInstance
-from es.bsc.dataclay.util.management.namespacemgr.Namespace import Namespace
-from es.bsc.dataclay.util.management.sessionmgr.SessionContract import SessionContract
-from es.bsc.dataclay.util.management.sessionmgr.SessionDataContract import SessionDataContract
-from es.bsc.dataclay.util.management.sessionmgr.SessionImplementation import SessionImplementation
-from es.bsc.dataclay.util.management.sessionmgr.SessionInfo import SessionInfo
-from es.bsc.dataclay.util.management.sessionmgr.SessionInterface import SessionInterface
-from es.bsc.dataclay.util.management.sessionmgr.SessionOperation import SessionOperation
-from es.bsc.dataclay.util.management.sessionmgr.SessionProperty import SessionProperty
-from es.bsc.dataclay.util.management.stubs.ImplementationStubInfo import ImplementationStubInfo
-from es.bsc.dataclay.util.management.stubs.PropertyStubInfo import PropertyStubInfo
-from es.bsc.dataclay.util.management.stubs.StubInfo import StubInfo
+
+from .ids import _uuid
+from .info.VersionInfo import VersionInfo
+from .management.accountmgr.Account import Account
+from .management.classmgr.AccessedImplementation import AccessedImplementation
+from .management.classmgr.AccessedProperty import AccessedProperty
+from .management.classmgr.Implementation import Implementation
+from .management.classmgr.MetaClass import MetaClass
+from .management.classmgr.Operation import Operation
+from .management.classmgr.Property import Property
+from .management.classmgr.Type import Type
+from .management.classmgr.UserType import UserType
+from .management.classmgr.java.JavaImplementation import JavaImplementation
+from .management.classmgr.python.PythonClassInfo import PythonClassInfo
+from .management.classmgr.python.PythonImplementation import PythonImplementation
+from .management.contractmgr.Contract import Contract
+from .management.datacontractmgr.DataContract import DataContract
+from .management.datasetmgr.DataSet import DataSet
+from .management.interfacemgr.Interface import Interface
+from .management.metadataservice.ExecutionEnvironment import ExecutionEnvironment
+from .management.metadataservice.MetaDataInfo import MetaDataInfo
+from .management.metadataservice.StorageLocation import StorageLocation
+from .management.metadataservice.DataClayInstance import DataClayInstance
+from .management.namespacemgr.Namespace import Namespace
+from .management.sessionmgr.SessionContract import SessionContract
+from .management.sessionmgr.SessionDataContract import SessionDataContract
+from .management.sessionmgr.SessionImplementation import SessionImplementation
+from .management.sessionmgr.SessionInfo import SessionInfo
+from .management.sessionmgr.SessionInterface import SessionInterface
+from .management.sessionmgr.SessionOperation import SessionOperation
+from .management.sessionmgr.SessionProperty import SessionProperty
+from .management.stubs.ImplementationStubInfo import ImplementationStubInfo
+from .management.stubs.PropertyStubInfo import PropertyStubInfo
+from .management.stubs.StubInfo import StubInfo
 from dataclay.communication.grpc.messages.common.common_messages_pb2 import Langs
-
-# Initialize (internal) representer/constructor for UUID
-# and also all the ignores (literal maps)
-__classes__ = [AccessedImplementation, AccessedProperty, Implementation, MetaClass,
-    Operation, Property, Type, UserType, JavaImplementation,
-    PythonImplementation, PythonClassInfo, Account, Contract,
-    DataContract, DataSet, Namespace, Interface, ImplementationStubInfo,
-    PropertyStubInfo, StubInfo, StorageLocation, DataClayInstance, SessionInfo, SessionContract,
-    SessionOperation, SessionInterface, SessionImplementation, SessionDataContract,
-    SessionProperty, MetaDataInfo, ExecutionEnvironment, VersionInfo]
-
-__all__ = [clazz.__name__ for clazz in __classes__]
 
 
 def trivial_constructor(loader, node):

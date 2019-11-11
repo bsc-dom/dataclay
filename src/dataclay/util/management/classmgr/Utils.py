@@ -9,7 +9,7 @@ from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
 from dataclay.serialization.python.lang.FloatWrapper import FloatWrapper
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
 from dataclay.serialization.python.lang.NullWrapper import NullWrapper
-from es.bsc.dataclay.util.management.classmgr.Type import Type
+from .Type import Type
 
 NATIVE_PACKAGES = {
     'numpy',

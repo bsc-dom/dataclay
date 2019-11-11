@@ -1,7 +1,7 @@
 
 """ Class description goes here. """
 
-from es.bsc.dataclay.util.management.classmgr.Implementation import Implementation
+from ..Implementation import Implementation
 
 
 class JavaImplementation(Implementation):
