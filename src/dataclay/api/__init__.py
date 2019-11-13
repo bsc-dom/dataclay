@@ -185,15 +185,15 @@ def pre_network_init(config_file):
     settings.load_properties(config_file)
 
 
-def init(config_file="./cfgfiles/session.properties"):
+def init(config_file=None):
     """Initialization made on the client-side, with file-based settings.
 
     Note that after a successful call to this method, subsequent calls will be
     a no-operation.
 
-    :param config_file: The configuration file that will be used. If explicitly
-      set to null, then its value will be retrieved from the DATACLAYSESSIONCONFIG
-      environment variable.
+    :param config_file: The configuration file that will be used. If not set, then
+     the DATACLAYSESSIONCONFIG environment variable will be used and the fallback
+     will be the `./cfgfiles/session.properties` path.
     """
     global _initialized
 
@@ -202,12 +202,24 @@ def init(config_file="./cfgfiles/session.properties"):
     if _initialized:
         logger.warning("Already initialized --ignoring")
         return
-    
-    env_config_file = os.getenv("DATACLAYSESSIONCONFIG")
-    if not env_config_file:
-        if (not config_file) or (not os.path.isfile(config_file)):
-            if not config_file:
-                raise ValueError("dataClay requires a session.properties in order to initialize")
+
+    if not config_file:
+        # If the call doesn't has config_file set, let's try to fallback into the envvar
+        env_config_file = os.getenv("DATACLAYSESSIONCONFIG")
+        if env_config_file:
+            # If the environment is defined, it is preferred
+            config_file = env_config_file
+            logger.info("Using the environment variable DATACLAYSESSIONCONFIG=%s",
+                        config_file)
+        else:
+            config_file = "./cfgfiles/session.properties"
+            logger.info("Fallback to default ./cfgfiles/session.properties")
+    else:
+        logger.info("Explicit parameter config_file=\"%s\" will be used",
+                    config_file)
+
+    if not os.path.isfile(config_file):
+        raise ValueError("dataClay requires a session.properties in order to initialize")
 
     pre_network_init(config_file)
     post_network_init()
