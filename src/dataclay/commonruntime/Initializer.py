@@ -96,8 +96,10 @@ def _get_logging_dict_config():
             level = logging.TRACE
         elif debug:
             level = logging.DEBUG
-        else:
+        elif level_name == "INFO":
             level = logging.INFO
+        else:
+            level = logging.WARNING
 
         return {
             "version": 1,

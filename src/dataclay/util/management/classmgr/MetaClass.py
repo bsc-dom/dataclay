@@ -4,8 +4,8 @@
 from lru import LRU
 
 from dataclay.util.MgrObject import ManagementObject
-from dataclay.util.management.classmgr.Type import Type
-from dataclay.util.management.classmgr.Utils import STATIC_ATTRIBUTE_FOR_EXTERNAL_INIT, stub_only_def, py_code
+from .Type import Type
+from .Utils import STATIC_ATTRIBUTE_FOR_EXTERNAL_INIT, stub_only_def, py_code
 
 
 # Modified abstract with isAbstract, deleted dcID and implID as internal_fields

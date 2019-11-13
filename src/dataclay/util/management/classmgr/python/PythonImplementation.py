@@ -1,7 +1,7 @@
 
 """ Class description goes here. """
 
-from dataclay.util.management.classmgr.Implementation import Implementation
+from ..Implementation import Implementation
 
 
 class PythonImplementation(Implementation):

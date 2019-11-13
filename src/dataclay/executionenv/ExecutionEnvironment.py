@@ -116,43 +116,46 @@ class ExecutionEnvironment(object):
         :param classes_map: classes map
         :return: The response (empty string)
         """
+        try:
+            self.prepareThread()
+            for class_name, clazz_yaml in classes_map_yamls.items():
+                metaclass = dataclay_yaml_load(clazz_yaml)
+                ClassLoader.deploy_metaclass_grpc(
+                    namespace, class_name, clazz_yaml, metaclass)
         
-        self.prepareThread()
-        for class_name, clazz_yaml in classes_map_yamls.items():
-            metaclass = dataclay_yaml_load(clazz_yaml)
-            ClassLoader.deploy_metaclass_grpc(
-                namespace, class_name, clazz_yaml, metaclass)
-    
-            if metaclass.name == "UserType" or metaclass.name == "HashType":
-                # logger.warning("Ignoring %s dataClay MetaClass", metaclass.name)
-                # logger.debug(metaclass)
-                continue
-    
-            if metaclass.name == "DataClayPersistentObject" \
-                    or metaclass.name == "DataClayObject"\
-                    or metaclass.name == "StorageObject":
-                continue
-    
-            # logger.info("Deploying class %s to deployment source path %s",
-            #             metaclass.name, settings.deploy_path_source)
-    
-            try:
-                # ToDo: check whether `lang_codes.LANG_PYTHON` or `'LANG_PYTHON'` is the correct key here
-                import_lines = metaclass.languageDepInfos[LANG_PYTHON].imports
-                imports = "\n".join(import_lines)
-            except KeyError:
-                # What is most likely is languageDepInfos not having the Python
-                imports = ""
-    
-            deploy_class(metaclass.namespace, metaclass.name,
-                         metaclass.juxtapose_code(True),
-                         imports,
-                         settings.deploy_path_source,
-                         ds_deploy=True)
-            # logger.debug("Deployment of class %s successful", metaclass.name)
-    
-        return str()
-    
+                if metaclass.name == "UserType" or metaclass.name == "HashType":
+                    logger.warning("Ignoring %s dataClay MetaClass", metaclass.name)
+                    logger.debug(metaclass)
+                    continue
+        
+                if metaclass.name == "DataClayPersistentObject" \
+                        or metaclass.name == "DataClayObject"\
+                        or metaclass.name == "StorageObject":
+                    continue
+        
+                logger.info("Deploying class %s to deployment source path %s",
+                             metaclass.name, settings.deploy_path_source)
+
+                try:
+                    # ToDo: check whether `lang_codes.LANG_PYTHON` or `'LANG_PYTHON'` is the correct key here
+                    import_lines = metaclass.languageDepInfos[LANG_PYTHON].imports
+                    imports = "\n".join(import_lines)
+                except KeyError:
+                    # What is most likely is languageDepInfos not having the Python
+                    imports = ""
+        
+                deploy_class(metaclass.namespace, metaclass.name,
+                             metaclass.juxtapose_code(True),
+                             imports,
+                             settings.deploy_path_source,
+                             ds_deploy=True)
+                logger.info("Deployment of class %s successful", metaclass.name)
+        
+            return str()
+        except:
+            traceback.print_exc()
+            return str()
+        
     def activate_tracing(self, task_id):
         if not extrae_tracing_is_enabled():
             set_current_available_task_id(task_id)

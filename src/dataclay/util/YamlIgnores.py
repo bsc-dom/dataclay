@@ -2,10 +2,10 @@
 """ Class description goes here. """
 
 IGNORE_PREFIXES = [
-    "dataclay.util.management.classmgr.java",
-    "dataclay.util.management.classmgr.features",
+    "es.bsc.dataclay.util.management.classmgr.java",
+    "es.bsc.dataclay.util.management.classmgr.features",
 ]
 
 IGNORE_CLASSES = [
-    "dataclay.util.management.classmgr.PrefetchingInformation",
+    "es.bsc.dataclay.util.management.classmgr.PrefetchingInformation",
 ]

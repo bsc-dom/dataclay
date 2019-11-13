@@ -85,7 +85,7 @@ def register_model(username, password, namespace, python_path):
         ref_class_name = class_name.replace('.', '')
 
         interfaces.append(Template("""
-{{ class_name }}interface: &{{ ref_class_name }}iface !!dataclay.util.management.interfacemgr.Interface
+{{ class_name }}interface: &{{ ref_class_name }}iface !!es.bsc.dataclay.util.management.interfacemgr.Interface
   providerAccountName: {{ username }}
   namespace: {{ namespace }}
   classNamespace: {{ namespace }}
@@ -106,11 +106,11 @@ def register_model(username, password, namespace, python_path):
             class_info=class_info))
 
         interfaces_in_contract.append(Template("""
-    - !!dataclay.util.management.contractmgr.InterfaceInContract
+    - !!es.bsc.dataclay.util.management.contractmgr.InterfaceInContract
       iface: *{{ ref_class_name }}iface
       implementationsSpecPerOperation: !!set {% if class_info.operations|length == 0 %} { } {% endif %}
         {% for operation in class_info.operations %}
-          ? !!dataclay.util.management.contractmgr.OpImplementations
+          ? !!es.bsc.dataclay.util.management.contractmgr.OpImplementations
             operationSignature: {{ operation.nameAndDescriptor }}
             numLocalImpl: 0
             numRemoteImpl: 0
@@ -121,7 +121,7 @@ def register_model(username, password, namespace, python_path):
             class_info=class_info))
 
     contract = Template("""
-{{ namespace }}contract: !!dataclay.util.management.contractmgr.Contract
+{{ namespace }}contract: !!es.bsc.dataclay.util.management.contractmgr.Contract
   beginDate: 1980-01-01T00:00:01
   endDate: 2055-12-31T23:59:58
   namespace: {{ namespace }}

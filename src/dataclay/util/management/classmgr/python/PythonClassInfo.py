@@ -1,7 +1,7 @@
 
 """ Class description goes here. """
 
-from dataclay.util.management.classmgr.LanguageDependantClassInfo import LanguageDependantClassInfo
+from ..LanguageDependantClassInfo import LanguageDependantClassInfo
 
 
 class PythonClassInfo(LanguageDependantClassInfo):

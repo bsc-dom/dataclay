@@ -3,9 +3,9 @@ lru-dict
 Jinja2
 PyYAML
 decorator
-grpcio==1.22.1
-grpcio-tools==1.22.1
-protobuf
+grpcio==1.25.0
+grpcio-tools==1.25.0
+protobuf==3.10.0
 protobufferize
 psutil
 six

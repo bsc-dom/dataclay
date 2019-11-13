@@ -88,9 +88,9 @@ def _execute_from_command_line(argv=None):
 
         yaml_request_template = Template("""
 ---
- - !!dataclay.util.management.accountmgr.Account
+ - !!es.bsc.dataclay.util.management.accountmgr.Account
    username: {{ username }}
-   credential: !!dataclay.util.management.accountmgr.PasswordCredential
+   credential: !!es.bsc.dataclay.util.management.accountmgr.PasswordCredential
      password: {{ password }}
    role: NORMAL_ROLE
 """)
@@ -118,7 +118,7 @@ def _execute_from_command_line(argv=None):
         except Exception:
             yaml_request = """
 ---
-{namespace}: !!dataclay.util.management.namespacemgr.Namespace
+{namespace}: !!es.bsc.dataclay.util.management.namespacemgr.Namespace
     providerAccountName: {consumer_name}
     name: {namespace_name}
     language: LANG_PYTHON
@@ -152,7 +152,7 @@ def _execute_from_command_line(argv=None):
             raise RuntimeError("No classes successfully registered --cannot continue")
 
         class_interface_template = Template("""
-{{ brief_name }}interface: &{{ brief_name }}iface !!dataclay.util.management.interfacemgr.Interface
+{{ brief_name }}interface: &{{ brief_name }}iface !!es.bsc.dataclay.util.management.interfacemgr.Interface
   providerAccountName: {{ username }}
   namespace: dc_classes
   classNamespace: dc_classes
@@ -168,11 +168,11 @@ def _execute_from_command_line(argv=None):
 """)
 
         class_interface_in_contract_template = Template("""
-    - !!dataclay.util.management.contractmgr.InterfaceInContract
+    - !!es.bsc.dataclay.util.management.contractmgr.InterfaceInContract
       iface: *{{ brief_name }}iface
       implementationsSpecPerOperation: !!set {% if class_info.operations|length == 0 %} { } {% endif %}
         {% for operation in class_info.operations %}
-          ? !!dataclay.util.management.contractmgr.OpImplementations
+          ? !!es.bsc.dataclay.util.management.contractmgr.OpImplementations
             operationSignature: {{ operation.nameAndDescriptor }}
             numLocalImpl: 0
             numRemoteImpl: 0
@@ -197,7 +197,7 @@ def _execute_from_command_line(argv=None):
 {% for class_iface in class_interfaces %}
 {{ class_iface }}
 {% endfor %}
-contribcontract: !!dataclay.util.management.contractmgr.Contract
+contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
   beginDate: 2012-09-10T20:00:03
   endDate: 2020-09-10T20:00:04
   namespace: dc_classes
@@ -236,7 +236,7 @@ contribcontract: !!dataclay.util.management.contractmgr.Contract
 
         yaml_request_template = Template("""
 ---
-{{ namespace }}: !!dataclay.util.management.namespacemgr.Namespace
+{{ namespace }}: !!es.bsc.dataclay.util.management.namespacemgr.Namespace
   providerAccountName: {{ username }}
   name: {{ namespace }}
   language: LANG_PYTHON
@@ -269,7 +269,7 @@ contribcontract: !!dataclay.util.management.contractmgr.Contract
 
         yaml_request_template = Template("""
 ---
-{{ namespace }}: !!dataclay.util.management.namespacemgr.Namespace
+{{ namespace }}: !!es.bsc.dataclay.util.management.namespacemgr.Namespace
   providerAccountName: {{ username }}
   name: {{ namespace }}
   language: LANG_PYTHON
@@ -328,7 +328,7 @@ contribcontract: !!dataclay.util.management.contractmgr.Contract
             ref_class_name = class_name.replace('.', '')
 
             interfaces.append(Template("""
-{{ class_name }}interface: &{{ ref_class_name }}iface !!dataclay.util.management.interfacemgr.Interface
+{{ class_name }}interface: &{{ ref_class_name }}iface !!es.bsc.dataclay.util.management.interfacemgr.Interface
   providerAccountName: {{ username }}
   namespace: {{ namespace }}
   classNamespace: {{ namespace }}
@@ -349,11 +349,11 @@ contribcontract: !!dataclay.util.management.contractmgr.Contract
                 class_info=class_info))
 
             interfaces_in_contract.append(Template("""
-    - !!dataclay.util.management.contractmgr.InterfaceInContract
+    - !!es.bsc.dataclay.util.management.contractmgr.InterfaceInContract
       iface: *{{ class_name }}iface
       implementationsSpecPerOperation: !!set {% if class_info.operations|length == 0 %} { } {% endif %}
         {% for operation in class_info.operations %}
-          ? !!dataclay.util.management.contractmgr.OpImplementations
+          ? !!es.bsc.dataclay.util.management.contractmgr.OpImplementations
             operationSignature: {{ operation.nameAndDescriptor }}
             numLocalImpl: 0
             numRemoteImpl: 0
@@ -363,7 +363,7 @@ contribcontract: !!dataclay.util.management.contractmgr.Contract
                 class_info=class_info))
 
         contract = Template("""
-{{ namespace }}contract: !!dataclay.util.management.contractmgr.Contract
+{{ namespace }}contract: !!es.bsc.dataclay.util.management.contractmgr.Contract
   beginDate: 1980-01-01T00:00:01
   endDate: 2055-12-31T23:59:58
   namespace: {{ namespace }}
@@ -396,12 +396,12 @@ contribcontract: !!dataclay.util.management.contractmgr.Contract
         user_id = client.get_account_id(username)
 
         yaml_request_template = Template("""
-{{ dataset }}: !!dataclay.util.management.datasetmgr.DataSet
+{{ dataset }}: !!es.bsc.dataclay.util.management.datasetmgr.DataSet
   dataClayID: {{ 11111111-00000000-00000000-00000000-00000000 }}
   providerAccountID: {{ 00000000-00000000-00000000-00000000-00000000 }}
   name: {{ dataset }}
 
-{{ dataset }}datacontract: !!dataclay.util.management.datacontractmgr.DataContract
+{{ dataset }}datacontract: !!es.bsc.dataclay.util.management.datacontractmgr.DataContract
   beginDate: 1980-01-01T00:00:01
   endDate: 2055-12-31T23:59:58
   providerAccountID: {{ 00000000-00000000-00000000-00000000-00000000 }}
