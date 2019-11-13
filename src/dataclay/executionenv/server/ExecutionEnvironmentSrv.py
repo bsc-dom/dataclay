@@ -200,6 +200,12 @@ class ExecutionEnvironmentSrv(object):
             signal.signal(signal.SIGINT, self.exit_gracefully_signal)
             signal.signal(signal.SIGTERM, self.exit_gracefully_signal)
             logger.info("Started Python Execution environment on %s", address)
+            
+            # write state file 
+            f = open("state.txt", "w")
+            f.write("READY")
+            f.close()
+            
             try:
                 while self.running:
                     time.sleep(SERVER_TIME_CHECK_SECONDS)
