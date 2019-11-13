@@ -577,7 +577,7 @@ class DataClayRuntime(object):
     
     def get_object_location_by_id(self, object_id):
         exec_envs = list(self.get_execution_environments_info())
-        return exec_envs[hash(object_id()) % len(exec_envs)]
+        return exec_envs[hash(object_id) % len(exec_envs)]
     
     def get_object_location_by_alias(self, alias):
         return self.get_object_location_by_id(self.get_object_id_by_alias(alias))
