@@ -218,9 +218,12 @@ def define_event_types():
     values[0] = 0
     description_values[0] = "End".encode('utf-8')
     for i in range(1, nvalues):
-        description_values[i] = TRACED_METHODS[i - 1].encode('utf-8')
-        values[i] = PARAVER_FUNC_MAP[description_values[i].decode("utf-8")]
-        LOGGER.verbose("Defined event %s with value %s" % (str(description_values[i]), str(values[i])))
+        try:
+            description_values[i] = TRACED_METHODS[i - 1].encode('utf-8')
+            values[i] = PARAVER_FUNC_MAP[description_values[i].decode("utf-8")]
+            LOGGER.verbose("Defined event %s with value %s" % (str(description_values[i]), str(values[i])))
+        except KeyError:
+            LOGGER.info("Tried to load untraced paraver event")
 
     EXTRAE_DICT[os.getpid()].Extrae_define_event_type(ctypes.pointer(ctypes.c_uint(TASK_EVENTS)),
                                        ctypes.c_char_p(description.encode('utf-8')),
