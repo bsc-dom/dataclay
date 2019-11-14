@@ -3,11 +3,12 @@
 from dataclay import dclayMethod
 
 
-class ReplicateToAllMixin(object):
-    """Simple replication mechanisms to all slaves.
-
-    This mixin performs the replication by iterating all the locations of slave
-    locations and performing the set operation in them.
+class SequentialConsistencyMixin(object):
+    """Simple sequential consistency synchronization mechanism.
+    
+    This trivial sequential consistency consists on a immediate replication to 
+    all slaves. In order to achieve that, all the locations of slave locations
+    are iterated and the set operation is performed in them.
     """
     @dclayMethod(attribute="str", value="anything")
     def synchronize(self, attribute, value):
@@ -18,7 +19,7 @@ class ReplicateToAllMixin(object):
             self.run_remote(exeenv_id, DCLAY_SETTER_PREFIX + attribute, value)
             
     @dclayMethod(attribute="str", value="anything")
-    def synchronizeFederated(self, attribute, value):
+    def synchronize_federated(self, attribute, value):
         from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
         for dataclay_id in self.get_federation_targets():
             self.synchronize_federated(dataclay_id, DCLAY_SETTER_PREFIX + attribute, [value])
