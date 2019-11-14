@@ -582,8 +582,9 @@ class DataClayObject(object):
     def get_external_dataclay_id(self, dcHost, dcPort):
         return getRuntime().ready_clients["@LM"].get_external_dataclay_id(dcHost, dcPort)
 
-    def run_remote(self, backend_id, operation_name, value):
-        return getRuntime().run_remote(self.get_object_id(), backend_id, operation_name, value)
+    def set_in_backend(self, backend_id, field_name, value):
+        from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
+        return getRuntime().run_remote(self.get_object_id(), backend_id, DCLAY_SETTER_PREFIX + field_name, value)
 
     def get_external_dataclay_info(self, dataclay_id):
         """ Get external dataClay information
@@ -608,8 +609,9 @@ class DataClayObject(object):
         """
         return getRuntime().get_dataclays_object_is_federated_with(self.get_object_id())
 
-    def synchronize_federated(self, dc_info, operation_name, params):
-        getRuntime().synchronize_federated(self, params, operation_name, dc_info)
+    def set_in_dataclay_instance(self, dc_info, field_name, params):
+        from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
+        getRuntime().synchronize_federated(self, params, DCLAY_SETTER_PREFIX + field_name, dc_info)
 
     def serialize(self, io_file, ignore_user_types, iface_bitmaps,
                   cur_serialized_objs, pending_objs, reference_counting):
