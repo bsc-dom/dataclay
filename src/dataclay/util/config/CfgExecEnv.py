@@ -33,7 +33,7 @@ def set_defaults():
 
     # ToDo: This is a dangerous default, used in Docker but... useless everywhere else.
         
-    deploy_path = os.getenv("DEPLOY_PATH", "/usr/src/dataclay/pyclay/deploy")
+    deploy_path = os.getenv("DEPLOY_PATH", "/dataclay/deploy")
     settings.deploy_path = deploy_path
     settings.deploy_path_source = os.getenv("DEPLOY_PATH_SRC",
                                             os.path.join(deploy_path, "source"))
