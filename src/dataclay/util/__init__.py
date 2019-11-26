@@ -43,9 +43,9 @@ class Configuration(object):
         
     # ANY CALL TO LOGICMODULE: clients can wait at init waitForBackends
     # Default value for number of retries in connection to LogicModule. 
-    MAX_RETRIES_LOGICMODULE = 1
-    # Default value for sleeping before retrying in LM in millis. 
-    SLEEP_RETRIES_LOGICMODULE = 100
+    MAX_RETRIES_LOGICMODULE = 5
+    # Default value for sleeping before retrying in LM in seconds. 
+    SLEEP_RETRIES_LOGICMODULE = 10
         
     # EXECUTION RETRIES
     # Default value for number of retries IN EXECUTION

@@ -12,6 +12,7 @@ import copy
 import re
 from operator import attrgetter
 from uuid import UUID
+
 import six
 
 if six.PY2:
@@ -578,27 +579,24 @@ class DataClayObject(object):
         """
         getRuntime().federate_object(self.get_object_id(), ext_dataclay_id, recursive,
                                      self.get_class_extradata().class_id, self.get_hint())
-        
-    def unfederate(self, ext_dataclay_id, recursive=True):
+    
+    def unfederate(self, ext_dataclay_id=None, recursive=True):
         """
         @postcondition: Unfederate this object with an external dataClay instance
-        @param ext_dataclay_id: id of the external dataClay instance
+        @param ext_dataclay_id: id of the external dataClay instance (none means to unfederate with all dcs)
         @param recursive: Indicates if all sub-objects must be unfederated as well.
         """
-        getRuntime().unfederate_object(self.get_object_id(), ext_dataclay_id, recursive)
-
-    def unfederate_with_all_dcs(self, recursive=True):
-        """
-        @postcondition: Unfederate this object with all external Dcs
-        @param recursive: Indicates if all sub-objects must be unfederated as well.
-        """
-        getRuntime().unfederate_object_with_all_dcs(self.get_object_id(), recursive)
+        if ext_dataclay_id is not None:
+            getRuntime().unfederate_object(self.get_object_id(), ext_dataclay_id, recursive)
+        else:
+            getRuntime().unfederate_object_with_all_dcs(self.get_object_id(), recursive)          
 
     def get_external_dataclay_id(self, dcHost, dcPort):
         return getRuntime().ready_clients["@LM"].get_external_dataclay_id(dcHost, dcPort)
 
-    def run_remote(self, backend_id, operation_name, value):
-        return getRuntime().run_remote(self.get_object_id(), backend_id, operation_name, value)
+    def set_in_backend(self, backend_id, field_name, value):
+        from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
+        return getRuntime().run_remote(self.get_object_id(), backend_id, DCLAY_SETTER_PREFIX + field_name, value)
 
     def get_external_dataclay_info(self, dataclay_id):
         """ Get external dataClay information
@@ -609,22 +607,23 @@ class DataClayObject(object):
         """
         return getRuntime().get_external_dataclay_info(dataclay_id)
 
-    def get_external_source_of_dataclay_object(self):
+    def get_federation_source(self):
         """ Retrieve dataClay instance id where the object comes from or NULL
         :return: dataClay instance ids where this object is federated
         :rtype: UUID
         """
         return getRuntime().get_external_source_of_dataclay_object(self.get_object_id())
 
-    def get_dataclays_object_is_federated_with(self):
+    def get_federation_targets(self):
         """ Retrieve dataClay instances ids where the object is federated
         :return: dataClay instances ids where this object is federated
         :rtype: set of UUID
         """
         return getRuntime().get_dataclays_object_is_federated_with(self.get_object_id())
 
-    def synchronize_federated(self, dc_info, operation_name, params):
-        getRuntime().synchronize_federated(self, params, operation_name, dc_info)
+    def set_in_dataclay_instance(self, dc_info, field_name, params):
+        from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
+        getRuntime().synchronize_federated(self, params, DCLAY_SETTER_PREFIX + field_name, dc_info)
 
     def serialize(self, io_file, ignore_user_types, iface_bitmaps,
                   cur_serialized_objs, pending_objs, reference_counting):

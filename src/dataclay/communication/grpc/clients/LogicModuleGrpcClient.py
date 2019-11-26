@@ -5,6 +5,7 @@
 
 from datetime import datetime
 import itertools
+import traceback
 import logging
 import sys
 import grpc
@@ -56,14 +57,14 @@ class LMClient(object):
             # read in certificates
             try:
                 if Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != "":
-                    with open(Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES) as f:
+                    with open(Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES, "rb") as f:
                         trusted_certs = f.read()
                 if Configuration.SSL_CLIENT_CERTIFICATE != "":
-                    with open(Configuration.SSL_CLIENT_CERTIFICATE) as f:
+                    with open(Configuration.SSL_CLIENT_CERTIFICATE, "rb") as f:
                         client_cert = f.read()
                 
                 if Configuration.SSL_CLIENT_KEY != "":
-                    with open(Configuration.SSL_CLIENT_KEY) as f:
+                    with open(Configuration.SSL_CLIENT_KEY, "rb") as f:
                         client_key = f.read()
             except Exception as e:
                 logger.error('failed-to-read-cert-keys', reason=e)
@@ -82,7 +83,9 @@ class LMClient(object):
             logger.info("SSL configured: using SSL_CLIENT_TRUSTED_CERTIFICATES located at " + Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES)
             logger.info("SSL configured: using SSL_CLIENT_CERTIFICATE located at " + Configuration.SSL_CLIENT_CERTIFICATE)
             logger.info("SSL configured: using SSL_CLIENT_KEY located at " + Configuration.SSL_CLIENT_KEY)
-            
+            logger.info("SSL configured: using header  " + Configuration.LM_SERVICE_ALIAS_HEADERMSG)
+            logger.info("SSL configured: using authority  " + Configuration.SSL_TARGET_AUTHORITY)
+     
         else:
             self.channel = grpc.insecure_channel(address, options)
             logger.info("SSL not configured")
@@ -106,22 +109,26 @@ class LMClient(object):
         self.lm_stub = None
 
     def _call_logicmodule(self, request, lm_function):
-        response = None
-        future = lm_function(request)
-        i = 0
-        while i < Configuration.MAX_RETRIES_LOGICMODULE:
-            try:
-                response = future.result()
-                break
-            except Exception as e:
-                i = i + 1 
-                if i > Configuration.MAX_RETRIES_LOGICMODULE: 
-                    logger.warning("Max retries reached", exc_info=True)
-                    raise e 
-                else:
-                    logger.debug("Received exception, will retry", exc_info=True)
-                    logger.info("Sleeping for %i seconds " % Configuration.SLEEP_RETRIES_LOGICMODULE)
-                    sleep(Configuration.SLEEP_RETRIES_LOGICMODULE)
+        try:
+            response = None
+            future = lm_function(request)
+            i = 0
+            while i < Configuration.MAX_RETRIES_LOGICMODULE:
+                try:
+                    response = future.result()
+                    break
+                except Exception as e:
+                    i = i + 1 
+                    if i > Configuration.MAX_RETRIES_LOGICMODULE: 
+                        logger.warning("Max retries reached", exc_info=True)
+                        raise e 
+                    else:
+                        logger.debug("Received exception, will retry", exc_info=True)
+                        logger.info("Sleeping for %i seconds " % Configuration.SLEEP_RETRIES_LOGICMODULE)
+                        sleep(Configuration.SLEEP_RETRIES_LOGICMODULE)
+        except:
+            traceback.print_exc()
+            raise
 
         return response
 
@@ -910,8 +917,7 @@ class LMClient(object):
             six.advance_iterator(async_req_send)
 
             resp_future = self.lm_stub.setDataSetIDFromGarbageCollector.future.future(request=request, metadata=self.metadata_call)
-
-            resp_future.result(timeout=GRPC_TIMEOUT)
+            resp_future.result()
 
             if resp_future.done():
                 six.advance_iterator(async_req_rec)

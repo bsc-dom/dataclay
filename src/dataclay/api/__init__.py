@@ -67,7 +67,7 @@ def init_connection(client_file):
     commonruntime.ready_clients["@LM"]
     """
     global _connection_initialized
-    logger.verbose("Initializing dataClay connection with LM")
+    logger.debug("Initializing dataClay connection with LM")
     runtime = getRuntime()
     if _connection_initialized:
         logger.warning("Runtime already has a client with the LogicModule, reusing that")
@@ -77,7 +77,7 @@ def init_connection(client_file):
         settings.load_connection(client_file)
 
     # Once the properties are load, we can prepare the LM client
-    logger.verbose("Initializing dataClay connection with LM %s:%s", settings.logicmodule_host, settings.logicmodule_port)
+    logger.debug("Initializing dataClay connection with LM %s:%s", settings.logicmodule_host, settings.logicmodule_port)
     client = LMClient(settings.logicmodule_host, settings.logicmodule_port)
     runtime.ready_clients["@LM"] = client
     
@@ -85,7 +85,7 @@ def init_connection(client_file):
 
     settings.logicmodule_dc_instance_id = client.get_dataclay_id()
 
-    logger.verbose("DataclayInstanceID is %s, storing client in cache", settings.logicmodule_dc_instance_id)
+    logger.debug("DataclayInstanceID is %s, storing client in cache", settings.logicmodule_dc_instance_id)
     runtime.ready_clients[settings.logicmodule_dc_instance_id] = runtime.ready_clients["@LM"]
 
     # wait for 1 python backend 
@@ -119,7 +119,7 @@ def get_backend_id_by_name(name):
     return None
 
 
-def register_external_dataclay(exthostname, extport):
+def register_dataclay(exthostname, extport):
     """ Register external dataClay for federation
     :param exthostname: external dataClay host name
     :param extport: external dataClay port
@@ -131,7 +131,7 @@ def register_external_dataclay(exthostname, extport):
     return getRuntime().register_external_dataclay(exthostname, extport)
 
 
-def get_external_dataclay_id(exthostname, extport):
+def get_dataclay_id(exthostname, extport):
     """ Get external dataClay ID with host and port identified
     :param exthostname: external dataClay host name
     :param extport: external dataClay port
@@ -143,22 +143,18 @@ def get_external_dataclay_id(exthostname, extport):
     return getRuntime().get_external_dataclay_id(exthostname, extport)
 
 
-def unfederate_all_objects(ext_dataclay_id):
-    """ Unfederate all objects belonging/federated with external data clay with id provided
+def unfederate(ext_dataclay_id=None):
+    """ Unfederate all objects belonging to/federated with external data clay with id provided 
+    or with all any external dataclay if no argument provided. 
     :param ext_dataclay_id: external dataClay id
     :return: None
-    :type ext_dataclay_id: uuid
+    :type ext_dataclay_id: uuid 
     :rtype: None
     """
-    return getRuntime().unfederate_all_objects(ext_dataclay_id)
-
-
-def unfederate_all_objects_with_all_dcs():
-    """ Unfederate all objects belonging/federated with ANY external data clay
-    :return: None
-    :rtype: None
-    """
-    return getRuntime().unfederate_all_objects_with_all_dcs()
+    if ext_dataclay_id is not None:
+        return getRuntime().unfederate_all_objects(ext_dataclay_id)
+    else:
+        return getRuntime().unfederate_all_objects_with_all_dcs()
 
 
 def migrate_federated_objects(origin_dataclay_id, dest_dataclay_id):
