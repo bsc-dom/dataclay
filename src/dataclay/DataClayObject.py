@@ -410,7 +410,7 @@ class DataClayObject(object):
         """
         self.__dclay_instance_extradata.object_id = new_object_id
 
-    def update_object_id(self, new_object_id):
+    def _update_object_id(self, new_object_id):
         """
         @postcondition: Set a new object id for the object and
                         calls an update of its heap references

@@ -49,7 +49,7 @@ class ClientRuntime(DataClayRuntime):
         # ToDo: remove in java (dgasull)
         
         if alias:
-            instance.update_object_id(self.get_object_id_by_alias(alias))
+            instance._update_object_id(self.get_object_id_by_alias(alias))
         
         exec_env_id = self.get_object_location_by_id(instance.get_object_id())
         instance.set_hint(exec_env_id)
