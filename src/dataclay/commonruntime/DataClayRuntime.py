@@ -569,6 +569,7 @@ class DataClayRuntime(object):
         try:
             return self.get_object_by_id(oid, class_id, hint)
         except:
+            self.logger.debug("Could not find object with oid = %s, class_id = %s and hint = %s", oid, class_id, hint)
             oid, class_id, hint = self.ready_clients["@LM"].get_object_from_alias(self.get_session_id(), alias)
             return self.get_object_by_id(oid, class_id, hint)
     
