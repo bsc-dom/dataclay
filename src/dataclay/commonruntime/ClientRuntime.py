@@ -37,21 +37,24 @@ class ClientRuntime(DataClayRuntime):
     def store_object(self, instance):
         raise RuntimeError("StoreObject can only be used from the ExecutionEnvironment")
     
-    def choose_location(self, instance):
+    def choose_location(self, instance, alias=None):
         """ Choose execution/make persistent location. 
         :param instance: Instance to use in call
+        :param instance: The alias of the instance
         :returns: Location 
         :type instance: DataClayObject
         :rtype: DataClayID 
         """
         # // === DEFAULT EXECUTION LOCATION === //CURRENTLY NOT SUPPORTED 
         # ToDo: remove in java (dgasull)
-        # // === HASHCODE EXECUTION LOCATION === //
-        # ToDO: hashcode exec. loc 
-        # get random
-        exeenv_id = random.choice(list(self.get_execution_environments_info()))
-        self.logger.verbose("ExecutionEnvironmentID obtained for execution = %s", exeenv_id)
-        return exeenv_id
+        
+        if alias:
+            instance._update_object_id(self.get_object_id_by_alias(alias))
+        
+        exec_env_id = self.get_object_location_by_id(instance.get_object_id())
+        instance.set_hint(exec_env_id)
+        self.logger.verbose("ExecutionEnvironmentID obtained for execution = %s", exec_env_id)
+        return exec_env_id
     
     def make_persistent(self, instance, alias, backend_id, recursive):
         """ This method creates a new Persistent Object using the provided stub
@@ -94,7 +97,7 @@ class ClientRuntime(DataClayRuntime):
             # If object is already persistent -> it must have a Hint (location = hint here)
             # If object is not persistent -> location is choosen (provided backend id or random, hash...).
             if location is None:
-                location = self.choose_location(instance)
+                location = self.choose_location(instance, alias)
             
         if not instance.is_persistent():
 
