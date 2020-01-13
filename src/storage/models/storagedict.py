@@ -50,6 +50,13 @@ class StorageDict(DataClayObject):
     def values(self):
         return self._dict.values()
 
+    @dclayMethod(_local=True, key="anything", default="anything", return_="anything")
+    def get(self, key, default=None):
+        if key in self._dict:
+            return self._dict[key]
+        else:
+            return default
+
     @dclayMethod(return_="anything")
     def split(self):
         # Ugly split-in-two, for demonstration purposes only
