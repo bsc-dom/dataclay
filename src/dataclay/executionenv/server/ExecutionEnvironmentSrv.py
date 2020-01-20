@@ -202,7 +202,7 @@ class ExecutionEnvironmentSrv(object):
             logger.info("Started Python Execution environment on %s", address)
             
             # write state file 
-            f = open("state.txt", "w")
+            f = open(Configuration.STATE_FILE_PATH, "w")
             f.write("READY")
             f.close()
             
