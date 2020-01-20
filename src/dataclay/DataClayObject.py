@@ -6,6 +6,7 @@ Metaclass is responsible of Class (not object) instantiation.
 Note that this managers also includes most serialization/deserialization code
 related to classes and function call parameters.
 """
+import inspect
 import traceback
 import logging
 import copy
@@ -159,55 +160,64 @@ class DataClayObject(object):
                 # Either ImproperlyConfigured (not initialized) or class not found:
                 # assuming non-registered class
 
-                # Prepare properties from the docstring
-                doc = cls.__doc__  # If no documentation, consider an empty string
-                if doc is None:
-                    doc = ""
-                property_pos = 0
+                # Let's navigate all the heritance, and aggregate all the information that can be found.
+                # FIXME: This code is NOT considering the scenario in which a class is extending an already registered one.
+                # FIXME: Behaviour when an attribute is defined in more than one class is not tested nor defined right now.
+                for current_cls in inspect.getmro(cls):
+                    # Ignore `object` and also ignore DataClayObject itself
+                    if current_cls in [object, DataClayObject]:
+                        continue
 
-                for m in re_property.finditer(doc):
-                    # declaration in the form [ 'before|after', 'method', 'before|after', 'method', 'name', 'type' ]
-                    declaration = m.groups()
-                    prop_name = declaration[-2]
-                    prop_type = declaration[-1]
+                    # Prepare properties from the docstring
+                    doc = current_cls.__doc__  # If no documentation, consider an empty string
+                    if doc is None:
+                        doc = ""
+                    property_pos = 0
 
-                    beforeUpdate = declaration[1] if declaration[0] == 'before' \
-                        else declaration[3] if declaration[2] == 'before' else None
+                    for m in re_property.finditer(doc):
+                        # declaration in the form [ 'before|after', 'method', 'before|after', 'method', 'name', 'type' ]
+                        declaration = m.groups()
+                        prop_name = declaration[-2]
+                        prop_type = declaration[-1]
 
-                    afterUpdate = declaration[1] if declaration[0] == 'after' \
-                        else declaration[3] if declaration[2] == 'after' else None
+                        beforeUpdate = declaration[1] if declaration[0] == 'before' \
+                            else declaration[3] if declaration[2] == 'before' else None
 
-                    inMaster = declaration[4] == 'True'
+                        afterUpdate = declaration[1] if declaration[0] == 'after' \
+                            else declaration[3] if declaration[2] == 'after' else None
 
-                    current_type = Type.build_from_docstring(prop_type)
+                        inMaster = declaration[4] == 'True'
 
-                    logger.trace("Property `%s` (with type signature `%s`) ready to go",
-                                 prop_name, current_type.signature)
+                        current_type = Type.build_from_docstring(prop_type)
 
-                    dc_ced.properties[prop_name] = PreprocessedProperty(
-                        name=prop_name,
-                        position=property_pos,
-                        type=current_type,
-                        beforeUpdate=beforeUpdate,
-                        afterUpdate=afterUpdate,
-                        inMaster=inMaster)
+                        logger.trace("Property `%s` (with type signature `%s`) ready to go",
+                                    prop_name, current_type.signature)
 
-                    # Keep the position tracking (required for other languages compatibility)
-                    property_pos += 1
+                        dc_ced.properties[prop_name] = PreprocessedProperty(
+                            name=prop_name,
+                            position=property_pos,
+                            type=current_type,
+                            beforeUpdate=beforeUpdate,
+                            afterUpdate=afterUpdate,
+                            inMaster=inMaster)
 
-                    # Prepare the `property` magic --this one without getter and setter ids
-                    # dct[prop_name] = DynamicProperty(prop_name)
-                    setattr(cls, prop_name, DynamicProperty(prop_name))
+                        # Keep the position tracking (required for other languages compatibility)
+                        property_pos += 1
 
-                for m in re_import.finditer(doc):
-                    gd = m.groupdict()
+                        # Prepare the `property` magic --this one without getter and setter ids
+                        # dct[prop_name] = DynamicProperty(prop_name)
+                        setattr(cls, prop_name, DynamicProperty(prop_name))
+                        # WARNING: This is done in `cls` and not in `current_cls` deliberately.
 
-                    if gd["from_mode"]:
-                        import_str = "from %s\n" % gd["import"]
-                    else:
-                        import_str = "import %s\n" % gd["import"]
+                    for m in re_import.finditer(doc):
+                        gd = m.groupdict()
 
-                    dc_ced.imports.append(import_str)
+                        if gd["from_mode"]:
+                            import_str = "from %s\n" % gd["import"]
+                        else:
+                            import_str = "import %s\n" % gd["import"]
+
+                        dc_ced.imports.append(import_str)
 
             else:
                 logger.debug("Loading a class with babel_data information")
@@ -410,6 +420,18 @@ class DataClayObject(object):
         """
         self.__dclay_instance_extradata.object_id = new_object_id
 
+    def _update_object_id(self, new_object_id):
+        """
+        @postcondition: Set a new object id for the object and
+                        calls an update of its heap references
+        @param new_object_id: object id
+        """
+        if self.is_persistent():
+            raise DataClayException("Cannot change the id of a persistent object")
+        old_object_id = self.get_object_id()
+        self.__dclay_instance_extradata.object_id = new_object_id
+        getRuntime().update_object_id(old_object_id, new_object_id)
+
     def get_memory_pinned(self):
         """
         @postcondition: Return the memory pinned flag of the object
@@ -468,7 +490,7 @@ class DataClayObject(object):
 
     @classmethod
     def get_by_alias(cls, alias):
-        return getRuntime().get_by_alias(alias)
+        return getRuntime().get_by_alias(alias, cls.get_class_extradata().class_id)
 
     @classmethod
     def delete_alias(cls, alias):

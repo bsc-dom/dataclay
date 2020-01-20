@@ -13,6 +13,10 @@ from dataclay import DataClayObject as StorageObject
 # Also "publish" the split method
 from dataclay.contrib.splitting import split
 
+# The StorageDict and StorageList data structures
+from .models.storagedict import StorageDict
+from .models.storagelist import StorageList
+
 __author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
 __copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
 

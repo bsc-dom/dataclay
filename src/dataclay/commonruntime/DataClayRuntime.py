@@ -29,7 +29,7 @@ class DataClayRuntime(object):
         
     """ Logger """ 
     logger = logging.getLogger('dataclay.api')
-        
+
     def __init__(self):
         """ Cache of alias """
         # TODO: un-hardcode this
@@ -166,7 +166,15 @@ class DataClayRuntime(object):
         @param dc_object: object to add to the heap 
         """
         self.dataclay_heap_manager.add_to_heap(dc_object)
-        
+    
+    def update_object_id(self, old_object_id, new_object_id):
+        """
+        @postcondition: the object references are updated into dataClay's heap
+        @param old_object_id: the old id of the object
+        @param new_object_id: the new id of the object
+        """
+        self.dataclay_heap_manager.update_object_id(old_object_id, new_object_id)
+    
     def remove_from_heap(self, object_id):
         """
         @postcondition: Remove reference from Heap. Even if we remove it from the heap, 
@@ -548,15 +556,32 @@ class DataClayRuntime(object):
         self.ready_clients["@LM"].federate_all_objects(session_id, dest_dataclay_id)
         # FIXME: ALIAS CACHE SHOULD BE UPDATED FOR OBJECTS WITH ALIAS REMOVED?
                
-    def get_by_alias(self, alias):
+    def get_by_alias(self, alias, class_id):
         if alias in self.alias_cache :
             oid, class_id, hint = self.alias_cache[alias]
-        else :
-            oid, class_id, hint = self.ready_clients["@LM"].get_object_from_alias(self.get_session_id(), alias)
+        else:
+            oid = self.get_object_id_by_alias(alias)
+            class_id = class_id
+            hint = self.get_object_location_by_id(oid)
             self.logger.debug("Added alias %s to cache", alias)
             self.alias_cache[alias] = oid, class_id, hint
 
-        return self.get_object_by_id(oid, class_id, hint)
+        try:
+            return self.get_object_by_id(oid, class_id, hint)
+        except:
+            self.logger.debug("Could not find object with oid = %s, class_id = %s and hint = %s", oid, class_id, hint)
+            oid, class_id, hint = self.ready_clients["@LM"].get_object_from_alias(self.get_session_id(), alias)
+            return self.get_object_by_id(oid, class_id, hint)
+    
+    def get_object_id_by_alias(self, alias):
+        return uuid.uuid5(uuid.NAMESPACE_OID, alias)
+    
+    def get_object_location_by_id(self, object_id):
+        exec_envs = list(self.get_execution_environments_info())
+        return exec_envs[hash(object_id) % len(exec_envs)]
+    
+    def get_object_location_by_alias(self, alias):
+        return self.get_object_location_by_id(self.get_object_id_by_alias(alias))
     
     def delete_alias(self, alias):
         self.ready_clients["@LM"].delete_alias(self.get_session_id(), alias)
@@ -778,9 +803,10 @@ class DataClayRuntime(object):
     def get_traces_in_dataclay_services(self):
         """ Get temporary traces from LM and DSs and store it in current workspace """
         traces = self.ready_clients["@LM"].get_traces()
+        traces_dir = Configuration.TRACES_DEST_PATH
         if len(traces) > 0:
-            set_path = os.getcwd() + "/set-0"
-            trace_mpits = os.getcwd() + "/TRACE.mpits"
+            set_path = traces_dir + "/set-0"
+            trace_mpits = traces_dir + "/TRACE.mpits"
             with open(trace_mpits, "a+") as trace_file:
                 # store them here 
                 for key, value in traces.items():
