@@ -489,8 +489,8 @@ class DataClayObject(object):
         return getRuntime().get_object_by_id(object_id, *args, **kwargs)
 
     @classmethod
-    def get_by_alias(cls, alias):
-        return getRuntime().get_by_alias(alias, cls.get_class_extradata().class_id)
+    def get_by_alias(cls, alias, safe=True):
+        return getRuntime().get_by_alias(alias, cls.get_class_extradata().class_id, safe)
 
     @classmethod
     def delete_alias(cls, alias):

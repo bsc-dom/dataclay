@@ -556,7 +556,11 @@ class DataClayRuntime(object):
         self.ready_clients["@LM"].federate_all_objects(session_id, dest_dataclay_id)
         # FIXME: ALIAS CACHE SHOULD BE UPDATED FOR OBJECTS WITH ALIAS REMOVED?
                
-    def get_by_alias(self, alias, class_id):
+    def get_by_alias(self, alias, class_id, safe=True):
+        if safe:
+            oid, class_id, hint = self.ready_clients["@LM"].get_object_from_alias(self.get_session_id(), alias)
+            return self.get_object_by_id(oid, class_id, hint)
+
         if alias in self.alias_cache :
             oid, class_id, hint = self.alias_cache[alias]
         else:
@@ -566,12 +570,7 @@ class DataClayRuntime(object):
             self.logger.debug("Added alias %s to cache", alias)
             self.alias_cache[alias] = oid, class_id, hint
 
-        try:
-            return self.get_object_by_id(oid, class_id, hint)
-        except:
-            self.logger.debug("Could not find object with oid = %s, class_id = %s and hint = %s", oid, class_id, hint)
-            oid, class_id, hint = self.ready_clients["@LM"].get_object_from_alias(self.get_session_id(), alias)
-            return self.get_object_by_id(oid, class_id, hint)
+        return self.get_object_by_id(oid, class_id, hint)
     
     def get_object_id_by_alias(self, alias):
         return uuid.uuid5(uuid.NAMESPACE_OID, alias)
