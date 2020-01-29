@@ -4,8 +4,6 @@ The `init` and `finish` functions are availble through the
 dataclay.api package.
 """
 
-import random
-
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
@@ -45,8 +43,6 @@ class ClientRuntime(DataClayRuntime):
         :type instance: DataClayObject
         :rtype: DataClayID 
         """
-        # // === DEFAULT EXECUTION LOCATION === //CURRENTLY NOT SUPPORTED 
-        # ToDo: remove in java (dgasull)
         
         if alias:
             instance._update_object_id(self.get_object_id_by_alias(alias))
