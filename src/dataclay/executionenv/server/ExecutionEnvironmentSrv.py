@@ -202,10 +202,13 @@ class ExecutionEnvironmentSrv(object):
             logger.info("Started Python Execution environment on %s", address)
             
             # write state file 
-            f = open("state.txt", "w")
-            f.write("READY")
-            f.close()
-            
+            try:
+                f = open("state.txt", "w")
+                f.write("READY")
+                f.close()
+            except:
+                logger.info("State file not writable. Skipping file creation.")
+                
             try:
                 while self.running:
                     time.sleep(SERVER_TIME_CHECK_SECONDS)
