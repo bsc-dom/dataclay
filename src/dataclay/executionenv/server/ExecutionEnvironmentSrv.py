@@ -219,10 +219,11 @@ class ExecutionEnvironmentSrv(object):
         self.exit_gracefully()
 
     def exit_gracefully(self):
-        logger.info("** Exiting gracefully **")
+        sys.stderr.write("** Exiting gracefully **\n")
         self.persist_and_exit()
         self.server.stop(0)
         self.running = False 
+        sys.stderr.write("EXECUTION ENVIRONMENT GRACEFULLY STOPPED :)\n") 
         
     def get_name(self):
         return settings.dataservice_name
