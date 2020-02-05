@@ -226,7 +226,7 @@ class ExecutionEnvironmentSrv(object):
         self.persist_and_exit()
         self.server.stop(0)
         self.running = False 
-        sys.stderr.write("EXECUTION ENVIRONMENT GRACEFULLY STOPPED :)\n") 
+        sys.stderr.write("EXECUTION ENVIRONMENT GRACEFULLY STOPPED\n") 
         
     def get_name(self):
         return settings.dataservice_name
