@@ -802,6 +802,7 @@ class DataClayRuntime(object):
     def get_traces_in_dataclay_services(self):
         """ Get temporary traces from LM and DSs and store it in current workspace """
         traces = self.ready_clients["@LM"].get_traces()
+        traces_dir = Configuration.TRACES_DEST_PATH
         if len(traces) > 0:
             set_path = Configuration.TRACES_DEST_PATH + "/set-0"
             trace_mpits = Configuration.TRACES_DEST_PATH + "/TRACE.mpits"

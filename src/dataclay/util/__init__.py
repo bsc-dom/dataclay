@@ -83,6 +83,12 @@ class Configuration(object):
     
     # Override authority hostname in SSL calls
     SSL_TARGET_AUTHORITY = "proxy"
+    
+    # Path to state file
+    STATE_FILE_PATH = "state.txt"
+
+    # Path to destination traces dir
+    TRACES_DEST_PATH = os.getcwd()
 
     @classmethod
     def read_from_file(cls, flags_path):
