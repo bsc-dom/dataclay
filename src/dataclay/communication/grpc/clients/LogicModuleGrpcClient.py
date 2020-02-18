@@ -47,8 +47,8 @@ class LMClient(object):
         """Create the stub and the channel at the address passed by the server."""
         address = str(hostname) + ":" + str(port)
 
-        options = [(ChannelArgKey.max_send_message_length, 1000 * 1024 * 1024),
-                   (ChannelArgKey.max_receive_message_length, 1000 * 1024 * 1024),
+        options = [(ChannelArgKey.max_send_message_length, -1),
+                   (ChannelArgKey.max_receive_message_length, -1),
                    ('grpc.ssl_target_name_override', Configuration.SSL_TARGET_AUTHORITY)]
 
         if Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != "" or \

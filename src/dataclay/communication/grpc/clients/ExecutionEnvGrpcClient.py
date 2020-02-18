@@ -35,8 +35,8 @@ class EEClient(object):
     def __init__(self, hostname, port):
         """Create the stub and the channel at the address passed by the server."""
         self.address = str(hostname) + ":" + str(port)
-        options = [(ChannelArgKey.max_send_message_length, 1000 * 1024 * 1024),
-                   (ChannelArgKey.max_receive_message_length, 1000 * 1024 * 1024)]
+        options = [(ChannelArgKey.max_send_message_length, -1),
+                   (ChannelArgKey.max_receive_message_length, -1)]
 
         self.channel = grpc.insecure_channel(self.address, options)
         try:

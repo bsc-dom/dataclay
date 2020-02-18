@@ -63,6 +63,9 @@ class Configuration(object):
     # Indicates where EE id is stored
     EE_PERSISTENT_INFO_PATH = os.getcwd() + "/"
 
+    # Destination path for traces
+    TRACES_DEST_PATH = os.getcwd()
+
     # How many worker threads should be created/used by ThreadPoolExecutor
     THREAD_POOL_WORKERS = 2
 

@@ -11,14 +11,13 @@ dataclay.core.initialize function.
 """
 import threading
 import logging
-from jinja2 import runtime
 
 __author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
 __copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
 
 logger = logging.getLogger(__name__)
 
-__all__ = ['DataClayObject', 'StorageObject', 'dclayMethod', 'runtime']
+__all__ = ['DataClayObject', 'StorageObject', 'dclayMethod']
 
 """ Local variables in thread """
 threadLocal = threading.local() 

@@ -202,10 +202,13 @@ class ExecutionEnvironmentSrv(object):
             logger.info("Started Python Execution environment on %s", address)
             
             # write state file 
-            f = open(Configuration.STATE_FILE_PATH, "w")
-            f.write("READY")
-            f.close()
-            
+            try:
+                f = open("state.txt", "w")
+                f.write("READY")
+                f.close()
+            except:
+                logger.info("State file not writable. Skipping file creation.")
+                
             try:
                 while self.running:
                     time.sleep(SERVER_TIME_CHECK_SECONDS)
@@ -219,10 +222,11 @@ class ExecutionEnvironmentSrv(object):
         self.exit_gracefully()
 
     def exit_gracefully(self):
-        logger.info("** Exiting gracefully **")
+        sys.stderr.write("** Exiting gracefully **\n")
         self.persist_and_exit()
         self.server.stop(0)
         self.running = False 
+        sys.stderr.write("EXECUTION ENVIRONMENT GRACEFULLY STOPPED\n") 
         
     def get_name(self):
         return settings.dataservice_name
