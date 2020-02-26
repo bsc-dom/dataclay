@@ -11,5 +11,5 @@ notifications:
   email:
     recipients:
     - support-dataclay@bsc.es
-    on_success: always
+    on_success: change
     on_failure: always
