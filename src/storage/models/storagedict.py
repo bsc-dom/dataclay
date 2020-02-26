@@ -70,7 +70,7 @@ class StorageDict(DataClayObject):
         out_a = dict()
         out_b = dict()
 
-        for (key, value), out in zip(self._dict.items(), cycle(out_a, out_b)):
+        for (key, value), out in zip(self._dict.items(), cycle((out_a, out_b))):
             out[key] = value
 
         return (out_a, out_b)
