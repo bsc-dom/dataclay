@@ -1,9 +1,0 @@
-For run the python functional_tests you need to setup this variable:
-
-    export PYTHONPATH=your_path/poas/PersistentObjects/pyclay/src/:your_path/poas/PersistentObjects/pyclay/tests/
-
-and to download and install the following packages:
-
-	pip install pytest pytest-xdist pytest-html pytest-timeout 
-
-    sudo apt-get install python-jpype
