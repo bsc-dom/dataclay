@@ -14,3 +14,5 @@ tests/mock/client.properties
 .pyenv*
 /setup.py.orig
 /.project
+.tox
+*__pycache__*
