@@ -12,7 +12,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='dataClay',
-      version="2.4.dev",
+      version=2.4,
       install_requires=install_reqs,
       description='Python library for dataClay',
       packages=find_packages("src"),

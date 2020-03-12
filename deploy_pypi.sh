@@ -5,7 +5,7 @@ blu=$'\e[1;34m'
 red=$'\e[1;91m'
 end=$'\e[0m'
 function printMsg { 
-  echo "${blu}[dataClay release] $1 ${end}"
+  echo "${blu}[dataClay deploy] $1 ${end}"
 }
 function printError { 
   echo "${red}======== $1 ========${end}"
@@ -30,6 +30,14 @@ do
     esac
     shift
 done
+
+if [ "$DEV" = false ] ; then
+	GIT_BRANCH=$(git name-rev --name-only HEAD)
+	if [[ "$GIT_BRANCH" != "master" ]]; then
+	  echo 'Aborting deployment, only master branch can deploy a release';
+	  exit 1;
+	fi
+fi
 
 ################################## VERSIONING #############################################
 DEFAULT_PYTHON=3.7
@@ -76,9 +84,20 @@ if [ "$DEV" = false ] ; then
 fi
 ################################## PUSH #############################################
 
+# If develop, check if pypi already has a package 
+if [ "$DEV" = true ] ; then
+	PACKAGE_JSON_URL="https://pypi.org/pypi/dataClay/json"
+	TODAY=$(date +'%Y%m%d')
+	PYPI_PACKAGES=$(curl -s "$PACKAGE_JSON_URL" | jq  -r '.releases | keys | .[]' | sort -V | grep $TODAY | wc -l)	
+	if [[ "$PYPI_PACKAGES" -ne 0 ]]; then
+		echo "Already pushed in pypi"
+		exit 0
+	fi
+fi
+
+
 printMsg " ==== Pushing dataclay to Pypi ===== "
 # Upload pyclay
-pushd $SCRIPTDIR/dspython/pyclay
 VIRTUAL_ENV=/tmp/venv_pyclay
 rm -rf $VIRTUAL_ENV
 echo " Creating virtual environment /tmp/venv_pyclay " 
@@ -91,7 +110,7 @@ echo " * IMPORTANT: please make sure libyaml-dev libpython2.7-dev python-dev pyt
 python3 -m pip install -r requirements.txt
 rm -rf dist
 if [ "$DEV" = true ] ; then
-	python3 setup.py egg_info --tag-date -q clean --all install sdist bdist_wheel
+	python3 setup.py egg_info --tag-build=dev --tag-date -q clean --all install sdist bdist_wheel
 else 
 	python3 setup.py -q clean --all install sdist bdist_wheel
 fi
@@ -102,6 +121,5 @@ if [ $? -ne 0 ]; then
 fi 	
 twine upload dist/*
 deactivate
-popd
 
 printMsg " ===== Done! ====="
