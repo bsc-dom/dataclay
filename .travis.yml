@@ -1,9 +1,17 @@
 language: python
 python:
-        - "3.6" #current default Python on travis CI
-        - "3.7"
+- '3.6'
+- '3.7'
 install:
-        - pip install -r requirements.txt
-        - pip install .
+- pip install -r requirements.txt
+- pip install .
 script:
-        - pytest
+- pytest
+deploy:
+  provider: pypi
+  user: dataclay
+  server: https://testpypi.python.org/pypi
+  distributions: "sdist bdist_wheel"
+  skip_existing: true
+  password:
+    secure: F8LIgT/69wl3XeMvt2bNR2JuYxOtgqe/MNkKWbOA7TreAniMQ3lYEv067sZO5bdcOKBR7VDqzbeCukdYcXr28lUQ8+fG5fO3jRm6INrKKy7Sjn1uJbP+h7HWRAe8tUeG0eLjfKnZVpYJH/Tif3LCRzza1hnKGVCDvKTgbplRumj8AGEOmwH+bQY+FltvIg8sUU1F0Zf3h0VmzXofW7szAULX5M9kAsMnLnDbNsleDUSnVsyBA26ARXCVB59kK2461wvoh/zbB0XulE7YwRNfqHAm2p5YhJ4ydHlHXzqZAe14MOgNtujYoRkeTdlXX3AN7ZLl4hktjVAUNv/O/VOEAtSEHwZLIhxciGEZb5Zs5NMzv3nx9/Fyu21zvH1CXVOLV7QFGpbpTpj4ljGA0gQrNyEVLit7YJgLxDjQku4678byLVvVldu+wOANpuapCsDLisggAZXyQpJgXZS6REj7j1Yff+AG46GK89EhKF0Z0KcR3SjXRgIiO1KohehwluHAAlzzyzyGxJ1RBch6KwOo9LmfYdbJXQiR/Dj8LM5d82vBZ4yOTE5ONLTyR0soJ6WVwGhpe4WL14HFRf1GnHW5wgQpUKWLarS/Z8sDt3Bkk0fcUtskaPO/9hiUJ8hHCIz2o4r7fzswL8ZpNbEqsmya95XCZRBHAfLHTcp2uH3oY2I=

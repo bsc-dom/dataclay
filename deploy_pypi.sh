@@ -110,7 +110,8 @@ echo " * IMPORTANT: please make sure libyaml-dev libpython2.7-dev python-dev pyt
 python3 -m pip install -r requirements.txt
 rm -rf dist
 if [ "$DEV" = true ] ; then
-	python3 setup.py egg_info --tag-build=dev --tag-date -q clean --all install sdist bdist_wheel
+	python3 setup.py egg_info --tag-build=dev --tag-date 
+	python3 setup.py install sdist bdist_wheel
 else 
 	python3 setup.py -q clean --all install sdist bdist_wheel
 fi
