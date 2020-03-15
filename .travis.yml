@@ -8,31 +8,34 @@ install:
 script:
 - pytest
 stages:
-  - name: after_deploy
-    # require the branch name to be master (note for PRs this is the base branch name)
-    if: branch = master
+- name: after_deploy
+  if: branch = master
 deploy:
-  - provider: pypi
-    user: "__token__"
-    server: https://test.pypi.org/legacy/
-    # if we would like to have nightly builds, add egg_info --tag-build=dev --tag-date 
-    distributions: "sdist bdist_wheel"
-    skip_existing: true
-    on:
-      branch: develop
-    password:
-      secure: CTuFiBybWGK63YEvLmYRr3xVwf2Qc/CrAy6BZv0qVsg3dhwUchcCt5XpkLAbuM6RYW8vMqf4S/Oq04TGlGvjeSyO2Bfcp9vJBrU4MY63O5W61UgVZixL8UE6cFFGctJ7+JfUqjGIMZKDy8Qj6us7rhnKpdXGc8NWEzdCYBInOTaY9wO0zM3zL11VTF2T7dZ0s7pJy8tnAeUI1Nkc57m/JCCe1OheYEIl9wC3GlPAKSvRCEA9a5eGa1EHchMfCFdcHlXSEFxEcAl7Y+UkZp2nI//Ym9Fdv3dN1c+hh7/8gCWz0d5PPPpbeeqTx0DhOnpbVsooKdK2cSiaXCdAucwnLOZpUjhwIQUroDpbDcF+NinyJBc5c+E3KxkHyRiX+9HgB+4pmf8j24C3n7CTI+f5KZoFpg/uRp4LjNamdUUiGYoPw+rajmW4gh/5CC4wSa4t07Jw/v8U14pJnYM2Anb+FMYOhkZRtSZBvGEpZC9KNHuHeLIUCBn35NIEvvNNimRR+tZ+nRQiFhTxYB+2PrcXUx3slC/FMRZTfV5QUMxaVNg8oLX3dXIwqGLNQXlOv52lgFQkS1Sp6ioXRMurzGYh5tzKdiAx/6B1oF/Xq8NQBmNh2B840YlS+ODG5bNsVhhp0DQf71NJ5m3W+Uv70LaqBPdcHdYIrFyd9Fz7HS6XlGo=
-  - provider: pypi
-    user: "__token__"
-    distributions: "sdist bdist_wheel"
-    skip_existing: true
-    on:
-      branch: master
-    password:
-      secure: F8LIgT/69wl3XeMvt2bNR2JuYxOtgqe/MNkKWbOA7TreAniMQ3lYEv067sZO5bdcOKBR7VDqzbeCukdYcXr28lUQ8+fG5fO3jRm6INrKKy7Sjn1uJbP+h7HWRAe8tUeG0eLjfKnZVpYJH/Tif3LCRzza1hnKGVCDvKTgbplRumj8AGEOmwH+bQY+FltvIg8sUU1F0Zf3h0VmzXofW7szAULX5M9kAsMnLnDbNsleDUSnVsyBA26ARXCVB59kK2461wvoh/zbB0XulE7YwRNfqHAm2p5YhJ4ydHlHXzqZAe14MOgNtujYoRkeTdlXX3AN7ZLl4hktjVAUNv/O/VOEAtSEHwZLIhxciGEZb5Zs5NMzv3nx9/Fyu21zvH1CXVOLV7QFGpbpTpj4ljGA0gQrNyEVLit7YJgLxDjQku4678byLVvVldu+wOANpuapCsDLisggAZXyQpJgXZS6REj7j1Yff+AG46GK89EhKF0Z0KcR3SjXRgIiO1KohehwluHAAlzzyzyGxJ1RBch6KwOo9LmfYdbJXQiR/Dj8LM5d82vBZ4yOTE5ONLTyR0soJ6WVwGhpe4WL14HFRf1GnHW5wgQpUKWLarS/Z8sDt3Bkk0fcUtskaPO/9hiUJ8hHCIz2o4r7fzswL8ZpNbEqsmya95XCZRBHAfLHTcp2uH3oY2I=
+- provider: pypi
+  user: __token__
+  server: https://test.pypi.org/legacy/
+  distributions: sdist bdist_wheel
+  skip_existing: true
+  on:
+    branch: develop
+  password:
+    secure: CTuFiBybWGK63YEvLmYRr3xVwf2Qc/CrAy6BZv0qVsg3dhwUchcCt5XpkLAbuM6RYW8vMqf4S/Oq04TGlGvjeSyO2Bfcp9vJBrU4MY63O5W61UgVZixL8UE6cFFGctJ7+JfUqjGIMZKDy8Qj6us7rhnKpdXGc8NWEzdCYBInOTaY9wO0zM3zL11VTF2T7dZ0s7pJy8tnAeUI1Nkc57m/JCCe1OheYEIl9wC3GlPAKSvRCEA9a5eGa1EHchMfCFdcHlXSEFxEcAl7Y+UkZp2nI//Ym9Fdv3dN1c+hh7/8gCWz0d5PPPpbeeqTx0DhOnpbVsooKdK2cSiaXCdAucwnLOZpUjhwIQUroDpbDcF+NinyJBc5c+E3KxkHyRiX+9HgB+4pmf8j24C3n7CTI+f5KZoFpg/uRp4LjNamdUUiGYoPw+rajmW4gh/5CC4wSa4t07Jw/v8U14pJnYM2Anb+FMYOhkZRtSZBvGEpZC9KNHuHeLIUCBn35NIEvvNNimRR+tZ+nRQiFhTxYB+2PrcXUx3slC/FMRZTfV5QUMxaVNg8oLX3dXIwqGLNQXlOv52lgFQkS1Sp6ioXRMurzGYh5tzKdiAx/6B1oF/Xq8NQBmNh2B840YlS+ODG5bNsVhhp0DQf71NJ5m3W+Uv70LaqBPdcHdYIrFyd9Fz7HS6XlGo=
+- provider: pypi
+  user: __token__
+  distributions: sdist bdist_wheel
+  skip_existing: true
+  on:
+    branch: master
+  password:
+    secure: F8LIgT/69wl3XeMvt2bNR2JuYxOtgqe/MNkKWbOA7TreAniMQ3lYEv067sZO5bdcOKBR7VDqzbeCukdYcXr28lUQ8+fG5fO3jRm6INrKKy7Sjn1uJbP+h7HWRAe8tUeG0eLjfKnZVpYJH/Tif3LCRzza1hnKGVCDvKTgbplRumj8AGEOmwH+bQY+FltvIg8sUU1F0Zf3h0VmzXofW7szAULX5M9kAsMnLnDbNsleDUSnVsyBA26ARXCVB59kK2461wvoh/zbB0XulE7YwRNfqHAm2p5YhJ4ydHlHXzqZAe14MOgNtujYoRkeTdlXX3AN7ZLl4hktjVAUNv/O/VOEAtSEHwZLIhxciGEZb5Zs5NMzv3nx9/Fyu21zvH1CXVOLV7QFGpbpTpj4ljGA0gQrNyEVLit7YJgLxDjQku4678byLVvVldu+wOANpuapCsDLisggAZXyQpJgXZS6REj7j1Yff+AG46GK89EhKF0Z0KcR3SjXRgIiO1KohehwluHAAlzzyzyGxJ1RBch6KwOo9LmfYdbJXQiR/Dj8LM5d82vBZ4yOTE5ONLTyR0soJ6WVwGhpe4WL14HFRf1GnHW5wgQpUKWLarS/Z8sDt3Bkk0fcUtskaPO/9hiUJ8hHCIz2o4r7fzswL8ZpNbEqsmya95XCZRBHAfLHTcp2uH3oY2I=
 after_success:
-  - git config --global user.email "builds@travis-ci.com"
-  - git config --global user.name "Travis CI"
-  - export GIT_TAG=$(cat VERSION.txt)
-  - git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
-  - git push origin $GIT_TAG
+- git config --global user.email "builds@travis-ci.com"
+- git config --global user.name "Travis CI"
+- export GIT_TAG=$(cat VERSION.txt)
+- git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
+- git push origin $GIT_TAG
+env:
+  global:
+  - secure: 14K6+uagz+AZLrilqjhJWuz7wv7pnDuXSDPhtvXfjHSuUDZl/IbfrAJUYyehkDbIHfFBDrmxuxr9/1X3Q6EPxsFr3JhnNgxeQUA85GrF6AcvpznktOSJ0n9+jF0F1pQ4EQWSOFoJCwNx/WjXkOvy0v7ExLP1QuBXhBEzrdKA5SqnW6htCqGONO1NIHnT8M8e01Jcg244aPurQ02UoWiJmLoUQpg00LKWcLi24MRYpWb4lbZk9r/yR2wMnRUUak0xc157yi7SjEQjmx8ZDJb95WqU5kwIoAKhr6HoDlxgPO0kzbEdLtk3B66hjN/12ZWNiWPnAdf3nVYrcPNpKoAuxY/b8r1kDX801t9yoC+/YFku6RY8WKKNEJ/QlSfdhO3mlqitcxgQjKFlJwfxsiT4rpI4qOsJeUY0118w16nLfesdTPhpV70CgkSjl+vJjB0groasG2rlJSUimzW1hZDgITuIeM4SDrWGDhRecBTheulNVkMFjWbGu16XMTssGU0HbNF1yVsKcWKcfVPemna8NQNLSIWvFSccVpYCUxcwHGjd5iZYr9mrJzwP/h5itwsdKtBBoez4IUOZgnFtDugUY29JMV8C+H4NrZD3d+TfOgqzDFeka8uwo3l2Za88+v3EhHn+l0KBugFxuts9Dr0lXW9Uymhjz1dHvf9Y80kFNnQ=
+  - secure: iS5n2te+fYCrOyl2BV/T7HvGDBI/+z0IvGZkHG9zFyYs5E7tCGHzPhyv8lZy6PfJcL6ws1Uuwaop93EB8LTWGspufHKhoZ8dBdxf1TQG3pkpwXcZEIlJ2O2cCLus5NM4KC9VCKNH2VlTOfryceRwf4c0PAMDBvTELt6BgonLDnu2SBR5BUNH6AcN/7q6fto9c+epKuQ9do3AHSJyYy6k4m5iTkcHuU9L7//eYzt1Zk9lnhRZf4HHU9d1KZkV0g2T/gi9qPPd1TdEVPmFcLtBAUby0LXZCe85hZDC3XKwW1oEJGSHxKn/IdEV27Ew4CDOigI2bEonfAKQnvN1uBlorvBUUA0B4baAIe/RJST3FC/aFag1sMmw9JHUwrp0NThrRo7RhWnBWw69rKTyg3bsNnuhmSPJjafSFrSL+Bh3ukDemkdFJ8PPs4Y0ALZqyregRIgw46KxUB5RywjwtQLg0vMONp1fSHetj+rQWIDCG9Yk5OQbtyLbD8kC670gC1tZEE7/wr7mAZymr3J7E0pMfco7O/DEI1TCL6n7Zl5SPC4VbrS3gxQSs2bMThwJeFeNdF5AMFuVvZMjR266qav4XpsjmGZyr1uzhggsUuSbLL1HgSyNqAEmOIftVfzfEseFNCyaNQJyi12zNj/MMG0/rkZ85y14f/c3bY9tV1X7WyY=
+  - secure: co2ThzkbdXh2x4/3MGIZs1kng8rjxW8VVbLY6/H8TCbf1hXur2QqH6XMFAaceeEIhmz/tvZn/LGX9O1S63fSbA+TRHwButkom5U8zj+HL4iBtaK+eohDK9kIl58h8TTxqzYk47fzDHwWxlw4l024kF+VzuER+GSfJa58KADJXqYwrMP9JVMLdSSO4F5tG6apJO07hOm3MHytmBWTmLcl/7VnxjMtrMq+/lGw64A3T2DfFyyZdmufIrlHZu8Rw6yd/k2wdmUlhcC+iXMfFnwQyuqNp2tr25TgIUAS5plPZVn4Pna54OKZGzIalM52Ai+5iSu0mYm/5wU3wPGqVXrzRNFmRFtPLFPdGYzKHX1LL1zrgKMmKdajxNVjqCO5TwuS9FTKqzbaKv+1FrbUP+4lfRURa85+/8f/KpAOXHggnlOBezT2qIoRm59w3iiR9QmuIJn5ynjgxKUio2XlGFknRqhLMhaHIPYWkjPr251KGcbHcPZ3SHwmv/V2o+7slRKxBIhOOAq5rTsbPHI+HUp5BrZ4coPrG0QNBzgIEctwROsEYND75TCzIygKr3r389jeQEOBh2qR8HmX5CKf7sHhX6zIs8vEbf8AahjRz3SAaxJitzpEgbv5oLMiOQbs61jjUJMr6Pdx6Nf22VEEFFo69yE3/pUrxJ3Q7dZaXN/XaWk=
