@@ -11,6 +11,8 @@ python3 -m pip install --upgrade setuptools wheel twine
 python3 -m pip install -r requirements.txt
 ```
 
+Also to remove `dist` folder if exists
+
 #### Upload development version 
 
 Execute `python3 setup.py egg_info --tag-build=dev --tag-date -q clean --all install sdist bdist_wheel` in order to create a development version.

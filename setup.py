@@ -11,8 +11,11 @@ install_reqs = parse_requirements("./requirements.txt")
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+with open("VERSION.txt", "r") as version_file:
+    version = version_file.read().strip()
+
 setup(name='dataClay',
-      version=2.4,
+      version=version,
       install_requires=install_reqs,
       description='Python library for dataClay',
       packages=find_packages("src"),
