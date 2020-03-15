@@ -35,6 +35,7 @@ before_install:
               "  IdentityFile $SSH_FILE" \
               "  LogLevel ERROR" >> ~/.ssh/config
 after_success:
+- git remote set-url origin git@github.com:bsc-dom/pyclay.git
 - export GIT_TAG=$(cat VERSION.txt)
 - git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
 - git push origin $GIT_TAG
