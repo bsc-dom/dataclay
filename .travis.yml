@@ -36,7 +36,7 @@ deploy:
 - provider: pypi
   user: __token__
   server: https://test.pypi.org/legacy/
-  distributions: sdist bdist_wheel
+  distributions: egg_info --tag-build=dev --tag-date sdist bdist_wheel
   skip_existing: true
   on:
     branch: develop
