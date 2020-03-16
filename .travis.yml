@@ -34,11 +34,7 @@ before_install:
               "Host github.com" \
               "  IdentityFile $SSH_FILE" \
               "  LogLevel ERROR" >> ~/.ssh/config
-after_success:
 - git remote set-url origin git@github.com:bsc-dom/pyclay.git
-- export GIT_TAG=$(cat VERSION.txt)
-- git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
-- git push origin $GIT_TAG
 deploy:
 - provider: pypi
   user: __token__
@@ -61,3 +57,7 @@ env:
   global:
   - secure: eGnOVaBuwogfUn/PS4TOiloe04vCO4/R6bKw0n6HM4kUTVVPfDGq67cTBj2Qn+sC0Vc2wns8Qxl75QJpsp44fw5wOjbx85+xbkUaYZIRRbFbOcBL2FjgcjICyVtOTLcef6EOQptPryenRRQBmwms7ccdmIcjtWOUPb0qdApoqJwyfP9Li3GBK15tIXQx8VJT7TI1AwxLHVmwwLwLQmZG5Tb7afUiNkPm4CNbGLE6TDZEWiOoqhvWUhM8k8hQw1HgtOFoNlHgD6aFxmrVuzFMiaPELwfLJJ9KWH6lKEotIhjUMBruvPKA/FK9c6sC5UPbzTcClPlSlIoAmgqsJz1LRiw/FlhmeGH9pSq7QFyIv5D1pSD9mLq4R07ondImI2mETCm/0BF/UO41P6Xs16HEMshnd5dyzvawA81qQTHCmsHQBlxDzw+bgebV1uhHWgtbEb2pmVYVw6GD4V42+pQXHlCijk1teQuuSHBDk4/GK7Ig3UBCH/+vQj0iOyp8TQ9dy4AcVZCBIoIEp9WnRa8Oyt8hTt3r3BVyfu5nnDOYrxK+vAuh8ouoqMJUyCAA9FEDApAx81c8npKOZp5hdjrtOMybALquCbuCTp9djYWT8UBDHxBkoPP/IO4VWbMJHttuD8P4IkT4lZfiqqwcKD3uvBt/p5yZl05KDxK1DQn1/tY=
   - secure: iP3w5cLWrVqRQKQBlIO6uZoP3eykuPiJr4vvsjKj/0AITZk42j2yhPxoIDB63j5pC8ljb3Rqw12R0QGuVzg8YySGl9bd5JEgIbugSMtnH34Dbi6sG/W8JpCPSKmE/ei43CSiXz/nZpwuUhVdO8Zm/bdELQEQnQhH1ssxhnbP5yOSoyq4QqsR0QwfdULotyX9IMOIaqbJ4G1xbf/rPl0S28LC6g4tHTqE0QzA7YCGuim1PPOmSjB7BtxuxzvjOsJp6pu0ZhOeUxTIbVkrhZWmvS22fNgKPCxCcKqnBT3fvBVVMTS2Fh3IAA//2NAL8d0JlmrwhYQcneBvPjuQFfNiNThkNhG/j7Ge9R+gKnMTd7wceJg9/9rZNoRNneQ4SRVVdRRCftCOmIRNCsGGMqqVbCDvOeyKGMtcXzVnc1itcWdcNsgsmIphkPC+jQjzwrl0RuZ3YovkxvXa6xOdU8pJktcCPzmRe9Uf9lBgdd0QlygbVRCBaGNm6CynqCFnoUTa9gZeJ0BYcve2416cxYtIVU4pKP01W8yjI8lYZiZY6Ooqz+KFOoGUB1Agwu23qcVlDApIO0E3lazELfXkyLjwO1QW6mlaJDzXHEFtsFwSFUDa4NfjoX4THPq58Vnm0ZjVLx5CnjQGJA/7XD+w+JvjSMmn1l8epedizuzFLiSGj3E=
+after_deploy:
+- export GIT_TAG=$(cat VERSION.txt)
+- git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
+- git push origin $GIT_TAG
