@@ -2,9 +2,9 @@ language: python
 stages:
 - test
 - name: deploy_dev
-  if: type IS cron
+  if: type = cron
 - name: deploy_release
-  if: branch IS master
+  if: branch = master
 script: pytest
 before_install:
 - .travis/check_branch.sh
