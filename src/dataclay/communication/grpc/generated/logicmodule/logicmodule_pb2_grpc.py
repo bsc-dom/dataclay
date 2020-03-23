@@ -343,7 +343,7 @@ class LogicModuleStub(object):
     self.registerObject = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/registerObject',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.RegisterObjectResponse.FromString,
         )
     self.setDataSetIDFromGarbageCollector = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/setDataSetIDFromGarbageCollector',
