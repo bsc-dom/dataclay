@@ -21,8 +21,9 @@ from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUti
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util import Configuration
 
-""" Make this class abstract """
-
+class NULL_NAMESPACE:
+    """null Namespace for uuid3, same as java's UUID.nameUUIDFromBytes"""
+    bytes = b''
 
 @six.add_metaclass(ABCMeta)
 class DataClayRuntime(object):
@@ -576,7 +577,7 @@ class DataClayRuntime(object):
         return self.get_object_by_id(oid, class_id, hint)
     
     def get_object_id_by_alias(self, alias):
-        return uuid.uuid5(uuid.NAMESPACE_OID, alias)
+        return uuid.uuid3(NULL_NAMESPACE, alias)
     
     def get_object_location_by_id(self, object_id):
         exec_envs = list(self.get_execution_environments_info())
