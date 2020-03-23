@@ -26,11 +26,12 @@ class StorageList(DataClayObject):
     def append(self, item):
         self._list.append(item)
 
+    # Local because iterators are typically non-serializable
     @dclayMethod(_local=True, return_="anything")
     def __iter__(self):
         return iter(self._list)
 
-    @dclayMethod(_local=True, return_="anything")
+    @dclayMethod(return_="anything")
     def split(self):
         # Ugly split-in-two, for demonstration purposes only
         from itertools import cycle
@@ -57,4 +58,4 @@ class StorageList(DataClayObject):
 
     @dclayMethod(return_="str")
     def __str__(self):
-        return str(self._list)
+        return "StorageList(%s)" % str(self._list)
