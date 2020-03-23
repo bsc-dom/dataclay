@@ -877,7 +877,7 @@ class LMClient(object):
         response = self._call_logicmodule(request, lm_function)
 
         if response.excInfo.isException:
-            raise DataClayException(response.exceptionMessage)
+            raise DataClayException(response.excInfo.exceptionMessage)
         return Utils.get_id(response.objectID)
 
     def set_dataset_id_from_garbage_collector(self, object_id, dataset_id):
