@@ -875,7 +875,8 @@ class LMClient(object):
 
         lm_function = lambda request: self.lm_stub.registerObject.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
-        if response.isException:
+
+        if response.excInfo.isException:
             raise DataClayException(response.exceptionMessage)
         return Utils.get_id(response.objectID)
 
