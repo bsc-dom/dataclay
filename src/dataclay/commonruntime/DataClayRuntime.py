@@ -21,8 +21,9 @@ from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUti
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util import Configuration
 
-""" Make this class abstract """
-
+class NULL_NAMESPACE:
+    """null Namespace for uuid3, same as java's UUID.nameUUIDFromBytes"""
+    bytes = b''
 
 @six.add_metaclass(ABCMeta)
 class DataClayRuntime(object):
@@ -167,13 +168,16 @@ class DataClayRuntime(object):
         """
         self.dataclay_heap_manager.add_to_heap(dc_object)
     
-    def update_object_id(self, old_object_id, new_object_id):
+    def update_object_id(self, dco, new_object_id):
+        """Update the object id in both DataClayObject and HeapManager
+        :param dco: a DataClay object.
+        :param new_object_id: the new object id.
+        :type dco: DataClayObject
+        :type new_object_id: ObjectID
         """
-        @postcondition: the object references are updated into dataClay's heap
-        @param old_object_id: the old id of the object
-        @param new_object_id: the new id of the object
-        """
-        self.dataclay_heap_manager.update_object_id(old_object_id, new_object_id)
+        old_object_id = dco.get_object_id()
+        dco.set_object_id(new_object_id)
+        self.dataclay_heap_manager.update_object_id(dco, new_object_id)
     
     def remove_from_heap(self, object_id):
         """
@@ -573,7 +577,7 @@ class DataClayRuntime(object):
         return self.get_object_by_id(oid, class_id, hint)
     
     def get_object_id_by_alias(self, alias):
-        return uuid.uuid5(uuid.NAMESPACE_OID, alias)
+        return uuid.uuid3(NULL_NAMESPACE, alias)
     
     def get_object_location_by_id(self, object_id):
         exec_envs = list(self.get_execution_environments_info())
@@ -773,6 +777,20 @@ class DataClayRuntime(object):
             self.logger.trace("Response of ExecutionEnvironmentsInfo returned #%d ExecutionEnvironmentsInfo", n)
             
         return ee_names
+
+    def choose_location(self, instance, alias=None):
+        """ Choose execution/make persistent location.
+        :param instance: Instance to use in call
+        :param alias: The alias of the instance
+        :returns: Location
+        :type instance: DataClayObject
+        :rtype: DataClayID
+        """
+
+        exec_env_id = self.get_object_location_by_id(self.get_object_id_by_alias(alias))
+        instance.set_hint(exec_env_id)
+        self.logger.verbose("ExecutionEnvironmentID obtained for execution = %s", exec_env_id)
+        return exec_env_id
 
     def activate_tracing(self):
         """ Activate tracing """ 

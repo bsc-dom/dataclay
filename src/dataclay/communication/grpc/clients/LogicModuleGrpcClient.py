@@ -851,28 +851,6 @@ class LMClient(object):
             backendID=Utils.get_msg_options['backend_id'](backend_id)
         )
 
-        # ToDo: In Java at this point override the onNext/onError/onCompleted methods of responseObserver
-        """
-        try:
-            logger.trace("Asynchronous call to register object from Garbage Collector for object %s",
-                         reg_info[0])
-
-            # ToDo: check async
-            six.advance_iterator(async_req_send)
-
-            resp_future = self.lm_stub.registerObjectsFromDSGarbageCollector.future.future(request=request, metadata=self.metadata_call)
-
-            resp_future.result(timeout=GRPC_TIMEOUT)
-
-            if resp_future.done():
-                six.advance_iterator(async_req_rec)
-
-        except RuntimeError as e:
-            raise e
-        
-        if resp_future.isException:
-            raise DataClayException(resp_future.exceptionMessage)
-        """ 
         lm_function = lambda request: self.lm_stub.registerObjectFromGC.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
 
@@ -894,11 +872,13 @@ class LMClient(object):
             alias=alias,
             lang=common_messages_pb2.LANG_PYTHON
         )
-        
+
         lm_function = lambda request: self.lm_stub.registerObject.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
+
+        if response.excInfo.isException:
+            raise DataClayException(response.excInfo.exceptionMessage)
+        return Utils.get_id(response.objectID)
 
     def set_dataset_id_from_garbage_collector(self, object_id, dataset_id):
 

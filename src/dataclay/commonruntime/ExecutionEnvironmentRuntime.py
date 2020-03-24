@@ -135,6 +135,16 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         """
         self.logger.debug("Starting make persistent object for instance %s with id %s", instance,
                      instance.get_object_id())
+
+        location = instance.get_hint()
+        if location is None:
+            location = backend_id
+            # Choose location if needed
+            # If object is already persistent -> it must have a Hint (location = hint here)
+            # If object is not persistent -> location is choosen (provided backend id or random, hash...).
+            if location is None:
+                location = self.choose_location(instance, alias)
+
         if alias is not None:
             # Add a new alias to an object.
             # We call 'addAlias' with registration information in case we need to register it.
@@ -147,7 +157,8 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                 reg_info = [instance.get_object_id(), instance.get_class_extradata().class_id,
                             self.get_session_id(), instance.get_dataset_id()]
                 # TODO: Review if we use hint of the object or the hint of the runtime.
-                self.ready_clients["@LM"].register_object(reg_info, instance.get_hint(), alias, LANG_PYTHON)
+                new_object_id = self.ready_clients["@LM"].register_object(reg_info, instance.get_hint(), alias, LANG_PYTHON)
+                self.update_object_id(instance, new_object_id)
             else:
                 # Use case 2 and 3 - add new alias
                 self.ready_clients["@LM"].add_alias(instance.get_object_id(), alias)

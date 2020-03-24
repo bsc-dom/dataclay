@@ -35,23 +35,6 @@ class ClientRuntime(DataClayRuntime):
     def store_object(self, instance):
         raise RuntimeError("StoreObject can only be used from the ExecutionEnvironment")
     
-    def choose_location(self, instance, alias=None):
-        """ Choose execution/make persistent location. 
-        :param instance: Instance to use in call
-        :param instance: The alias of the instance
-        :returns: Location 
-        :type instance: DataClayObject
-        :rtype: DataClayID 
-        """
-        
-        if alias:
-            instance._update_object_id(self.get_object_id_by_alias(alias))
-        
-        exec_env_id = self.get_object_location_by_id(instance.get_object_id())
-        instance.set_hint(exec_env_id)
-        self.logger.verbose("ExecutionEnvironmentID obtained for execution = %s", exec_env_id)
-        return exec_env_id
-    
     def make_persistent(self, instance, alias, backend_id, recursive):
         """ This method creates a new Persistent Object using the provided stub
         instance and, if indicated, all its associated objects also Logic module API used for communication
@@ -94,8 +77,23 @@ class ClientRuntime(DataClayRuntime):
             # If object is not persistent -> location is choosen (provided backend id or random, hash...).
             if location is None:
                 location = self.choose_location(instance, alias)
-            
+
         if not instance.is_persistent():
+            if alias is not None:
+                # Add a new alias to an object.
+                # Use cases:
+                # 1 - object was persisted without alias and not yet registered -> we need to register it with new alias.
+                # 2 - object was persisted and it is already registered -> we only add a new alias
+                # 3 - object was persisted with an alias and it must be already registered -> we add a new alias.
+
+                # From client side, we cannot check if object is registered or not (we do not have isPendingToRegister like EE)
+                # Therefore, we call LogicModule with all information for registration.
+                reg_info = [instance.get_object_id(), instance.get_class_extradata().class_id,
+                            self.get_session_id(), instance.get_dataset_id()]
+                new_object_id = self.ready_clients["@LM"].register_object(reg_info, location, alias, LANG_PYTHON)
+                self.update_object_id(instance, new_object_id)
+
+                self.alias_cache[alias] = instance.get_object_id(), instance.get_class_extradata().class_id, location
 
             # === MAKE PERSISTENT === #
             
@@ -140,21 +138,6 @@ class ClientRuntime(DataClayRuntime):
             
             # remove volatiles under deserialization
             self.remove_volatiles_under_deserialization()
-            
-        if alias is not None:
-            # Add a new alias to an object.
-            # Use cases:
-            # 1 - object was persisted without alias and not yet registered -> we need to register it with new alias.
-            # 2 - object was persisted and it is already registered -> we only add a new alias
-            # 3 - object was persisted with an alias and it must be already registered -> we add a new alias.
-
-            # From client side, we cannot check if object is registered or not (we do not have isPendingToRegister like EE)
-            # Therefore, we call LogicModule with all information for registration.
-            reg_info = [instance.get_object_id(), instance.get_class_extradata().class_id,
-                        self.get_session_id(), instance.get_dataset_id()]
-            self.ready_clients["@LM"].register_object(reg_info, location, alias, LANG_PYTHON)
-        
-            self.alias_cache[alias] = instance.get_object_id(), instance.get_class_extradata().class_id, location
         
         return location
     
