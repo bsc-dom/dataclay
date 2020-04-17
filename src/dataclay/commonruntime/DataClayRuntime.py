@@ -787,7 +787,10 @@ class DataClayRuntime(object):
         :rtype: DataClayID
         """
 
-        exec_env_id = self.get_object_location_by_id(self.get_object_id_by_alias(alias))
+        if alias:
+            exec_env_id = self.get_object_location_by_id(self.get_object_id_by_alias(alias))
+        else:
+            exec_env_id = self.get_object_location_by_id(instance.get_object_id())
         instance.set_hint(exec_env_id)
         self.logger.verbose("ExecutionEnvironmentID obtained for execution = %s", exec_env_id)
         return exec_env_id

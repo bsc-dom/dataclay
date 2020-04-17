@@ -91,12 +91,13 @@ class ClientRuntime(DataClayRuntime):
                 reg_info = [instance.get_object_id(), instance.get_class_extradata().class_id,
                             self.get_session_id(), instance.get_dataset_id()]
                 new_object_id = self.ready_clients["@LM"].register_object(reg_info, location, alias, LANG_PYTHON)
+                
                 self.update_object_id(instance, new_object_id)
-
+                
                 self.alias_cache[alias] = instance.get_object_id(), instance.get_class_extradata().class_id, location
 
             # === MAKE PERSISTENT === #
-            
+            self.logger.debug("Instance with object ID %s being send to EE", instance.get_object_id())
             # set the default master location
             instance.set_master_location(location)
             # We serialize objects like volatile parameters
