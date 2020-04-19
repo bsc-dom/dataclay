@@ -19,6 +19,7 @@ import importlib
 from dataclay.contrib.dummy_pycompss import task
 import ctypes
 from ctypes import cdll
+from dataclay.util import Configuration
 
 # Special wrapper of dataclay extrae to initialize it
 ExtraeWrapperLib = os.getenv("DATACLAY_EXTRAE_WRAPPER_LIB")

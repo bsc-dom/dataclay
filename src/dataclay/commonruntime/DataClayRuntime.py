@@ -177,7 +177,8 @@ class DataClayRuntime(object):
         """
         old_object_id = dco.get_object_id()
         dco.set_object_id(new_object_id)
-        self.dataclay_heap_manager.update_object_id(dco, new_object_id)
+        self.dataclay_heap_manager.remove_from_heap(old_object_id)
+        self.dataclay_heap_manager._add_to_inmemory_map(dco)
     
     def remove_from_heap(self, object_id):
         """
@@ -787,7 +788,10 @@ class DataClayRuntime(object):
         :rtype: DataClayID
         """
 
-        exec_env_id = self.get_object_location_by_id(self.get_object_id_by_alias(alias))
+        if alias:
+            exec_env_id = self.get_object_location_by_id(self.get_object_id_by_alias(alias))
+        else:
+            exec_env_id = self.get_object_location_by_id(instance.get_object_id())
         instance.set_hint(exec_env_id)
         self.logger.verbose("ExecutionEnvironmentID obtained for execution = %s", exec_env_id)
         return exec_env_id
