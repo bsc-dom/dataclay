@@ -177,7 +177,8 @@ class DataClayRuntime(object):
         """
         old_object_id = dco.get_object_id()
         dco.set_object_id(new_object_id)
-        self.dataclay_heap_manager.update_object_id(dco, new_object_id)
+        self.dataclay_heap_manager.remove_from_heap(old_object_id)
+        self.dataclay_heap_manager._add_to_inmemory_map(dco)
     
     def remove_from_heap(self, object_id):
         """
