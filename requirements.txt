@@ -9,4 +9,4 @@ protobuf==3.10.0
 protobufferize
 psutil
 six
-numpy
+numpy==1.18.1
