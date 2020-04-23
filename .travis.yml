@@ -2,8 +2,6 @@ language: python
 script: pytest
 before_install:
 - .travis/check_branch.sh
-- .travis/set_ssh.sh
-- git remote set-url origin git@github.com:bsc-dom/pyclay.git
 install:
 - pip install -r requirements.txt
 - pip install .
@@ -17,6 +15,9 @@ jobs:
     - python: '3.7'
     - stage: deploy_dev
       if: branch = develop AND type = cron
+      before_install:
+        - .travis/set_ssh.sh
+        - git remote set-url origin git@github.com:bsc-dom/pyclay.git
       deploy:
           provider: pypi
           user: __token__
@@ -29,6 +30,9 @@ jobs:
              secure: CTuFiBybWGK63YEvLmYRr3xVwf2Qc/CrAy6BZv0qVsg3dhwUchcCt5XpkLAbuM6RYW8vMqf4S/Oq04TGlGvjeSyO2Bfcp9vJBrU4MY63O5W61UgVZixL8UE6cFFGctJ7+JfUqjGIMZKDy8Qj6us7rhnKpdXGc8NWEzdCYBInOTaY9wO0zM3zL11VTF2T7dZ0s7pJy8tnAeUI1Nkc57m/JCCe1OheYEIl9wC3GlPAKSvRCEA9a5eGa1EHchMfCFdcHlXSEFxEcAl7Y+UkZp2nI//Ym9Fdv3dN1c+hh7/8gCWz0d5PPPpbeeqTx0DhOnpbVsooKdK2cSiaXCdAucwnLOZpUjhwIQUroDpbDcF+NinyJBc5c+E3KxkHyRiX+9HgB+4pmf8j24C3n7CTI+f5KZoFpg/uRp4LjNamdUUiGYoPw+rajmW4gh/5CC4wSa4t07Jw/v8U14pJnYM2Anb+FMYOhkZRtSZBvGEpZC9KNHuHeLIUCBn35NIEvvNNimRR+tZ+nRQiFhTxYB+2PrcXUx3slC/FMRZTfV5QUMxaVNg8oLX3dXIwqGLNQXlOv52lgFQkS1Sp6ioXRMurzGYh5tzKdiAx/6B1oF/Xq8NQBmNh2B840YlS+ODG5bNsVhhp0DQf71NJ5m3W+Uv70LaqBPdcHdYIrFyd9Fz7HS6XlGo=
     - stage: deploy_release
       if: branch = master AND type = cron
+      before_install:
+        - .travis/set_ssh.sh
+        - git remote set-url origin git@github.com:bsc-dom/pyclay.git
       deploy:
            provider: pypi
            user: __token__
@@ -42,9 +46,13 @@ jobs:
            - .travis/git_tag.sh
 notifications:
   email:
-    if: type = cron
-    recipients:
-      - support-dataclay@bsc.es
-    on_success: change
-    on_failure: always
+    - commiter:
+      on_success: change
+      on_failure: always
+    - cron:
+      if: type = cron
+      recipients:
+        - support-dataclay@bsc.es
+      on_success: change
+      on_failure: always
 
