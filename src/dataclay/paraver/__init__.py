@@ -21,9 +21,6 @@ import ctypes
 from ctypes import cdll
 from dataclay.util import Configuration
 
-# Special wrapper of dataclay extrae to initialize it
-ExtraeWrapperLib = os.getenv("DATACLAY_EXTRAE_WRAPPER_LIB")
-
 # Explicit and manually crafted list of CLASSES to be instrumentated
 CLASSES_WITH_EXTRAE_DECORATORS = {  # Similar to Java paraver/extrae AspectJ file. 
     # MAPPING: package name - modules with class named equal to modulen name
@@ -123,11 +120,19 @@ def initialize_extrae(initialize=False):
     """ Initialize synchronization events """
     if initialize:
         TracingLibrary = "libseqtrace.so"
-        LOGGER.debug("Initializing Extrae -- Adding synchronization event ")
+        LOGGER.info("Initializing Extrae")
         
+        wrapper_lib = settings.dataclay_extrae_wrapper_lib
+        if not wrapper_lib:
+            wrapper_lib = os.getenv("DATACLAY_EXTRAE_WRAPPER_LIB")
+            if not wrapper_lib:
+                raise AttributeError("DataClay extrae wrapper cannot be found neither from session file nor any default env / path")
+
+
+        LOGGER.info("Using dataClay extrae wrapper at %s" % wrapper_lib)
         # set task ID 
         num_tasks = TASK_ID + 1
-        DATACLAY_EXTRAE_WRAPPER = cdll.LoadLibrary(ExtraeWrapperLib)
+        DATACLAY_EXTRAE_WRAPPER = cdll.LoadLibrary(wrapper_lib)
         DATACLAY_EXTRAE_WRAPPER.set_task_id(ctypes.c_uint(TASK_ID))
         DATACLAY_EXTRAE_WRAPPER.set_num_tasks(ctypes.c_uint(num_tasks))
         

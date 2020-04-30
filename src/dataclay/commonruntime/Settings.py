@@ -15,6 +15,7 @@ import os
 from dataclay.commonruntime.SettingsLoader import AccountIdLoader, AccountCredentialLoader, AbstractLoader
 from dataclay.exceptions.exceptions import ImproperlyConfigured
 from dataclay.util.PropertiesFilesLoader import PropertyDict
+from dataclay.util import Configuration
 
 __author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
 __copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
@@ -32,6 +33,8 @@ FIELD_GLOBALCONFIG = "DataClayGlobalConfig"
 FIELD_LOCAL_BACKEND = "LocalBackend"
 FIELD_TRACING_ENABLED = "Tracing"
 FIELD_EXTRAE_STARTING_TASK_ID = "ExtraeStartingTaskID"
+FIELD_DATACLAY_EXTRAE_WRAPPER_LIB = "DataClayExtraeWrapperLib"
+
 # Fields for the client.properties file
 FIELD_CLIENT_HOST = "HOST"
 FIELD_CLIENT_TCPPORT = "TCPPORT"
@@ -81,7 +84,8 @@ class _SettingsHub(object):
 
             # Tracing
             'tracing_enabled': False,
-            'extrae_starting_task_id': "0"
+            'extrae_starting_task_id': "0",
+            'dataclay_extrae_wrapper_lib': ""
         }
 
     def load_properties(self, file_name):
@@ -114,6 +118,14 @@ class _SettingsHub(object):
                 self._values["extrae_starting_task_id"] = int(getattr(d, FIELD_EXTRAE_STARTING_TASK_ID))
             except AttributeError:
                 logger.debug("Extrae starting task ID not defined")
+
+            try:
+                wrapper_lib = getattr(d, FIELD_DATACLAY_EXTRAE_WRAPPER_LIB)
+                self._values["dataclay_extrae_wrapper_lib"] = wrapper_lib
+            except AttributeError:
+                logger.debug("dataClay Extrae Wrapper lib conf. not defined in session file")
+
+                
                 
             try:
                 self._values["tracing_enabled"] = bool(getattr(d, FIELD_TRACING_ENABLED))

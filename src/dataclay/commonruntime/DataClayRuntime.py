@@ -517,7 +517,10 @@ class DataClayRuntime(object):
         # this is a workaround, registerObject should never be called for replica/version/consolidate algorithms,
         # we must change the algorithms to not depend on metadata.
         # Also, location in which to register the object is the hint (in case it is not registered yet).
-        self.ready_clients["@LM"].register_object(reg_info, hint, None, LANG_PYTHON)
+        try:
+            self.ready_clients["@LM"].register_object(reg_info, hint, None, LANG_PYTHON)
+        except:
+            pass
     
     def federate_object(self, object_id, ext_dataclay_id, recursive, class_id, hint):
         session_id = self.get_session_id()
