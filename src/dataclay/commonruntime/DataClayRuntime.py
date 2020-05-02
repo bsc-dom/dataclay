@@ -799,20 +799,13 @@ class DataClayRuntime(object):
         self.logger.verbose("ExecutionEnvironmentID obtained for execution = %s", exec_env_id)
         return exec_env_id
 
-    def activate_tracing(self):
+    def activate_tracing(self, initialize):
         """ Activate tracing """ 
-        if get_current_available_task_id() == 0:
-            # Task id 0 means that we are not using compss and extrae must be initialized on client
-            initialize_extrae(initialize=True) 
-        else:
-            initialize_extrae()
+        initialize_extrae(initialize)
 
-    def deactivate_tracing(self):
+    def deactivate_tracing(self, finalize_extrae):
         """Close the runtime paraver manager and deactivate the traces in LM (That deactivate also the DS)"""
-        if get_task_id() == 0:
-            finish_tracing(finalize_extrae=True)
-        else:
-            finish_tracing()
+        finish_tracing(finalize_extrae)
 
     def activate_tracing_in_dataclay_services(self):
         """Activate the traces in LM (That activate also the DS) """

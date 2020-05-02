@@ -42,6 +42,7 @@ CURRENT_AVAILABLE_TASK_ID = 0
 TASK_ID = 0
 PYEXTRAE = None
 EXTRAE_DICT = dict()
+EXTRAE_CUR_PID = None
 DATACLAY_EXTRAE_WRAPPER = None
 
 # Extrae options
@@ -101,6 +102,7 @@ def initialize_extrae(initialize=False):
     global CLASSES_WITH_EXTRAE_DECORATORS
     global PYEXTRAE
     global EXTRAE_DICT
+    global EXTRAE_CUR_PID
     TASK_ID = CURRENT_AVAILABLE_TASK_ID
     LOGGER.debug("Initializing Extrae with task id %i in process with pid %s " % (TASK_ID, str(os.getpid())))
 
@@ -108,15 +110,14 @@ def initialize_extrae(initialize=False):
     # and not during tracing.
     try:
         import pyextrae.common.extrae as pyextrae_module 
-        from pyextrae.common.extrae import Extrae as extrae_dict_obj
         PYEXTRAE = pyextrae_module
-        EXTRAE_DICT = extrae_dict_obj
-
+        #PYEXTRAE.LoadExtrae(PYEXTRAE.LibrarySeq)
         LOGGER.info("Using pyextrae.common for tracing information")
     except ImportError:
         LOGGER.warning("Trying to activate pyextrae but ImportError happened. Please make sure pyextrae is installed.")
         return 
-    
+
+        
     """ Initialize synchronization events """
     if initialize:
         TracingLibrary = "libseqtrace.so"
@@ -138,10 +139,17 @@ def initialize_extrae(initialize=False):
         
         # init tracing
         PYEXTRAE.startTracing(TracingLibrary, False)
-        EXTRAE_DICT[os.getpid()].Extrae_init()
+        EXTRAE_CUR_PID = PYEXTRAE.Extrae[os.getpid()]
+        EXTRAE_CUR_PID.Extrae_init()
         
         CURRENT_AVAILABLE_TASK_ID = CURRENT_AVAILABLE_TASK_ID + 1  # only increment in servers
-
+    else: 
+        if not os.getpid() in PYEXTRAE.Extrae:
+            LOGGER.info("Cannot find Extrae for current PID.")
+            EXTRAE_CUR_PID = PYEXTRAE.LoadExtrae(PYEXTRAE.LibrarySeq) 
+        else: 
+            EXTRAE_CUR_PID = PYEXTRAE.Extrae[os.getpid()]
+            
     # initialize type and values 
     load_type_values()
     
@@ -185,13 +193,14 @@ def initialize_extrae(initialize=False):
     TRACING_ENABLED = True
 
         
-def finish_tracing(finalize_extrae=False):
+def finish_tracing(finalize_extrae):
     """ Finishing tracing.
     :param finalize_extrae: indicates extrae must be finalized (False for COMPSs doing it for us)
     :type finalize_extrae: boolean
     """
     global PYEXTRAE
     global EXTRAE_DICT
+    global EXTRAE_CUR_PID
     global TRACING_ENABLED
     global TASK_ID
     global MERGER_TASK_EVENTS
@@ -205,7 +214,9 @@ def finish_tracing(finalize_extrae=False):
                 # EXTRAE_DICT[os.getpid()].Extrae_set_options(EXTRAE_ENABLE_ALL_OPTIONS & ~EXTRAE_PTHREAD_OPTION)
                 PYEXTRAE.pyEx_trace_fini(Master=True)
                 # EXTRAE_DICT[os.getpid()].Extrae_set_options(EXTRAE_DISABLE_ALL_OPTIONS)
-
+            else: 
+                EXTRAE_CUR_PID.Extrae_flush()
+                
         except:
             traceback.print_exc()
         LOGGER.debug("Finished tracing with task id %i" % TASK_ID)
@@ -216,6 +227,8 @@ def finish_tracing(finalize_extrae=False):
 def define_event_types():
     global TRACED_METHODS
     global EXTRAE_DICT
+    global EXTRAE_CUR_PID
+    
     nvalues = len(TRACED_METHODS) + 1
     LOGGER.debug("Defining event types. Number of traced events: %i" % nvalues)
     description = "dataClay"
@@ -231,21 +244,23 @@ def define_event_types():
         except KeyError:
             LOGGER.info("Tried to load untraced paraver event")
 
-    EXTRAE_DICT[os.getpid()].Extrae_define_event_type(ctypes.pointer(ctypes.c_uint(TASK_EVENTS)),
+    try:
+        EXTRAE_CUR_PID.Extrae_define_event_type(ctypes.pointer(ctypes.c_uint(TASK_EVENTS)),
                                        ctypes.c_char_p(description.encode('utf-8')),
                                        ctypes.pointer(ctypes.c_uint(nvalues)),
                                        ctypes.pointer(values),
                                        ctypes.pointer(description_values))
-
+    except KeyError:
+        LOGGER.info("WARNING: Extrae define event failed")
 
 def enable_pthreads():
     """ Enables extrae pthreads"""
-    EXTRAE_DICT[os.getpid()].Extrae_set_options(EXTRAE_DISABLE_ALL_OPTIONS)
+    PYEXTRAE.Extrae[os.getpid()].Extrae_set_options(EXTRAE_DISABLE_ALL_OPTIONS)
 
     
 def disable_pthreads():
     """ Disable extrae pthreads"""
-    EXTRAE_DICT[os.getpid()].Extrae_set_options(EXTRAE_ENABLE_ALL_OPTIONS & ~EXTRAE_PTHREAD_OPTION)
+    PYEXTRAE.Extrae[os.getpid()].Extrae_set_options(EXTRAE_ENABLE_ALL_OPTIONS & ~EXTRAE_PTHREAD_OPTION)
 
 
 def enable_extrae_tracing():
