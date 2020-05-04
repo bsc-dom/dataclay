@@ -317,8 +317,8 @@ def finish_tracing():
         else: 
             if get_task_id() == 0:
                 getRuntime().deactivate_tracing_in_dataclay_services()
-                getRuntime().get_traces_in_dataclay_services()  # not on workers!
                 getRuntime().deactivate_tracing(True)
+                getRuntime().get_traces_in_dataclay_services()  # not on workers!
             else:
                 getRuntime().deactivate_tracing(True)
 
