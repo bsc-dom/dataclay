@@ -33,7 +33,7 @@ FIELD_GLOBALCONFIG = "DataClayGlobalConfig"
 FIELD_LOCAL_BACKEND = "LocalBackend"
 FIELD_TRACING_ENABLED = "Tracing"
 FIELD_EXTRAE_STARTING_TASK_ID = "ExtraeStartingTaskID"
-FIELD_DATACLAY_EXTRAE_WRAPPER_LIB = "DataClayExtraeWrapperLib"
+FIELD_PYCLAY_EXTRAE_WRAPPER_LIB = "pyClayExtraeWrapperLib"
 
 # Fields for the client.properties file
 FIELD_CLIENT_HOST = "HOST"
@@ -85,7 +85,7 @@ class _SettingsHub(object):
             # Tracing
             'tracing_enabled': False,
             'extrae_starting_task_id': "0",
-            'dataclay_extrae_wrapper_lib': ""
+            'pyclay_extrae_wrapper_lib': ""
         }
 
     def load_properties(self, file_name):
@@ -120,8 +120,8 @@ class _SettingsHub(object):
                 logger.debug("Extrae starting task ID not defined")
 
             try:
-                wrapper_lib = getattr(d, FIELD_DATACLAY_EXTRAE_WRAPPER_LIB)
-                self._values["dataclay_extrae_wrapper_lib"] = wrapper_lib
+                wrapper_lib = getattr(d, FIELD_PYCLAY_EXTRAE_WRAPPER_LIB)
+                self._values["pyclay_extrae_wrapper_lib"] = wrapper_lib
             except AttributeError:
                 logger.debug("dataClay Extrae Wrapper lib conf. not defined in session file")
 

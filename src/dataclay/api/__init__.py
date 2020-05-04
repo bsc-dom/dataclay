@@ -279,17 +279,20 @@ def post_network_init():
     # send to N EE/DS nodes.
     if settings.tracing_enabled:
         logger.info("Initializing tracing")
-        # -- Do NOT add synchronization events if it is a compss worker (default case of activation) --
-        if int(settings.extrae_starting_task_id) == 0:  # in compss Java runtime will get traces for us
-            getRuntime().activate_tracing(True)
-            getRuntime().activate_tracing_in_dataclay_services()
-        else:
+        
+        extrae_compss = int(settings.extrae_starting_task_id) != 0
+        
+        if extrae_compss:  
             getRuntime().activate_tracing(False)
             # set current available task id 
-            set_current_available_task_id(int(settings.extrae_starting_task_id)) 
-        # TODO: check if is in master, should always be master since initWorker is the one called from workers only?
-        # Fallback: if services have tracing active, the call is ignored
-        # if get_task_id() == 0:
+            # set_current_available_task_id(int(settings.extrae_starting_task_id)) 
+            # if get_task_id() == 0:
+            #    getRuntime().activate_tracing_in_dataclay_services()
+            
+        else:
+            getRuntime().activate_tracing(True)
+            if get_task_id() == 0:
+                getRuntime().activate_tracing_in_dataclay_services()
 
 
     # The new_session RPC may fall, and thus we will consider
@@ -302,12 +305,22 @@ def finish_tracing():
     Finishes tracing if needed 
     """
     if extrae_tracing_is_enabled():
-        if int(settings.extrae_starting_task_id) == 0:  # in compss Java runtime will get traces for us
-            getRuntime().deactivate_tracing_in_dataclay_services()
-            getRuntime().deactivate_tracing(True)
-            getRuntime().get_traces_in_dataclay_services()  # not on workers!
-        else:
-            getRuntime().deactivate_tracing(False)
+        extrae_compss = int(settings.extrae_starting_task_id) != 0
+
+        if extrae_compss: 
+            if get_task_id() == 0:
+                getRuntime().deactivate_tracing(False)
+                # in compss Java runtime will get traces for us
+            else:
+                getRuntime().deactivate_tracing(False)
+
+        else: 
+            if get_task_id() == 0:
+                getRuntime().deactivate_tracing_in_dataclay_services()
+                getRuntime().get_traces_in_dataclay_services()  # not on workers!
+                getRuntime().deactivate_tracing(True)
+            else:
+                getRuntime().deactivate_tracing(True)
 
             
 def finish():

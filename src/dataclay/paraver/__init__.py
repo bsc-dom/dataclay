@@ -103,7 +103,6 @@ def initialize_extrae(initialize=False):
     global PYEXTRAE
     global EXTRAE_DICT
     global EXTRAE_CUR_PID
-    TASK_ID = CURRENT_AVAILABLE_TASK_ID
     LOGGER.debug("Initializing Extrae with task id %i in process with pid %s " % (TASK_ID, str(os.getpid())))
 
     # This is something very slow which should be done during initialization
@@ -120,12 +119,14 @@ def initialize_extrae(initialize=False):
         
     """ Initialize synchronization events """
     if initialize:
+        TASK_ID = CURRENT_AVAILABLE_TASK_ID
+
         TracingLibrary = "libseqtrace.so"
         LOGGER.info("Initializing Extrae")
         
-        wrapper_lib = settings.dataclay_extrae_wrapper_lib
+        wrapper_lib = settings.pyclay_extrae_wrapper_lib
         if not wrapper_lib:
-            wrapper_lib = os.getenv("DATACLAY_EXTRAE_WRAPPER_LIB")
+            wrapper_lib = os.getenv("PYCLAY_EXTRAE_WRAPPER_LIB")
             if not wrapper_lib:
                 raise AttributeError("DataClay extrae wrapper cannot be found neither from session file nor any default env / path")
 
