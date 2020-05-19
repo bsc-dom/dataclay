@@ -357,7 +357,7 @@ class DataClayObject(object):
         getRuntime().consolidate_version(version_info)
 
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
-        if alias is "":
+        if alias == "":
             raise AttributeError('Alias cannot be empty')
         getRuntime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
@@ -392,7 +392,7 @@ class DataClayObject(object):
             getRuntime().update_object(self, from_object)
             
     def dc_put(self, alias, backend_id=None, recursive=True):
-        if alias is None or alias is "":
+        if not alias:
             raise AttributeError('Alias cannot be null or empty')
         getRuntime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
             
