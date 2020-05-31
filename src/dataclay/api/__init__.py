@@ -329,6 +329,7 @@ def finish():
     finish_tracing()
     getRuntime().stop_runtime()
     _initialized = False
+    _connection_initialized = False
 
 ######################################
 # Static initialization of dataClay
