@@ -159,11 +159,11 @@ class ExecutionEnvironment(object):
     def activate_tracing(self, task_id):
         if not extrae_tracing_is_enabled():
             set_current_available_task_id(task_id)
-            initialize_extrae(initialize=True)
+            initialize_extrae(True)
         
     def deactivate_tracing(self):
         if extrae_tracing_is_enabled():
-            finish_tracing(finalize_extrae=True)
+            finish_tracing(True)
 
     def get_object_metadatainfo(self, object_id):
         """Get the MetaDataInfo for a certain object.

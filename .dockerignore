@@ -1,6 +1,11 @@
+docs
 tests
 test_scripts
 **/*.pyc
 build
 dist
 src/dataClay.egg-info
+.travis*
+.project
+.pydevproject
+.git*

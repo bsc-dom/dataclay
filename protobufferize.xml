@@ -1,5 +1,6 @@
 <ProtobufferizeConfiguration>
 	<clearOutputDirectory>false</clearOutputDirectory>
 	<outputDirectory>src</outputDirectory>
+	<grpcOutputDirectory>src</grpcOutputDirectory>
 	<protoSourceRoot>dataclay-common/protos</protoSourceRoot>
 </ProtobufferizeConfiguration>
