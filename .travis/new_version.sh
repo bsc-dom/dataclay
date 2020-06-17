@@ -4,9 +4,6 @@ if [ "$TRAVIS_BRANCH" == "master" ]; then
      export VERSION=$(cat VERSION.txt);
      NEW_VERSION=$(echo "$VERSION + 0.1" | bc)
      echo $NEW_VERSION > VERSION.txt
-     git add VERSION.txt
-	 git commit -m "Updating version.txt"
-	 git push origin HEAD:$TRAVIS_BRANCH
 	 
 	 ## update develop branch also ##
 	 git fetch	 
