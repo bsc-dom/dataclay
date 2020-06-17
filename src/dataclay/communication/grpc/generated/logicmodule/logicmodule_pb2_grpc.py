@@ -343,7 +343,7 @@ class LogicModuleStub(object):
     self.registerObject = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/registerObject',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectResponse.FromString,
         )
     self.setDataSetIDFromGarbageCollector = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/setDataSetIDFromGarbageCollector',
@@ -413,6 +413,11 @@ class LogicModuleStub(object):
     self.registerExternalDataClay = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/registerExternalDataClay',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterExternalDataClayRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterExternalDataClayResponse.FromString,
+        )
+    self.registerExternalDataClayOverrideAuthority = channel.unary_unary(
+        '/dataclay.communication.grpc.logicmodule.LogicModule/registerExternalDataClayOverrideAuthority',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterExternalDataClayOverrideAuthorityRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterExternalDataClayResponse.FromString,
         )
     self.notifyRegistrationOfExternalDataClay = channel.unary_unary(
@@ -1141,6 +1146,13 @@ class LogicModuleServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def registerExternalDataClayOverrideAuthority(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def notifyRegistrationOfExternalDataClay(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -1696,7 +1708,7 @@ def add_LogicModuleServicer_to_server(servicer, server):
       'registerObject': grpc.unary_unary_rpc_method_handler(
           servicer.registerObject,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectResponse.SerializeToString,
       ),
       'setDataSetIDFromGarbageCollector': grpc.unary_unary_rpc_method_handler(
           servicer.setDataSetIDFromGarbageCollector,
@@ -1766,6 +1778,11 @@ def add_LogicModuleServicer_to_server(servicer, server):
       'registerExternalDataClay': grpc.unary_unary_rpc_method_handler(
           servicer.registerExternalDataClay,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterExternalDataClayRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterExternalDataClayResponse.SerializeToString,
+      ),
+      'registerExternalDataClayOverrideAuthority': grpc.unary_unary_rpc_method_handler(
+          servicer.registerExternalDataClayOverrideAuthority,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterExternalDataClayOverrideAuthorityRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterExternalDataClayResponse.SerializeToString,
       ),
       'notifyRegistrationOfExternalDataClay': grpc.unary_unary_rpc_method_handler(

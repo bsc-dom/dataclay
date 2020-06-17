@@ -1,12 +1,10 @@
-enum34;python_version<"3.4"
 lru-dict
 Jinja2
-PyYAML
+PyYAML==5.2
 decorator
 grpcio==1.25.0
 grpcio-tools==1.25.0
 protobuf==3.10.0
-protobufferize
 psutil
 six
-numpy
+numpy;platform.machine=="x86_64"

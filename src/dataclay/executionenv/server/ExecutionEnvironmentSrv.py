@@ -91,6 +91,9 @@ class ExecutionEnvironmentSrv(object):
         self.execution_environment.prepareThread()
 
         logger.info("Start Autoregister with %s local_ip", local_ip)
+        
+        time.sleep(5) #wait for storage location to be registered FIX THIS
+        
         lm_client = self.execution_environment.get_runtime().ready_clients["@LM"]
     
         success = False

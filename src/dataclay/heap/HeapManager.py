@@ -71,17 +71,6 @@ class HeapManager(threading.Thread):
         """
         oid = dc_object.get_object_id()
         self.inmemory_objects[oid] = dc_object
-        
-    def update_object_id(self, old_object_id, new_object_id):
-        """
-        @postcondition: Updates heap references when an object changes id
-        @param old_object_id: id of the old object id
-        @param old_object_id: id of the new object id
-        """
-        try:
-            self.inmemory_objects[new_object_id] = self.inmemory_objects.pop(old_object_id)
-        except KeyError:
-            self.logger.debug("Miss in Heap object %s" % str(old_object_id))
 
     def remove_from_heap(self, object_id):
         """

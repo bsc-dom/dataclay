@@ -108,7 +108,7 @@ def finishWorkerPostFork():
     logger.debug("Finalization post-fork finished")
 
 
-def init(config_file_path, **kwargs):
+def init(config_file_path=None, **kwargs):
     """Master-side initialization.
 
     Identical to initWorker (right now, may change).
