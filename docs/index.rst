@@ -8,7 +8,7 @@ Welcome to dataClay Python documentation.
 User's guide
 ============
 
-.. warning:: Go to the `official website <https:/bsc.es/dataclay>`_
+.. note:: Go to the `official website <https://bsc.es/dataclay>`_
     to see the user's guide of dataClay.
 
 API documentation
