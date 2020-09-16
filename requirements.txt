@@ -3,7 +3,6 @@ Jinja2
 PyYAML==5.2
 decorator
 grpcio==1.25.0
-grpcio-tools==1.25.0
 protobuf==3.10.0
 psutil
 six

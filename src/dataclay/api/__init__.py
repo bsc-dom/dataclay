@@ -325,6 +325,7 @@ def finish_tracing():
             
 def finish():
     global _initialized
+    global _connection_initialized    
     logger.info("Finishing dataClay API")
     finish_tracing()
     getRuntime().stop_runtime()
