@@ -63,6 +63,7 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
     SEQUENCE_REGEX = re.compile(r'(?P<base_type>(list)|(tuple)|(set))\s*(?:[<\[]\s*(?P<subtype>.*?)\s*[>\]])?\s*$')
     MAPPING_REGEX = re.compile(r'(?P<base_type>dict)\s*(?:[<\[]\s*(?P<keytype>.*?)\s*,\s*(?P<valuetype>.*?)\s*[>\]])?\s*$')
     STR_SIGNATURE = 'str'
+    BYTES_SIGNATURE = 'bytes'
     UNICODE_SIGNATURE = 'unicode'
     STORAGEOBJECT_SIGNATURE = 'storageobject'
     ANYTHING_SIGNATURE = 'anything'
@@ -167,6 +168,8 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
                 return StringWrapper('utf-8').read(io_file)
         elif subtype == self.UNICODE_SIGNATURE:
             return StringWrapper('utf-16').read(io_file)
+        elif subtype == self.BYTES_SIGNATURE:
+            return StringWrapper('binary').read(io_file)
         else:
             raise NotImplementedError("Python types supported at the moment: "
                                       "list and mappings (but not `%s`), sorry" % subtype)
@@ -267,6 +270,8 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
                 StringWrapper('utf-8').write(io_file, value)
             elif six.PY3:
                 StringWrapper('binary').write(io_file, value)
+        elif subtype == self.BYTES_SIGNATURE:
+            StringWrapper('binary').write(io_file, value)
         elif subtype == self.UNICODE_SIGNATURE:
             StringWrapper('utf-16').write(io_file, value)
         else:

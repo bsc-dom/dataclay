@@ -70,6 +70,7 @@ class Type(ManagementObject):
            type_str.startswith("tuple") or \
            type_str.startswith("set") or \
            type_str.startswith("dict") or \
+           type_str == "bytes" or \
            type_str == "str":
             # In Python we decided (COMPSs + Hecuba + dataClay) to use basic_type<sub_type>
             # but not sure whereelse is expecting basic_type[sub_type]... but maybe

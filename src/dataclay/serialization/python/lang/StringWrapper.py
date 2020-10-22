@@ -56,11 +56,15 @@ class StringWrapper(DataClayPythonWrapper):
         elif self._mode == "binary":
             if isinstance(value, BytesIO):
                 ba = value.getvalue()
-            else:
+            elif isinstance(value, bytes):
+                ba = value
+            elif isinstance(value, str):
                 if six.PY2:
                     ba = bytes(value)
                 elif six.PY3:
                     ba = bytes(value, "utf-8")
+            else:
+                raise TypeError("Unable to manage object of type `%s`" % type(ba))
         else:
             raise TypeError("Internal mode {} not recognized".format(self._mode))
 
