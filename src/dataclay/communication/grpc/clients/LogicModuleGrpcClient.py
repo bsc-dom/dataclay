@@ -150,6 +150,18 @@ class LMClient(object):
         st_loc_id = Utils.get_id(response.storageLocationID)
         return st_loc_id
 
+    def get_storage_location_id(self, sl_name):
+        request = logicmodule_messages_pb2.GetStorageLocationIDRequest(
+            slName=sl_name,
+        )
+        lm_function = lambda request: self.lm_stub.getStorageLocationID.future(request=request, metadata=self.metadata_call)
+        response = self._call_logicmodule(request, lm_function)
+        if response.excInfo.isException:
+            logger.debug("Exception in response")
+            raise DataClayException(response.excInfo.exceptionMessage)
+        st_loc_id = Utils.get_id(response.storageLocationID)
+        return st_loc_id
+
     def perform_set_of_new_accounts(self, admin_id, admin_credential, yaml_file):
 
         request = logicmodule_messages_pb2.PerformSetAccountsRequest(
@@ -1522,6 +1534,17 @@ class LMClient(object):
         response = self._call_logicmodule(request, lm_function)
         if response.isException:
             raise DataClayException(response.exceptionMessage)
+
+    def register_classes_in_namespace_from_external_dataclay(self, namespace, ext_dataclay_id):
+        request = logicmodule_messages_pb2.RegisterClassesInNamespaceFromExternalDataClayRequest(
+            namespaceName=namespace,
+            dataClayID=Utils.get_msg_options['dataclay_instance'](ext_dataclay_id)
+        )
+        lm_function = lambda request: self.lm_stub.registerClassesInNamespaceFromExternalDataClay.future(request=request, metadata=self.metadata_call)
+        response = self._call_logicmodule(request, lm_function)
+        if response.isException:
+            raise DataClayException(response.exceptionMessage)
+
 
     ################## EXTRAE IGNORED FUNCTIONS ###########################
     deactivate_tracing.do_not_trace = True

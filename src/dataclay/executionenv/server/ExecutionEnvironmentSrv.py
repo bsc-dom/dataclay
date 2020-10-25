@@ -91,15 +91,31 @@ class ExecutionEnvironmentSrv(object):
         self.execution_environment.prepareThread()
 
         logger.info("Start Autoregister with %s local_ip", local_ip)
-        
-        time.sleep(5) #wait for storage location to be registered FIX THIS
-        
         lm_client = self.execution_environment.get_runtime().ready_clients["@LM"]
-    
-        success = False
+
+        sl_found = False
         retries = 0
         max_retries = Configuration.MAX_RETRY_AUTOREGISTER
         sleep_time = Configuration.RETRY_AUTOREGISTER_TIME / 1000
+        sl_name = settings.dataservice_name
+        while not sl_found:
+            try:
+                storage_location_id = lm_client.get_storage_location_id(sl_name)
+            except:
+                if retries > max_retries:
+                    logger.warn(f"Could not get storage location named {sl_name}, aborting")
+                    raise
+                else:
+                    logger.info(f"Storage location (usually dsjava) {sl_name} not ready, retry #%d of %i in %i seconds", retries, max_retries, sleep_time)
+                    time.sleep(sleep_time)
+                    retries += 1
+            else:
+                sl_found = True
+
+        logger.info(f"Storage location (usually dsjava) {sl_name} found!")
+        logger.info("Registering current execution environment")
+        success = False
+        retries = 0
         execution_environment_id = self.execution_environment.get_execution_environment_id()
         while not success:
             try:

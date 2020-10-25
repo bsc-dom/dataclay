@@ -40,6 +40,22 @@ setup(name='dataClay',
           "Topic :: Database :: Database Engines/Servers",
           "Topic :: System :: Distributed Computing",
           "Topic :: Software Development :: Libraries :: Application Frameworks",
+
+          # Specify the Python versions you support here. In particular, ensure
+          # that you indicate you support Python 3. These classifiers are *not*
+          # checked by 'pip install'. See instead 'python_requires' below.
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3 :: Only',
+
       ],
+      # Specify which Python versions you support. In contrast to the
+      # 'Programming Language' classifiers above, 'pip install' will check this
+      # and refuse to install the project if the version does not match. See
+      # https://packaging.python.org/guides/distributing-packages-using-setuptools/#python-requires
+      python_requires='>=3.5, <4'
       )
 

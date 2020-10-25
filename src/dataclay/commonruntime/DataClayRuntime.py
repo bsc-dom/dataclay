@@ -563,7 +563,19 @@ class DataClayRuntime(object):
         self.logger.debug("[==FederateAllObjects==] Starting federation of all my objects using session %s", session_id)
         self.ready_clients["@LM"].federate_all_objects(session_id, dest_dataclay_id)
         # FIXME: ALIAS CACHE SHOULD BE UPDATED FOR OBJECTS WITH ALIAS REMOVED?
-               
+
+    def register_classes_in_namespace_from_external_dataclay(self, namespace, ext_dataclay_id) -> None:
+        """ Get namespace and classes from another dataClay instance and register it into current dataClay
+        :param namespace: external dataClay namespace to get
+        :param ext_dataclay_id: external dataClay ID
+        :return: None
+        :type namespace: string
+        :type ext_dataclay_id: UUID
+        :rtype: None
+        """
+        self.logger.debug(f"[==RegisterClassesInNamespaceFromExternalDataClay==] Registering namespace {namespace} from {ext_dataclay_id}")
+        self.ready_clients["@LM"].register_classes_in_namespace_from_external_dataclay(namespace, ext_dataclay_id)
+
     def get_by_alias(self, alias, class_id, safe=True):
         if safe:
             oid, class_id, hint = self.ready_clients["@LM"].get_object_from_alias(self.get_session_id(), alias)
