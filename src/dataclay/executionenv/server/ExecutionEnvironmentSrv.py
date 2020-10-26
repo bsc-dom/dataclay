@@ -61,6 +61,9 @@ class ExecutionEnvironmentSrv(object):
         self.execution_environment.get_runtime().flush_all()
         logger.info("Stopping runtime")
         self.execution_environment.store_ee_info()
+        logger.info("Notifying LM, current EE left")
+        self.execution_environment.notify_execution_environment_shutdown()
+
         from dataclay.api import finish
         finish()
         clean_runtime()

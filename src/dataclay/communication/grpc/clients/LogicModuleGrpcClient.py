@@ -1535,16 +1535,24 @@ class LMClient(object):
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    def register_classes_in_namespace_from_external_dataclay(self, namespace, ext_dataclay_id):
-        request = logicmodule_messages_pb2.RegisterClassesInNamespaceFromExternalDataClayRequest(
+    def import_models_from_external_dataclay(self, namespace, ext_dataclay_id):
+        request = logicmodule_messages_pb2.ImportModelsFromExternalDataClayRequest(
             namespaceName=namespace,
             dataClayID=Utils.get_msg_options['dataclay_instance'](ext_dataclay_id)
         )
-        lm_function = lambda request: self.lm_stub.registerClassesInNamespaceFromExternalDataClay.future(request=request, metadata=self.metadata_call)
+        lm_function = lambda request: self.lm_stub.importModelsFromExternalDataClay.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
+    def notify_execution_environment_shutdown(self, exec_env_id):
+        request = logicmodule_messages_pb2.NotifyExecutionEnvironmentShutdownRequest(
+            executionEnvironmentID=Utils.get_msg_options['exec_env'](exec_env_id)
+        )
+        lm_function = lambda request: self.lm_stub.notifyExecutionEnvironmentShutdown.future(request=request, metadata=self.metadata_call)
+        response = self._call_logicmodule(request, lm_function)
+        if response.isException:
+            raise DataClayException(response.exceptionMessage)
 
     ################## EXTRAE IGNORED FUNCTIONS ###########################
     deactivate_tracing.do_not_trace = True

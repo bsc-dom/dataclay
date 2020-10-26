@@ -150,8 +150,8 @@ def get_dataclay_id(exthostname, extport):
     """
     return getRuntime().get_external_dataclay_id(exthostname, extport)
 
-def register_classes_in_namespace_from_external_dataclay(namespace, ext_dataclay_id) -> None:
-    """ Retrieve namespace and classes from another dataClay instance and register it into current dataClay
+def import_models_from_external_dataclay(namespace, ext_dataclay_id) -> None:
+    """ Import models in namespace specified from an external dataClay
     :param namespace: external dataClay namespace to get
     :param ext_dataclay_id: external dataClay ID
     :return: None
@@ -159,7 +159,7 @@ def register_classes_in_namespace_from_external_dataclay(namespace, ext_dataclay
     :type ext_dataclay_id: UUID
     :rtype: None
     """
-    return getRuntime().register_classes_in_namespace_from_external_dataclay(namespace, ext_dataclay_id)
+    return getRuntime().import_models_from_external_dataclay(namespace, ext_dataclay_id)
 
 
 def unfederate(ext_dataclay_id=None):

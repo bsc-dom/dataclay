@@ -45,6 +45,21 @@ class LogicModuleStub(object):
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.EmptyMessage.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
         )
+    self.notifyExecutionEnvironmentShutdown = channel.unary_unary(
+        '/dataclay.communication.grpc.logicmodule.LogicModule/notifyExecutionEnvironmentShutdown',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NotifyExecutionEnvironmentShutdownRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
+        )
+    self.notifyStorageLocationShutdown = channel.unary_unary(
+        '/dataclay.communication.grpc.logicmodule.LogicModule/notifyStorageLocationShutdown',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NotifyStorageLocationShutdownRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
+        )
+    self.existsActiveEnvironmentsForSL = channel.unary_unary(
+        '/dataclay.communication.grpc.logicmodule.LogicModule/existsActiveEnvironmentsForSL',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ExistsActiveEnvironmentsForSLRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ExistsActiveEnvironmentsForSLResponse.FromString,
+        )
     self.performSetOfNewAccounts = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/performSetOfNewAccounts',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.PerformSetAccountsRequest.SerializeToString,
@@ -505,9 +520,9 @@ class LogicModuleStub(object):
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetClassesInNamespaceRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetClassesInNamespaceResponse.FromString,
         )
-    self.registerClassesInNamespaceFromExternalDataClay = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/registerClassesInNamespaceFromExternalDataClay',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterClassesInNamespaceFromExternalDataClayRequest.SerializeToString,
+    self.importModelsFromExternalDataClay = channel.unary_unary(
+        '/dataclay.communication.grpc.logicmodule.LogicModule/importModelsFromExternalDataClay',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ImportModelsFromExternalDataClayRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
         )
     self.getStubs = channel.unary_unary(
@@ -637,6 +652,27 @@ class LogicModuleServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def checkAlive(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def notifyExecutionEnvironmentShutdown(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def notifyStorageLocationShutdown(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def existsActiveEnvironmentsForSL(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -1287,7 +1323,7 @@ class LogicModuleServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def registerClassesInNamespaceFromExternalDataClay(self, request, context):
+  def importModelsFromExternalDataClay(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -1445,6 +1481,21 @@ def add_LogicModuleServicer_to_server(servicer, server):
           servicer.checkAlive,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.EmptyMessage.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
+      ),
+      'notifyExecutionEnvironmentShutdown': grpc.unary_unary_rpc_method_handler(
+          servicer.notifyExecutionEnvironmentShutdown,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NotifyExecutionEnvironmentShutdownRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
+      ),
+      'notifyStorageLocationShutdown': grpc.unary_unary_rpc_method_handler(
+          servicer.notifyStorageLocationShutdown,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NotifyStorageLocationShutdownRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
+      ),
+      'existsActiveEnvironmentsForSL': grpc.unary_unary_rpc_method_handler(
+          servicer.existsActiveEnvironmentsForSL,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ExistsActiveEnvironmentsForSLRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ExistsActiveEnvironmentsForSLResponse.SerializeToString,
       ),
       'performSetOfNewAccounts': grpc.unary_unary_rpc_method_handler(
           servicer.performSetOfNewAccounts,
@@ -1906,9 +1957,9 @@ def add_LogicModuleServicer_to_server(servicer, server):
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetClassesInNamespaceRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetClassesInNamespaceResponse.SerializeToString,
       ),
-      'registerClassesInNamespaceFromExternalDataClay': grpc.unary_unary_rpc_method_handler(
-          servicer.registerClassesInNamespaceFromExternalDataClay,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterClassesInNamespaceFromExternalDataClayRequest.FromString,
+      'importModelsFromExternalDataClay': grpc.unary_unary_rpc_method_handler(
+          servicer.importModelsFromExternalDataClay,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ImportModelsFromExternalDataClayRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
       ),
       'getStubs': grpc.unary_unary_rpc_method_handler(
