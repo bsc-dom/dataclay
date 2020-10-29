@@ -178,3 +178,19 @@ def get_stubs(username, password, contract_ids_str, path):
             f.write(value)
 
     deploy_stubs(path)
+
+
+def import_models_from_external_dataclay(exthostname, extport, namespace) -> None:
+    """ Import models in namespace specified from an external dataClay
+    :param exthostname: external dataClay host
+    :param extport: external dataClay port
+    :param namespace: external dataClay namespace to get
+    :return: None
+    :type exthostname: str
+    :type extport: str
+    :type namespace: str
+    :rtype: None
+    """
+    client = _establish_client()
+    ext_dataclay_id = client.get_external_dataclay_id(exthostname, int(extport))
+    return client.import_models_from_external_dataclay(namespace, ext_dataclay_id)

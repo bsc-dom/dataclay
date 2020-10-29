@@ -84,7 +84,15 @@ class ExecutionEnvironment(object):
             self.logger.info("Storing EE info %s" % str(self.execution_environment_id))
             fh.writelines(str(self.execution_environment_id) + "\n")
             fh.close()
-            
+
+    def notify_execution_environment_shutdown(self):
+        """
+        Notify LM current node left
+        :return: None
+        """
+        lm_client = getRuntime().ready_clients["@LM"]
+        lm_client.notify_execution_environment_shutdown(self.execution_environment_id)
+
     def get_execution_environment_id(self):
         """
         Get execution environment id

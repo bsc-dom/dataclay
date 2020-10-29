@@ -1,6 +1,5 @@
 docs
 tests
-test_scripts
 **/*.pyc
 build
 dist
@@ -9,3 +8,7 @@ src/dataClay.egg-info
 .project
 .pydevproject
 .git*
+venv
+.idea
+.travis
+dataclay-common

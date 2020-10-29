@@ -1,6 +1,3 @@
-
-""" Class description goes here. """
-
 """
 Public dataclay functions exported to use (friendly) "from dataclay import ..."
 """

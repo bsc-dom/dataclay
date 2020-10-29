@@ -150,6 +150,18 @@ class LMClient(object):
         st_loc_id = Utils.get_id(response.storageLocationID)
         return st_loc_id
 
+    def get_storage_location_id(self, sl_name):
+        request = logicmodule_messages_pb2.GetStorageLocationIDRequest(
+            slName=sl_name,
+        )
+        lm_function = lambda request: self.lm_stub.getStorageLocationID.future(request=request, metadata=self.metadata_call)
+        response = self._call_logicmodule(request, lm_function)
+        if response.excInfo.isException:
+            logger.debug("Exception in response")
+            raise DataClayException(response.excInfo.exceptionMessage)
+        st_loc_id = Utils.get_id(response.storageLocationID)
+        return st_loc_id
+
     def perform_set_of_new_accounts(self, admin_id, admin_credential, yaml_file):
 
         request = logicmodule_messages_pb2.PerformSetAccountsRequest(
@@ -1519,6 +1531,25 @@ class LMClient(object):
             alias=alias
         )
         lm_function = lambda request: self.lm_stub.addAlias.future(request=request, metadata=self.metadata_call)
+        response = self._call_logicmodule(request, lm_function)
+        if response.isException:
+            raise DataClayException(response.exceptionMessage)
+
+    def import_models_from_external_dataclay(self, namespace, ext_dataclay_id):
+        request = logicmodule_messages_pb2.ImportModelsFromExternalDataClayRequest(
+            namespaceName=namespace,
+            dataClayID=Utils.get_msg_options['dataclay_instance'](ext_dataclay_id)
+        )
+        lm_function = lambda request: self.lm_stub.importModelsFromExternalDataClay.future(request=request, metadata=self.metadata_call)
+        response = self._call_logicmodule(request, lm_function)
+        if response.isException:
+            raise DataClayException(response.exceptionMessage)
+
+    def notify_execution_environment_shutdown(self, exec_env_id):
+        request = logicmodule_messages_pb2.NotifyExecutionEnvironmentShutdownRequest(
+            executionEnvironmentID=Utils.get_msg_options['exec_env'](exec_env_id)
+        )
+        lm_function = lambda request: self.lm_stub.notifyExecutionEnvironmentShutdown.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
         if response.isException:
             raise DataClayException(response.exceptionMessage)

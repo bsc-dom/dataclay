@@ -1,6 +1,11 @@
-
+[![Build Status](https://travis-ci.com/bsc-dom/pyclay.svg?branch=develop)](https://travis-ci.com/bsc-dom/pyclay)
 [![Documentation Status](https://readthedocs.org/projects/pyclay/badge/?version=latest)](https://pyclay.readthedocs.io/en/latest/?badge=latest)
+[![License](https://img.shields.io/github/license/bsc-dom/pyclay)](https://github.com/bsc-dom/pyclay/blob/develop/LICENSE.txt)
 [![PyPI version](https://badge.fury.io/py/dataClay.png)](https://badge.fury.io/py/dataClay)
+[![Pypi Downloads](https://pepy.tech/badge/dataclay)](https://pepy.tech/project/dataclay)
+<br/>
+
+[![Test Pypi](https://img.shields.io/badge/testpypi-2.5.dev-green)](https://test.pypi.org/project/dataClay/)
 
 # dataClay Python codebase
 
