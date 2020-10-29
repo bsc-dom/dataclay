@@ -63,10 +63,12 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
     SEQUENCE_REGEX = re.compile(r'(?P<base_type>(list)|(tuple)|(set))\s*(?:[<\[]\s*(?P<subtype>.*?)\s*[>\]])?\s*$')
     MAPPING_REGEX = re.compile(r'(?P<base_type>dict)\s*(?:[<\[]\s*(?P<keytype>.*?)\s*,\s*(?P<valuetype>.*?)\s*[>\]])?\s*$')
     STR_SIGNATURE = 'str'
+    BYTES_SIGNATURE = 'bytes'
     UNICODE_SIGNATURE = 'unicode'
     STORAGEOBJECT_SIGNATURE = 'storageobject'
     ANYTHING_SIGNATURE = 'anything'
     NUMPY_SIGNATURE = 'numpy'
+    NUMPY_NDARRAY = 'ndarray'
 
     def __init__(self, signature, pickle_fallback=False):
         # TODO make some checks, and raise InvalidPythonSignature otherwise
@@ -80,12 +82,27 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
         except KeyError:
             pass
 
-        # numpy have their own special ultra-fast serialization
+        # numpy have their own special serialization
         if self._signature.startswith(self.NUMPY_SIGNATURE):
             import numpy as np
-            # Ignoring field size, as numpy is selfcontained in that matter
-            _ = IntegerWrapper(32).read(io_file)
-            return np.load(io_file, allow_pickle=False)
+
+            if self._signature == "%s.%s" % (self.NUMPY_SIGNATURE, self.NUMPY_NDARRAY):
+                # special serialization on two parts
+
+                # first the "metadata" of the array (shape and type)
+                field_size = IntegerWrapper(32).read(io_file)
+                shape, np_type = pickle.loads(io_file.read(field_size))
+
+                # then the bytes
+                field_size = IntegerWrapper(32).read(io_file)
+                buf = io_file.read(field_size)
+                return np.frombuffer(buf, dtype=np_type).reshape(shape)
+
+            else:
+                # Use np.save / np.load for all other numpy types.
+                # Here we are ignoring field size, as numpy is selfcontained in that matter
+                _ = IntegerWrapper(32).read(io_file)
+                return np.load(io_file)
 
         # anything is also a special case, also all its alias
         if self._signature == self.ANYTHING_SIGNATURE or \
@@ -167,6 +184,8 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
                 return StringWrapper('utf-8').read(io_file)
         elif subtype == self.UNICODE_SIGNATURE:
             return StringWrapper('utf-16').read(io_file)
+        elif subtype == self.BYTES_SIGNATURE:
+            return StringWrapper('binary').read(io_file)
         else:
             raise NotImplementedError("Python types supported at the moment: "
                                       "list and mappings (but not `%s`), sorry" % subtype)
@@ -184,9 +203,26 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
         # numpy have their own special ultra-fast serialization
         if self._signature.startswith(self.NUMPY_SIGNATURE):
             import numpy as np
-            with size_tracking(io_file):
-                np.save(io_file, value)
-            return
+
+            if self._signature == "%s.%s" % (self.NUMPY_SIGNATURE, self.NUMPY_NDARRAY):
+                # special serialization on two parts
+
+                # first the "metadata" of the array (shape and type)
+                s = pickle.dumps((value.shape, value.dtype.str), protocol=-1)
+                IntegerWrapper(32).write(io_file, len(s))
+                io_file.write(s)
+
+                # then the bytes
+                b = value.tobytes()
+                IntegerWrapper(32).write(io_file, len(b))
+                io_file.write(b)
+                return
+                            
+            else:
+                # Use np.save / np.load for all other numpy types.
+                with size_tracking(io_file):
+                    np.save(io_file, value)
+                return
 
         # anything is also a special case, also all its alias
         if self._signature == self.ANYTHING_SIGNATURE or \
@@ -267,6 +303,8 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
                 StringWrapper('utf-8').write(io_file, value)
             elif six.PY3:
                 StringWrapper('binary').write(io_file, value)
+        elif subtype == self.BYTES_SIGNATURE:
+            StringWrapper('binary').write(io_file, value)
         elif subtype == self.UNICODE_SIGNATURE:
             StringWrapper('utf-16').write(io_file, value)
         else:
