@@ -5,7 +5,7 @@ Note that importing this module has a basic semantic: it prepares the dataClay
 core and sets the "client" mode for the library.
 """
 import logging.config
-import os.path
+import os
 import sys
 import warnings
 from dataclay import getRuntime
@@ -338,8 +338,12 @@ def finish_tracing():
                 getRuntime().deactivate_tracing_in_dataclay_services()
                 getRuntime().deactivate_tracing(True)
                 getRuntime().get_traces_in_dataclay_services()  # not on workers!
+                # Merge
+                os.system("mpi2prv -keep-mpits -no-syn -f TRACE.mpits -o ./trace/dctrace.prv")
             else:
                 getRuntime().deactivate_tracing(True)
+
+
 
             
 def finish():

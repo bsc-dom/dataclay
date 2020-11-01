@@ -6,7 +6,6 @@ dataClay.egg-info/
 *.pyc
 MANIFEST
 .cache/
-.pydevproject
 dataclay.backup
 .pytest_cache
 test_scripts/cfgfiles
