@@ -226,13 +226,17 @@ class ExecutionEnvironment(object):
         if implementation_name.startswith(DCLAY_GETTER_PREFIX):
             prop_name = implementation_name[len(DCLAY_GETTER_PREFIX):]
             ret_value = getattr(instance, DCLAY_PROPERTY_PREFIX + prop_name)
-            logger.debug("Getter: for property %s returned %r", prop_name, ret_value)
+            #FIXME: printing value can cause __str__ call (even if __repr__ is defined)
+            #FIXME: this function could be used during deserialization
+            #logger.debug("Getter: for property %s returned %r", prop_name, ret_value)
             if not isinstance(ret_value, DataClayObject):
                 instance.set_dirty(True)
     
         elif implementation_name.startswith(DCLAY_SETTER_PREFIX):
             prop_name = implementation_name[len(DCLAY_SETTER_PREFIX):]
-            logger.debug("Setter: for property %s (value: %r)", prop_name, params[0])
+            #FIXME: printing value can cause __str__ call (even if __repr__ is defined)
+            #FIXME: this function could be used during deserialization
+            #logger.debug("Setter: for property %s (value: %r)", prop_name, params[0])
             setattr(instance, DCLAY_PROPERTY_PREFIX + prop_name, params[0])
             ret_value = None
             instance.set_dirty(True)

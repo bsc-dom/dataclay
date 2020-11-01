@@ -51,7 +51,8 @@ class ClientRuntime(DataClayRuntime):
         :rtype: DataClayID
         :raises RuntimeError: if backend id is UNDEFINED_LOCAL.
         """
-        self.logger.debug("Starting make persistent object for instance %s with id %s", instance,
+
+        self.logger.debug("Starting make persistent object for instance with id %s",
                      instance.get_object_id())
         if backend_id is UNDEFINED_LOCAL:
             # This is a commonruntime end user pitfall,

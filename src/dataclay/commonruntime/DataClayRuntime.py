@@ -438,7 +438,6 @@ class DataClayRuntime(object):
                     # hint we set in volatile parameters is wrong, because they are going to be deserialized/stored
                     # in the same location as the object with the method to execute
                     #===========================================================
-                    self.logger.debug("Looking in Heap for parameter %s", str(param[0]))
                     param_instance = self.get_from_heap(param[0])
                     param_instance.set_hint(exeenv_id)
                 self.volatile_parameters_being_send.remove(param[0])

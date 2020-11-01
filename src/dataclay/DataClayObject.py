@@ -787,7 +787,8 @@ class DataClayObject(object):
                         except:
                             traceback.print_exc()
 
-                logger.debug("Setting value %s for property %s", value, p.name)
+                #FIXME: setting value calls __str__ that can cause a remote call!
+                #logger.debug("Setting value %s for property %s", value, p.name)
 
                 object.__setattr__(self, "%s%s" % (DCLAY_PROPERTY_PREFIX, p.name), value)
                 
