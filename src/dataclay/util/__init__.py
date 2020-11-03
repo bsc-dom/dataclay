@@ -37,9 +37,9 @@ class Configuration(object):
 
     # NEW DATA-SERVICE OR EXECUTION ENVIRONMENT: WARNING: for each retry there is max_retries_logicmodule
     # Maximum autoregistration retries of a node. 
-    MAX_RETRY_AUTOREGISTER = 10
+    MAX_RETRY_AUTOREGISTER = 80
     # Seconds to wait to retry autoregistration of a node. 
-    RETRY_AUTOREGISTER_TIME = 3000
+    RETRY_AUTOREGISTER_TIME = 5000
         
     # ANY CALL TO LOGICMODULE: clients can wait at init waitForBackends
     # Default value for number of retries in connection to LogicModule. 
