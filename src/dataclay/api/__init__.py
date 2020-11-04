@@ -5,12 +5,12 @@ Note that importing this module has a basic semantic: it prepares the dataClay
 core and sets the "client" mode for the library.
 """
 import logging.config
-import os.path
+import os
 import sys
-
+import warnings
 from dataclay import getRuntime
 from dataclay.DataClayObject import DataClayObject
-from dataclay.commonruntime.ClientRuntime import *
+from dataclay.commonruntime.ClientRuntime import settings, LANG_PYTHON
 from dataclay.commonruntime.ClientRuntime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
 from dataclay.commonruntime.Initializer import initialize, _get_logging_dict_config
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
@@ -29,7 +29,7 @@ _connection_initialized = False
 _initialized = False
 
 
-def is_initialized():
+def is_initialized() -> bool:
     """Simple query for the _initialized flag.
 
     :return: True if `init` has already been called, False otherwise.
@@ -37,16 +37,24 @@ def is_initialized():
     return _initialized
 
 
-def reinitialize_logging():
+def reinitialize_logging() -> None:
+    """
+    Restart logging system with new logging dict configuration
+    :return: None
+    """
+    warnings.warn("deprecated", DeprecationWarning)
     dictconfig = _get_logging_dict_config()
-
     logger.debug("Ready to close loggers, bye bye!")
     dictconfig["disable_existing_loggers"] = False
     logging.config.dictConfig(dictconfig)
     logger.verbose("Logging reinitialized. Welcome back!")
 
 
-def reinitialize_clients():
+def reinitialize_clients() -> None:
+    """
+    Reinitialize connection to logic module
+    :return: None
+    """
     runtime = getRuntime()
     logger.verbose("Performing reinitialization of clients, removing #%d cached ones and recreating LMClient",
                 len(runtime.ready_clients))
@@ -55,7 +63,7 @@ def reinitialize_clients():
     }
 
 
-def init_connection(client_file):
+def init_connection(client_file) -> LMClient:
     """Initialize the connection client ==> LogicModule.
 
     Note that the connection can be initialized standalone from here (like the
@@ -142,6 +150,17 @@ def get_dataclay_id(exthostname, extport):
     """
     return getRuntime().get_external_dataclay_id(exthostname, extport)
 
+def import_models_from_external_dataclay(namespace, ext_dataclay_id) -> None:
+    """ Import models in namespace specified from an external dataClay
+    :param namespace: external dataClay namespace to get
+    :param ext_dataclay_id: external dataClay ID
+    :return: None
+    :type namespace: string
+    :type ext_dataclay_id: UUID
+    :rtype: None
+    """
+    return getRuntime().import_models_from_external_dataclay(namespace, ext_dataclay_id)
+
 
 def unfederate(ext_dataclay_id=None):
     """ Unfederate all objects belonging to/federated with external data clay with id provided 
@@ -181,7 +200,7 @@ def pre_network_init(config_file):
     settings.load_properties(config_file)
 
 
-def init(config_file=None):
+def init(config_file=None) -> None:
     """Initialization made on the client-side, with file-based settings.
 
     Note that after a successful call to this method, subsequent calls will be
@@ -302,7 +321,7 @@ def post_network_init():
 
 def finish_tracing():
     """
-    Finishes tracing if needed 
+    Finishes tracing if needed
     """
     if extrae_tracing_is_enabled():
         extrae_compss = int(settings.extrae_starting_task_id) != 0
@@ -319,12 +338,17 @@ def finish_tracing():
                 getRuntime().deactivate_tracing_in_dataclay_services()
                 getRuntime().deactivate_tracing(True)
                 getRuntime().get_traces_in_dataclay_services()  # not on workers!
+                # Merge
+                os.system("mpi2prv -keep-mpits -no-syn -f TRACE.mpits -o ./trace/dctrace.prv")
             else:
                 getRuntime().deactivate_tracing(True)
+
+
 
             
 def finish():
     global _initialized
+    global _connection_initialized    
     logger.info("Finishing dataClay API")
     finish_tracing()
     getRuntime().stop_runtime()
