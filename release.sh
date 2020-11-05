@@ -83,7 +83,6 @@ else
   PREV_VERSION=$(echo "$VERSION - 0.1" | bc)
   NEW_VERSION=$(echo "$VERSION + 0.1" | bc)
   GIT_TAG=$VERSION
-  echo $NEW_VERSION > VERSION.txt
 
   # Modify README.md
   sed -i "s/$VERSION/$NEW_VERSION/g" README.md
@@ -98,14 +97,14 @@ else
 
   printMsg "Preparing develop branch"
   ## update develop branch also ##
-  git fetch --all
   git checkout develop
   git merge master
+  echo $NEW_VERSION > VERSION.txt
   git add VERSION.txt
   git commit -m "Updating version.txt"
-  git push origin develop
+  git push
 
-    # back to master
+  # back to master
   git checkout master
 fi
 deactivate
