@@ -37,7 +37,7 @@ done
 
 VERSION=$(cat VERSION.txt)
 printMsg "Welcome to pyClay release script"
-GIT_BRANCH=$(git name-rev --name-only HEAD)
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$GIT_BRANCH" != "$BRANCH_TO_CHECK" ]]; then
   printError "Branch is not $BRANCH_TO_CHECK. Aborting script"
 fi
