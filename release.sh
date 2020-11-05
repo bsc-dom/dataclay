@@ -65,6 +65,9 @@ source venv/bin/activate
 pip install --upgrade pip
 pip install --upgrade setuptools twine SecretStorage keyring wheel keyrings.alt
 
+# Clean
+rm -rf dist build src/dataClay.egg-info
+
 if [ "$DEV" = true ] ; then
 
   python setup.py egg_info --tag-build=dev --tag-date -q clean --all install sdist bdist_wheel
