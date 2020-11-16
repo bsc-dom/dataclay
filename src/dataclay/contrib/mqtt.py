@@ -5,14 +5,13 @@ from dataclay import dclayMethod
 """ Mqtt pool of producers """
 MQTT_PRODUCERS = dict()
 
-class KafkaMixin(object):
+class MQTTMixin(object):
     """MQTT mechanisms
     """
 
     @dclayMethod(data="dict<str, anything>", topic="str")
     def produce_mqtt_msg(self, data, topic="dataclay"):
         import os
-        from dataclay.contrib.kafka import KAFKA_PRODUCERS
         import paho.mqtt.client as mqtt
         from json import dumps
 
@@ -20,7 +19,7 @@ class KafkaMixin(object):
         mqtt_port = int(os.getenv('MQTT_PORT', "1883"))
         mqtt_client = os.getenv("MQTT_PRODUCER_ID", "dataclay_mqtt_producer")
         mqtt_address = f"{mqtt_host}:{mqtt_port}"
-        if mqtt_address in KAFKA_PRODUCERS:
+        if mqtt_address in MQTT_PRODUCERS:
             mqtt_producer = MQTT_PRODUCERS[mqtt_address]
         else:
             mqtt_producer = mqtt.Client(mqtt_client)
