@@ -13,6 +13,7 @@ class MQTTMixin(object):
     def produce_mqtt_msg(self, data, topic="dataclay"):
         import os
         import paho.mqtt.client as mqtt
+        from dataclay.contrib.mqtt import MQTT_PRODUCERS
         from json import dumps
 
         mqtt_host = os.getenv("MQTT_HOST", "mqtt")

@@ -9,7 +9,7 @@ printMsg() {
 }
 printError() {
   printf "${CONSOLE_RED}${1}${CONSOLE_NORMAL}\n"
-  exit 1
+  exit 0
 }
 #-----------------------------------------------------------------------
 # MAIN
@@ -37,7 +37,7 @@ done
 
 VERSION=$(cat VERSION.txt)
 printMsg "Welcome to pyClay release script"
-GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_BRANCH=$(git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$(git rev-parse HEAD)/ {print \$2}")
 if [[ "$GIT_BRANCH" != "$BRANCH_TO_CHECK" ]]; then
   printError "Branch is not $BRANCH_TO_CHECK. Aborting script"
 fi
