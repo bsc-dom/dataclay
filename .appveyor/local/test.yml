@@ -1,0 +1,53 @@
+version: 2.6.build{build}
+max_jobs: 1
+image: Ubuntu1804
+environment:
+  PYPI_USERNAME:
+    secure: nrStw57LQjXlx9qWl7jwtQ==
+  PYPI_PASSWORD:
+    secure: DEEuUd7PeATtRWFJJQ9fuw==
+  matrix:
+  - PYTHON_VERSION: 3.6
+  - PYTHON_VERSION: 3.7
+  - PYTHON_VERSION: 3.8
+install:
+- sh: >-
+    echo -e "[distutils]
+
+    index-servers =
+
+    \tpypitest
+
+
+    [pypitest]
+
+    repository: https://test.pypi.org/legacy/
+
+    username: ${PYPI_USERNAME}
+
+    password: ${PYPI_PASSWORD}" >> ~/.pypirc
+
+    cat ~/.pypirc
+
+
+    sudo apt-get update -y
+
+    sudo apt-get install -y python$PYTHON_VERSION python3-pip python3-venv
+
+
+    export PATH=/home/appveyor/.local/bin:$PATH
+
+    pip3 install --upgrade pip
+
+    pip3 install virtualenv
+build_script:
+- sh: "python3 -m venv ./venv \nsource ./venv/bin/activate \npip3 install --upgrade pip\npip3 install pytest wheel\npip3 install -r requirements.txt\npython3 setup.py install"
+test_script:
+- sh: "source ./venv/bin/activate \npytest\ndeactivate"
+notifications:
+- provider: Email
+  to:
+  - support-dataclay@bsc.es
+  on_build_success: false
+  on_build_failure: true
+  on_build_status_changed: true
