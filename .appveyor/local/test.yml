@@ -47,7 +47,7 @@ test_script:
 notifications:
 - provider: Email
   to:
-  - support-dataclay@bsc.es
+  - dgasull@bsc.es
   on_build_success: false
   on_build_failure: true
   on_build_status_changed: true
