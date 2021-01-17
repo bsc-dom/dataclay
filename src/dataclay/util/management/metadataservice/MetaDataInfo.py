@@ -10,7 +10,7 @@ class MetaDataInfo(ManagementObject):
                "datasetID",
                "metaclassID",
                "locations",
-               "aliases",
+               "alias",
                "ownerID"
                ]
 

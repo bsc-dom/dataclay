@@ -139,6 +139,7 @@ class ManagementObject(DataClaySerializable):
             logger.error("WARNING -- Attributes %s are not setted -- Fields missing on class %s"
             , unsetted_attrs, self.__class__)
 
+
     def __str__(self):
         lines = ["ManagementObject: %s" % self.__class__.__name__]
         for field_name in self._fields:
@@ -149,6 +150,7 @@ class ManagementObject(DataClaySerializable):
                 pass
 
         return "\n".join(lines)
+
 
     def serialize(self, io_file):
         """Serialize this instance into a IO like (file, StringIO...)."""
