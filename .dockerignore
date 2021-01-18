@@ -1,14 +1,14 @@
-docs
-tests
-**/*.pyc
-build
-dist
-src/dataClay.egg-info
-.travis*
-.project
-.pydevproject
-.git*
-venv
-.idea
-.travis
-dataclay-common
+# In .dockerignore
+# Exclude everything:
+#
+*
+
+# Now un-exclude:
+#
+!src
+!setup.py
+!README.md
+!MANIFEST.in
+!requirements.txt
+!VERSION.txt
+.dockerignore
