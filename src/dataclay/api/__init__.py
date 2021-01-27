@@ -17,6 +17,9 @@ from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.paraver import TRACE_ENABLED, extrae_tracing_is_enabled, get_task_id, \
     set_current_available_task_id
 from dataclay.util.StubUtils import track_local_available_classes
+from dataclay.util.StubUtils import clean_babel_data
+from dataclay.commonruntime.Settings import reload_settings
+
 from time import sleep
 
 # This will be populated during initialization
@@ -354,6 +357,11 @@ def finish():
     getRuntime().stop_runtime()
     _initialized = False
     _connection_initialized = False
+    # Unload stubs
+    clean_babel_data()
+    sys.path.remove(os.path.join(settings.stubs_folder, 'sources'))
+    # reload settings
+    reload_settings()
 
 ######################################
 # Static initialization of dataClay
