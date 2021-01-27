@@ -55,6 +55,9 @@ class _SettingsHub(object):
     loaded = False
 
     def __init__(self):
+        self.initialize()
+
+    def initialize(self):
         # Ensure a instance copy of the global class-default dictionary
         self._values = {
             'logicmodule_host': "127.0.0.1",
@@ -110,7 +113,7 @@ class _SettingsHub(object):
             # Ensure real path, just in case, regarding the properties' file
             self._values["stubs_folder"] = os.path.realpath(os.path.join(
                 dirname, getattr(d, FIELD_STUBSFOLDER)))
-
+            logger.debug("Stubs folder is %s", self._values["stubs_folder"])
             self._values["datasets"] = getattr(d, FIELD_DATASETS).split(':')
             self._values["dataset_for_store"] = getattr(d, FIELD_DATASETFORSTORE)
 
@@ -203,8 +206,6 @@ class _SettingsHub(object):
 
     def __setattr__(self, key, value):
         if key == "loaded":
-            if value is not True:
-                raise RuntimeError("Unloading a settings is not permitted")
             object.__setattr__(self, key, value)
         elif key == "_values":
             # We expect that this is only done by the initialization
@@ -212,5 +213,15 @@ class _SettingsHub(object):
         else:
             self._values[key] = value
 
+    def reload(self):
+        logger.debug(f"[Settings] Reloading...")
+        self.loaded = False
+        self.initialize()
+
+
 
 settings = _SettingsHub()
+
+def reload_settings():
+    global settings
+    settings.reload()

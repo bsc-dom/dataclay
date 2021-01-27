@@ -52,9 +52,10 @@ def load_babel_data(stubs_folder=None):
     """
     global _babel_data
     if _babel_data is None:
-        with open(os.path.join(stubs_folder or settings.stubs_folder,
-                               "babelstubs.yml"),
-                  'rb') as f:
+        babel_path = os.path.join(stubs_folder or settings.stubs_folder,
+                                  "babelstubs.yml")
+        logger.debug(f"Loading babel stubs from {babel_path}")
+        with open(babel_path, 'rb') as f:
             _babel_data = babel_stubs_load(f)
 
     return _babel_data
@@ -117,3 +118,8 @@ def track_local_available_classes():
 
     logger.verbose("Using the following contracts: %s", contracts)
     return contracts
+
+def clean_babel_data():
+    """Remove current babel data loaded"""
+    global _babel_data
+    _babel_data = None
