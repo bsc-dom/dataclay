@@ -397,7 +397,7 @@ def get_obj_with_data_param_or_return(vol_param_or_ret):
             oid=get_msg_options['object'](vol_param_or_ret[0]),
             classid=get_msg_options['meta_class'](vol_param_or_ret[1]),
             metadata=get_metadata(vol_param_or_ret[2]),
-            objbytes=vol_param_or_ret[3].getvalue()
+            objbytes=vol_param_or_ret[3]
         )
         return response
 
