@@ -50,7 +50,9 @@ class SerializationLibUtils(object):
                 return None
         metadata = self.create_metadata(cur_serialized_objs, None, 0)
         dcc_extradata = instance.get_class_extradata()
-        return instance.get_object_id(), dcc_extradata.class_id, metadata, buffer
+        byte_array = buffer.getvalue()
+        buffer.close()
+        return instance.get_object_id(), dcc_extradata.class_id, metadata, byte_array
 
     def serialize_association(self,
             io_output,  # final DataClayByteBuffer
