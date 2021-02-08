@@ -32,7 +32,7 @@ class DeserializationLibUtils(object):
                             params_order, runtime)
 
 
-    def _create_buffer_and_deserialize(self, obj_bytes, instance, ifacebitmaps, metadata, cur_deser_python_objs):
+    def _create_buffer_and_deserialize(self, io_file, instance, ifacebitmaps, metadata, cur_deser_python_objs):
         """
         @postcondition: Create buffer and deserialize
         @param obj_bytes: bytes to deserialize
@@ -43,7 +43,7 @@ class DeserializationLibUtils(object):
         """
 
         # TODO: obj_bytes is an io_file, use a buffer instead
-        instance.deserialize(obj_bytes, ifacebitmaps, metadata, cur_deser_python_objs)
+        instance.deserialize(io_file, ifacebitmaps, metadata, cur_deser_python_objs)
 
 
     def deserialize_grpc_message_from_db(self, obj_bytes):
@@ -79,11 +79,11 @@ class DeserializationLibUtils(object):
         """
 
         cur_deser_python_objs = dict()
-        obj_bytes = BytesIO(data)
+        io_file = BytesIO(data)
         object_to_fill.set_loaded(True)
         object_to_fill.set_persistent(True)
-        self._create_buffer_and_deserialize(obj_bytes, object_to_fill, None, metadata, cur_deser_python_objs)
-
+        self._create_buffer_and_deserialize(io_file, object_to_fill, None, metadata, cur_deser_python_objs)
+        io_file.close()
         """
         GARBAGE COLLECTOR RACE CONDITION
         ================================
@@ -144,9 +144,10 @@ class DeserializationLibUtils(object):
         runtime.lock(instance.get_object_id())
         try:
             metadata = param_or_ret[2]
-            obj_bytes = BytesIO(param_or_ret[3])
+            io_file = BytesIO(param_or_ret[3])
             cur_deser_python_objs = dict()
-            self._create_buffer_and_deserialize(obj_bytes, instance, None, metadata, cur_deser_python_objs)
+            self._create_buffer_and_deserialize(io_file, instance, None, metadata, cur_deser_python_objs)
+            io_file.close()
             instance.set_persistent(False)
             instance.set_hint(None)
 
@@ -181,9 +182,10 @@ class DeserializationLibUtils(object):
             if force_deserialization or not instance.is_loaded():
                 """ TODO: improve GRPC messages """
                 metadata = param_or_ret[2]
-                obj_bytes = BytesIO(param_or_ret[3])
+                io_file = BytesIO(param_or_ret[3])
                 cur_deser_python_objs = dict()
-                self._create_buffer_and_deserialize(obj_bytes, instance, None, metadata, cur_deser_python_objs)
+                self._create_buffer_and_deserialize(io_file, instance, None, metadata, cur_deser_python_objs)
+                io_file.close()
                 instance.set_loaded(True)
                 instance.set_persistent(True)
                 if owner_session_id is not None:

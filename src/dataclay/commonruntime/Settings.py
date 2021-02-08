@@ -213,8 +213,8 @@ class _SettingsHub(object):
         else:
             self._values[key] = value
 
-    def reload(self):
-        logger.debug(f"[Settings] Reloading...")
+    def unload(self):
+        logger.debug(f"[Settings] Unloading...")
         self.loaded = False
         self.initialize()
 
@@ -222,6 +222,6 @@ class _SettingsHub(object):
 
 settings = _SettingsHub()
 
-def reload_settings():
+def unload_settings():
     global settings
-    settings.reload()
+    settings.unload()

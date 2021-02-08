@@ -18,7 +18,7 @@ from dataclay.paraver import TRACE_ENABLED, extrae_tracing_is_enabled, get_task_
     set_current_available_task_id
 from dataclay.util.StubUtils import track_local_available_classes
 from dataclay.util.StubUtils import clean_babel_data
-from dataclay.commonruntime.Settings import reload_settings
+from dataclay.commonruntime.Settings import unload_settings
 
 from time import sleep
 
@@ -351,17 +351,20 @@ def finish_tracing():
             
 def finish():
     global _initialized
-    global _connection_initialized    
+    if not _initialized:
+        logger.warning("Already finished --ignoring")
+        return
+    global _connection_initialized
     logger.info("Finishing dataClay API")
     finish_tracing()
     getRuntime().stop_runtime()
-    _initialized = False
-    _connection_initialized = False
     # Unload stubs
     clean_babel_data()
     sys.path.remove(os.path.join(settings.stubs_folder, 'sources'))
-    # reload settings
-    reload_settings()
+    # unload settings
+    unload_settings()
+    _initialized = False
+    _connection_initialized = False
 
 ######################################
 # Static initialization of dataClay
