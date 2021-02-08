@@ -14,6 +14,8 @@ from dataclay.heap.ClientHeapManager import ClientHeapManager
 from dataclay.loader.ClientObjectLoader import ClientObjectLoader
 
 # Sentinel-like object to catch some typical mistakes
+from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
+
 UNDEFINED_LOCAL = object()
 
 
@@ -89,9 +91,11 @@ class ClientRuntime(DataClayRuntime):
 
                 # From client side, we cannot check if object is registered or not (we do not have isPendingToRegister like EE)
                 # Therefore, we call LogicModule with all information for registration.
-                reg_info = [instance.get_object_id(), instance.get_class_extradata().class_id,
-                            self.get_session_id(), instance.get_dataset_id()]
-                new_object_id = self.ready_clients["@LM"].register_object(reg_info, location, alias, LANG_PYTHON)
+                reg_infos = list()
+                reg_info = RegistrationInfo(instance.get_object_id(), instance.get_class_extradata().class_id,
+                            self.get_session_id(), instance.get_dataset_id(), alias)
+                reg_infos.append(reg_info)
+                new_object_id = self.ready_clients["@LM"].register_objects(reg_infos, location, LANG_PYTHON)
                 
                 self.update_object_id(instance, new_object_id)
                 
@@ -119,7 +123,7 @@ class ClientRuntime(DataClayRuntime):
             
             # Avoid some race-conditions in communication (make persistent + execute where
             # execute arrives before).
-            self.add_volatiles_under_deserialization(serialized_objs[3])
+            self.add_volatiles_under_deserialization(serialized_objs.vol_objs)
             
             # Get EE
             try:

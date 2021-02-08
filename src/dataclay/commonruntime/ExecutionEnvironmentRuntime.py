@@ -18,6 +18,8 @@ from dataclay.util import Configuration
 __author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
 __copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
 
+from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
+
 logger = logging.getLogger(__name__)
 
 current_milli_time = lambda: int(round(time.time() * 1000))
@@ -154,10 +156,12 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             # 3 - object was persisted with an alias and it must be already registered -> we add a new alias.
             if instance.is_pending_to_register():
                 # Use case 1
-                reg_info = [instance.get_object_id(), instance.get_class_extradata().class_id,
-                            self.get_session_id(), instance.get_dataset_id()]
+                reg_infos = list()
+                reg_info = RegistrationInfo(instance.get_object_id(), instance.get_class_extradata().class_id,
+                            self.get_session_id(), instance.get_dataset_id(), alias)
+                reg_infos.append(reg_info)
                 # TODO: Review if we use hint of the object or the hint of the runtime.
-                new_object_id = self.ready_clients["@LM"].register_object(reg_info, instance.get_hint(), alias, LANG_PYTHON)
+                new_object_id = self.ready_clients["@LM"].register_objects(reg_infos, instance.get_hint(), LANG_PYTHON)
                 self.update_object_id(instance, new_object_id)
             else:
                 # Use case 2 and 3 - add new alias
@@ -256,8 +260,8 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                         continue
     
                     dcc_extradata = current_obj.get_class_extradata()
-                    infos = [object_id, dcc_extradata.class_id,
-                             self.execution_environment.thread_local_info.session_id, dataset_id]
+                    infos = RegistrationInfo(object_id, dcc_extradata.class_id,
+                             self.execution_environment.thread_local_info.session_id, dataset_id, None)
                     reg_infos.append(infos)
     
                 # This object will soon be persistent
@@ -288,8 +292,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         
         if make_persistent:
             lm_client = self.ready_clients["@LM"]
-            lm_client.register_objects(reg_infos, settings.environment_id, None, None,
-                                           LANG_PYTHON)
+            lm_client.register_objects(reg_infos, settings.environment_id, LANG_PYTHON)
             client.ds_store_objects(self.execution_environment.thread_local_info.session_id, serialized_objs, False, None)
         else:
             client.ds_upsert_objects(self.execution_environment.thread_local_info.session_id, serialized_objs)

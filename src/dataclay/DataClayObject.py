@@ -346,8 +346,7 @@ class DataClayObject(object):
         return getRuntime().get_all_locations(self.__dclay_instance_extradata.object_id)
     
     def new_replica(self, backend_id=None, recursive=True):
-        getRuntime().new_replica(self.get_object_id(), self.get_class_extradata().class_id,
-                                 self.get_hint(), backend_id, recursive)
+        getRuntime().new_replica(self.get_object_id(), backend_id, recursive)
 
     def new_version(self, backend_id):
         return getRuntime().new_version(self.get_object_id(), self.get_class_extradata().class_id,

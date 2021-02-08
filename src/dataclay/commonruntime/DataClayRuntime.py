@@ -17,9 +17,12 @@ from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.commonruntime.Runtime import threadLocal
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
+from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util import Configuration
+from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
+
 
 class NULL_NAMESPACE:
     """null Namespace for uuid3, same as java's UUID.nameUUIDFromBytes"""
@@ -250,7 +253,7 @@ class DataClayRuntime(object):
         params_order.append("object")
         params_spec = dict()
         params_spec["object"] = "DataClayObject"  # not used, see serialized_params_or_return
-        ser_from = SerializationLibUtilsSingleton.serialize_params_or_return(
+        serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
             params=parameters,
             iface_bitmaps=None,
             params_spec=params_spec,
@@ -260,32 +263,36 @@ class DataClayRuntime(object):
             recursive=True,
             for_update=True)
         
-        vol_objects = ser_from[3]
+        vol_objects = serialized_params.vol_objs
         if vol_objects is not None:
             new_ids = dict()
             
             for tag in vol_objects:
-                cur_oid = ser_from[3][tag][0]
+                cur_oid = serialized_params.vol_objs[tag].object_id
                 if cur_oid not in new_ids:
                     if cur_oid == from_object.get_object_id():
                         new_ids[cur_oid] = into_object.get_object_id()
                     else:
                         new_ids[cur_oid] = uuid.uuid4()
-                
-                ser_from[3][tag] = (new_ids[cur_oid],) + ser_from[3][tag][1:]
+
+                serialized_params.vol_objs[tag] = ObjectWithDataParamOrReturn(new_ids[cur_oid],
+                                                                              serialized_params.vol_objs[tag].class_id,
+                                                                              serialized_params.vol_objs[tag].metadata,
+                                                                              serialized_params.vol_objs[tag].obj_bytes)
+
             
             for vol_tag in vol_objects:
-                oids = ser_from[3][vol_tag][2][0]
+                oids = serialized_params.vol_objs[vol_tag].metadata.tags_to_oids
                 for tag, oid in oids.items():
                     if oid in new_ids:
                         try:
-                            ser_from[3][vol_tag][2][0][tag] = new_ids[oid]
+                            serialized_params.vol_objs[vol_tag].metadata.tags_to_oids[tag] = new_ids[oid]
                         except KeyError: 
                             pass
         
-        self.logger.debug("Sending updated metadata: %s", str(ser_from))
+        self.logger.debug("Sending updated metadata: %s", str(serialized_params))
 
-        execution_client.ds_update_object(session_id, into_object.get_object_id(), ser_from)
+        execution_client.ds_update_object(session_id, into_object.get_object_id(), serialized_params)
         
     def get_from_heap(self, object_id):
         """
@@ -321,7 +328,7 @@ class DataClayRuntime(object):
             self.ready_clients[backend_id] = execution_client
 
         operation = self.get_operation_info(object_id, operation_name)
-        value = SerializationLibUtilsSingleton.serialize_params_or_return(
+        serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
             params=(value,),
             iface_bitmaps=None,
             params_spec=operation.params,
@@ -331,7 +338,7 @@ class DataClayRuntime(object):
         )
 
         ret = execution_client.ds_execute_implementation(object_id, implementation_id,
-            session_id, value)
+            session_id, serialized_params)
 
         if ret is not None:
             self.logger.trace("Execution return %s of type %s", ret, operation.returnType)
@@ -353,9 +360,9 @@ class DataClayRuntime(object):
             hint_volatiles=exeenv_id,
             runtime=self)
         
-        if serialized_params is not None and serialized_params[3] is not None:
-            for param in serialized_params[3].values():
-                self.volatile_parameters_being_send.add(param[0])
+        if serialized_params is not None and serialized_params.vol_objs is not None:
+            for param in serialized_params.vol_objs.values():
+                self.volatile_parameters_being_send.add(param.object_id)
             
         # // === EXECUTE === //
         max_retry = Configuration.MAX_EXECUTION_RETRIES
@@ -386,9 +393,9 @@ class DataClayRuntime(object):
                 self.logger.warning("Execution resulted in an error, retrying...", exc_info=dce)
 
                 is_race_condition = False
-                if serialized_params is not None and serialized_params[4] is not None:
-                    for param in serialized_params[4]:
-                        if param.get_object_id() in self.volatile_parameters_being_send:
+                if serialized_params is not None and serialized_params.persistent_refs is not None:
+                    for param in serialized_params.persistent_refs:
+                        if param.object_id in self.volatile_parameters_being_send:
                             is_race_condition = True
                             break
                 if not is_race_condition:
@@ -426,8 +433,8 @@ class DataClayRuntime(object):
                                 % (instance.get_object_id(), str(exeenv_id)));
     
         self.logger.verbose("Result of operation named '%s' received", operation_name)
-        if serialized_params is not None and serialized_params[3] is not None:
-            for param in serialized_params[3].values():
+        if serialized_params is not None and serialized_params.vol_objs is not None:
+            for param in serialized_params.vol_objs.values():
                 if num_misses > 0: 
                     #===========================================================
                     # if there was a miss, it means that the persistent object in which we were executing 
@@ -438,9 +445,9 @@ class DataClayRuntime(object):
                     # hint we set in volatile parameters is wrong, because they are going to be deserialized/stored
                     # in the same location as the object with the method to execute
                     #===========================================================
-                    param_instance = self.get_from_heap(param[0])
+                    param_instance = self.get_from_heap(param.object_id)
                     param_instance.set_hint(exeenv_id)
-                self.volatile_parameters_being_send.remove(param[0])
+                self.volatile_parameters_being_send.remove(param.object_id)
     
         if not executed: 
             raise RuntimeError("[dataClay] ERROR: Trying to execute remotely object  but something went wrong. "
@@ -508,7 +515,9 @@ class DataClayRuntime(object):
         # Currently, we try to register it and if it is already registered, just continue.
         # Make sure object is registered.
         # DataSet is None since it is obtained from session at LM.
-        reg_info = [object_id, class_id, session_id, None]
+        reg_infos = list()
+        reg_info = RegistrationInfo(object_id, class_id, session_id, None, None)
+        reg_infos.append(reg_info)
         # In next call, alias must be null
         # NOTE: LogicModule register object function does not return an exception for already registered
         # object. We should never call registerObject for already registered objects and that's dataClay
@@ -517,7 +526,7 @@ class DataClayRuntime(object):
         # we must change the algorithms to not depend on metadata.
         # Also, location in which to register the object is the hint (in case it is not registered yet).
         try:
-            self.ready_clients["@LM"].register_object(reg_info, hint, None, LANG_PYTHON)
+            self.ready_clients["@LM"].register_object(reg_infos, hint, None, LANG_PYTHON)
         except:
             pass
     
@@ -607,10 +616,17 @@ class DataClayRuntime(object):
         if alias in self.alias_cache :   
             del self.alias_cache[alias]
     
-    def new_replica(self, object_id, class_id, hint, backend_id, recursive):
+    def new_replica(self, object_id, backend_id, backend_hostname, recursive):
         self.logger.debug("Starting new replica")
         session_id = self.get_session_id()
-        DataClayRuntime.ensure_object_is_registered(self, session_id, object_id, class_id, hint)
+
+        dest_backend_id = backend_id
+        dest_backend = None
+        if dest_backend_id is None:
+            if backend_hostname is not None:
+
+
+
         result = self.ready_clients["@LM"].new_replica(session_id, object_id, backend_id, recursive)
         if object_id in self.metadata_cache :   
             del self.metadata_cache[object_id]

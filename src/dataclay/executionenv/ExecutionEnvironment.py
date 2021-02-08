@@ -20,7 +20,9 @@ from dataclay.DataClayObjProperties import DCLAY_GETTER_PREFIX
 from dataclay.DataClayObjProperties import DCLAY_PROPERTY_PREFIX
 from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
+from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
+from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
 from dataclay.util.FileUtils import deploy_class
 from dataclay.util.classloaders import ClassLoader
 from dataclay.util.YamlParser import dataclay_yaml_load
@@ -30,6 +32,8 @@ from dataclay.util import Configuration
 
 __author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
 __copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+
+from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
 
 logger = logging.getLogger(__name__)
 
@@ -281,10 +285,17 @@ class ExecutionEnvironment(object):
             for oid in ids_with_alias:
                 self.runtime.add_alias_reference(oid)
 
+        ## Update hints since this function is called from other backends
+        hints_mapping = dict()
         for cur_obj_data in objects_data_to_store:
-            object_id = cur_obj_data[0]
-            metadata = cur_obj_data[2]
-            obj_bytes = cur_obj_data[3]
+            object_id = cur_obj_data.object_id
+            hints_mapping[object_id] = self.execution_environment_id
+
+        for cur_obj_data in objects_data_to_store:
+            object_id = cur_obj_data.object_id
+            metadata = cur_obj_data.metadata
+            obj_bytes = cur_obj_data.obj_bytes
+            metadata.modify_hints(hints_mapping)
             # make persistent - session references
             try:
                 getRuntime().add_session_reference(object_id)
@@ -294,8 +305,9 @@ class ExecutionEnvironment(object):
                              "in a federated dataclay ==> Provided dataclayID instead of sessionID")
                 pass
 
-            bytes_for_db = SerializationLibUtilsSingleton.serialize_for_db(object_id, metadata, obj_bytes, True)
-            getRuntime().ready_clients["@STORAGE"].store_to_db(settings.environment_id, object_id, bytes_for_db)
+        # store in memory
+        self.store_in_memory(session_id, objects_data_to_store)
+
 
     def register_and_store_pending(self, instance, obj_bytes, sync):
 
@@ -308,10 +320,12 @@ class ExecutionEnvironment(object):
 
         dataset_id = None
         dcc_extradata = instance.get_class_extradata()
-        reg_info = [object_id, dcc_extradata.class_id, instance.get_owner_session_id(), dataset_id]
+        reg_infos = list()
+        reg_info = RegistrationInfo(object_id, dcc_extradata.class_id, instance.get_owner_session_id(), dataset_id, None)
+        reg_infos.append(reg_info)
         try:
             lm_client = getRuntime().ready_clients["@LM"]
-            lm_client.register_object(reg_info, settings.environment_id, None, LANG_PYTHON)
+            lm_client.register_objects(reg_infos, settings.environment_id, LANG_PYTHON)
         except:
             # do nothing: alias exception
             pass
@@ -361,7 +375,8 @@ class ExecutionEnvironment(object):
         self.set_local_session(session_id)
 
         # No need to provide params specs or param order since objects are not language types
-        return DeserializationLibUtilsSingleton.deserialize_params(objects_to_store, None, None, None, getRuntime())
+        return DeserializationLibUtilsSingleton.deserialize_params(SerializedParametersOrReturn(objects_to_store),
+                                                                   None, None, None, getRuntime())
 
     def make_persistent(self, session_id, objects_to_persist):
         """ This function will deserialize make persistent "parameters" (i.e. object to persist
@@ -473,47 +488,40 @@ class ExecutionEnvironment(object):
 
         raise NotImplementedError("NewPersistentInstance RPC is not yet ready (@ Python ExecutionEnvironment)")
 
-    def new_replica(self, session_id, object_id, recursive):
+    def new_replica(self, session_id, object_id, dest_backend_id, register_metadata, recursive):
         """Creates a new replica of the object with ID provided in the backend specified.
     
     	:param session_id: ID of session
     	:param object_id: ID of the object
+    	:param dest_backend_id: destination backend id
+    	:param register_metadata: indicates if registration of metadata of objects must be forced
     	:param recursive: Indicates if all sub-objects must be replicated as well.
-    	:return: Set of IDs of replicated objects
+
+    	:return: None
     	"""
-        logger.debug("[==Replica==] New replica for %s", object_id)
+        logger.debug("----> Starting new replica of %s", object_id)
         self.prepareThread()
 
         object_ids = set()
         object_ids.add(object_id)
-        serialized_objs = self.get_objects(session_id, object_ids, recursive, False)
+        serialized_objs = self.get_objects(session_id, object_ids, recursive)
+        backend = getRuntime().get_execution_environments_info()[dest_backend_id]
+        try:
+            client_backend = getRuntime().ready_clients[dest_backend_id]
+        except KeyError:
+            logger.verbose("Not found Client to ExecutionEnvironment {%s}!"
+                           " Starting it at %s:%d", dest_backend_id, backend.hostname, backend.port)
+            client_backend = EEClient(backend.hostname, backend.port)
+            getRuntime().ready_clients[dest_backend_id] = client_backend
 
-        # Adds associated oid found in metadata in object_ids
-        for obj_found in serialized_objs:
-            for k in obj_found[2][0]:
-                oid = obj_found[2][0][k]
-                if oid not in object_ids:
-                    logger.verbose("[==Replica==] Associated OID %s found in serialized_objects and not in object_ids",
-                                   oid)
-                    object_ids.add(oid)
-                if not recursive:
-                    break
+        # Store objects in other backend
+        serialized_objs_with_data = list()
+        for serialized_obj in serialized_objs.values():
+            serialized_objs_with_data.append(serialized_obj)
+        client_backend.ds_store_objects(session_id, serialized_objs_with_data, False, None);
 
-        logger.debug("[==Replica==] Serialized_objs at the end are %s", serialized_objs)
+        logger.debug("<---- Finished new replica of %s", object_id)
 
-        objects_list = self._check_and_prepare(serialized_objs)
-
-        logger.debug("[==Replica==] Object list to store is %s", objects_list)
-
-        for obj_id in object_ids:
-            for obj in objects_list:
-                obj_bytes = obj[3]
-                if obj[0] == obj_id:
-                    metadata = obj[2]
-                    bytes_for_db = SerializationLibUtilsSingleton.serialize_for_db(obj_id, metadata, obj_bytes, False)
-                    getRuntime().ready_clients["@STORAGE"].store_to_db(settings.environment_id, obj_id, bytes_for_db)
-
-        return object_ids
 
     def get_copy_of_object(self, session_id, object_id, recursive):
         """Returns a non-persistent copy of the object with ID provided
@@ -536,13 +544,13 @@ class ExecutionEnvironment(object):
         original_to_version = dict()
 
         # Store version in this backend (if already stored, just skip it)
-        for obj in serialized_objs:
-            orig_obj_id = obj[0]
+        for obj_with_param_or_return in serialized_objs:
+            orig_obj_id = obj_with_param_or_return.object_id
             version_obj_id = uuid.uuid4()
             original_to_version[orig_obj_id] = version_obj_id
 
-        serialized_objs = [self._modify_metadata_oids(obj, original_to_version) for obj in serialized_objs]
-        serialized_objs = [self._modify_oid(obj, original_to_version) for obj in serialized_objs]
+        serialized_objs = [self._modify_metadata_oids(obj_with_param_or_return, original_to_version) for obj_with_param_or_return in serialized_objs]
+        serialized_objs = [self._modify_oid(obj_with_param_or_return, original_to_version) for obj_with_param_or_return in serialized_objs]
 
         logger.debug("[==Get==] Serialized Objects after OIDs regeneration are %s", serialized_objs)
 
@@ -555,7 +563,7 @@ class ExecutionEnvironment(object):
             vol_params[i] = obj
             i = i + 1
 
-        serialized_result = [i, imm_objs, lang_objs, vol_params, pers_params]
+        serialized_result = SerializedParametersOrReturn(i, imm_objs, lang_objs, vol_params, pers_params)
 
         return serialized_result
 
@@ -574,7 +582,7 @@ class ExecutionEnvironment(object):
         object_into.set_all(object_from)
         logger.debug("[==PutObject==] Updated object %s from object %s", into_object_id, object_from.get_object_id())
 
-    def get_objects(self, session_id, object_ids, recursive, remove_hint, only_refs):
+    def get_objects(self, session_id, object_ids, recursive, remove_hint=False, only_refs=False):
         """Get the serialized objects with id provided
         :param session_id: ID of session
     	:param object_ids: IDs of the objects to get
@@ -619,9 +627,10 @@ class ExecutionEnvironment(object):
                                 result[current_oid] = obj_with_data
                             obtained_objs.append(current_oid)
                             # Get associated objects and add them to pendings
-                            for k in obj_with_data[2][0]:
-                                oid_found = obj_with_data[2][0][k]
-                                hint_found = obj_with_data[2][2][k]
+                            obj_metadata = obj_with_data.metadata
+                            for tag in obj_metadata.tags_to_oids:
+                                oid_found = obj_metadata.tags_to_oids[tag]
+                                hint_found = obj_metadata.tags_to_hint[tag]
                                 if oid_found != current_oid and oid_found not in obtained_objs:
                                     pending_oids_and_hint.append([oid_found, hint_found])
 
@@ -647,10 +656,7 @@ class ExecutionEnvironment(object):
         logger.verbose("[==Get==] Object with data return length: %d", len(obj_with_data_in_other_backends))
         for object_id, obj_in_oth_back in obj_with_data_in_other_backends.items():
             result[object_id] = obj_in_oth_back
-
-        checked_result = self._check_and_prepare(result)
-
-        return checked_result
+        return result
 
     def get_object_internal(self, oid, remove_hint):
         """Get object internal function
@@ -780,8 +786,8 @@ class ExecutionEnvironment(object):
         versions_hints = dict()
 
         # Store version in this backend (if already stored, just skip it)
-        for obj in serialized_objs:
-            orig_obj_id = obj[0]
+        for obj_with_data in serialized_objs:
+            orig_obj_id = obj_with_data.object_id
             version_obj_id = uuid.uuid4()
             version_to_original[version_obj_id] = orig_obj_id
             original_to_version[orig_obj_id] = version_obj_id
@@ -789,22 +795,16 @@ class ExecutionEnvironment(object):
             # versions_hints[version_obj_id] = hint
 
         # ToDo: Add also versions_hints to modify_metadata_oids
-        serialized_objs = [self._modify_metadata_oids(obj, original_to_version) for obj in serialized_objs]
-        serialized_objs = [self._modify_oid(obj, original_to_version) for obj in serialized_objs]
+        serialized_objs = [self._modify_metadata_oids(obj_with_data, original_to_version) for obj_with_data in serialized_objs]
+        serialized_objs = [self._modify_oid(obj_with_data, original_to_version) for obj_with_data in serialized_objs]
 
         logger.debug("[==Version==] Serialized Objects after modification are %s", serialized_objs)
 
-        # Store versions
-        objs_to_store = self._check_and_prepare(serialized_objs)
-
-        for obj in objs_to_store:
-            obj_id = obj[0]
-            metadata = obj[2]
-            obj_bytes = obj[3]
-            logger.info("obj_id is %s, obj_data are %s", obj_id, obj_bytes)
-
+        for obj_with_data in serialized_objs:
+            obj_id = obj_with_data.object_id
+            metadata = obj_with_data.metadata
+            obj_bytes = obj_with_data.obj_bytes
             bytes_for_db = SerializationLibUtilsSingleton.serialize_for_db(obj_id, metadata, obj_bytes, False)
-
             getRuntime().ready_clients["@STORAGE"].store_to_db(settings.environment_id, obj_id, bytes_for_db)
 
         # Modify metadata_info
@@ -849,18 +849,17 @@ class ExecutionEnvironment(object):
         for k in list(version_to_original.keys()):
             version_object_ids.add(k)
 
-        dirty_version_bytes = self.get_objects(session_id, version_object_ids, True, False)
-        logger.debug("[==Consolidate==] Version objs obtained are %s", dirty_version_bytes)
+        dirty_vers_objs_with_data = self.get_objects(session_id, version_object_ids, True, False)
 
         # Update original objects
         # ToDo: Change also versions_hints in modify_metadata_oids
         version_bytes = list()
 
-        for vers_byte in dirty_version_bytes:
+        for vers_obj_with_data in dirty_vers_objs_with_data:
             # Change the stream position to 0
-            vers_byte[3].seek(0)
+            vers_obj_with_data.obj_bytes.seek(0)
             # Modify metadata and oid with the versions one
-            modified_metadata = self._modify_metadata_oids(vers_byte, version_to_original)
+            modified_metadata = self._modify_metadata_oids(vers_obj_with_data, version_to_original)
             modified_oid = self._modify_oid(modified_metadata, version_to_original)
             version_bytes.append(modified_oid)
 
@@ -905,51 +904,34 @@ class ExecutionEnvironment(object):
 
         logger.debug("[==Consolidate==] Consolidate ended")
 
-    def _check_and_prepare(self, serialized_objs):
-        """ Check if serialized_obj are in the right format and prepare the objects_list to send to store_objects """
-        objects_list = list()
-
-        for obj in serialized_objs:
-            logger.trace("[==CheckAndPrepare==] Obj in Serialized objs content: %s", obj)
-
-            # Since the ds_store_objects is serializing again we deserialize the data before sending it
-            # ToDo: Correct this
-            if not isinstance(obj[3], BytesIO):
-                logger.verbose("Type for (obj[3]): %s", type(obj))
-                logger.trace("Bytes (obj[3]) serialized in wrong way for %s", obj)
-                serialized_obj = BytesIO(obj[3])
-            else:
-                serialized_obj = obj[3]
-            dcobj = obj[0], obj[1], obj[2], serialized_obj
-            objects_list.append(dcobj)
-
-        return objects_list
-
-    def _modify_metadata_oids(self, obj, original_to_version):
+    def _modify_metadata_oids(self, obj_with_param_or_return, original_to_version):
         """ Modify the version's metadata in serialized_objs with original OID"""
         self.prepareThread()
-        logger.debug("[==ModifyMetadataOids==] Modify serialized object %r", obj)
+        logger.debug("[==ModifyMetadataOids==] Modify serialized object %r", obj_with_param_or_return)
         logger.debug("[==ModifyMetadataOids==] Version OIDs Map: %s", original_to_version)
 
-        for tag, oid in obj[2][0].items():
+        for tag, oid in obj_with_param_or_return.metadata.tags_to_oids.items():
             try:
-                obj[2][0][tag] = original_to_version[oid]
+                obj_with_param_or_return.metadata.tags_to_oids[tag] = original_to_version[oid]
             except KeyError:
                 logger.debug("[==ModifyMetadataOids==] oid %s is not mapped => object added in the version", oid)
                 # obj[2][0][tag] = oid
                 pass
 
-        logger.debug("[==ModifyMetadataOids==] Object with modified metadata is %r", obj)
+        logger.debug("[==ModifyMetadataOids==] Object with modified metadata is %r", obj_with_param_or_return)
 
-        return obj
+        return obj_with_param_or_return
 
-    def _modify_oid(self, obj, original_to_version):
+    def _modify_oid(self, obj_with_param_or_return, original_to_version):
         """ Modify the version's OID in serialized_objs with the original OID"""
         try:
-            new_obj = original_to_version[obj[0]], obj[1], obj[2], obj[3]
+            new_obj = ObjectWithDataParamOrReturn(original_to_version[obj_with_param_or_return.object_id],
+                                                  obj_with_param_or_return.class_id,
+                                                  obj_with_param_or_return.metadata,
+                                                  obj_with_param_or_return.obj_bytes)
         except KeyError:
             # OID in object are already changed
-            new_obj = obj
+            new_obj = obj_with_param_or_return
         return new_obj
 
     def upsert_objects(self, session_id, object_ids_and_bytes):

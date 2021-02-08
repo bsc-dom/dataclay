@@ -216,14 +216,14 @@ class DeserializationLibUtils(object):
         :param params_order: order of parameters
         :param runtime: runtime being used
         """
-        num_params = serialized_params_or_return[0]
+        num_params = serialized_params_or_return.num_params
         params = [None] * num_params
 
         """ VOLATILES """
         first_volatile = True
-        for i, serialized_param in serialized_params_or_return[3].items():
-            object_id = serialized_param[0]
-            class_id = serialized_param[1]
+        for i, serialized_param in serialized_params_or_return.vol_objs.items():
+            object_id = serialized_param.object_id
+            class_id = serialized_param.class_id
             logger.verbose("Deserializing volatile with object ID %s" % str(object_id))
 
             if first_volatile:
@@ -242,25 +242,26 @@ class DeserializationLibUtils(object):
                 params[i] = deserialized_param
 
         """ LANGUAGE """
-        for i, serialized_param in serialized_params_or_return[2].items():
+        for i, serialized_param in serialized_params_or_return.lang_objs.items():
             logger.verbose("Deserializing language type at index %s" % str(i))
 
             obj_bytes = BytesIO(serialized_param[1])
             params[i] = self.deserialize_language(obj_bytes, param_specs[params_order[i]])
 
         """ IMMUTABLES """
-        for i, serialized_param in serialized_params_or_return[1].items():
+        for i, serialized_param in serialized_params_or_return.imm_objs.items():
             logger.verbose("Deserializing immutable type at index %s" % str(i))
 
             obj_bytes = BytesIO(serialized_param)
             params[i] = self.deserialize_immutable(obj_bytes, param_specs[params_order[i]])
 
         """ PERSISTENT """
-        for i, serialized_param in serialized_params_or_return[4].items():
+        for i, serialized_param in serialized_params_or_return.persistent_refs.items():
 
-            object_id = serialized_param[0]
-            hint = serialized_param[1]
-            class_id = serialized_param[2]
+            object_id = serialized_param.object_id
+            hint = serialized_param.hint
+            class_id = serialized_param.class_id
+
             logger.verbose("Deserializing persistent object with object ID %s" % str(object_id))
 
             deserialized_param = runtime.get_or_new_persistent_instance(object_id, class_id, hint)
@@ -285,23 +286,16 @@ class DeserializationLibUtils(object):
         @param cur_deserialized_objs: current deserialized objects
         @param runtime: the runtime
         """
-
         tag = VLQIntegerWrapper().read(io_file)
-        logger.debug("Deserializing association for tag: %d", tag)
-        logger.debug("Metadata OIDs: %s", metadata[0])
-        object_id = metadata[0][tag]
-        logger.debug("Metadata ClassIDs: %s", metadata[1])
-        metaclass_id = metadata[1][tag]
+        object_id = metadata.tags_to_oids[tag]
+        metaclass_id = metadata.tags_to_class_ids[tag]
         # TODO: NumRefs ( metadata[3]) not deserialized?? Ask about
         # How/Where use NumRefs (metadata[3])?
-
         hint = None
         try:
-            logger.info("Metadata Hints: %s", metadata[2])
-            hint = metadata[2][tag]
+            hint = metadata.tags_to_hints[tag]
         except KeyError:
             pass
-        logger.debug("Deserializing association to object: %s", str(object_id))
         obj = runtime.get_or_new_persistent_instance(object_id, metaclass_id, hint)
         cur_deserialized_objs[tag] = obj
         return obj
@@ -357,24 +351,18 @@ class PersistentLoadPicklerHelper(object):
 
     def __call__(self, str_tag):
         tag = int(str_tag)
-        logger.verbose("Deserializing association for tag: %d", tag)
-        logger.debug("Metadata OIDs: %s", self._metadata[0])
-        object_id = self._metadata[0][tag]
-        logger.debug("Metadata ClassIDs: %s", self._metadata[1])
-        metaclass_id = self._metadata[1][tag]
+        object_id = self._metadata.tags_to_oids[tag]
+        metaclass_id = self._metadata.tags_to_classids[tag]
 
         # TODO: NumRefs ( metadata[3]) not deserialized?? Ask about
         # How/Where use NumRefs (metadata[3])?
 
         hint = None
         try:
-            logger.debug("Metadata Hints: %s", self._metadata[2])
-            hint = self._metadata[2][tag]
+            hint = self._metadata.tags_to_hints[tag]
         except KeyError:
             logger.debug("No Metadata Hints")
             pass
-
-        logger.debug("Deserializing association to object: %s", str(object_id))
         obj = self._runtime.get_or_new_persistent_instance(object_id, metaclass_id, hint)
         self._cur_deserialized_objs[tag] = obj
         return obj

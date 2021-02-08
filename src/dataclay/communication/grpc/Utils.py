@@ -1,5 +1,6 @@
 
 """ Class description goes here. """
+from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
 
 """Utility methods for gRPC clients/server."""
 
@@ -502,14 +503,14 @@ def get_param_or_return(param_or_ret_msg):
         for k, v in param_or_ret_msg.persParams.items():
             pers_objs[k] = get_persistent_param_or_return(v)
             
-        return num_params, imm_objs, lang_objs, vol_objs, pers_objs
-    elif type(param_or_ret_msg) is list:
+        return SerializedParametersOrReturn(num_params, imm_objs, lang_objs, vol_objs, pers_objs)
+    elif type(param_or_ret_msg) is SerializedParametersOrReturn:
         # create and return serialized message
-        num_params = param_or_ret_msg[0]
-        imm_objs = dict()
-        lang_objs = dict()
-        vol_objs = dict()
-        pers_obj = dict()
+        num_params = param_or_ret_msg.num_params
+        imm_objs = param_or_ret_msg.imm_objs
+        lang_objs = param_or_ret_msg.lang_objs
+        vol_objs = param_or_ret_msg.vol_objs
+        pers_obj = param_or_ret_msg.persistent_refs
         
         for k, v in param_or_ret_msg[1].items():
             imm_objs[k] = get_immutable_param_or_return(v)
