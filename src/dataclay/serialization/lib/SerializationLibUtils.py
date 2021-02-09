@@ -153,7 +153,8 @@ class SerializationLibUtils(object):
                         else:
                             io_output = BytesIO()
                             ptw.write(io_output, param)
-                            imm_objs[i] = io_output
+                            imm_objs[i] = io_output.getvalue()
+                            io_output.close()
                 i = i + 1
 
             if recursive:
@@ -277,7 +278,7 @@ class SerializationLibUtils(object):
         @return serialized msg
         """
 
-        msg = common_messages.PersistentObjectInDB(data=object_bytes.getvalue(), metadata=get_metadata(metadata))
+        msg = common_messages.PersistentObjectInDB(data=object_bytes, metadata=get_metadata(metadata))
         msgstr = msg.SerializeToString()
         return msgstr
 

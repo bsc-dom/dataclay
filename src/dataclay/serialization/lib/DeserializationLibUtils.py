@@ -247,6 +247,7 @@ class DeserializationLibUtils(object):
 
             obj_bytes = BytesIO(serialized_param[1])
             params[i] = self.deserialize_language(obj_bytes, param_specs[params_order[i]])
+            obj_bytes.close()
 
         """ IMMUTABLES """
         for i, serialized_param in serialized_params_or_return.imm_objs.items():
@@ -254,6 +255,7 @@ class DeserializationLibUtils(object):
 
             obj_bytes = BytesIO(serialized_param)
             params[i] = self.deserialize_immutable(obj_bytes, param_specs[params_order[i]])
+            obj_bytes.close()
 
         """ PERSISTENT """
         for i, serialized_param in serialized_params_or_return.persistent_refs.items():

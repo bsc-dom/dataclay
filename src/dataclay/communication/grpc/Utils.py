@@ -417,7 +417,7 @@ def get_lang_param_or_return(param_or_ret):
     else:
         request = common_messages.LanguageParamOrReturn(
             metadata=get_metadata(param_or_ret[0]),
-            objbytes=param_or_ret[1].getvalue()
+            objbytes=param_or_ret[1]
         )
 
         return request
@@ -435,7 +435,7 @@ def get_immutable_param_or_return(param_or_ret):
 
     else:
         request = common_messages.ImmutableParamOrReturn(
-            objbytes=param_or_ret.getvalue()
+            objbytes=param_or_ret
         )
         return request
 

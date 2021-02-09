@@ -856,8 +856,6 @@ class ExecutionEnvironment(object):
         version_bytes = list()
 
         for vers_obj_with_data in dirty_vers_objs_with_data:
-            # Change the stream position to 0
-            vers_obj_with_data.obj_bytes.seek(0)
             # Modify metadata and oid with the versions one
             modified_metadata = self._modify_metadata_oids(vers_obj_with_data, version_to_original)
             modified_oid = self._modify_oid(modified_metadata, version_to_original)
