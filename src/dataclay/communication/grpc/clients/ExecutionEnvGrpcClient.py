@@ -88,9 +88,9 @@ class EEClient(object):
             temp_param = Utils.get_param_or_return(params)
 
         request = dataservice_messages_pb2.NewPersistentInstanceRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            classID=Utils.get_msg_options['meta_class'](class_id),
-            implementationID=Utils.get_msg_options['implem'](implementation_id),
+            sessionID=Utils.get_msg_id(session_id),
+            classID=Utils.get_msg_id(class_id),
+            implementationID=Utils.get_msg_id(implementation_id),
             ifaceBitMaps=temp_iface_b,
             params=temp_param
         )
@@ -117,10 +117,10 @@ class EEClient(object):
         if ids_with_alias is not None:
             for id_with_alias in ids_with_alias:
                 if id_with_alias is not None:
-                    id_with_alias_list.append(Utils.get_msg_options['object'](id_with_alias))
+                    id_with_alias_list.append(Utils.get_msg_id(id_with_alias))
 
         request = dataservice_messages_pb2.StoreObjectsRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
+            sessionID=Utils.gget_msg_id(session_id),
             objects=obj_list,
             moving=moving,
             idsWithAlias=id_with_alias_list
@@ -159,8 +159,8 @@ class EEClient(object):
 
     def ds_get_copy_of_object(self, session_id, object_id, recursive):
         request = dataservice_messages_pb2.GetCopyOfObjectRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id),
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
             recursive=recursive,
         )
         
@@ -179,8 +179,8 @@ class EEClient(object):
         
     def ds_update_object(self, session_id, into_object_id, from_object):
         request = dataservice_messages_pb2.UpdateObjectRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            intoObjectID=Utils.get_msg_options['object'](into_object_id),
+            sessionID=Utils.get_msg_id(session_id),
+            intoObjectID=Utils.get_msg_id(into_object_id),
             fromObject=Utils.get_param_or_return(from_object)
         )
         
@@ -197,10 +197,10 @@ class EEClient(object):
 
         object_ids_list = []
         for oid in object_ids:
-            object_ids_list.append(Utils.get_msg_options['object'](oid))
+            object_ids_list.append(Utils.get_msg_id(oid))
 
         request = dataservice_messages_pb2.GetObjectsRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
+            sessionID=Utils.get_msg_id(session_id),
             objectIDS=object_ids_list,
             recursive=recursive,
             moving=moving
@@ -225,10 +225,10 @@ class EEClient(object):
         
         object_ids_list = []
         for oid in object_ids:
-            object_ids_list.append(Utils.get_msg_options['object'](oid))
+            object_ids_list.append(Utils.get_msg_id(oid))
         
         request = dataservice_messages_pb2.GetReferencedObjectIDsRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
+            sessionID=Utils.get_msg_id(session_id),
             objectIDS=object_ids_list
         )
 
@@ -251,10 +251,10 @@ class EEClient(object):
 
         object_ids_list = []
         for oid in object_ids:
-            object_ids_list.append(Utils.get_msg_options['object'](oid))
+            object_ids_list.append(Utils.get_msg_id(oid))
 
         request = dataservice_messages_pb2.GetFederatedObjectsRequest(
-            extDataClayID=Utils.get_msg_options['dataclay_instance'](dc_instance_id),
+            extDataClayID=Utils.get_msg_id(dc_instance_id),
             objectIDS=object_ids_list
         )
 
@@ -278,8 +278,8 @@ class EEClient(object):
         logger.info("This new_version is called somewhere?")
 
         request = dataservice_messages_pb2.NewVersionRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id),
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
             metadataInfo=dataclay_yaml_dump(metadata_info)
         )
 
@@ -305,7 +305,7 @@ class EEClient(object):
     def ds_consolidate_version(self, session_id, version_info):
 
         request = dataservice_messages_pb2.ConsolidateVersionRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
+            sessionID=Utils.get_msg_id(session_id),
             versionInfo=dataclay_yaml_dump(version_info)
         )
 
@@ -325,7 +325,7 @@ class EEClient(object):
             obj_byt_list.append(Utils.get_obj_with_data_param_or_return(entry))
 
         request = dataservice_messages_pb2.UpsertObjectsRequest(
-                sessionID=Utils.get_msg_options['session'](session_id),
+                sessionID=Utils.get_msg_id(session_id),
                 bytesUpdate=obj_byt_list)
 
         try:
@@ -341,7 +341,7 @@ class EEClient(object):
         logger.debug("Client performing MakePersistent")
 
         request = dataservice_messages_pb2.MakePersistentRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
+            sessionID=Utils.get_msg_id(session_id),
             params=Utils.get_param_or_return(params),
         )
 
@@ -358,7 +358,7 @@ class EEClient(object):
     def federate(self, session_id, params):
 
         request = dataservice_messages_pb2.FederateRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
+            sessionID=Utils.get_msg_id(session_id),
             params=Utils.get_param_or_return(params),
         )
 
@@ -376,10 +376,10 @@ class EEClient(object):
         logger.debug("Client performing ExecuteImplementation")
 
         request = dataservice_messages_pb2.ExecuteImplementationRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            implementationID=Utils.get_msg_options['implem'](implementation_id),
+            sessionID=Utils.get_msg_id(session_id),
+            implementationID=Utils.get_msg_id(implementation_id),
             params=Utils.get_param_or_return(params),
-            objectID=Utils.get_msg_options['object'](object_id)
+            objectID=Utils.get_msg_id(object_id)
         )
 
         try:
@@ -405,8 +405,8 @@ class EEClient(object):
     def ds_new_replica(self, session_id, object_id, recursive):
 
         request = dataservice_messages_pb2.NewReplicaRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id),
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
             recursive=recursive
         )
 
@@ -429,9 +429,9 @@ class EEClient(object):
     def ds_move_objects(self, session_id, object_id, dest_st_location, recursive):
 
         request = dataservice_messages_pb2.MoveObjectsRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id),
-            destLocID=Utils.get_msg_options['storage_loc'](dest_st_location),
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
+            destLocID=Utils.get_msg_id(dest_st_location),
             recursive=recursive
         )
 
@@ -455,14 +455,14 @@ class EEClient(object):
 
         obj_ids_list = []
         for oid in object_ids:
-            obj_ids_list.append(Utils.get_msg_options['object'](oid))
+            obj_ids_list.append(Utils.get_msg_id(oid))
 
         request = dataservice_messages_pb2.RemoveObjectsRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
+            sessionID=Utils.get_msg_id(session_id),
             objectIDs=obj_ids_list,
             recursive=recursive,
             moving=moving,
-            newHint=Utils.get_msg_options['exec_env'](new_hint)
+            newHint=Utils.get_msg_id(new_hint)
         )
 
         try:
@@ -543,7 +543,7 @@ class EEClient(object):
         
         request = dataservice_messages_pb2.StoreToDBRequest(
             executionEnvironmentID=Utils.get_msg_id_backend_id(execution_environment_id),
-            objectID=Utils.get_msg_options['object'](object_id),
+            objectID=Utils.get_msg_id(object_id),
             objBytes=obj_bytes
         )
 
@@ -560,7 +560,7 @@ class EEClient(object):
 
         request = dataservice_messages_pb2.GetFromDBRequest(
             executionEnvironmentID=Utils.get_msg_id_backend_id(execution_environment_id),
-            objectID=Utils.get_msg_options['object'](object_id),
+            objectID=Utils.get_msg_id(object_id),
         )
         try:
             response = self.ds_stub.getFromDB(request)
@@ -576,7 +576,7 @@ class EEClient(object):
     def update_to_db(self, execution_environment_id, object_id, new_obj_bytes, dirty):
         request = dataservice_messages_pb2.UpdateToDBRequest(
             executionEnvironmentID=Utils.get_msg_id_backend_id(execution_environment_id),
-            objectID=Utils.get_msg_options['object'](object_id),
+            objectID=Utils.get_msg_id(object_id),
             objBytes=new_obj_bytes,
             dirty=dirty
         )
@@ -593,7 +593,7 @@ class EEClient(object):
     def delete_to_db(self, execution_environment_id, object_id):
         request = dataservice_messages_pb2.DeleteToDBRequest(
             executionEnvironmentID=Utils.get_msg_id_backend_id(execution_environment_id),
-            objectID=Utils.get_msg_options['object'](object_id),
+            objectID=Utils.get_msg_id(object_id),
         )
 
         try:

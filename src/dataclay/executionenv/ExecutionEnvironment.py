@@ -1086,8 +1086,7 @@ class ExecutionEnvironment(object):
             # getRuntime().ready_clients["@STORAGE"].ds_remove_objects(session_id, object_ids, recursive, True, dest_backend_id)
 
             for oid in objects_to_remove:
-                if oid in getRuntime().metadata_cache:
-                    del getRuntime().metadata_cache[oid]
+                getRuntime().remove_metadata_from_cache(oid)
             logger.debug("[==MoveObjects==] Move finalized ")
 
         except Exception as e:

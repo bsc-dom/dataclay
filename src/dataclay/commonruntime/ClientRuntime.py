@@ -129,7 +129,7 @@ class ClientRuntime(DataClayRuntime):
             try:
                 execution_client = self.ready_clients[location]
             except KeyError:
-                exeenv = self.get_execution_environments_info()[location] 
+                exeenv = self.get_execution_environment_info(location)
                 self.logger.debug("Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
                                    location, exeenv.hostname, exeenv.port)
                 execution_client = EEClient(exeenv.hostname, exeenv.port)

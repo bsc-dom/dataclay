@@ -91,7 +91,7 @@ class DataServiceEE(ds.DataServiceServicer):
                                                          iface_bit_maps,
                                                          params)
 
-            return dataservice_messages_pb2.NewPersistentInstanceResponse(objectID=Utils.get_msg_options['object'](oid))
+            return dataservice_messages_pb2.NewPersistentInstanceResponse(objectID=Utils.get_msg_id(oid))
 
         except Exception as ex:
             return dataservice_messages_pb2.NewPersistentInstanceResponse(
@@ -240,7 +240,7 @@ class DataServiceEE(ds.DataServiceServicer):
                                             object_ids)
             obj_list = []
             for entry in result:
-                obj_list.append(Utils.get_msg_options['object'](entry))
+                obj_list.append(Utils.get_msg_id(entry))
     
             return dataservice_messages_pb2.GetReferencedObjectIDsResponse(objectIDs=obj_list)
 
@@ -302,7 +302,7 @@ class DataServiceEE(ds.DataServiceServicer):
                 vers_ids[Utils.prepare_bytes(str(k))] = Utils.prepare_bytes(str(v))
 
             return dataservice_messages_pb2.NewVersionResponse(
-                objectID=Utils.get_msg_options['object'](result[0]),
+                objectID=Utils.get_msg_id(result[0]),
                 versionedIDs=vers_ids
             )
 
@@ -350,7 +350,7 @@ class DataServiceEE(ds.DataServiceServicer):
             repl_ids_list = []
 
             for oid in result:
-                repl_ids_list.append(Utils.get_msg_options['object'](oid))
+                repl_ids_list.append(Utils.get_msg_id(oid))
 
             return dataservice_messages_pb2.NewReplicaResponse(
                 replicatedIDs=repl_ids_list
@@ -375,7 +375,7 @@ class DataServiceEE(ds.DataServiceServicer):
             mov_obj_list = []
 
             for oid in result:
-                mov_obj_list.append(Utils.get_msg_options['object'](oid))
+                mov_obj_list.append(Utils.get_msg_id(oid))
 
             return dataservice_messages_pb2.MoveObjectsResponse(
                 movedObjects=mov_obj_list
@@ -447,7 +447,7 @@ class DataServiceEE(ds.DataServiceServicer):
             retained_refs = []
 
             for oid in result:
-                retained_refs.append(Utils.get_msg_options['object'](oid))
+                retained_refs.append(Utils.get_msg_id(oid))
             return dataservice_messages_pb2.GetRetainedReferencesResponse(retainedReferences=retained_refs)
 
         except Exception as ex:
@@ -477,7 +477,7 @@ class DataServiceEE(ds.DataServiceServicer):
                 migrated_obj_list = list()
 
                 for oid in v:
-                    migrated_obj_list.append(Utils.get_msg_options['object'](oid))
+                    migrated_obj_list.append(Utils.get_msg_id(oid))
                 
                 migrated_obj_builder = dataservice_messages_pb2.MigratedObjects(objs=migrated_obj_list)
                 migr_obj_res[str(k)] = migrated_obj_builder
@@ -485,7 +485,7 @@ class DataServiceEE(ds.DataServiceServicer):
             non_migrated_objs_list = list()
 
             for oid in result[1]:
-                non_migrated_objs_list.append(Utils.get_msg_options['object'](oid))
+                non_migrated_objs_list.append(Utils.get_msg_id(oid))
             
             non_migrated_objs_builder = dataservice_messages_pb2.MigratedObjects(objs=non_migrated_objs_list)
 

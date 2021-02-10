@@ -135,7 +135,7 @@ class LMClient(object):
     def autoregister_ee(self, id, name, hostname, port, lang):
 
         request = logicmodule_messages_pb2.AutoRegisterEERequest(
-            executionEnvironmentID=Utils.get_msg_options['backend_id'](id),
+            executionEnvironmentID=Utils.get_msg_id(id),
             eeName=name,
             eeHostname=hostname,
             eePort=port,
@@ -165,7 +165,7 @@ class LMClient(object):
     def perform_set_of_new_accounts(self, admin_id, admin_credential, yaml_file):
 
         request = logicmodule_messages_pb2.PerformSetAccountsRequest(
-            accountID=Utils.get_msg_options['account'](admin_id),
+            accountID=Utils.get_msg_id(admin_id),
             credential=Utils.get_credential(admin_credential),
             yaml=yaml_file
         )
@@ -180,7 +180,7 @@ class LMClient(object):
     def perform_set_of_operations(self, performer_id, performer_credential, yaml_file):
 
         request = logicmodule_messages_pb2.PerformSetOperationsRequest(
-            accountID=Utils.get_msg_options['account'](performer_id),
+            accountID=Utils.get_msg_id(performer_id),
             credential=Utils.get_credential(performer_credential),
             yaml=yaml_file
         )
@@ -210,7 +210,7 @@ class LMClient(object):
         acc_yaml = dataclay_yaml_dump(account)
 
         request = logicmodule_messages_pb2.NewAccountRequest(
-            adminID=Utils.get_msg_options['account'](admin_account_id),
+            adminID=Utils.get_msg_id(admin_account_id),
             admincredential=Utils.get_credential(admin_credential),
             yamlNewAccount=acc_yaml
         )
@@ -236,7 +236,7 @@ class LMClient(object):
     def get_account_list(self, admin_account_id, admin_credential):
 
         request = logicmodule_messages_pb2.GetAccountListRequest(
-            adminID=Utils.get_msg_options['account'](admin_account_id),
+            adminID=Utils.get_msg_id(admin_account_id),
             admincredential=Utils.get_credential(admin_credential)
         )
         lm_function = lambda request: self.lm_stub.getAccountList.future(request=request, metadata=self.metadata_call)
@@ -259,14 +259,14 @@ class LMClient(object):
         contracts_list = []
 
         for con_id in contracts:
-            contracts_list.append(Utils.get_msg_options['contract'](con_id))
+            contracts_list.append(Utils.get_msg_id(con_id))
 
         data_set_list = []
         for data_set in data_sets:
             data_set_list.append(Utils.get_msg_id_dataset(data_set))
 
         request = logicmodule_messages_pb2.NewSessionRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             contractIDs=contracts_list,
             dataSetIDs=data_set_list,
@@ -283,7 +283,7 @@ class LMClient(object):
     def get_info_of_session_for_ds(self, session_id):
 
         request = logicmodule_messages_pb2.GetInfoOfSessionForDSRequest(
-            sessionID=Utils.get_msg_options['session'](session_id)
+            sessionID=Utils.get_msg_id(session_id)
         )
         lm_function = lambda request: self.lm_stub.getInfoOfSessionForDS.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -323,7 +323,7 @@ class LMClient(object):
     def remove_namespace(self, account_id, credential, namespace_name):
 
         request = logicmodule_messages_pb2.RemoveNamespaceRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             namespaceName=namespace_name
         )
@@ -335,7 +335,7 @@ class LMClient(object):
     def get_namespace_id(self, account_id, credential, namespace_name):
 
         request = logicmodule_messages_pb2.GetNamespaceIDRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             namespaceName=namespace_name
         )
@@ -349,8 +349,8 @@ class LMClient(object):
     def get_object_dataset_id(self, session_id, oid):
 
         request = logicmodule_messages_pb2.GetObjectDataSetIDRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](oid)
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(oid)
         )
         lm_function = lambda request: self.lm_stub.getObjectDataSetID.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -362,9 +362,9 @@ class LMClient(object):
     def get_info_of_classes_in_namespace(self, account_id, credential, namespace_id):
 
         request = logicmodule_messages_pb2.GetInfoOfClassesInNamespaceRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            namespace_id=Utils.get_msg_options['namespace'](namespace_id)
+            namespace_id=Utils.get_msg_id(namespace_id)
         )
         lm_function = lambda request: self.lm_stub.getInfoOfClassesInNamespace.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -382,7 +382,7 @@ class LMClient(object):
     def get_classname_and_namespace_for_ds(self, class_id):
         
         request = logicmodule_messages_pb2.GetClassNameAndNamespaceForDSRequest(
-            classID=Utils.get_msg_options['class'](class_id)
+            classID=Utils.get_msg_id(class_id)
         )
         lm_function = lambda request: self.lm_stub.getClassNameAndNamespaceForDS.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -397,7 +397,7 @@ class LMClient(object):
         ds_yaml = dataclay_yaml_dump(dataset)
 
         request = logicmodule_messages_pb2.NewDataSetRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             datasetYaml=ds_yaml
         )
@@ -411,7 +411,7 @@ class LMClient(object):
     def remove_dataset(self, account_id, credential, dataset_name):
 
         request = logicmodule_messages_pb2.RemoveDataSetRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             dataSetName=dataset_name
         )
@@ -423,7 +423,7 @@ class LMClient(object):
     def get_dataset_id(self, account_id, credential, dataset_name):
 
         request = logicmodule_messages_pb2.GetDataSetIDRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             dataSetName=dataset_name
         )
@@ -445,7 +445,7 @@ class LMClient(object):
             new_cl[klass.name] = yaml_str
 
         request = logicmodule_messages_pb2.NewClassRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             language=language,
             newClasses=new_cl
@@ -471,7 +471,7 @@ class LMClient(object):
             new_cl[klass.name] = yaml_str
 
         request = logicmodule_messages_pb2.NewClassIDRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             language=language,
             className=class_name,
@@ -487,7 +487,7 @@ class LMClient(object):
     def remove_class(self, account_id, credential, namespace_id, class_name):
 
         request = logicmodule_messages_pb2.RemoveClassRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             className=class_name
         )
@@ -499,9 +499,9 @@ class LMClient(object):
     def remove_operation(self, account_id, credential, namespace_id, class_name, operation_signature):
 
         request = logicmodule_messages_pb2.RemoveOperationRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            namespace_id=Utils.get_msg_options['namespace'](namespace_id),
+            namespace_id=Utils.get_msg_id(namespace_id),
             className=class_name,
             operationNameAndSignature=operation_signature
         )
@@ -513,10 +513,10 @@ class LMClient(object):
     def remove_implementation(self, account_id, credential, namespace_id, implementation_id):
 
         request = logicmodule_messages_pb2.RemoveImplementationRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            namespace_id=Utils.get_msg_options['namespace'](namespace_id),
-            implementationID=Utils.get_msg_options['implem'](implementation_id)
+            namespace_id=Utils.get_msg_id(namespace_id),
+            implementationID=Utils.get_msg_id(implementation_id)
         )
         lm_function = lambda request: self.lm_stub.removeImplementation.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -526,9 +526,9 @@ class LMClient(object):
     def get_operation_id(self, account_id, credential, namespace_id, class_name, operation_signature):
 
         request = logicmodule_messages_pb2.GetOperationIDRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            namespace_id=Utils.get_msg_options['namespace'](namespace_id),
+            namespace_id=Utils.get_msg_id(namespace_id),
             className=class_name,
             operationNameAndSignature=operation_signature
         )
@@ -542,9 +542,9 @@ class LMClient(object):
     def get_property_id(self, account_id, credential, namespace_id, class_name, property_name):
 
         request = logicmodule_messages_pb2.GetPropertyIDRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            namespaceID=Utils.get_msg_options['namespace'](namespace_id),
+            namespaceID=Utils.get_msg_id(namespace_id),
             className=class_name,
             propertyName=property_name
         )
@@ -558,9 +558,9 @@ class LMClient(object):
     def get_class_id(self, account_id, credential, namespace_id, class_name):
 
         request = logicmodule_messages_pb2.GetClassIDRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            namespaceID=Utils.get_msg_options['namespace'](namespace_id),
+            namespaceID=Utils.get_msg_id(namespace_id),
             className=class_name
         )
         lm_function = lambda request: self.lm_stub.getClassID.future(request=request, metadata=self.metadata_call)
@@ -573,9 +573,9 @@ class LMClient(object):
     def get_class_info(self, account_id, credential, namespace_id, class_name):
 
         request = logicmodule_messages_pb2.GetClassInfoRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            namespace_id=Utils.get_msg_options['namespace'](namespace_id),
+            namespace_id=Utils.get_msg_id(namespace_id),
             className=class_name
         )
         lm_function = lambda request: self.lm_stub.getClassInfo.future(request=request, metadata=self.metadata_call)
@@ -592,7 +592,7 @@ class LMClient(object):
         yaml_contract = dataclay_yaml_dump(new_contract_s)
 
         request = logicmodule_messages_pb2.NewContractRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential,
             newContractYaml=yaml_contract
         )
@@ -606,9 +606,9 @@ class LMClient(object):
     def register_to_public_contract(self, account_id, credential, contract_id):
 
         request = logicmodule_messages_pb2.RegisterToPublicContractRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential,
-            contractID=Utils.get_msg_options['contract'](contract_id)
+            contractID=Utils.get_msg_id(contract_id)
         )
         lm_function = lambda request: self.lm_stub.registerToPublicContract.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -618,7 +618,7 @@ class LMClient(object):
     def get_contractids_of_applicant(self, applicant_account_id, credential):
 
         request = logicmodule_messages_pb2.GetContractIDsOfApplicantRequest(
-            applicantID=Utils.get_msg_options['account'](applicant_account_id),
+            applicantID=Utils.get_msg_id(applicant_account_id),
             credential=Utils.get_credential(credential)
         )
         lm_function = lambda request: self.lm_stub.getContractIDsOfApplicant.future(request=request, metadata=self.metadata_call)
@@ -636,9 +636,9 @@ class LMClient(object):
     def get_contractids_of_provider(self, account_id, credential, namespaceid_of_provider):
 
         request = logicmodule_messages_pb2.GetDataContractIDsOfProviderRequest(
-            providerID=Utils.get_msg_options['account'](account_id),
+            providerID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            namespaceIDOfProvider=Utils.get_msg_options['namespace'](namespaceid_of_provider)
+            namespaceIDOfProvider=Utils.get_msg_id(namespaceid_of_provider)
         )
         lm_function = lambda request: self.lm_stub.getContractIDsOfProvider.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -655,9 +655,9 @@ class LMClient(object):
     def get_contractids_of_applicant_with_provider(self, account_id, credential, namespaceid_of_provider):
 
         request = logicmodule_messages_pb2.GetContractsOfApplicantWithProvRequest(
-            applicantID=Utils.get_msg_options['account'](account_id),
+            applicantID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            namespaceIDOfProvider=Utils.get_msg_options['namespace'](namespaceid_of_provider)
+            namespaceIDOfProvider=Utils.get_msg_id(namespaceid_of_provider)
         )
         lm_function = lambda request: self.lm_stub.getContractIDsOfApplicantWithProvider.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -678,7 +678,7 @@ class LMClient(object):
         yaml_str = dataclay_yaml_dump(new_datacontract)
 
         request = logicmodule_messages_pb2.NewDataContractRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             dataContractYaml=yaml_str
         )
@@ -692,9 +692,9 @@ class LMClient(object):
     def register_to_public_datacontract(self, account_id, credential, datacontract_id):
 
         request = logicmodule_messages_pb2.RegisterToPublicDataContractRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            dataContractID=Utils.get_msg_options['datacontract'](datacontract_id)
+            dataContractID=Utils.get_msg_id(datacontract_id)
         )
         lm_function = lambda request: self.lm_stub.registerToPublicDataContract.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -704,9 +704,9 @@ class LMClient(object):
     def get_datacontractids_of_provider(self, account_id, credential, datasetid_of_provider):
 
         request = logicmodule_messages_pb2.GetDataContractIDsOfProviderRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            dataSetIDOfProvider=Utils.get_msg_options['dataset'](datasetid_of_provider)
+            dataSetIDOfProvider=Utils.get_msg_id(datasetid_of_provider)
         )
         lm_function = lambda request: self.lm_stub.getDataContractIDsOfProvider.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -723,7 +723,7 @@ class LMClient(object):
     def get_datacontractids_of_applicant(self, applicant_accountid, credential):
 
         request = logicmodule_messages_pb2.GetDataContractIDsOfApplicantRequest(
-            applicantID=Utils.get_msg_options['account'](applicant_accountid),
+            applicantID=Utils.get_msg_id(applicant_accountid),
             credential=Utils.get_credential(credential)
         )
         lm_function = lambda request: self.lm_stub.getDataContractIDsOfApplicant.future(request=request, metadata=self.metadata_call)
@@ -741,9 +741,9 @@ class LMClient(object):
     def get_datacontract_info_of_applicant_with_provider(self, applicant_accountid, credential, datasetid_of_provider):
 
         request = logicmodule_messages_pb2.GetDataContractInfoOfApplicantWithProvRequest(
-            applicantID=Utils.get_msg_options['account'](applicant_accountid),
+            applicantID=Utils.get_msg_id(applicant_accountid),
             credential=Utils.get_credential(credential),
-            dataSetIDOfProvider=Utils.get_msg_options['dataset'](datasetid_of_provider)
+            dataSetIDOfProvider=Utils.get_msg_id(datasetid_of_provider)
         )
         lm_function = lambda request: self.lm_stub.getDataContractInfoOfApplicantWithProvider.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -759,7 +759,7 @@ class LMClient(object):
         yaml_str = dataclay_yaml_dump(new_interface_s)
 
         request = logicmodule_messages_pb2.NewInterfaceRequest(
-            applicantID=Utils.get_msg_options['account'](account_id),
+            applicantID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             interfaceYaml=yaml_str
         )
@@ -773,9 +773,9 @@ class LMClient(object):
     def get_interface_info(self, account_id, credential, interface_id):
 
         request = logicmodule_messages_pb2.GetInterfaceInfoRequest(
-            applicantID=Utils.get_msg_options['account'](account_id),
+            applicantID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            interfaceID=Utils.get_msg_options['interface'](interface_id)
+            interfaceID=Utils.get_msg_id(interface_id)
         )
         lm_function = lambda request: self.lm_stub.getInterfaceInfo.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -787,10 +787,10 @@ class LMClient(object):
     def remove_interface(self, account_id, credential, namespace_id, interface_id):
 
         request = logicmodule_messages_pb2.RemoveInterfaceRequest(
-            applicantID=Utils.get_msg_options['account'](account_id),
+            applicantID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
-            namespaceID=Utils.get_msg_options['namespace'](namespace_id),
-            interfaceID=Utils.get_msg_options['interface'](interface_id)
+            namespaceID=Utils.get_msg_id(namespace_id),
+            interfaceID=Utils.get_msg_id(interface_id)
         )
         lm_function = lambda request: self.lm_stub.removeInterface.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -802,7 +802,7 @@ class LMClient(object):
     def get_storage_location_for_ds(self, st_loc_id):
 
         request = logicmodule_messages_pb2.GetStorageLocationForDSRequest(
-            storageLocationID=Utils.get_msg_options['storage_loc'](st_loc_id)
+            storageLocationID=Utils.get_msg_id(st_loc_id)
         )
         lm_function = lambda request: self.lm_stub.getStorageLocationForDS.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -814,7 +814,7 @@ class LMClient(object):
     def get_executionenvironment_for_ds(self, backend_id):
 
         request = logicmodule_messages_pb2.GetExecutionEnvironmentForDSRequest(
-            execEnvID=Utils.get_msg_options['exec_env'](backend_id)
+            execEnvID=Utils.get_msg_id(backend_id)
         )
         lm_function = lambda request: self.lm_stub.getExecutionEnvironmentForDS.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -825,7 +825,7 @@ class LMClient(object):
 
     def get_dataclays_object_is_federated_with(self, object_id):
         request = logicmodule_messages_pb2.GetDataClaysObjectIsFederatedWithRequest(
-            objectID=Utils.get_msg_options['object'](object_id)
+            objectID=Utils.get_msg_id(object_id)
         )
         lm_function = lambda request: self.lm_stub.getDataClaysObjectIsFederatedWith.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -840,7 +840,7 @@ class LMClient(object):
 
     def get_external_source_of_dataclay_object(self, object_id):
         request = logicmodule_messages_pb2.GetExternalSourceDataClayOfObjectRequest(
-            objectID=Utils.get_msg_options['object'](object_id)
+            objectID=Utils.get_msg_id(object_id)
         )
         lm_function = lambda request: self.lm_stub.getExternalSourceDataClayOfObject.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -852,15 +852,15 @@ class LMClient(object):
     def register_objects_from_gc(self, reg_info, backend_id):
 
         reg_info_set = CommonMessages.RegistrationInfo(
-            objectID=Utils.get_msg_options['object'](reg_info[0]),
-            classID=Utils.get_msg_options['meta_class'](reg_info[1]),
-            sessionID=Utils.get_msg_options['session'](reg_info[2]),
-            dataSetID=Utils.get_msg_options['dataset'](reg_info[3])
+            objectID=Utils.get_msg_id(reg_info[0]),
+            classID=Utils.get_msg_id(reg_info[1]),
+            sessionID=Utils.get_msg_id(reg_info[2]),
+            dataSetID=Utils.get_msg_id(reg_info[3])
         )
 
         request = logicmodule_messages_pb2.RegisterObjectForGCRequest(
             regInfo=reg_info_set,
-            backendID=Utils.get_msg_options['backend_id'](backend_id)
+            backendID=Utils.get_msg_id(backend_id)
         )
 
         lm_function = lambda request: self.lm_stub.registerObjectFromGC.future(request=request, metadata=self.metadata_call)
@@ -872,15 +872,15 @@ class LMClient(object):
     def register_object(self, reg_info, backend_id, alias, lang):
 
         reg_info = CommonMessages.RegistrationInfo(
-                objectID=Utils.get_msg_options['object'](reg_info[0]),
-                classID=Utils.get_msg_options['meta_class'](reg_info[1]),
-                sessionID=Utils.get_msg_options['session'](reg_info[2]),
-                dataSetID=Utils.get_msg_options['dataset'](reg_info[3])
+                objectID=Utils.get_msg_id(reg_info[0]),
+                classID=Utils.get_msg_id(reg_info[1]),
+                sessionID=Utils.get_msg_id(reg_info[2]),
+                dataSetID=Utils.get_msg_id(reg_info[3])
             )
 
         request = logicmodule_messages_pb2.RegisterObjectRequest(
             regInfo=reg_info,
-            backendID=Utils.get_msg_options['backend_id'](backend_id),
+            backendID=Utils.get_msg_id(backend_id),
             alias=alias,
             lang=common_messages_pb2.LANG_PYTHON
         )
@@ -895,8 +895,8 @@ class LMClient(object):
     def set_dataset_id_from_garbage_collector(self, object_id, dataset_id):
 
         request = logicmodule_messages_pb2.SetDataSetIDFromGarbageCollectorRequest(
-            objectID=Utils.get_msg_options['object'](object_id),
-            datasetID=Utils.get_msg_options['dataset'](dataset_id)
+            objectID=Utils.get_msg_id(object_id),
+            datasetID=Utils.get_msg_id(dataset_id)
         )
 
         # ToDo: In Java at this point override the onNext/onError/onCompleted methods of responseObserver
@@ -932,9 +932,9 @@ class LMClient(object):
 
     def federate_object(self, session_id, object_id, ext_dataclay_id, recursive):
         request = logicmodule_messages_pb2.FederateObjectRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id),
-            extDataClayID=Utils.get_msg_options['dataclay_instance'](ext_dataclay_id),
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
+            extDataClayID=Utils.get_msg_id(ext_dataclay_id),
             recursive=recursive
         )
         lm_function = lambda request: self.lm_stub.federateObject.future(request=request, metadata=self.metadata_call)
@@ -944,9 +944,9 @@ class LMClient(object):
 
     def unfederate_object(self, session_id, object_id, ext_dataclay_id, recursive):
         request = logicmodule_messages_pb2.UnfederateObjectRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id),
-            extDataClayID=Utils.get_msg_options['dataclay_instance'](ext_dataclay_id),
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
+            extDataClayID=Utils.get_msg_id(ext_dataclay_id),
             recursive=recursive
         )
         lm_function = lambda request: self.lm_stub.unfederateObject.future(request=request, metadata=self.metadata_call)
@@ -956,8 +956,8 @@ class LMClient(object):
 
     def unfederate_all_objects(self, session_id, ext_dataclay_id):
         request = logicmodule_messages_pb2.UnfederateAllObjectsRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            extDataClayID=Utils.get_msg_options['dataclay_instance'](ext_dataclay_id),
+            sessionID=Utils.get_msg_id(session_id),
+            extDataClayID=Utils.get_msg_id(ext_dataclay_id),
         )
         lm_function = lambda request: self.lm_stub.unfederateAllObjects.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -966,7 +966,7 @@ class LMClient(object):
         
     def unfederate_all_objects_with_all_dcs(self, session_id):
         request = logicmodule_messages_pb2.UnfederateAllObjectsWithAllDCsRequest(
-            sessionID=Utils.get_msg_options['session'](session_id)
+            sessionID=Utils.get_msg_id(session_id)
         )
         lm_function = lambda request: self.lm_stub.unfederateAllObjectsWithAllDCs.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -975,8 +975,8 @@ class LMClient(object):
     
     def unfederate_object_with_all_dcs(self, session_id, object_id, recursive):
         request = logicmodule_messages_pb2.UnfederateObjectWithAllDCsRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id),
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
             recursive=recursive
         )
         lm_function = lambda request: self.lm_stub.unfederateObjectWithAllDCs.future(request=request, metadata=self.metadata_call)
@@ -986,9 +986,9 @@ class LMClient(object):
         
     def migrate_federated_objects(self, session_id, origin_dataclay_id, dest_dataclay_id):
         request = logicmodule_messages_pb2.UnfederateObjectWithAllDCsRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            externalOriginDataClayID=Utils.get_msg_options['dataclay_instance'](origin_dataclay_id),
-            externalDestinationDataClayID=Utils.get_msg_options['dataclay_instance'](dest_dataclay_id),
+            sessionID=Utils.get_msg_id(session_id),
+            externalOriginDataClayID=Utils.get_msg_id(origin_dataclay_id),
+            externalDestinationDataClayID=Utils.get_msg_id(dest_dataclay_id),
         )
         lm_function = lambda request: self.lm_stub.migrateFederatedObjects.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -997,8 +997,8 @@ class LMClient(object):
         
     def federate_all_objects(self, session_id, dest_dataclay_id):
         request = logicmodule_messages_pb2.FederateAllObjectsRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            externalDestinationDataClayID=Utils.get_msg_options['dataclay_instance'](dest_dataclay_id),
+            sessionID=Utils.get_msg_id(session_id),
+            externalDestinationDataClayID=Utils.get_msg_id(dest_dataclay_id),
         )
         lm_function = lambda request: self.lm_stub.federateAllObjects.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1019,7 +1019,7 @@ class LMClient(object):
 
     def get_external_dataclay_info(self, ext_dataclay_id):
         request = logicmodule_messages_pb2.GetExtDataClayInfoRequest(
-            extDataClayID=Utils.get_msg_options['dataclay_instance'](ext_dataclay_id)
+            extDataClayID=Utils.get_msg_id(ext_dataclay_id)
         )
         lm_function = lambda request: self.lm_stub.getExternalDataClayInfo.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1030,8 +1030,8 @@ class LMClient(object):
 
     def check_object_is_federated_with_dataclay_instance(self, object_id, ext_dataclay_id):
         request = logicmodule_messages_pb2.CheckObjectFederatedWithDataClayInstanceRequest(
-            objectID=Utils.get_msg_options['object'](object_id),
-            extDataClayID=Utils.get_msg_options['dataclay_instance'](ext_dataclay_id)
+            objectID=Utils.get_msg_id(object_id),
+            extDataClayID=Utils.get_msg_id(ext_dataclay_id)
         )
         lm_function = lambda request: self.lm_stub.checkObjectIsFederatedWithDataClayInstance.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1040,12 +1040,10 @@ class LMClient(object):
 
         return response.isFederated
 
-    def get_execution_environments_info(self, session_id, language, from_client):
+    def get_execution_environments_info(self, language):
 
         request = logicmodule_messages_pb2.GetExecutionEnvironmentsInfoRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
             execEnvLang=language,
-            fromClient=from_client
         )
         lm_function = lambda request: self.lm_stub.getExecutionEnvironmentsInfo.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1062,7 +1060,7 @@ class LMClient(object):
     def get_execution_environments_names(self, account_id, credential, language):
 
         request = logicmodule_messages_pb2.GetExecutionEnvironmentsNamesRequest(
-            accountID=Utils.get_msg_options['account'](account_id),
+            accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             execEnvLang=language
         )
@@ -1080,8 +1078,8 @@ class LMClient(object):
     def get_object_info(self, session_id, object_id):
 
         request = logicmodule_messages_pb2.GetObjectInfoRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id)
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id)
         )
         lm_function = lambda request: self.lm_stub.getObjectInfo.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1093,7 +1091,7 @@ class LMClient(object):
     def get_object_from_alias(self, session_id, alias):
 
         request = logicmodule_messages_pb2.GetObjectFromAliasRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
+            sessionID=Utils.get_msg_id(session_id),
             alias=alias
         )
         lm_function = lambda request: self.lm_stub.getObjectFromAlias.future(request=request, metadata=self.metadata_call)
@@ -1108,7 +1106,7 @@ class LMClient(object):
     def delete_alias(self, session_id, alias):
 
         request = logicmodule_messages_pb2.DeleteAliasRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
+            sessionID=Utils.get_msg_id(session_id),
             alias=alias
         )
         lm_function = lambda request: self.lm_stub.deleteAlias.future(request=request, metadata=self.metadata_call)
@@ -1121,9 +1119,9 @@ class LMClient(object):
     def set_dataset_id(self, session_id, object_id, dataset_id):
 
         request = logicmodule_messages_pb2.SetDataSetIDRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id),
-            datasetID=Utils.get_msg_options['dataset'](dataset_id)
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
+            datasetID=Utils.get_msg_id(dataset_id)
         )
         lm_function = lambda request: self.lm_stub.setDataSetID.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1133,9 +1131,9 @@ class LMClient(object):
     def new_version(self, session_id, object_id, optional_dest_backend_id):
 
         request = logicmodule_messages_pb2.NewVersionRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id),
-            optDestBackendID=Utils.get_msg_options['backend_id'](optional_dest_backend_id)
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
+            optDestBackendID=Utils.get_msg_id(optional_dest_backend_id)
         )
         lm_function = lambda request: self.lm_stub.newVersion.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1147,7 +1145,7 @@ class LMClient(object):
     def consolidate_version(self, session_id, version):
 
         request = logicmodule_messages_pb2.ConsolidateVersionRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
+            sessionID=Utils.get_msg_id(session_id),
             versionInfoYaml=version
         )
         lm_function = lambda request: self.lm_stub.consolidateVersion.future(request=request, metadata=self.metadata_call)
@@ -1158,9 +1156,9 @@ class LMClient(object):
     def new_replica(self, session_id, object_id, backend_id, recursive):
 
         request = logicmodule_messages_pb2.NewReplicaRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id),
-            destBackendID=Utils.get_msg_options['backend_id'](backend_id),
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
+            destBackendID=Utils.get_msg_id(backend_id),
             recursive=recursive
         )
         lm_function = lambda request: self.lm_stub.newReplica.future(request=request, metadata=self.metadata_call)
@@ -1173,10 +1171,10 @@ class LMClient(object):
     def move_object(self, session_id, object_id, src_backend_id, dest_backend_id, recursive):
 
         request = logicmodule_messages_pb2.MoveObjectRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id),
-            srcBackendID=Utils.get_msg_options['backend_id'](src_backend_id),
-            destBackendID=Utils.get_msg_options['backend_id'](dest_backend_id),
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
+            srcBackendID=Utils.get_msg_id(src_backend_id),
+            destBackendID=Utils.get_msg_id(dest_backend_id),
             recursive=recursive
         )
         lm_function = lambda request: self.lm_stub.moveObject.future(request=request, metadata=self.metadata_call)
@@ -1194,8 +1192,8 @@ class LMClient(object):
     def set_object_read_only(self, session_id, object_id):
 
         request = logicmodule_messages_pb2.SetObjectReadOnlyRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id)
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id)
         )
         lm_function = lambda request: self.lm_stub.setObjectReadOnly.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1205,8 +1203,8 @@ class LMClient(object):
     def set_object_read_write(self, session_id, object_id):
 
         request = logicmodule_messages_pb2.SetObjectReadWriteRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id)
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id)
         )
         lm_function = lambda request: self.lm_stub.setObjectReadWrite.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1241,8 +1239,8 @@ class LMClient(object):
     def get_metadata_by_oid(self, session_id, object_id):
 
         request = logicmodule_messages_pb2.GetMetadataByOIDRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id)
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id)
         )
         lm_function = lambda request: self.lm_stub.getMetadataByOID.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1257,13 +1255,13 @@ class LMClient(object):
     def execute_implementation(self, session_id, operation_id, remote_implementation, object_id, params):
 
         request = logicmodule_messages_pb2.ExecuteImplementationRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            operationID=Utils.get_msg_options['operation'](operation_id),
-            implementationID=Utils.get_msg_options['implem'](remote_implementation[0]),
-            contractID=Utils.get_msg_options['contract'](remote_implementation[1]),
-            interfaceID=Utils.get_msg_options['interface'](remote_implementation[2]),
+            sessionID=Utils.get_msg_id(session_id),
+            operationID=Utils.get_msg_id(operation_id),
+            implementationID=Utils.get_msg_id(remote_implementation[0]),
+            contractID=Utils.get_msg_id(remote_implementation[1]),
+            interfaceID=Utils.get_msg_id(remote_implementation[2]),
             params=Utils.get_param_or_return(params),
-            objectID=Utils.get_msg_options['object'](object_id)
+            objectID=Utils.get_msg_id(object_id)
         )
         lm_function = lambda request: self.lm_stub.executeImplementation.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1283,11 +1281,11 @@ class LMClient(object):
     def execute_method_on_target(self, session_id, object_id, operation_signature, params, backend_id):
 
         request = logicmodule_messages_pb2.ExecuteMethodOnTargetRequest(
-            sessionID=Utils.get_msg_options['session'](session_id),
-            objectID=Utils.get_msg_options['object'](object_id),
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
             operationNameAndSignature=operation_signature,
             params=Utils.get_param_or_return(params),
-            targetBackendID=Utils.get_msg_options['backend_id'](backend_id)
+            targetBackendID=Utils.get_msg_id(backend_id)
         )
         lm_function = lambda request: self.lm_stub.executeMethodOnTarget.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1304,16 +1302,16 @@ class LMClient(object):
         
         if params is not None:
             request = logicmodule_messages_pb2.SynchronizeFederatedObjectRequest(
-                extDataClayID=Utils.get_msg_options['dataclay_instance'](dataclay_id),
-                objectID=Utils.get_msg_options['object'](object_id),
-                implementationID=Utils.get_msg_options['implem'](impl_id),
+                extDataClayID=Utils.get_msg_id(dataclay_id),
+                objectID=Utils.get_msg_id(object_id),
+                implementationID=Utils.get_msg_id(impl_id),
                 params=Utils.get_param_or_return(params)
             )
         else:
             request = logicmodule_messages_pb2.SynchronizeFederatedObjectRequest(
-                extDataClayID=Utils.get_msg_options['dataclay_instance'](dataclay_id),
-                objectID=Utils.get_msg_options['object'](object_id),
-                implementationID=Utils.get_msg_options['implem'](impl_id),
+                extDataClayID=Utils.get_msg_id(dataclay_id),
+                objectID=Utils.get_msg_id(object_id),
+                implementationID=Utils.get_msg_id(impl_id),
             )
         
         lm_function = lambda request: self.lm_stub.synchronizeFederatedObject.future(request=request, metadata=self.metadata_call)
@@ -1337,7 +1335,7 @@ class LMClient(object):
     
     def object_exists_in_dataclay(self, object_id):
         request = logicmodule_messages_pb2.ObjectExistsInDataClayRequest(
-            objectID=Utils.get_msg_options['object'](object_id)
+            objectID=Utils.get_msg_id(object_id)
         )
         lm_function = lambda request: self.lm_stub.objectExistsInDataClay.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1352,10 +1350,10 @@ class LMClient(object):
         cid_list = []
 
         for cID in contracts_ids:
-            cid_list.append(Utils.get_msg_options['contract'](cID))
+            cid_list.append(Utils.get_msg_id(cID))
 
         request = logicmodule_messages_pb2.GetStubsRequest(
-            applicantAccountID=Utils.get_msg_options['account'](applicant_account_id),
+            applicantAccountID=Utils.get_msg_id(applicant_account_id),
             credentials=Utils.get_credential(applicant_credential),
             language=language,
             contractIDs=cid_list
@@ -1377,10 +1375,10 @@ class LMClient(object):
         cid_list = []
 
         for cID in contracts_ids:
-            cid_list.append(Utils.get_msg_options['contract'](cID))
+            cid_list.append(Utils.get_msg_id(cID))
 
         request = logicmodule_messages_pb2.GetBabelStubsRequest(
-            accountID=Utils.get_msg_options['account'](applicant_account_id),
+            accountID=Utils.get_msg_id(applicant_account_id),
             credentials=Utils.get_credential(applicant_credential),
             contractIDs=cid_list
         )
@@ -1396,7 +1394,7 @@ class LMClient(object):
     def register_event_listener_implementation(self, account_id, credential, new_event_listener):
 
         request = logicmodule_messages_pb2.RegisterECARequest(
-            applicantAccountID=Utils.get_msg_options['account'](account_id),
+            applicantAccountID=Utils.get_msg_id(account_id),
             credentials=Utils.get_credential(credential),
             eca=dataclay_yaml_dump(new_event_listener)
         )
@@ -1420,7 +1418,7 @@ class LMClient(object):
     def get_class_name_for_ds(self, class_id):
 
         request = logicmodule_messages_pb2.GetClassNameForDSRequest(
-            classID=Utils.get_msg_options['meta_class'](class_id)
+            classID=Utils.get_msg_id(class_id)
         )
         lm_function = lambda request: self.lm_stub.getClassNameForDS.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1432,7 +1430,7 @@ class LMClient(object):
     def get_class_name_and_namespace_for_ds(self, class_id):
 
         request = logicmodule_messages_pb2.GetClassNameAndNamespaceForDSRequest(
-            classID=Utils.get_msg_options['meta_class'](class_id)
+            classID=Utils.get_msg_id(class_id)
         )
         lm_function = lambda request: self.lm_stub.getClassNameAndNamespaceForDS.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1446,7 +1444,7 @@ class LMClient(object):
     def get_contract_id_of_dataclay_provider(self, account_id, credential):
 
         request = logicmodule_messages_pb2.GetContractIDOfDataClayProviderRequest(
-            applicantAccountID=Utils.get_msg_options['account'](account_id),
+            applicantAccountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential)
         )
         lm_function = lambda request: self.lm_stub.getContractIDOfDataClayProvider.future(request=request, metadata=self.metadata_call)
@@ -1461,7 +1459,7 @@ class LMClient(object):
     def close_session(self, session_id):
 
         request = logicmodule_messages_pb2.CloseSessionRequest(
-            sessionID=Utils.get_msg_options['session'](session_id)
+            sessionID=Utils.get_msg_id(session_id)
         )
         lm_function = lambda request: self.lm_stub.closeSession.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1527,7 +1525,7 @@ class LMClient(object):
     def add_alias(self, object_id, alias):
         
         request = logicmodule_messages_pb2.AddAliasRequest(
-            objectIDToHaveAlias=Utils.get_msg_options['object_id'](object_id),
+            objectIDToHaveAlias=Utils.get_msg_id(object_id),
             alias=alias
         )
         lm_function = lambda request: self.lm_stub.addAlias.future(request=request, metadata=self.metadata_call)
@@ -1538,7 +1536,7 @@ class LMClient(object):
     def import_models_from_external_dataclay(self, namespace, ext_dataclay_id):
         request = logicmodule_messages_pb2.ImportModelsFromExternalDataClayRequest(
             namespaceName=namespace,
-            dataClayID=Utils.get_msg_options['dataclay_instance'](ext_dataclay_id)
+            dataClayID=Utils.get_msg_id(ext_dataclay_id)
         )
         lm_function = lambda request: self.lm_stub.importModelsFromExternalDataClay.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -1547,7 +1545,7 @@ class LMClient(object):
 
     def notify_execution_environment_shutdown(self, exec_env_id):
         request = logicmodule_messages_pb2.NotifyExecutionEnvironmentShutdownRequest(
-            executionEnvironmentID=Utils.get_msg_options['exec_env'](exec_env_id)
+            executionEnvironmentID=Utils.get_msg_id(exec_env_id)
         )
         lm_function = lambda request: self.lm_stub.notifyExecutionEnvironmentShutdown.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)

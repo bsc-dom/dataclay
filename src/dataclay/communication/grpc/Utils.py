@@ -36,243 +36,8 @@ def get_credential(cred):
             return common_messages.Credential(password=cred[1])
 
 
-"""get_msg_id_x.
-
-:param x_id: UUID.
-:return: ID protobuf message.
-"""
-
-
-def get_msg_id_account(account_id):
-    if account_id is None:
-
-        return common_messages.AccountID()
-    else:
-        return common_messages.AccountID(
-            uuid=str(account_id))
-
-
-def get_msg_id_contract(contract_id):
-    if contract_id is None:
-
-        return common_messages.ContractID()
-    else:
-        return common_messages.ContractID(
-            uuid=str(contract_id))
-
-
-def get_msg_id_credential(credential_id):
-    if credential_id is None:
-
-        return common_messages.CredentialID()
-    else:
-
-        return common_messages.CredentialID(
-            uuid=str(credential_id))
-
-
-def get_msg_id_datacontract(dc_id):
-    if dc_id is None:
-
-        return common_messages.DataContractID()
-    else:
-        return common_messages.DataContractID(
-            uuid=str(dc_id))
-
-
-def get_msg_id_dataset(dataset_id):
-    if dataset_id is None:
-
-        return common_messages.DataSetID()
-    else:
-        return common_messages.DataSetID(
-            uuid=str(dataset_id))
-
-
-def get_msg_id_namespace(namespace_id):
-    if namespace_id is None:
-
-        return common_messages.NamespaceID()
-    else:
-        return common_messages.NamespaceID(
-            uuid=str(namespace_id))
-
-
-def get_msg_id_class(class_id):
-    if class_id is None:
-
-        return common_messages.MetaClassID()
-    else:
-        return common_messages.MetaClassID(
-            uuid=str(class_id))
-
-
-def get_msg_id_eca(eca_id):
-    if eca_id is None:
-
-        return common_messages.ECAID()
-    else:
-        return common_messages.ECAID(
-            uuid=str(eca_id))
-
-
-def get_msg_id_event_message(event_message_id):
-    if event_message_id is None:
-
-        return common_messages.EventMessageID()
-    else:
-        return common_messages.EventMessageID(
-            uuid=str(event_message_id))
-
-
-def get_msg_id_event_obj_meet_cond(event_omc_id):
-    if event_omc_id is None:
-
-        return common_messages.EventObjsMeetConditionID()
-    else:
-        return common_messages.EventObjsMeetConditionID(
-            uuid=str(event_omc_id))
-
-
-def get_msg_id_exec_env(ee_id):
-    if ee_id is None:
-
-        return common_messages.ExecutionEnvironmentID()
-    else:
-        return common_messages.ExecutionEnvironmentID(
-            uuid=str(ee_id))
-
-
-def get_msg_id_implem(implem_id):
-    if implem_id is None:
-
-        return common_messages.ImplementationID()
-    else:
-        return common_messages.ImplementationID(
-            uuid=str(implem_id))
-
-
-def get_msg_id_interface(interface_id):
-    if interface_id is None:
-
-        return common_messages.InterfaceID()
-    else:
-        return common_messages.InterfaceID(
-            uuid=str(interface_id))
-
-
-def get_msg_id_meta_class(meta_class_id):
-    if meta_class_id is None:
-
-        return common_messages.MetaClassID()
-    else:
-        return common_messages.MetaClassID(
-            uuid=str(meta_class_id))
-
-
-def get_msg_id_object(object_id):
-    if object_id is None:
-
-        return common_messages.ObjectID()
-    else:
-        return common_messages.ObjectID(
-            uuid=str(object_id))
-
-
-def get_msg_id_operation(operation_id):
-    if operation_id is None:
-
-        return common_messages.OperationID()
-    else:
-        return common_messages.OperationID(
-            uuid=str(operation_id))
-
-
-def get_msg_id_property(property_id):
-    if property_id is None:
-
-        return common_messages.PropertyID()
-    else:
-        return common_messages.PropertyID(
-            uuid=str(property_id))
-
-
-def get_msg_id_qual_reg(qual_reg_id):
-    if qual_reg_id is None:
-
-        return common_messages.QualitativeRegistryID()
-    else:
-        return common_messages.QualitativeRegistryID(
-            uuid=str(qual_reg_id))
-
-
-def get_msg_id_resource(resource_id):
-    if resource_id is None:
-
-        return common_messages.ResourceID()
-    else:
-        return common_messages.ResourceID(
-            uuid=str(resource_id))
-
-
-def get_msg_id_session(session_id):
-    if session_id is None:
-
-        return common_messages.SessionID()
-    else:
-        return common_messages.SessionID(
-            uuid=str(session_id))
-
-
-def get_msg_id_storage_loc(storage_loc_id):
-    if storage_loc_id is None:
-
-        return common_messages.StorageLocationID()
-    else:
-        return common_messages.StorageLocationID(
-            uuid=str(storage_loc_id))
-
-        
-def get_msg_id_backend_id(backend_id):
-    if backend_id is None:
-
-        return common_messages.ExecutionEnvironmentID()
-    else:
-        return common_messages.ExecutionEnvironmentID(
-            uuid=str(backend_id))
-
-def get_msg_id_dc(dataclay_id):
-    if dataclay_id is None:
-        return common_messages.DataClayInstanceID()
-    else:
-        return common_messages.DataClayInstanceID(
-            uuid=str(dataclay_id)
-        )
-        
-get_msg_options = {'account': get_msg_id_account,
-                   'contract': get_msg_id_contract,
-                   'credential': get_msg_id_credential,
-                   'datacontract': get_msg_id_datacontract,
-                   'dataset': get_msg_id_dataset,
-                   'namespace': get_msg_id_namespace,
-                   'eca': get_msg_id_eca,
-                   'event_message': get_msg_id_event_message,
-                   'obj_meet_cond': get_msg_id_event_obj_meet_cond,
-                   'exec_env': get_msg_id_exec_env,
-                   'implem': get_msg_id_implem,
-                   'interface': get_msg_id_interface,
-                   'meta_class': get_msg_id_meta_class,
-                   'object': get_msg_id_object,
-                   'operation': get_msg_id_operation,
-                   'property': get_msg_id_property,
-                   'qual_reg': get_msg_id_qual_reg,
-                   'resource': get_msg_id_resource,
-                   'session': get_msg_id_session,
-                   'storage_loc': get_msg_id_storage_loc,
-                   'backend_id': get_msg_id_backend_id,
-                   'class': get_msg_id_class,
-                   'dataclay_instance': get_msg_id_dc}
-
+def get_msg_id(id):
+    return str(id)
 
 def get_id(id_msg):
     """Create the ID based on protobuf message.
@@ -282,8 +47,6 @@ def get_id(id_msg):
     :return: UUID based on param.
     """    
     if id_msg is None:
-        return None
-    elif id_msg.uuid is None:
         return None
     elif id_msg.uuid == "":
         return None
@@ -334,17 +97,17 @@ def get_metadata(metadata):
         one = dict()
     
         for k, v in metadata[0].items():
-            one[k] = get_msg_options['object'](v)
+            one[k] = get_msg_id(v)
     
         two = dict()
     
         for k, v in metadata[1].items():
-            two[k] = get_msg_options['meta_class'](v)
+            two[k] = get_msg_id(v)
 
         three = dict()
 
         for k, v in metadata[2].items():
-            three[k] = get_msg_options['exec_env'](v)
+            three[k] = get_msg_id(v)
 
         request = common_messages.DataClayObjectMetaData(
             oids=one,
@@ -395,8 +158,8 @@ def get_obj_with_data_param_or_return(vol_param_or_ret):
         return oid, class_id, mdata, byte_array
     else:
         response = common_messages.ObjectWithDataParamOrReturn(
-            oid=get_msg_options['object'](vol_param_or_ret[0]),
-            classid=get_msg_options['meta_class'](vol_param_or_ret[1]),
+            oid=get_msg_id(vol_param_or_ret[0]),
+            classid=get_msg_id(vol_param_or_ret[1]),
             metadata=get_metadata(vol_param_or_ret[2]),
             objbytes=vol_param_or_ret[3]
         )
@@ -465,9 +228,9 @@ def get_persistent_param_or_return(param_or_ret):
             class_id = param_or_ret[2]
 
         request = common_messages.PersistentParamOrReturn(
-            oid=get_msg_options['object'](oid),
-            hint=get_msg_options['exec_env'](hint),
-            classID=get_msg_options['meta_class'](class_id))
+            oid=get_msg_id(oid),
+            hint=get_msg_id(hint),
+            classID=get_msg_id(class_id))
 
         return request
 

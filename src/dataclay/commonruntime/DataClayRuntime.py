@@ -69,7 +69,7 @@ class DataClayRuntime(object):
         self.thread_local_info = threadLocal
         
         """ Cache of metadata """
-        self.metadata_cache = LRU(50)
+        self.metadata_cache = LRU(10000)
         
     @abstractmethod
     def initialize_runtime_aux(self): pass
@@ -225,7 +225,7 @@ class DataClayRuntime(object):
         try:
             execution_client = self.ready_clients[backend_id]
         except KeyError:
-            exeenv = self.get_execution_environments_info()[backend_id]
+            exeenv = self.get_execution_environment_info(backend_id)
             execution_client = EEClient(exeenv.hostname, exeenv.port)
             self.ready_clients[backend_id] = execution_client
         
@@ -241,7 +241,7 @@ class DataClayRuntime(object):
         try:
             execution_client = self.ready_clients[backend_id]
         except KeyError:
-            exeenv = self.get_execution_environments_info()[backend_id]
+            exeenv = self.get_execution_environment_info(backend_id)
             execution_client = EEClient(exeenv.hostname, exeenv.port)
             self.ready_clients[backend_id] = execution_client
         
@@ -323,7 +323,7 @@ class DataClayRuntime(object):
         try:
             execution_client = self.ready_clients[backend_id]
         except KeyError:
-            exeenv = self.get_execution_environments_info()[backend_id]
+            exeenv = self.get_execution_environment_info(backend_id)
             execution_client = EEClient(exeenv.hostname, exeenv.port)
             self.ready_clients[backend_id] = execution_client
 
@@ -373,7 +373,7 @@ class DataClayRuntime(object):
                 self.logger.verbose("Obtaining API for remote execution in %s ", exeenv_id)
                 execution_client = self.ready_clients[exeenv_id]
             except KeyError:
-                exeenv = self.get_execution_environments_info()[exeenv_id] 
+                exeenv = self.get_execution_environment_info(exeenv_id)
                 self.logger.debug("Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
                                exeenv_id, exeenv.hostname, exeenv.port)
                 execution_client = EEClient(exeenv.hostname, exeenv.port)
@@ -604,7 +604,7 @@ class DataClayRuntime(object):
         return uuid.uuid3(NULL_NAMESPACE, alias)
     
     def get_object_location_by_id(self, object_id):
-        exec_envs = list(self.get_execution_environments_info())
+        exec_envs = list(self.get_all_execution_environments_info())
         return exec_envs[hash(object_id) % len(exec_envs)]
     
     def get_object_location_by_alias(self, alias):
@@ -618,21 +618,40 @@ class DataClayRuntime(object):
     
     def new_replica(self, object_id, backend_id, backend_hostname, recursive):
         self.logger.debug("Starting new replica")
+        # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
         session_id = self.get_session_id()
 
         dest_backend_id = backend_id
         dest_backend = None
         if dest_backend_id is None:
             if backend_hostname is not None:
+                dest_backend = list(self.get_all_execution_environments_at_host(backend_hostname).values())[0]
+                dest_backend_id = dest_backend.dataClayID
+            else:
+                # no destination specified, get one destination in which object is not already replicated
+                obj_locations = self.get_all_locations(object_id)
+                all_exec_envs = self.get_all_execution_environments_info()
+                for exec_env_id, exec_env in all_exec_envs.items():
+                    if exec_env_id not in obj_locations:
+                        dest_backend_id = exec_env_id
+                        dest_backend = exec_env
+                        break
 
+        try:
+            execution_client = self.ready_clients[dest_backend_id]
+        except KeyError:
+            execution_client = EEClient(dest_backend.hostname, dest_backend.port)
+            self.ready_clients[backend_id] = execution_client
 
+        replicated_objs = execution_client.new_replica(session_id, object_id, dest_backend_id, False, recursive)
 
-        result = self.ready_clients["@LM"].new_replica(session_id, object_id, backend_id, recursive)
-        if object_id in self.metadata_cache :   
-            del self.metadata_cache[object_id]
-        return result
+        # Update replicated objects metadata
+        for replicated_obj_id in replicated_objs:
+            self.metadata_cache[replicated_obj_id].locations.append(dest_backend_id)
+        return dest_backend_id
     
     def new_version(self, object_id, class_id, hint, backend_id):
+        # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
         self.logger.debug("Starting new version")
         session_id = self.get_session_id()
         DataClayRuntime.ensure_object_is_registered(self, session_id, object_id, class_id, hint)
@@ -642,6 +661,7 @@ class DataClayRuntime(object):
         return result
     
     def consolidate_version(self, version_info):
+        # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
         session_id = self.get_session_id()
         return self.ready_clients["@LM"].consolidate_version(session_id, version_info)
     
@@ -766,6 +786,10 @@ class DataClayRuntime(object):
                     object_id, metadata)
         return metadata
 
+    def remove_metadata_from_cache(self, object_id):
+        if object_id in self.metadata_cache:
+            del self.metadata_cache[object_id]
+
     def get_all_locations(self, object_id):
         self.logger.debug("Getting all locations of object %s", object_id)
         try:
@@ -779,17 +803,16 @@ class DataClayRuntime(object):
                 if hint is not None:
                     self.logger.debug("Returning list with hint from heap object")
                     locations = dict()
-                    locations[hint] = self.get_execution_environments_info()[hint]
+                    locations[hint] = self.get_execution_environment_info(hint)
                     return locations
                 else:
                     raise DataClayException("The object %s is not initialized well, hint missing or not exist" % object_id)
             else:
                 raise DataClayException("The object %s is not initialized" % object_id)
 
-    def get_execution_environments_info(self):
-        if self.ee_info_map is None:
-            self.ee_info_map = self.ready_clients["@LM"].get_execution_environments_info(self.get_session_id(), LANG_PYTHON,
-                                                                                         not self.is_exec_env())
+    def get_all_execution_environments_info(self, force_update=False):
+        if self.ee_info_map is None or self.ee_info_map is not None and force_update:
+            self.ee_info_map = self.ready_clients["@LM"].get_execution_environments_info(LANG_PYTHON)
             if self.logger.isEnabledFor(TRACE):
                 n = len(self.ee_info_map)
                 self.logger.trace("Response of ExecutionEnvironmentsInfo returned #%d ExecutionEnvironmentsInfo", n)
@@ -799,15 +822,50 @@ class DataClayRuntime(object):
 
         return self.ee_info_map
 
-    def get_execution_environments_names(self, username, password):
-        credential = (None, password)
-        user_id = self.ready_clients["@LM"].get_account_id(username)
-        ee_names = self.ready_clients["@LM"].get_execution_environments_names(user_id, credential, LANG_PYTHON)
+    def get_execution_environment_info(self, backend_id):
+        exec_envs = self.get_all_execution_environments_info(force_update=False)
+        if backend_id in exec_envs:
+            return exec_envs[backend_id]
+        else:
+            exec_envs = self.get_all_execution_environments_info(force_update=True)
+            return exec_envs[backend_id]
+
+
+    def get_all_execution_environments_at_host(self, hostname):
+        exec_envs_at_host = dict()
+        exec_envs = self.get_all_execution_environments_info(force_update=False)
+        for exec_env_id, exec_env in exec_envs.items():
+            if exec_env.hostname == hostname:
+                exec_envs_at_host[exec_env_id] = exec_env
+        if not bool(exec_envs_at_host):
+            exec_envs = self.get_all_execution_environments_info(force_update=True)
+            for exec_env_id, exec_env in exec_envs.items():
+                if exec_env.hostname == hostname:
+                    exec_envs_at_host[exec_env_id] = exec_env
+        return exec_envs_at_host
+
+    def get_all_execution_environments_with_name(self, dsname):
+        exec_envs_with_name = dict()
+        exec_envs = self.get_all_execution_environments_info(force_update=False)
+        for exec_env_id, exec_env in exec_envs.items():
+            if exec_env.name == dsname:
+                exec_envs_with_name[exec_env_id] = exec_env
+        if not bool(exec_envs_with_name):
+            exec_envs = self.get_all_execution_environments_info(force_update=True)
+            for exec_env_id, exec_env in exec_envs.items():
+                if exec_env.name == dsname:
+                    exec_envs_with_name[exec_env_id] = exec_env
+        return exec_envs_with_name
+
+    def get_execution_environments_names(self, force_update=False):
+        exec_envs_names = list()
+        exec_envs = self.get_all_execution_environments_info(force_update=force_update)
+        for exec_env_id, exec_env in exec_envs.items():
+            exec_envs_names.append(exec_env.name)
         if self.logger.isEnabledFor(TRACE):
-            n = len(ee_names)
+            n = len(exec_envs_names)
             self.logger.trace("Response of ExecutionEnvironmentsInfo returned #%d ExecutionEnvironmentsInfo", n)
-            
-        return ee_names
+        return exec_envs_names
 
     def choose_location(self, instance, alias=None):
         """ Choose execution/make persistent location.
