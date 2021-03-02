@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='dataclay.communication.grpc.dataservice',
   syntax='proto3',
   serialized_options=_b('\n7es.bsc.dataclay.communication.grpc.messages.dataserviceP\000'),
-  serialized_pb=_b('\nKdataclay/communication/grpc/messages/dataservice/dataservice_messages.proto\x12\'dataclay.communication.grpc.dataservice\x1a\x41\x64\x61taclay/communication/grpc/messages/common/common_messages.proto\")\n\x14InitBackendIDRequest\x12\x11\n\tbackendID\x18\x01 \x01(\t\"F\n$AssociateExecutionEnvironmentRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\"\xd3\x01\n\x18\x44\x65ployMetaClassesRequest\x12\x11\n\tnamespace\x18\x01 \x01(\t\x12m\n\x0e\x64\x65ploymentPack\x18\x02 \x03(\x0b\x32U.dataclay.communication.grpc.dataservice.DeployMetaClassesRequest.DeploymentPackEntry\x1a\x35\n\x13\x44\x65ploymentPackEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xf2\x04\n\x14\x44\x65ployClassesRequest\x12\x11\n\tnamespace\x18\x01 \x01(\t\x12k\n\x0f\x63lassesToDeploy\x18\x02 \x03(\x0b\x32R.dataclay.communication.grpc.dataservice.DeployClassesRequest.ClassesToDeployEntry\x12]\n\x08\x63lassIds\x18\x03 \x03(\x0b\x32K.dataclay.communication.grpc.dataservice.DeployClassesRequest.ClassIdsEntry\x12[\n\x07\x61spects\x18\x04 \x03(\x0b\x32J.dataclay.communication.grpc.dataservice.DeployClassesRequest.AspectsEntry\x12W\n\x05yamls\x18\x05 \x03(\x0b\x32H.dataclay.communication.grpc.dataservice.DeployClassesRequest.YamlsEntry\x1a\x36\n\x14\x43lassesToDeployEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a/\n\rClassIdsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a.\n\x0c\x41spectsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a,\n\nYamlsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"o\n\x12\x45nrichClassRequest\x12\x11\n\tnamespace\x18\x01 \x01(\t\x12\x11\n\tclassname\x18\x02 \x01(\t\x12\x15\n\rclassToDeploy\x18\x03 \x01(\x0c\x12\x0e\n\x06\x61spect\x18\x04 \x01(\x0c\x12\x0c\n\x04yaml\x18\x05 \x01(\x0c\"\xd2\x02\n\x1cNewPersistentInstanceRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x0f\n\x07\x63lassID\x18\x02 \x01(\t\x12\x18\n\x10implementationID\x18\x03 \x01(\t\x12m\n\x0cifaceBitMaps\x18\x04 \x03(\x0b\x32W.dataclay.communication.grpc.dataservice.NewPersistentInstanceRequest.IfaceBitMapsEntry\x12P\n\x06params\x18\x05 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x1a\x33\n\x11IfaceBitMapsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"u\n\x1dNewPersistentInstanceResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xa0\x01\n\x13StoreObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12P\n\x07objects\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\x12\x0e\n\x06moving\x18\x03 \x01(\x08\x12\x14\n\x0cidsWithAlias\x18\x04 \x03(\t\"P\n\x16GetCopyOfObjectRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x11\n\trecursive\x18\x03 \x01(\x08\"\xac\x01\n\x17GetCopyOfObjectResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x94\x01\n\x13UpdateObjectRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x14\n\x0cintoObjectID\x18\x02 \x01(\t\x12T\n\nfromObject\x18\x03 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\"v\n\x11GetObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x11\n\tobjectIDS\x18\x02 \x03(\t\x12\x11\n\trecursive\x18\x03 \x01(\x08\x12\x13\n\x0bremoveHints\x18\x04 \x01(\x08\x12\x13\n\x0bgetOnlyRefs\x18\x05 \x01(\x08\"\xa4\x02\n\x12GetObjectsResponse\x12Y\n\x07objects\x18\x01 \x03(\x0b\x32H.dataclay.communication.grpc.dataservice.GetObjectsResponse.ObjectsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1ao\n\x0cObjectsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12N\n\x05value\x18\x02 \x01(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn:\x02\x38\x01\"|\n\x15MakePersistentRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12P\n\x07objects\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\"v\n\x0f\x46\x65\x64\x65rateRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12P\n\x07objects\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\"9\n\x11UnfederateRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x11\n\tobjectIDs\x18\x02 \x03(\t\"\xaf\x01\n\x1c\x45xecuteImplementationRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x18\n\x10implementationID\x18\x02 \x01(\t\x12\x11\n\tsessionID\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\"\xb2\x01\n\x1d\x45xecuteImplementationResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"N\n\x11NewVersionRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x14\n\x0cmetadataInfo\x18\x03 \x01(\t\"\x84\x02\n\x12NewVersionResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x63\n\x0cversionedIDs\x18\x02 \x03(\x0b\x32M.dataclay.communication.grpc.dataservice.NewVersionResponse.VersionedIDsEntry\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x33\n\x11VersionedIDsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"C\n\x19\x43onsolidateVersionRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x13\n\x0bversionInfo\x18\x02 \x01(\t\"\x7f\n\x14UpsertObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12T\n\x0b\x62ytesUpdate\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\"b\n\x11NewReplicaRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x15\n\rdestBackendID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"s\n\x12NewReplicaResponse\x12\x19\n\x11replicatedObjects\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"_\n\x12MoveObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x11\n\tdestLocID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"o\n\x13MoveObjectsResponse\x12\x14\n\x0cmovedObjects\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"p\n\x14RemoveObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x11\n\tobjectIDs\x18\x02 \x03(\t\x12\x11\n\trecursive\x18\x03 \x01(\x08\x12\x0e\n\x06moving\x18\x04 \x01(\x08\x12\x0f\n\x07newHint\x18\x05 \x01(\t\"\xfe\x01\n\x15RemoveObjectsResponse\x12j\n\x0eremovedObjects\x18\x01 \x03(\x0b\x32R.dataclay.communication.grpc.dataservice.RemoveObjectsResponse.RemovedObjectsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x35\n\x13RemovedObjectsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xbd\x01\n\x15MigrateObjectsRequest\x12l\n\x0f\x64\x65stStorageLocs\x18\x01 \x03(\x0b\x32S.dataclay.communication.grpc.dataservice.MigrateObjectsRequest.DestStorageLocsEntry\x1a\x36\n\x14\x44\x65stStorageLocsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x1f\n\x0fMigratedObjects\x12\x0c\n\x04objs\x18\x01 \x03(\t\"\x87\x03\n\x16MigrateObjectsResponse\x12g\n\x0cmigratedObjs\x18\x01 \x03(\x0b\x32Q.dataclay.communication.grpc.dataservice.MigrateObjectsResponse.MigratedObjsEntry\x12Q\n\x0fnonMigratedObjs\x18\x02 \x01(\x0b\x32\x38.dataclay.communication.grpc.dataservice.MigratedObjects\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1am\n\x11MigratedObjsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12G\n\x05value\x18\x02 \x01(\x0b\x32\x38.dataclay.communication.grpc.dataservice.MigratedObjects:\x02\x38\x01\"(\n\x16\x41\x63tivateTracingRequest\x12\x0e\n\x06taskid\x18\x01 \x01(\x05\",\n\x17\x43loseSessionInDSRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\"\xe9\x01\n\x12\x44iskCollectRequest\x12\x13\n\x0b\x65pochNodeID\x18\x01 \x01(\t\x12\x10\n\x08ringPath\x18\x02 \x03(\t\x12\x12\n\ncandidates\x18\x03 \x03(\t\x12\x63\n\x0crefsToUpdate\x18\x04 \x03(\x0b\x32M.dataclay.communication.grpc.dataservice.DiskCollectRequest.RefsToUpdateEntry\x1a\x33\n\x11RefsToUpdateEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"7\n#GetClassIDFromObjectInMemoryRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"{\n$GetClassIDFromObjectInMemoryResponse\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"V\n\x10StoreToDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x10\n\x08objBytes\x18\x03 \x01(\x0c\"D\n\x10GetFromDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"i\n\x11GetFromDBResponse\x12\x10\n\x08objBytes\x18\x01 \x01(\x0c\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"f\n\x11UpdateToDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x10\n\x08objBytes\x18\x03 \x01(\x0c\x12\r\n\x05\x64irty\x18\x04 \x01(\x08\"E\n\x11\x44\x65leteToDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"\xac\x01\n\x11UpdateRefsRequest\x12\x62\n\x0crefsToUpdate\x18\x01 \x03(\x0b\x32L.dataclay.communication.grpc.dataservice.UpdateRefsRequest.RefsToUpdateEntry\x1a\x33\n\x11RefsToUpdateEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\x7f\n\x1dGetRetainedReferencesResponse\x12\x1a\n\x12retainedReferences\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"!\n\rExistsRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"d\n\x0e\x45xistsResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"%\n\x11\x45xistsInDBRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"h\n\x12\x45xistsInDBResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfoB;\n7es.bsc.dataclay.communication.grpc.messages.dataserviceP\x00\x62\x06proto3')
+  serialized_pb=_b('\nKdataclay/communication/grpc/messages/dataservice/dataservice_messages.proto\x12\'dataclay.communication.grpc.dataservice\x1a\x41\x64\x61taclay/communication/grpc/messages/common/common_messages.proto\")\n\x14InitBackendIDRequest\x12\x11\n\tbackendID\x18\x01 \x01(\t\"F\n$AssociateExecutionEnvironmentRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\"\xd3\x01\n\x18\x44\x65ployMetaClassesRequest\x12\x11\n\tnamespace\x18\x01 \x01(\t\x12m\n\x0e\x64\x65ploymentPack\x18\x02 \x03(\x0b\x32U.dataclay.communication.grpc.dataservice.DeployMetaClassesRequest.DeploymentPackEntry\x1a\x35\n\x13\x44\x65ploymentPackEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xf2\x04\n\x14\x44\x65ployClassesRequest\x12\x11\n\tnamespace\x18\x01 \x01(\t\x12k\n\x0f\x63lassesToDeploy\x18\x02 \x03(\x0b\x32R.dataclay.communication.grpc.dataservice.DeployClassesRequest.ClassesToDeployEntry\x12]\n\x08\x63lassIds\x18\x03 \x03(\x0b\x32K.dataclay.communication.grpc.dataservice.DeployClassesRequest.ClassIdsEntry\x12[\n\x07\x61spects\x18\x04 \x03(\x0b\x32J.dataclay.communication.grpc.dataservice.DeployClassesRequest.AspectsEntry\x12W\n\x05yamls\x18\x05 \x03(\x0b\x32H.dataclay.communication.grpc.dataservice.DeployClassesRequest.YamlsEntry\x1a\x36\n\x14\x43lassesToDeployEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a/\n\rClassIdsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a.\n\x0c\x41spectsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a,\n\nYamlsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"o\n\x12\x45nrichClassRequest\x12\x11\n\tnamespace\x18\x01 \x01(\t\x12\x11\n\tclassname\x18\x02 \x01(\t\x12\x15\n\rclassToDeploy\x18\x03 \x01(\x0c\x12\x0e\n\x06\x61spect\x18\x04 \x01(\x0c\x12\x0c\n\x04yaml\x18\x05 \x01(\x0c\"\xd2\x02\n\x1cNewPersistentInstanceRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x0f\n\x07\x63lassID\x18\x02 \x01(\t\x12\x18\n\x10implementationID\x18\x03 \x01(\t\x12m\n\x0cifaceBitMaps\x18\x04 \x03(\x0b\x32W.dataclay.communication.grpc.dataservice.NewPersistentInstanceRequest.IfaceBitMapsEntry\x12P\n\x06params\x18\x05 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x1a\x33\n\x11IfaceBitMapsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"u\n\x1dNewPersistentInstanceResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xa0\x01\n\x13StoreObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12P\n\x07objects\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\x12\x0e\n\x06moving\x18\x03 \x01(\x08\x12\x14\n\x0cidsWithAlias\x18\x04 \x03(\t\"P\n\x16GetCopyOfObjectRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x11\n\trecursive\x18\x03 \x01(\x08\"\xac\x01\n\x17GetCopyOfObjectResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x94\x01\n\x13UpdateObjectRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x14\n\x0cintoObjectID\x18\x02 \x01(\t\x12T\n\nfromObject\x18\x03 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\"c\n\x11GetObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x11\n\tobjectIDS\x18\x02 \x03(\t\x12\x11\n\trecursive\x18\x03 \x01(\x08\x12\x15\n\rdestBackendID\x18\x04 \x01(\t\"\xaa\x01\n\x12GetObjectsResponse\x12P\n\x07objects\x18\x01 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"|\n\x15MakePersistentRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12P\n\x07objects\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\"q\n\x0f\x46\x65\x64\x65rateRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12&\n\x1e\x65xternalExecutionEnvironmentID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"~\n\x17NotifyFederationRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12P\n\x07objects\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\"s\n\x11UnfederateRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12&\n\x1e\x65xternalExecutionEnvironmentID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"A\n\x19NotifyUnfederationRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x11\n\tobjectIDs\x18\x02 \x03(\t\"\xaf\x01\n\x1c\x45xecuteImplementationRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x18\n\x10implementationID\x18\x02 \x01(\t\x12\x11\n\tsessionID\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\"\xb2\x01\n\x1d\x45xecuteImplementationResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"O\n\x11NewVersionRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x15\n\rdestBackendID\x18\x03 \x01(\t\"j\n\x12NewVersionResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"G\n\x19\x43onsolidateVersionRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x17\n\x0fversionObjectID\x18\x02 \x01(\t\"\x7f\n\x14UpsertObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12T\n\x0b\x62ytesUpdate\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\"b\n\x11NewReplicaRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x15\n\rdestBackendID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"s\n\x12NewReplicaResponse\x12\x19\n\x11replicatedObjects\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"_\n\x12MoveObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x11\n\tdestLocID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"o\n\x13MoveObjectsResponse\x12\x14\n\x0cmovedObjects\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"p\n\x14RemoveObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x11\n\tobjectIDs\x18\x02 \x03(\t\x12\x11\n\trecursive\x18\x03 \x01(\x08\x12\x0e\n\x06moving\x18\x04 \x01(\x08\x12\x0f\n\x07newHint\x18\x05 \x01(\t\"\xfe\x01\n\x15RemoveObjectsResponse\x12j\n\x0eremovedObjects\x18\x01 \x03(\x0b\x32R.dataclay.communication.grpc.dataservice.RemoveObjectsResponse.RemovedObjectsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x35\n\x13RemovedObjectsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xf6\x01\n\x15MigrateObjectsRequest\x12l\n\x0f\x64\x65stStorageLocs\x18\x01 \x03(\x0b\x32S.dataclay.communication.grpc.dataservice.MigrateObjectsRequest.DestStorageLocsEntry\x1ao\n\x14\x44\x65stStorageLocsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x46\n\x05value\x18\x02 \x01(\x0b\x32\x37.dataclay.communication.grpc.common.StorageLocationInfo:\x02\x38\x01\"\x1f\n\x0fMigratedObjects\x12\x0c\n\x04objs\x18\x01 \x03(\t\"\x87\x03\n\x16MigrateObjectsResponse\x12g\n\x0cmigratedObjs\x18\x01 \x03(\x0b\x32Q.dataclay.communication.grpc.dataservice.MigrateObjectsResponse.MigratedObjsEntry\x12Q\n\x0fnonMigratedObjs\x18\x02 \x01(\x0b\x32\x38.dataclay.communication.grpc.dataservice.MigratedObjects\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1am\n\x11MigratedObjsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12G\n\x05value\x18\x02 \x01(\x0b\x32\x38.dataclay.communication.grpc.dataservice.MigratedObjects:\x02\x38\x01\"(\n\x16\x41\x63tivateTracingRequest\x12\x0e\n\x06taskid\x18\x01 \x01(\x05\",\n\x17\x43loseSessionInDSRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\"\xe9\x01\n\x12\x44iskCollectRequest\x12\x13\n\x0b\x65pochNodeID\x18\x01 \x01(\t\x12\x10\n\x08ringPath\x18\x02 \x03(\t\x12\x12\n\ncandidates\x18\x03 \x03(\t\x12\x63\n\x0crefsToUpdate\x18\x04 \x03(\x0b\x32M.dataclay.communication.grpc.dataservice.DiskCollectRequest.RefsToUpdateEntry\x1a\x33\n\x11RefsToUpdateEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"7\n#GetClassIDFromObjectInMemoryRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"{\n$GetClassIDFromObjectInMemoryResponse\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"V\n\x10StoreToDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x10\n\x08objBytes\x18\x03 \x01(\x0c\"D\n\x10GetFromDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"i\n\x11GetFromDBResponse\x12\x10\n\x08objBytes\x18\x01 \x01(\x0c\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"f\n\x11UpdateToDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x10\n\x08objBytes\x18\x03 \x01(\x0c\x12\r\n\x05\x64irty\x18\x04 \x01(\x08\"E\n\x11\x44\x65leteToDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"\xac\x01\n\x11UpdateRefsRequest\x12\x62\n\x0crefsToUpdate\x18\x01 \x03(\x0b\x32L.dataclay.communication.grpc.dataservice.UpdateRefsRequest.RefsToUpdateEntry\x1a\x33\n\x11RefsToUpdateEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\x7f\n\x1dGetRetainedReferencesResponse\x12\x1a\n\x12retainedReferences\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xbf\x01\n\x12SynchronizeRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x18\n\x10implementationID\x18\x02 \x01(\t\x12\x11\n\tsessionID\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x18\n\x10\x63\x61llingBackendID\x18\x05 \x01(\t\"!\n\rExistsRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"d\n\x0e\x45xistsResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"%\n\x11\x45xistsInDBRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"h\n\x12\x45xistsInDBResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfoB;\n7es.bsc.dataclay.communication.grpc.messages.dataserviceP\x00\x62\x06proto3')
   ,
   dependencies=[dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.DESCRIPTOR,])
 
@@ -774,16 +774,9 @@ _GETOBJECTSREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='removeHints', full_name='dataclay.communication.grpc.dataservice.GetObjectsRequest.removeHints', index=3,
-      number=4, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='getOnlyRefs', full_name='dataclay.communication.grpc.dataservice.GetObjectsRequest.getOnlyRefs', index=4,
-      number=5, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='destBackendID', full_name='dataclay.communication.grpc.dataservice.GetObjectsRequest.destBackendID', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -800,46 +793,9 @@ _GETOBJECTSREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=2289,
-  serialized_end=2407,
+  serialized_end=2388,
 )
 
-
-_GETOBJECTSRESPONSE_OBJECTSENTRY = _descriptor.Descriptor(
-  name='ObjectsEntry',
-  full_name='dataclay.communication.grpc.dataservice.GetObjectsResponse.ObjectsEntry',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='key', full_name='dataclay.communication.grpc.dataservice.GetObjectsResponse.ObjectsEntry.key', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='value', full_name='dataclay.communication.grpc.dataservice.GetObjectsResponse.ObjectsEntry.value', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=_b('8\001'),
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=2591,
-  serialized_end=2702,
-)
 
 _GETOBJECTSRESPONSE = _descriptor.Descriptor(
   name='GetObjectsResponse',
@@ -865,7 +821,7 @@ _GETOBJECTSRESPONSE = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_GETOBJECTSRESPONSE_OBJECTSENTRY, ],
+  nested_types=[],
   enum_types=[
   ],
   serialized_options=None,
@@ -874,8 +830,8 @@ _GETOBJECTSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2410,
-  serialized_end=2702,
+  serialized_start=2391,
+  serialized_end=2561,
 )
 
 
@@ -912,8 +868,8 @@ _MAKEPERSISTENTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2704,
-  serialized_end=2828,
+  serialized_start=2563,
+  serialized_end=2687,
 )
 
 
@@ -932,7 +888,59 @@ _FEDERATEREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='objects', full_name='dataclay.communication.grpc.dataservice.FederateRequest.objects', index=1,
+      name='objectID', full_name='dataclay.communication.grpc.dataservice.FederateRequest.objectID', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='externalExecutionEnvironmentID', full_name='dataclay.communication.grpc.dataservice.FederateRequest.externalExecutionEnvironmentID', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='recursive', full_name='dataclay.communication.grpc.dataservice.FederateRequest.recursive', index=3,
+      number=4, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2689,
+  serialized_end=2802,
+)
+
+
+_NOTIFYFEDERATIONREQUEST = _descriptor.Descriptor(
+  name='NotifyFederationRequest',
+  full_name='dataclay.communication.grpc.dataservice.NotifyFederationRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='sessionID', full_name='dataclay.communication.grpc.dataservice.NotifyFederationRequest.sessionID', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='objects', full_name='dataclay.communication.grpc.dataservice.NotifyFederationRequest.objects', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -950,8 +958,8 @@ _FEDERATEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2830,
-  serialized_end=2948,
+  serialized_start=2804,
+  serialized_end=2930,
 )
 
 
@@ -970,7 +978,59 @@ _UNFEDERATEREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='objectIDs', full_name='dataclay.communication.grpc.dataservice.UnfederateRequest.objectIDs', index=1,
+      name='objectID', full_name='dataclay.communication.grpc.dataservice.UnfederateRequest.objectID', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='externalExecutionEnvironmentID', full_name='dataclay.communication.grpc.dataservice.UnfederateRequest.externalExecutionEnvironmentID', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='recursive', full_name='dataclay.communication.grpc.dataservice.UnfederateRequest.recursive', index=3,
+      number=4, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2932,
+  serialized_end=3047,
+)
+
+
+_NOTIFYUNFEDERATIONREQUEST = _descriptor.Descriptor(
+  name='NotifyUnfederationRequest',
+  full_name='dataclay.communication.grpc.dataservice.NotifyUnfederationRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='sessionID', full_name='dataclay.communication.grpc.dataservice.NotifyUnfederationRequest.sessionID', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='objectIDs', full_name='dataclay.communication.grpc.dataservice.NotifyUnfederationRequest.objectIDs', index=1,
       number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -988,8 +1048,8 @@ _UNFEDERATEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2950,
-  serialized_end=3007,
+  serialized_start=3049,
+  serialized_end=3114,
 )
 
 
@@ -1040,8 +1100,8 @@ _EXECUTEIMPLEMENTATIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3010,
-  serialized_end=3185,
+  serialized_start=3117,
+  serialized_end=3292,
 )
 
 
@@ -1078,8 +1138,8 @@ _EXECUTEIMPLEMENTATIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3188,
-  serialized_end=3366,
+  serialized_start=3295,
+  serialized_end=3473,
 )
 
 
@@ -1105,7 +1165,7 @@ _NEWVERSIONREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='metadataInfo', full_name='dataclay.communication.grpc.dataservice.NewVersionRequest.metadataInfo', index=2,
+      name='destBackendID', full_name='dataclay.communication.grpc.dataservice.NewVersionRequest.destBackendID', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -1123,47 +1183,10 @@ _NEWVERSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3368,
-  serialized_end=3446,
+  serialized_start=3475,
+  serialized_end=3554,
 )
 
-
-_NEWVERSIONRESPONSE_VERSIONEDIDSENTRY = _descriptor.Descriptor(
-  name='VersionedIDsEntry',
-  full_name='dataclay.communication.grpc.dataservice.NewVersionResponse.VersionedIDsEntry',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='key', full_name='dataclay.communication.grpc.dataservice.NewVersionResponse.VersionedIDsEntry.key', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='value', full_name='dataclay.communication.grpc.dataservice.NewVersionResponse.VersionedIDsEntry.value', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=_b('8\001'),
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=3658,
-  serialized_end=3709,
-)
 
 _NEWVERSIONRESPONSE = _descriptor.Descriptor(
   name='NewVersionResponse',
@@ -1180,15 +1203,8 @@ _NEWVERSIONRESPONSE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='versionedIDs', full_name='dataclay.communication.grpc.dataservice.NewVersionResponse.versionedIDs', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.dataservice.NewVersionResponse.excInfo', index=2,
-      number=3, type=11, cpp_type=10, label=1,
+      name='excInfo', full_name='dataclay.communication.grpc.dataservice.NewVersionResponse.excInfo', index=1,
+      number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -1196,7 +1212,7 @@ _NEWVERSIONRESPONSE = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_NEWVERSIONRESPONSE_VERSIONEDIDSENTRY, ],
+  nested_types=[],
   enum_types=[
   ],
   serialized_options=None,
@@ -1205,8 +1221,8 @@ _NEWVERSIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3449,
-  serialized_end=3709,
+  serialized_start=3556,
+  serialized_end=3662,
 )
 
 
@@ -1225,7 +1241,7 @@ _CONSOLIDATEVERSIONREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='versionInfo', full_name='dataclay.communication.grpc.dataservice.ConsolidateVersionRequest.versionInfo', index=1,
+      name='versionObjectID', full_name='dataclay.communication.grpc.dataservice.ConsolidateVersionRequest.versionObjectID', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -1243,8 +1259,8 @@ _CONSOLIDATEVERSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3711,
-  serialized_end=3778,
+  serialized_start=3664,
+  serialized_end=3735,
 )
 
 
@@ -1281,8 +1297,8 @@ _UPSERTOBJECTSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3780,
-  serialized_end=3907,
+  serialized_start=3737,
+  serialized_end=3864,
 )
 
 
@@ -1333,8 +1349,8 @@ _NEWREPLICAREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3909,
-  serialized_end=4007,
+  serialized_start=3866,
+  serialized_end=3964,
 )
 
 
@@ -1371,8 +1387,8 @@ _NEWREPLICARESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4009,
-  serialized_end=4124,
+  serialized_start=3966,
+  serialized_end=4081,
 )
 
 
@@ -1423,8 +1439,8 @@ _MOVEOBJECTSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4126,
-  serialized_end=4221,
+  serialized_start=4083,
+  serialized_end=4178,
 )
 
 
@@ -1461,8 +1477,8 @@ _MOVEOBJECTSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4223,
-  serialized_end=4334,
+  serialized_start=4180,
+  serialized_end=4291,
 )
 
 
@@ -1520,8 +1536,8 @@ _REMOVEOBJECTSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4336,
-  serialized_end=4448,
+  serialized_start=4293,
+  serialized_end=4405,
 )
 
 
@@ -1558,8 +1574,8 @@ _REMOVEOBJECTSRESPONSE_REMOVEDOBJECTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4652,
-  serialized_end=4705,
+  serialized_start=4609,
+  serialized_end=4662,
 )
 
 _REMOVEOBJECTSRESPONSE = _descriptor.Descriptor(
@@ -1595,8 +1611,8 @@ _REMOVEOBJECTSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4451,
-  serialized_end=4705,
+  serialized_start=4408,
+  serialized_end=4662,
 )
 
 
@@ -1616,8 +1632,8 @@ _MIGRATEOBJECTSREQUEST_DESTSTORAGELOCSENTRY = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='dataclay.communication.grpc.dataservice.MigrateObjectsRequest.DestStorageLocsEntry.value', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1633,8 +1649,8 @@ _MIGRATEOBJECTSREQUEST_DESTSTORAGELOCSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4843,
-  serialized_end=4897,
+  serialized_start=4800,
+  serialized_end=4911,
 )
 
 _MIGRATEOBJECTSREQUEST = _descriptor.Descriptor(
@@ -1663,8 +1679,8 @@ _MIGRATEOBJECTSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4708,
-  serialized_end=4897,
+  serialized_start=4665,
+  serialized_end=4911,
 )
 
 
@@ -1694,8 +1710,8 @@ _MIGRATEDOBJECTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4899,
-  serialized_end=4930,
+  serialized_start=4913,
+  serialized_end=4944,
 )
 
 
@@ -1732,8 +1748,8 @@ _MIGRATEOBJECTSRESPONSE_MIGRATEDOBJSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5215,
-  serialized_end=5324,
+  serialized_start=5229,
+  serialized_end=5338,
 )
 
 _MIGRATEOBJECTSRESPONSE = _descriptor.Descriptor(
@@ -1776,8 +1792,8 @@ _MIGRATEOBJECTSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4933,
-  serialized_end=5324,
+  serialized_start=4947,
+  serialized_end=5338,
 )
 
 
@@ -1807,8 +1823,8 @@ _ACTIVATETRACINGREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5326,
-  serialized_end=5366,
+  serialized_start=5340,
+  serialized_end=5380,
 )
 
 
@@ -1838,8 +1854,8 @@ _CLOSESESSIONINDSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5368,
-  serialized_end=5412,
+  serialized_start=5382,
+  serialized_end=5426,
 )
 
 
@@ -1876,8 +1892,8 @@ _DISKCOLLECTREQUEST_REFSTOUPDATEENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5597,
-  serialized_end=5648,
+  serialized_start=5611,
+  serialized_end=5662,
 )
 
 _DISKCOLLECTREQUEST = _descriptor.Descriptor(
@@ -1927,8 +1943,8 @@ _DISKCOLLECTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5415,
-  serialized_end=5648,
+  serialized_start=5429,
+  serialized_end=5662,
 )
 
 
@@ -1958,8 +1974,8 @@ _GETCLASSIDFROMOBJECTINMEMORYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5650,
-  serialized_end=5705,
+  serialized_start=5664,
+  serialized_end=5719,
 )
 
 
@@ -1996,8 +2012,8 @@ _GETCLASSIDFROMOBJECTINMEMORYRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5707,
-  serialized_end=5830,
+  serialized_start=5721,
+  serialized_end=5844,
 )
 
 
@@ -2041,8 +2057,8 @@ _STORETODBREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5832,
-  serialized_end=5918,
+  serialized_start=5846,
+  serialized_end=5932,
 )
 
 
@@ -2079,8 +2095,8 @@ _GETFROMDBREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5920,
-  serialized_end=5988,
+  serialized_start=5934,
+  serialized_end=6002,
 )
 
 
@@ -2117,8 +2133,8 @@ _GETFROMDBRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5990,
-  serialized_end=6095,
+  serialized_start=6004,
+  serialized_end=6109,
 )
 
 
@@ -2169,8 +2185,8 @@ _UPDATETODBREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6097,
-  serialized_end=6199,
+  serialized_start=6111,
+  serialized_end=6213,
 )
 
 
@@ -2207,8 +2223,8 @@ _DELETETODBREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6201,
-  serialized_end=6270,
+  serialized_start=6215,
+  serialized_end=6284,
 )
 
 
@@ -2245,8 +2261,8 @@ _UPDATEREFSREQUEST_REFSTOUPDATEENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5597,
-  serialized_end=5648,
+  serialized_start=5611,
+  serialized_end=5662,
 )
 
 _UPDATEREFSREQUEST = _descriptor.Descriptor(
@@ -2275,8 +2291,8 @@ _UPDATEREFSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6273,
-  serialized_end=6445,
+  serialized_start=6287,
+  serialized_end=6459,
 )
 
 
@@ -2313,8 +2329,67 @@ _GETRETAINEDREFERENCESRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6447,
-  serialized_end=6574,
+  serialized_start=6461,
+  serialized_end=6588,
+)
+
+
+_SYNCHRONIZEREQUEST = _descriptor.Descriptor(
+  name='SynchronizeRequest',
+  full_name='dataclay.communication.grpc.dataservice.SynchronizeRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='objectID', full_name='dataclay.communication.grpc.dataservice.SynchronizeRequest.objectID', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='implementationID', full_name='dataclay.communication.grpc.dataservice.SynchronizeRequest.implementationID', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='sessionID', full_name='dataclay.communication.grpc.dataservice.SynchronizeRequest.sessionID', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='params', full_name='dataclay.communication.grpc.dataservice.SynchronizeRequest.params', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='callingBackendID', full_name='dataclay.communication.grpc.dataservice.SynchronizeRequest.callingBackendID', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=6591,
+  serialized_end=6782,
 )
 
 
@@ -2344,8 +2419,8 @@ _EXISTSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6576,
-  serialized_end=6609,
+  serialized_start=6784,
+  serialized_end=6817,
 )
 
 
@@ -2382,8 +2457,8 @@ _EXISTSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6611,
-  serialized_end=6711,
+  serialized_start=6819,
+  serialized_end=6919,
 )
 
 
@@ -2413,8 +2488,8 @@ _EXISTSINDBREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6713,
-  serialized_end=6750,
+  serialized_start=6921,
+  serialized_end=6958,
 )
 
 
@@ -2451,8 +2526,8 @@ _EXISTSINDBRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6752,
-  serialized_end=6856,
+  serialized_start=6960,
+  serialized_end=7064,
 )
 
 _DEPLOYMETACLASSESREQUEST_DEPLOYMENTPACKENTRY.containing_type = _DEPLOYMETACLASSESREQUEST
@@ -2473,17 +2548,13 @@ _STOREOBJECTSREQUEST.fields_by_name['objects'].message_type = dataclay_dot_commu
 _GETCOPYOFOBJECTRESPONSE.fields_by_name['ret'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SERIALIZEDPARAMETERSORRETURN
 _GETCOPYOFOBJECTRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _UPDATEOBJECTREQUEST.fields_by_name['fromObject'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SERIALIZEDPARAMETERSORRETURN
-_GETOBJECTSRESPONSE_OBJECTSENTRY.fields_by_name['value'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTWITHDATAPARAMORRETURN
-_GETOBJECTSRESPONSE_OBJECTSENTRY.containing_type = _GETOBJECTSRESPONSE
-_GETOBJECTSRESPONSE.fields_by_name['objects'].message_type = _GETOBJECTSRESPONSE_OBJECTSENTRY
+_GETOBJECTSRESPONSE.fields_by_name['objects'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTWITHDATAPARAMORRETURN
 _GETOBJECTSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _MAKEPERSISTENTREQUEST.fields_by_name['objects'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTWITHDATAPARAMORRETURN
-_FEDERATEREQUEST.fields_by_name['objects'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTWITHDATAPARAMORRETURN
+_NOTIFYFEDERATIONREQUEST.fields_by_name['objects'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTWITHDATAPARAMORRETURN
 _EXECUTEIMPLEMENTATIONREQUEST.fields_by_name['params'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SERIALIZEDPARAMETERSORRETURN
 _EXECUTEIMPLEMENTATIONRESPONSE.fields_by_name['ret'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SERIALIZEDPARAMETERSORRETURN
 _EXECUTEIMPLEMENTATIONRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_NEWVERSIONRESPONSE_VERSIONEDIDSENTRY.containing_type = _NEWVERSIONRESPONSE
-_NEWVERSIONRESPONSE.fields_by_name['versionedIDs'].message_type = _NEWVERSIONRESPONSE_VERSIONEDIDSENTRY
 _NEWVERSIONRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _UPSERTOBJECTSREQUEST.fields_by_name['bytesUpdate'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTWITHDATAPARAMORRETURN
 _NEWREPLICARESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
@@ -2491,6 +2562,7 @@ _MOVEOBJECTSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_commu
 _REMOVEOBJECTSRESPONSE_REMOVEDOBJECTSENTRY.containing_type = _REMOVEOBJECTSRESPONSE
 _REMOVEOBJECTSRESPONSE.fields_by_name['removedObjects'].message_type = _REMOVEOBJECTSRESPONSE_REMOVEDOBJECTSENTRY
 _REMOVEOBJECTSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
+_MIGRATEOBJECTSREQUEST_DESTSTORAGELOCSENTRY.fields_by_name['value'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._STORAGELOCATIONINFO
 _MIGRATEOBJECTSREQUEST_DESTSTORAGELOCSENTRY.containing_type = _MIGRATEOBJECTSREQUEST
 _MIGRATEOBJECTSREQUEST.fields_by_name['destStorageLocs'].message_type = _MIGRATEOBJECTSREQUEST_DESTSTORAGELOCSENTRY
 _MIGRATEOBJECTSRESPONSE_MIGRATEDOBJSENTRY.fields_by_name['value'].message_type = _MIGRATEDOBJECTS
@@ -2505,6 +2577,7 @@ _GETFROMDBRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communi
 _UPDATEREFSREQUEST_REFSTOUPDATEENTRY.containing_type = _UPDATEREFSREQUEST
 _UPDATEREFSREQUEST.fields_by_name['refsToUpdate'].message_type = _UPDATEREFSREQUEST_REFSTOUPDATEENTRY
 _GETRETAINEDREFERENCESRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
+_SYNCHRONIZEREQUEST.fields_by_name['params'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SERIALIZEDPARAMETERSORRETURN
 _EXISTSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _EXISTSINDBRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 DESCRIPTOR.message_types_by_name['InitBackendIDRequest'] = _INITBACKENDIDREQUEST
@@ -2522,7 +2595,9 @@ DESCRIPTOR.message_types_by_name['GetObjectsRequest'] = _GETOBJECTSREQUEST
 DESCRIPTOR.message_types_by_name['GetObjectsResponse'] = _GETOBJECTSRESPONSE
 DESCRIPTOR.message_types_by_name['MakePersistentRequest'] = _MAKEPERSISTENTREQUEST
 DESCRIPTOR.message_types_by_name['FederateRequest'] = _FEDERATEREQUEST
+DESCRIPTOR.message_types_by_name['NotifyFederationRequest'] = _NOTIFYFEDERATIONREQUEST
 DESCRIPTOR.message_types_by_name['UnfederateRequest'] = _UNFEDERATEREQUEST
+DESCRIPTOR.message_types_by_name['NotifyUnfederationRequest'] = _NOTIFYUNFEDERATIONREQUEST
 DESCRIPTOR.message_types_by_name['ExecuteImplementationRequest'] = _EXECUTEIMPLEMENTATIONREQUEST
 DESCRIPTOR.message_types_by_name['ExecuteImplementationResponse'] = _EXECUTEIMPLEMENTATIONRESPONSE
 DESCRIPTOR.message_types_by_name['NewVersionRequest'] = _NEWVERSIONREQUEST
@@ -2550,6 +2625,7 @@ DESCRIPTOR.message_types_by_name['UpdateToDBRequest'] = _UPDATETODBREQUEST
 DESCRIPTOR.message_types_by_name['DeleteToDBRequest'] = _DELETETODBREQUEST
 DESCRIPTOR.message_types_by_name['UpdateRefsRequest'] = _UPDATEREFSREQUEST
 DESCRIPTOR.message_types_by_name['GetRetainedReferencesResponse'] = _GETRETAINEDREFERENCESRESPONSE
+DESCRIPTOR.message_types_by_name['SynchronizeRequest'] = _SYNCHRONIZEREQUEST
 DESCRIPTOR.message_types_by_name['ExistsRequest'] = _EXISTSREQUEST
 DESCRIPTOR.message_types_by_name['ExistsResponse'] = _EXISTSRESPONSE
 DESCRIPTOR.message_types_by_name['ExistsInDBRequest'] = _EXISTSINDBREQUEST
@@ -2689,19 +2765,11 @@ GetObjectsRequest = _reflection.GeneratedProtocolMessageType('GetObjectsRequest'
 _sym_db.RegisterMessage(GetObjectsRequest)
 
 GetObjectsResponse = _reflection.GeneratedProtocolMessageType('GetObjectsResponse', (_message.Message,), {
-
-  'ObjectsEntry' : _reflection.GeneratedProtocolMessageType('ObjectsEntry', (_message.Message,), {
-    'DESCRIPTOR' : _GETOBJECTSRESPONSE_OBJECTSENTRY,
-    '__module__' : 'dataclay.communication.grpc.messages.dataservice.dataservice_messages_pb2'
-    # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.dataservice.GetObjectsResponse.ObjectsEntry)
-    })
-  ,
   'DESCRIPTOR' : _GETOBJECTSRESPONSE,
   '__module__' : 'dataclay.communication.grpc.messages.dataservice.dataservice_messages_pb2'
   # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.dataservice.GetObjectsResponse)
   })
 _sym_db.RegisterMessage(GetObjectsResponse)
-_sym_db.RegisterMessage(GetObjectsResponse.ObjectsEntry)
 
 MakePersistentRequest = _reflection.GeneratedProtocolMessageType('MakePersistentRequest', (_message.Message,), {
   'DESCRIPTOR' : _MAKEPERSISTENTREQUEST,
@@ -2717,12 +2785,26 @@ FederateRequest = _reflection.GeneratedProtocolMessageType('FederateRequest', (_
   })
 _sym_db.RegisterMessage(FederateRequest)
 
+NotifyFederationRequest = _reflection.GeneratedProtocolMessageType('NotifyFederationRequest', (_message.Message,), {
+  'DESCRIPTOR' : _NOTIFYFEDERATIONREQUEST,
+  '__module__' : 'dataclay.communication.grpc.messages.dataservice.dataservice_messages_pb2'
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.dataservice.NotifyFederationRequest)
+  })
+_sym_db.RegisterMessage(NotifyFederationRequest)
+
 UnfederateRequest = _reflection.GeneratedProtocolMessageType('UnfederateRequest', (_message.Message,), {
   'DESCRIPTOR' : _UNFEDERATEREQUEST,
   '__module__' : 'dataclay.communication.grpc.messages.dataservice.dataservice_messages_pb2'
   # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.dataservice.UnfederateRequest)
   })
 _sym_db.RegisterMessage(UnfederateRequest)
+
+NotifyUnfederationRequest = _reflection.GeneratedProtocolMessageType('NotifyUnfederationRequest', (_message.Message,), {
+  'DESCRIPTOR' : _NOTIFYUNFEDERATIONREQUEST,
+  '__module__' : 'dataclay.communication.grpc.messages.dataservice.dataservice_messages_pb2'
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.dataservice.NotifyUnfederationRequest)
+  })
+_sym_db.RegisterMessage(NotifyUnfederationRequest)
 
 ExecuteImplementationRequest = _reflection.GeneratedProtocolMessageType('ExecuteImplementationRequest', (_message.Message,), {
   'DESCRIPTOR' : _EXECUTEIMPLEMENTATIONREQUEST,
@@ -2746,19 +2828,11 @@ NewVersionRequest = _reflection.GeneratedProtocolMessageType('NewVersionRequest'
 _sym_db.RegisterMessage(NewVersionRequest)
 
 NewVersionResponse = _reflection.GeneratedProtocolMessageType('NewVersionResponse', (_message.Message,), {
-
-  'VersionedIDsEntry' : _reflection.GeneratedProtocolMessageType('VersionedIDsEntry', (_message.Message,), {
-    'DESCRIPTOR' : _NEWVERSIONRESPONSE_VERSIONEDIDSENTRY,
-    '__module__' : 'dataclay.communication.grpc.messages.dataservice.dataservice_messages_pb2'
-    # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.dataservice.NewVersionResponse.VersionedIDsEntry)
-    })
-  ,
   'DESCRIPTOR' : _NEWVERSIONRESPONSE,
   '__module__' : 'dataclay.communication.grpc.messages.dataservice.dataservice_messages_pb2'
   # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.dataservice.NewVersionResponse)
   })
 _sym_db.RegisterMessage(NewVersionResponse)
-_sym_db.RegisterMessage(NewVersionResponse.VersionedIDsEntry)
 
 ConsolidateVersionRequest = _reflection.GeneratedProtocolMessageType('ConsolidateVersionRequest', (_message.Message,), {
   'DESCRIPTOR' : _CONSOLIDATEVERSIONREQUEST,
@@ -2961,6 +3035,13 @@ GetRetainedReferencesResponse = _reflection.GeneratedProtocolMessageType('GetRet
   })
 _sym_db.RegisterMessage(GetRetainedReferencesResponse)
 
+SynchronizeRequest = _reflection.GeneratedProtocolMessageType('SynchronizeRequest', (_message.Message,), {
+  'DESCRIPTOR' : _SYNCHRONIZEREQUEST,
+  '__module__' : 'dataclay.communication.grpc.messages.dataservice.dataservice_messages_pb2'
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.dataservice.SynchronizeRequest)
+  })
+_sym_db.RegisterMessage(SynchronizeRequest)
+
 ExistsRequest = _reflection.GeneratedProtocolMessageType('ExistsRequest', (_message.Message,), {
   'DESCRIPTOR' : _EXISTSREQUEST,
   '__module__' : 'dataclay.communication.grpc.messages.dataservice.dataservice_messages_pb2'
@@ -2997,8 +3078,6 @@ _DEPLOYCLASSESREQUEST_CLASSIDSENTRY._options = None
 _DEPLOYCLASSESREQUEST_ASPECTSENTRY._options = None
 _DEPLOYCLASSESREQUEST_YAMLSENTRY._options = None
 _NEWPERSISTENTINSTANCEREQUEST_IFACEBITMAPSENTRY._options = None
-_GETOBJECTSRESPONSE_OBJECTSENTRY._options = None
-_NEWVERSIONRESPONSE_VERSIONEDIDSENTRY._options = None
 _REMOVEOBJECTSRESPONSE_REMOVEDOBJECTSENTRY._options = None
 _MIGRATEOBJECTSREQUEST_DESTSTORAGELOCSENTRY._options = None
 _MIGRATEOBJECTSRESPONSE_MIGRATEDOBJSENTRY._options = None

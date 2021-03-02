@@ -73,4 +73,10 @@ class DataClayInstanceExtraData(DataClayCommonExtraData):
                  'owner_session_id',
                  'dirty_flag',
                  'memory_pinned',
+                 "original_object_id",
+                 "root_location",
+                 "origin_location",
+                 "replica_locations",
+                 "alias",
+                 "is_read_only"
                  )

@@ -1,14 +1,7 @@
+class StorageLocation(object):
 
-""" Class description goes here. """
-
-from dataclay.util.MgrObject import ManagementObject
-
-
-class StorageLocation(ManagementObject):
-    _fields = ["dataClayID",
-               "hostname",
-               "name",
-               "storageTCPPort",
-               ]
-
-    _internal_fields = []
+    def __init__(self, id, hostname, name, port):
+        self.id = id
+        self.hostname = hostname
+        self.name = name
+        self.port = port

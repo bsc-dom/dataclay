@@ -1,5 +1,6 @@
 
 """ Class description goes here. """
+from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 
 """Deserialization code related to DataClay objects
 
@@ -82,6 +83,11 @@ class DeserializationLibUtils(object):
         io_file = BytesIO(data)
         object_to_fill.set_loaded(True)
         object_to_fill.set_persistent(True)
+        object_to_fill.set_original_object_id(metadata.orig_object_id)
+        object_to_fill.set_origin_location(metadata.origin_location)
+        object_to_fill.set_root_location(metadata.root_location)
+        object_to_fill.set_replica_locations(metadata.replica_locations)
+        object_to_fill.set_alias(metadata.alias)
         self._create_buffer_and_deserialize(io_file, object_to_fill, None, metadata, cur_deser_python_objs)
         io_file.close()
         """
@@ -114,7 +120,7 @@ class DeserializationLibUtils(object):
 
         logger.debug("METADATA %s and METADATA CLASS_ID %s", metadata, metadata[1][0])
 
-        return object_id, metadata[1][0], metadata, obj_bytes
+        return ObjectWithDataParamOrReturn(object_id, metadata.tags_to_class_ids[0], metadata, obj_bytes)
 
 
     def deserialize_metadata_from_db(self, obj_bytes_from_db):
@@ -143,14 +149,18 @@ class DeserializationLibUtils(object):
         """ Lock object until deserialization is finished in case another instance is waiting to do the same so much """
         runtime.lock(instance.get_object_id())
         try:
-            metadata = param_or_ret[2]
-            io_file = BytesIO(param_or_ret[3])
+            metadata = param_or_ret.metadata
+            io_file = BytesIO(param_or_ret.obj_bytes)
             cur_deser_python_objs = dict()
             self._create_buffer_and_deserialize(io_file, instance, None, metadata, cur_deser_python_objs)
             io_file.close()
             instance.set_persistent(False)
             instance.set_hint(None)
-
+            instance.set_original_object_id(metadata.orig_object_id)
+            instance.set_origin_location(metadata.origin_location)
+            instance.set_root_location(metadata.root_location)
+            instance.set_replica_locations(metadata.replica_locations)
+            instance.set_alias(metadata.alias)
         finally:
             runtime.unlock(instance.get_object_id())
 
@@ -181,15 +191,20 @@ class DeserializationLibUtils(object):
         try:
             if force_deserialization or not instance.is_loaded():
                 """ TODO: improve GRPC messages """
-                metadata = param_or_ret[2]
-                io_file = BytesIO(param_or_ret[3])
+                metadata = param_or_ret.metadata
+                io_file = BytesIO(param_or_ret.obj_bytes)
                 cur_deser_python_objs = dict()
                 self._create_buffer_and_deserialize(io_file, instance, None, metadata, cur_deser_python_objs)
                 io_file.close()
                 instance.set_loaded(True)
                 instance.set_persistent(True)
+                instance.set_original_object_id(metadata.orig_object_id)
+                instance.set_origin_location(metadata.origin_location)
+                instance.set_root_location(metadata.root_location)
+                instance.set_replica_locations(metadata.replica_locations)
+                instance.set_alias(metadata.alias)
                 if owner_session_id is not None:
-                    instance.set_owner_session_id(owner_session_id)
+                        instance.set_owner_session_id(owner_session_id)
 
         finally:
             runtime.unlock(instance.get_object_id())
@@ -197,7 +212,7 @@ class DeserializationLibUtils(object):
 
     def deserialize_return(self, serialized_params_or_return, iface_bitmaps, return_type, runtime):
 
-        if serialized_params_or_return[0] == 0:
+        if serialized_params_or_return.num_params == 0:
             logger.verbose("No return to deserialize: returning None")
             return None
         return self.deserialize_params_or_return(serialized_params_or_return,
@@ -227,7 +242,7 @@ class DeserializationLibUtils(object):
             logger.verbose("Deserializing volatile with object ID %s" % str(object_id))
 
             if first_volatile:
-                runtime.add_volatiles_under_deserialization(serialized_params_or_return[3])
+                runtime.add_volatiles_under_deserialization(serialized_param)
                 first_volatile = False
 
             deserialized_param = runtime.get_or_new_volatile_instance_and_load(object_id, class_id, runtime.get_hint(),
@@ -274,7 +289,6 @@ class DeserializationLibUtils(object):
 
         if not first_volatile:
             runtime.remove_volatiles_under_deserialization()
-
         return params
 
 
@@ -354,7 +368,7 @@ class PersistentLoadPicklerHelper(object):
     def __call__(self, str_tag):
         tag = int(str_tag)
         object_id = self._metadata.tags_to_oids[tag]
-        metaclass_id = self._metadata.tags_to_classids[tag]
+        metaclass_id = self._metadata.tags_to_class_ids[tag]
 
         # TODO: NumRefs ( metadata[3]) not deserialized?? Ask about
         # How/Where use NumRefs (metadata[3])?

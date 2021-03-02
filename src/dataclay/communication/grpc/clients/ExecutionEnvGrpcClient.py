@@ -120,7 +120,7 @@ class EEClient(object):
                     id_with_alias_list.append(Utils.get_msg_id(id_with_alias))
 
         request = dataservice_messages_pb2.StoreObjectsRequest(
-            sessionID=Utils.gget_msg_id(session_id),
+            sessionID=Utils.get_msg_id(session_id),
             objects=obj_list,
             moving=moving,
             idsWithAlias=id_with_alias_list
@@ -136,26 +136,6 @@ class EEClient(object):
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    def ds_new_metadata(self, md_infos):
-
-        md_infos_dict = dict()
-
-        for k, v in md_infos.items():
-
-            md_infos_dict[k] = dataclay_yaml_dump(v)
-
-        request = dataservice_messages_pb2.NewMetaDataRequest(
-            mdInfos=md_infos_dict
-        )
-
-        try:
-            response = self.ds_stub.newMetaData(request)
-
-        except RuntimeError as e:
-            raise e
-
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
 
     def ds_get_copy_of_object(self, session_id, object_id, recursive):
         request = dataservice_messages_pb2.GetCopyOfObjectRequest(
@@ -193,7 +173,7 @@ class EEClient(object):
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    def ds_get_objects(self, session_id, object_ids, recursive, moving):
+    def ds_get_objects(self, session_id, object_ids, recursive, dest_backend_id):
 
         object_ids_list = []
         for oid in object_ids:
@@ -203,7 +183,7 @@ class EEClient(object):
             sessionID=Utils.get_msg_id(session_id),
             objectIDS=object_ids_list,
             recursive=recursive,
-            moving=moving
+            destBackendID=Utils.get_msg_id(dest_backend_id)
         )
 
         try:
@@ -220,95 +200,29 @@ class EEClient(object):
             serialized_objs.append(Utils.get_obj_with_data_param_or_return(obj_with_data))
         
         return serialized_objs
-    
-    def get_referenced_objects_ids(self, session_id, object_ids):
-        
-        object_ids_list = []
-        for oid in object_ids:
-            object_ids_list.append(Utils.get_msg_id(oid))
-        
-        request = dataservice_messages_pb2.GetReferencedObjectIDsRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objectIDS=object_ids_list
-        )
 
-        try:
-            response = self.ds_stub.getReferencedObjectsIDs(request)
-        
-        except RuntimeError as e:
-            raise e
-
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-        
-        objs_ids = list() 
-        for oid in response.objectIDs:
-            objs_ids.append(Utils.get_id(oid))
-        
-        return objs_ids
-
-    def ds_get_federated_objects(self, dc_instance_id, object_ids):
-
-        object_ids_list = []
-        for oid in object_ids:
-            object_ids_list.append(Utils.get_msg_id(oid))
-
-        request = dataservice_messages_pb2.GetFederatedObjectsRequest(
-            extDataClayID=Utils.get_msg_id(dc_instance_id),
-            objectIDS=object_ids_list
-        )
-
-        try:
-            response = self.ds_stub.getFederatedObjects(request)
-
-        except RuntimeError as e:
-            raise e
-
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-        
-        serialized_objs = list() 
-        for obj_with_data in response.objectsList:
-            serialized_objs.append(Utils.get_obj_with_data_param_or_return(obj_with_data))
-        
-        return serialized_objs
-
-    def ds_new_version(self, session_id, object_id, metadata_info):
-        
-        logger.info("This new_version is called somewhere?")
-
+    def new_version(self, session_id, object_id, dest_backend_id):
         request = dataservice_messages_pb2.NewVersionRequest(
             sessionID=Utils.get_msg_id(session_id),
             objectID=Utils.get_msg_id(object_id),
-            metadataInfo=dataclay_yaml_dump(metadata_info)
+            destBackendID=Utils.get_msg_id(dest_backend_id)
         )
-
         try:
             response = self.ds_stub.newVersion(request)
-
         except RuntimeError as e:
             raise e
 
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
 
-        result = dict()
-        oid = Utils.get_id(response.objectID)
+        return Utils.get_id(response.objectID)
 
-        for k, v in response.versionedIDs:
-            result[Utils.get_id_from_uuid(k)] = Utils.get_id_from_uuid(v)
 
-        t = (oid, result)
-
-        return t
-
-    def ds_consolidate_version(self, session_id, version_info):
-
+    def consolidate_version(self, session_id, version_object_id):
         request = dataservice_messages_pb2.ConsolidateVersionRequest(
             sessionID=Utils.get_msg_id(session_id),
-            versionInfo=dataclay_yaml_dump(version_info)
+            versionObjectID=Utils.get_msg_id(version_object_id),
         )
-
         try:
             response = self.ds_stub.consolidateVersion(request)
 
@@ -339,10 +253,13 @@ class EEClient(object):
 
     def make_persistent(self, session_id, params):
         logger.debug("Client performing MakePersistent")
+        obj_list = []
+        for entry in params:
+            obj_list.append(Utils.get_obj_with_data_param_or_return(entry))
 
         request = dataservice_messages_pb2.MakePersistentRequest(
             sessionID=Utils.get_msg_id(session_id),
-            params=Utils.get_param_or_return(params),
+            objects=obj_list,
         )
 
         try:
@@ -354,16 +271,51 @@ class EEClient(object):
 
         if response.isException:
             raise DataClayException(response.exceptionMessage)
-        
-    def federate(self, session_id, params):
 
-        request = dataservice_messages_pb2.FederateRequest(
+    def federate(self, session_id, object_id, external_execution_env_id, recursive):
+        try:
+            request = dataservice_messages_pb2.FederateRequest(
+                sessionID=Utils.get_msg_id(session_id),
+                objectID=Utils.get_msg_id(object_id),
+                externalExecutionEnvironmentID=Utils.get_msg_id(external_execution_env_id),
+                recursive=recursive
+            )
+            response = self.ds_stub.federate(request)
+        except RuntimeError as e:
+            traceback.print_exc()
+            logger.error('Failed to federate', exc_info=True)
+            raise e
+        if response.isException:
+            raise DataClayException(response.exceptionMessage)
+
+    def unfederate(self, session_id, object_id, external_execution_env_id, recursive):
+
+        request = dataservice_messages_pb2.UnfederateRequest(
             sessionID=Utils.get_msg_id(session_id),
-            params=Utils.get_param_or_return(params),
+            objectID=Utils.get_msg_id(object_id),
+            externalExecutionEnvironmentID=Utils.get_msg_id(external_execution_env_id),
+            recursive=recursive
+        )
+        try:
+            response = self.ds_stub.unfederate(request)
+        except RuntimeError as e:
+            logger.error('Failed to unfederate', exc_info=True)
+            raise e
+        if response.isException:
+            raise DataClayException(response.exceptionMessage)
+
+    def notify_federation(self, session_id, params):
+        obj_list = []
+        for entry in params:
+            obj_list.append(Utils.get_obj_with_data_param_or_return(entry))
+
+        request = dataservice_messages_pb2.NotifyFederationRequest(
+            sessionID=Utils.get_msg_id(session_id),
+            objects=obj_list,
         )
 
         try:
-            response = self.ds_stub.federate(request)
+            response = self.ds_stub.notifyFederation(request)
 
         except RuntimeError as e:
             logger.error('Failed to federate', exc_info=True)
@@ -371,7 +323,27 @@ class EEClient(object):
 
         if response.isException:
             raise DataClayException(response.exceptionMessage)
-        
+
+    def notify_unfederation(self, session_id, object_ids):
+        obj_list = []
+        for entry in object_ids:
+            obj_list.append(Utils.get_msg_id(entry))
+
+        request = dataservice_messages_pb2.NotifyUnfederationRequest(
+            sessionID=Utils.get_msg_id(session_id),
+            objectIDs=obj_list,
+        )
+
+        try:
+            response = self.ds_stub.notifyUnfederation(request)
+
+        except RuntimeError as e:
+            logger.error('Failed to federate', exc_info=True)
+            raise e
+
+        if response.isException:
+            raise DataClayException(response.exceptionMessage)
+
     def ds_execute_implementation(self, object_id, implementation_id, session_id, params):
         logger.debug("Client performing ExecuteImplementation")
 
@@ -401,12 +373,28 @@ class EEClient(object):
             return Utils.get_param_or_return(response.ret)
         else:
             return None
+
+    def synchronize(self, session_id, object_id, implementation_id, params, calling_backend_id):
+        request = dataservice_messages_pb2.SynchronizeRequest(
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id),
+            implementationID=Utils.get_msg_id(implementation_id),
+            params=Utils.get_param_or_return(params),
+            callingBackendID=Utils.get_msg_id(calling_backend_id)
+        )
+        try:
+            response = self.ds_stub.synchronize(request)
+        except RuntimeError as e:
+            raise e
+        if response.isException:
+            raise DataClayException(response.exceptionMessage)
         
-    def ds_new_replica(self, session_id, object_id, recursive):
+    def new_replica(self, session_id, object_id, dest_backend_id, recursive):
 
         request = dataservice_messages_pb2.NewReplicaRequest(
             sessionID=Utils.get_msg_id(session_id),
             objectID=Utils.get_msg_id(object_id),
+            destBackendID=Utils.get_msg_id(dest_backend_id),
             recursive=recursive
         )
 
@@ -421,7 +409,7 @@ class EEClient(object):
 
         result = set()
 
-        for oid in response.replicatedIDs:
+        for oid in response.replicatedObjects:
             result.add(Utils.get_id(oid))
 
         return result
@@ -477,7 +465,7 @@ class EEClient(object):
         result = dict()
 
         for k, v in response.removedObjects.items():
-            result[Utils.get_id_from_uuid(k)] = Utils.get_id_from_uuid(v)
+            result[Utils.get_idd(k)] = Utils.get_id(v)
 
         return result
 
@@ -486,7 +474,7 @@ class EEClient(object):
         back_ends_dict = dict()
 
         for k, v in back_ends.items():
-            back_ends_dict[k] = dataclay_yaml_dump(v)
+            back_ends_dict[k] = Utils.get_storage_location(v)
 
         request = dataservice_messages_pb2.MigrateObjectsRequest(
             destStorageLocs=back_ends_dict
@@ -510,7 +498,7 @@ class EEClient(object):
             for oid in m_objs.getObjsList():
                 oids.add(Utils.get_id(oid))
 
-            result[Utils.get_id_from_uuid(k)] = oids
+            result[Utils.get_id(k)] = oids
 
         non_migrated = set()
 
@@ -542,7 +530,7 @@ class EEClient(object):
     def store_to_db(self, execution_environment_id, object_id, obj_bytes):
         
         request = dataservice_messages_pb2.StoreToDBRequest(
-            executionEnvironmentID=Utils.get_msg_id_backend_id(execution_environment_id),
+            executionEnvironmentID=Utils.get_msg_id(execution_environment_id),
             objectID=Utils.get_msg_id(object_id),
             objBytes=obj_bytes
         )
@@ -559,7 +547,7 @@ class EEClient(object):
     def get_from_db(self, execution_environment_id, object_id):
 
         request = dataservice_messages_pb2.GetFromDBRequest(
-            executionEnvironmentID=Utils.get_msg_id_backend_id(execution_environment_id),
+            executionEnvironmentID=Utils.get_msg_id(execution_environment_id),
             objectID=Utils.get_msg_id(object_id),
         )
         try:
@@ -575,7 +563,7 @@ class EEClient(object):
     
     def update_to_db(self, execution_environment_id, object_id, new_obj_bytes, dirty):
         request = dataservice_messages_pb2.UpdateToDBRequest(
-            executionEnvironmentID=Utils.get_msg_id_backend_id(execution_environment_id),
+            executionEnvironmentID=Utils.get_msg_id(execution_environment_id),
             objectID=Utils.get_msg_id(object_id),
             objBytes=new_obj_bytes,
             dirty=dirty
@@ -592,7 +580,7 @@ class EEClient(object):
     
     def delete_to_db(self, execution_environment_id, object_id):
         request = dataservice_messages_pb2.DeleteToDBRequest(
-            executionEnvironmentID=Utils.get_msg_id_backend_id(execution_environment_id),
+            executionEnvironmentID=Utils.get_msg_id(execution_environment_id),
             objectID=Utils.get_msg_id(object_id),
         )
 
@@ -607,7 +595,7 @@ class EEClient(object):
         
     def associate_execution_environment(self, execution_environment_id):
         request = dataservice_messages_pb2.AssociateExecutionEnvironmentRequest(
-            executionEnvironmentID=Utils.get_msg_id_backend_id(execution_environment_id)
+            executionEnvironmentID=Utils.get_msg_id(execution_environment_id)
         )
 
         try:

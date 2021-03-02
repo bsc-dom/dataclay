@@ -49,7 +49,10 @@ class SerializationLibUtils(object):
         if return_none_if_no_ref_counting:
             if reference_counting.has_no_references():
                 return None
-        metadata = self.create_metadata(cur_serialized_objs, None, 0)
+        metadata = self.create_metadata(cur_serialized_objs, None, 0, instance.get_original_object_id(),
+                                        instance.get_root_location(),
+                                        instance.get_origin_location(), instance.get_replica_locations(),
+                                        instance.get_alias(), instance.is_read_only())
         dcc_extradata = instance.get_class_extradata()
         byte_array = buffer.getvalue()
         buffer.close()
@@ -144,6 +147,7 @@ class SerializationLibUtils(object):
                     except AttributeError:
                         try:
                             # ToDo: support for notifications (which is said to leave params_spec None)
+
                             param_type = params_spec[param_name]
                             ptw = PyTypeWildcardWrapper(param_type.signature)
                         except InvalidPythonSignature:
@@ -191,7 +195,9 @@ class SerializationLibUtils(object):
         else:
             logger.debug("Call with no parameters, no serialization required")
 
-        serialized_params = SerializedParametersOrReturn(num_params, imm_objs, lang_objs, vol_params, pers_params)
+        serialized_params = SerializedParametersOrReturn(num_params=num_params, imm_objs=imm_objs,
+                                                         lang_objs=lang_objs, vol_objs=vol_params,
+                                                         pers_objs=pers_params)
         return serialized_params
 
     def serialize_dcobj_with_data(self, dc_object, pending_objs, ignore_user_types, hint, runtime,
@@ -234,7 +240,8 @@ class SerializationLibUtils(object):
             runtime.unlock(object_id)
         return object_with_data
 
-    def create_metadata(self, cur_ser_objs, hint_for_missing, num_refs_pointing_to_obj):
+    def create_metadata(self, cur_ser_objs, hint_for_missing, num_refs_pointing_to_obj, orig_object_id,
+                        root_location, origin_location, replica_locs, alias, is_read_only):
 
         # Prepare metadata structure
 
@@ -265,7 +272,9 @@ class SerializationLibUtils(object):
                         logger.debug("[==Hint==] Setting hint %s association for tag %s", hint_for_missing, tag)
                         tags_to_hint[tag] = hint_for_missing
 
-        response = DataClayObjectMetaData(tags_to_oids, tags_to_class_id, tags_to_hint, num_refs_pointing_to_obj)
+        response = DataClayObjectMetaData(alias, is_read_only, tags_to_oids, tags_to_class_id, tags_to_hint, num_refs_pointing_to_obj,
+                                          orig_object_id, root_location,
+                                          origin_location, replica_locs)
 
         return response
 

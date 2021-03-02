@@ -157,7 +157,6 @@ class LMClient(object):
         lm_function = lambda request: self.lm_stub.getStorageLocationID.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
         if response.excInfo.isException:
-            logger.debug("Exception in response")
             raise DataClayException(response.excInfo.exceptionMessage)
         st_loc_id = Utils.get_id(response.storageLocationID)
         return st_loc_id
@@ -247,7 +246,7 @@ class LMClient(object):
         result = set()
 
         for acc_id in response.accountIDs:
-            result.add(Utils.get_id_from_uuid(acc_id))
+            result.add(Utils.get_id(acc_id))
 
         return result
 
@@ -263,14 +262,14 @@ class LMClient(object):
 
         data_set_list = []
         for data_set in data_sets:
-            data_set_list.append(Utils.get_msg_id_dataset(data_set))
+            data_set_list.append(Utils.get_msg_id(data_set))
 
         request = logicmodule_messages_pb2.NewSessionRequest(
             accountID=Utils.get_msg_id(account_id),
             credential=Utils.get_credential(credential),
             contractIDs=contracts_list,
             dataSetIDs=data_set_list,
-            storeDataSet=Utils.get_msg_id_dataset(data_set_for_store),
+            storeDataSet=Utils.get_msg_id(data_set_for_store),
             sessionLang=new_session_lang
         )
         lm_function = lambda request: self.lm_stub.newSession.future(request=request, metadata=self.metadata_call)
@@ -359,26 +358,6 @@ class LMClient(object):
 
         return Utils.get_id(response.dataSetID)
 
-    def get_info_of_classes_in_namespace(self, account_id, credential, namespace_id):
-
-        request = logicmodule_messages_pb2.GetInfoOfClassesInNamespaceRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            namespace_id=Utils.get_msg_id(namespace_id)
-        )
-        lm_function = lambda request: self.lm_stub.getInfoOfClassesInNamespace.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        result = dict()
-
-        for k, v in response.classesInfoMap.items():
-            clazz = dataclay_yaml_load(v)
-            result[Utils.get_id_from_uuid(k)] = clazz
-
-        return result
-
     def get_classname_and_namespace_for_ds(self, class_id):
         
         request = logicmodule_messages_pb2.GetClassNameAndNamespaceForDSRequest(
@@ -390,35 +369,6 @@ class LMClient(object):
             raise DataClayException(response.excInfo.exceptionMessage)
 
         return response.className, response.namespace
-
-    # Methods for DataSet Manager
-
-    def new_dataset(self, account_id, credential, dataset):
-        ds_yaml = dataclay_yaml_dump(dataset)
-
-        request = logicmodule_messages_pb2.NewDataSetRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            datasetYaml=ds_yaml
-        )
-        lm_function = lambda request: self.lm_stub.newDataSet.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return Utils.get_id(response.dataSetID)
-
-    def remove_dataset(self, account_id, credential, dataset_name):
-
-        request = logicmodule_messages_pb2.RemoveDataSetRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            dataSetName=dataset_name
-        )
-        lm_function = lambda request: self.lm_stub.removeDataSet.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
 
     def get_dataset_id(self, account_id, credential, dataset_name):
 
@@ -462,28 +412,6 @@ class LMClient(object):
 
         return result
 
-    def new_class_id(self, account_id, credential, class_name, language, new_classes):
-
-        new_cl = {}
-
-        for klass in new_classes:
-            yaml_str = dataclay_yaml_dump(klass)
-            new_cl[klass.name] = yaml_str
-
-        request = logicmodule_messages_pb2.NewClassIDRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            language=language,
-            className=class_name,
-            newClasses=new_cl
-        )
-        lm_function = lambda request: self.lm_stub.newClassID.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return Utils.get_id(response.classID)
-
     def remove_class(self, account_id, credential, namespace_id, class_name):
 
         request = logicmodule_messages_pb2.RemoveClassRequest(
@@ -496,332 +424,44 @@ class LMClient(object):
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    def remove_operation(self, account_id, credential, namespace_id, class_name, operation_signature):
 
-        request = logicmodule_messages_pb2.RemoveOperationRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            namespace_id=Utils.get_msg_id(namespace_id),
-            className=class_name,
-            operationNameAndSignature=operation_signature
-        )
-        lm_function = lambda request: self.lm_stub.removeOperation.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def remove_implementation(self, account_id, credential, namespace_id, implementation_id):
-
-        request = logicmodule_messages_pb2.RemoveImplementationRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            namespace_id=Utils.get_msg_id(namespace_id),
-            implementationID=Utils.get_msg_id(implementation_id)
-        )
-        lm_function = lambda request: self.lm_stub.removeImplementation.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def get_operation_id(self, account_id, credential, namespace_id, class_name, operation_signature):
-
-        request = logicmodule_messages_pb2.GetOperationIDRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            namespace_id=Utils.get_msg_id(namespace_id),
-            className=class_name,
-            operationNameAndSignature=operation_signature
-        )
-        lm_function = lambda request: self.lm_stub.getOperationID.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return Utils.get_id(response.operationID)
-
-    def get_property_id(self, account_id, credential, namespace_id, class_name, property_name):
-
-        request = logicmodule_messages_pb2.GetPropertyIDRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            namespaceID=Utils.get_msg_id(namespace_id),
-            className=class_name,
-            propertyName=property_name
-        )
-        lm_function = lambda request: self.lm_stub.getPropertyID.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return Utils.get_id(response.propertyID)
-
-    def get_class_id(self, account_id, credential, namespace_id, class_name):
-
-        request = logicmodule_messages_pb2.GetClassIDRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            namespaceID=Utils.get_msg_id(namespace_id),
-            className=class_name
-        )
-        lm_function = lambda request: self.lm_stub.getClassID.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return Utils.get_id(response.classID)
-
-    def get_class_info(self, account_id, credential, namespace_id, class_name):
-
-        request = logicmodule_messages_pb2.GetClassInfoRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            namespace_id=Utils.get_msg_id(namespace_id),
-            className=class_name
-        )
-        lm_function = lambda request: self.lm_stub.getClassInfo.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return dataclay_yaml_load(response.metaClassYaml)
-
-    # Methods for Contract Manager
-
-    def new_contract(self, account_id, credential, new_contract_s):
-
-        yaml_contract = dataclay_yaml_dump(new_contract_s)
-
-        request = logicmodule_messages_pb2.NewContractRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential,
-            newContractYaml=yaml_contract
-        )
-        lm_function = lambda request: self.lm_stub.newContract.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return Utils.get_id(response.contractID)
-
-    def register_to_public_contract(self, account_id, credential, contract_id):
-
-        request = logicmodule_messages_pb2.RegisterToPublicContractRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential,
-            contractID=Utils.get_msg_id(contract_id)
-        )
-        lm_function = lambda request: self.lm_stub.registerToPublicContract.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def get_contractids_of_applicant(self, applicant_account_id, credential):
-
-        request = logicmodule_messages_pb2.GetContractIDsOfApplicantRequest(
-            applicantID=Utils.get_msg_id(applicant_account_id),
-            credential=Utils.get_credential(credential)
-        )
-        lm_function = lambda request: self.lm_stub.getContractIDsOfApplicant.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        result = dict()
-
-        for k, v in response.contracts.items():
-            result[Utils.get_id_from_uuid(k)] = dataclay_yaml_load(v)
-
-        return result
-
-    def get_contractids_of_provider(self, account_id, credential, namespaceid_of_provider):
-
-        request = logicmodule_messages_pb2.GetDataContractIDsOfProviderRequest(
-            providerID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            namespaceIDOfProvider=Utils.get_msg_id(namespaceid_of_provider)
-        )
-        lm_function = lambda request: self.lm_stub.getContractIDsOfProvider.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        result = dict()
-
-        for k, v in response.contracts.items():
-            result[Utils.get_id_from_uuid(k)] = dataclay_yaml_load(v)
-
-        return result
-
-    def get_contractids_of_applicant_with_provider(self, account_id, credential, namespaceid_of_provider):
-
-        request = logicmodule_messages_pb2.GetContractsOfApplicantWithProvRequest(
-            applicantID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            namespaceIDOfProvider=Utils.get_msg_id(namespaceid_of_provider)
-        )
-        lm_function = lambda request: self.lm_stub.getContractIDsOfApplicantWithProvider.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        result = dict()
-
-        for k, v in response.contracts.items():
-            result[Utils.get_id_from_uuid(k)] = dataclay_yaml_load(v)
-
-        return result
-
-    # Methods for DataContract Manager
-
-    def new_data_contract(self, account_id, credential, new_datacontract):
-
-        yaml_str = dataclay_yaml_dump(new_datacontract)
-
-        request = logicmodule_messages_pb2.NewDataContractRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            dataContractYaml=yaml_str
-        )
-        lm_function = lambda request: self.lm_stub.newDataContract.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return Utils.get_id(response.dataContractID)
-
-    def register_to_public_datacontract(self, account_id, credential, datacontract_id):
-
-        request = logicmodule_messages_pb2.RegisterToPublicDataContractRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            dataContractID=Utils.get_msg_id(datacontract_id)
-        )
-        lm_function = lambda request: self.lm_stub.registerToPublicDataContract.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def get_datacontractids_of_provider(self, account_id, credential, datasetid_of_provider):
-
-        request = logicmodule_messages_pb2.GetDataContractIDsOfProviderRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            dataSetIDOfProvider=Utils.get_msg_id(datasetid_of_provider)
-        )
-        lm_function = lambda request: self.lm_stub.getDataContractIDsOfProvider.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        result = dict()
-
-        for k, v in response.datacontracts.items():
-            result[Utils.get_id_from_uuid(k)] = dataclay_yaml_load(v)
-
-        return result
-
-    def get_datacontractids_of_applicant(self, applicant_accountid, credential):
-
-        request = logicmodule_messages_pb2.GetDataContractIDsOfApplicantRequest(
-            applicantID=Utils.get_msg_id(applicant_accountid),
-            credential=Utils.get_credential(credential)
-        )
-        lm_function = lambda request: self.lm_stub.getDataContractIDsOfApplicant.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        result = dict()
-
-        for k, v in response.datacontracts.items():
-            result[Utils.get_id_from_uuid(k)] = dataclay_yaml_load(v)
-
-        return result
-
-    def get_datacontract_info_of_applicant_with_provider(self, applicant_accountid, credential, datasetid_of_provider):
-
-        request = logicmodule_messages_pb2.GetDataContractInfoOfApplicantWithProvRequest(
-            applicantID=Utils.get_msg_id(applicant_accountid),
-            credential=Utils.get_credential(credential),
-            dataSetIDOfProvider=Utils.get_msg_id(datasetid_of_provider)
-        )
-        lm_function = lambda request: self.lm_stub.getDataContractInfoOfApplicantWithProvider.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return dataclay_yaml_load(response.dataContractInfo)
-
-    # Methods for Interface Manager
-
-    def new_interface(self, account_id, credential, new_interface_s):
-
-        yaml_str = dataclay_yaml_dump(new_interface_s)
-
-        request = logicmodule_messages_pb2.NewInterfaceRequest(
-            applicantID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            interfaceYaml=yaml_str
-        )
-        lm_function = lambda request: self.lm_stub.newInterface.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return Utils.get_id(response.interfaceID)
-
-    def get_interface_info(self, account_id, credential, interface_id):
-
-        request = logicmodule_messages_pb2.GetInterfaceInfoRequest(
-            applicantID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            interfaceID=Utils.get_msg_id(interface_id)
-        )
-        lm_function = lambda request: self.lm_stub.getInterfaceInfo.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return dataclay_yaml_load(response.interfaceYaml)
-
-    def remove_interface(self, account_id, credential, namespace_id, interface_id):
-
-        request = logicmodule_messages_pb2.RemoveInterfaceRequest(
-            applicantID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            namespaceID=Utils.get_msg_id(namespace_id),
-            interfaceID=Utils.get_msg_id(interface_id)
-        )
-        lm_function = lambda request: self.lm_stub.removeInterface.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
 
     # Methods for MetaDataService for DS
+    def get_storage_location_info(self, st_loc_id):
 
-    def get_storage_location_for_ds(self, st_loc_id):
-
-        request = logicmodule_messages_pb2.GetStorageLocationForDSRequest(
+        request = logicmodule_messages_pb2.GetStorageLocationInfoRequest(
             storageLocationID=Utils.get_msg_id(st_loc_id)
         )
-        lm_function = lambda request: self.lm_stub.getStorageLocationForDS.future(request=request, metadata=self.metadata_call)
+        lm_function = lambda request: self.lm_stub.getStorageLocationInfo.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
 
-        return dataclay_yaml_load(response.storageLocationYaml)
+        return Utils.get_storage_location(response.storageLocationInfo)
 
-    def get_executionenvironment_for_ds(self, backend_id):
+    def get_executionenvironment_info(self, backend_id):
 
-        request = logicmodule_messages_pb2.GetExecutionEnvironmentForDSRequest(
+        request = logicmodule_messages_pb2.GetExecutionEnvironmentInfoRequest(
             execEnvID=Utils.get_msg_id(backend_id)
         )
-        lm_function = lambda request: self.lm_stub.getExecutionEnvironmentForDS.future(request=request, metadata=self.metadata_call)
+        lm_function = lambda request: self.lm_stub.getExecutionEnvironmentInfo.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
 
-        return dataclay_yaml_load(response.execEnvYaml)
+        return Utils.get_execution_environment(response.executionEnvironmentInfo)
+
+    def get_external_executionenvironment_info(self, backend_id):
+
+        request = logicmodule_messages_pb2.GetExternalExecutionEnvironmentInfoRequest(
+            execEnvID=Utils.get_msg_id(backend_id)
+        )
+        lm_function = lambda request: self.lm_stub.getExternalExecutionEnvironmentInfo.future(request=request, metadata=self.metadata_call)
+        response = self._call_logicmodule(request, lm_function)
+        if response.excInfo.isException:
+            raise DataClayException(response.excInfo.exceptionMessage)
+
+        return Utils.get_external_execution_environment(response.executionEnvironmentInfo)
 
     def get_dataclays_object_is_federated_with(self, object_id):
         request = logicmodule_messages_pb2.GetDataClaysObjectIsFederatedWithRequest(
@@ -835,27 +475,19 @@ class LMClient(object):
         result = set()
         for curdataClayID in response.extDataClayIDs:
             result.add(Utils.get_id(curdataClayID))
-        
+
         return result
 
-    def get_external_source_of_dataclay_object(self, object_id):
-        request = logicmodule_messages_pb2.GetExternalSourceDataClayOfObjectRequest(
-            objectID=Utils.get_msg_id(object_id)
-        )
-        lm_function = lambda request: self.lm_stub.getExternalSourceDataClayOfObject.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
 
-        return Utils.get_id(response.extDataClayID)
 
     def register_objects_from_gc(self, reg_info, backend_id):
 
         reg_info_set = CommonMessages.RegistrationInfo(
-            objectID=Utils.get_msg_id(reg_info[0]),
-            classID=Utils.get_msg_id(reg_info[1]),
-            sessionID=Utils.get_msg_id(reg_info[2]),
-            dataSetID=Utils.get_msg_id(reg_info[3])
+            objectID=Utils.get_msg_id(reg_info.object_id),
+            classID=Utils.get_msg_id(reg_info.class_id),
+            sessionID=Utils.get_msg_id(reg_info.store_session_id),
+            dataSetID=Utils.get_msg_id(reg_info.dataset_id),
+            alias=reg_info.alias
         )
 
         request = logicmodule_messages_pb2.RegisterObjectForGCRequest(
@@ -869,28 +501,34 @@ class LMClient(object):
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    def register_object(self, reg_info, backend_id, alias, lang):
+    def register_objects(self, reg_infos, backend_id, lang):
 
-        reg_info = CommonMessages.RegistrationInfo(
-                objectID=Utils.get_msg_id(reg_info[0]),
-                classID=Utils.get_msg_id(reg_info[1]),
-                sessionID=Utils.get_msg_id(reg_info[2]),
-                dataSetID=Utils.get_msg_id(reg_info[3])
-            )
+        reg_infos_msg = list()
+        for reg_info in reg_infos:
+            msg_reg_info = CommonMessages.RegistrationInfo(
+                    objectID=Utils.get_msg_id(reg_info.object_id),
+                    classID=Utils.get_msg_id(reg_info.class_id),
+                    sessionID=Utils.get_msg_id(reg_info.store_session_id),
+                    dataSetID=Utils.get_msg_id(reg_info.dataset_id),
+                    alias=reg_info.alias
+                )
+            reg_infos_msg.append(msg_reg_info)
 
-        request = logicmodule_messages_pb2.RegisterObjectRequest(
-            regInfo=reg_info,
+        request = logicmodule_messages_pb2.RegisterObjectsRequest(
+            regInfos=reg_infos_msg,
             backendID=Utils.get_msg_id(backend_id),
-            alias=alias,
-            lang=common_messages_pb2.LANG_PYTHON
+            lang=lang
         )
 
-        lm_function = lambda request: self.lm_stub.registerObject.future(request=request, metadata=self.metadata_call)
+        lm_function = lambda request: self.lm_stub.registerObjects.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
-
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
-        return Utils.get_id(response.objectID)
+
+        result = list()
+        for oid in response.objectIDs:
+            result.append(Utils.get_id(oid))
+        return result
 
     def set_dataset_id_from_garbage_collector(self, object_id, dataset_id):
 
@@ -953,57 +591,6 @@ class LMClient(object):
         response = self._call_logicmodule(request, lm_function)
         if response.isException:
             raise DataClayException(response.exceptionMessage)
-
-    def unfederate_all_objects(self, session_id, ext_dataclay_id):
-        request = logicmodule_messages_pb2.UnfederateAllObjectsRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            extDataClayID=Utils.get_msg_id(ext_dataclay_id),
-        )
-        lm_function = lambda request: self.lm_stub.unfederateAllObjects.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-        
-    def unfederate_all_objects_with_all_dcs(self, session_id):
-        request = logicmodule_messages_pb2.UnfederateAllObjectsWithAllDCsRequest(
-            sessionID=Utils.get_msg_id(session_id)
-        )
-        lm_function = lambda request: self.lm_stub.unfederateAllObjectsWithAllDCs.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-    
-    def unfederate_object_with_all_dcs(self, session_id, object_id, recursive):
-        request = logicmodule_messages_pb2.UnfederateObjectWithAllDCsRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objectID=Utils.get_msg_id(object_id),
-            recursive=recursive
-        )
-        lm_function = lambda request: self.lm_stub.unfederateObjectWithAllDCs.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-        
-    def migrate_federated_objects(self, session_id, origin_dataclay_id, dest_dataclay_id):
-        request = logicmodule_messages_pb2.UnfederateObjectWithAllDCsRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            externalOriginDataClayID=Utils.get_msg_id(origin_dataclay_id),
-            externalDestinationDataClayID=Utils.get_msg_id(dest_dataclay_id),
-        )
-        lm_function = lambda request: self.lm_stub.migrateFederatedObjects.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)    
-        
-    def federate_all_objects(self, session_id, dest_dataclay_id):
-        request = logicmodule_messages_pb2.FederateAllObjectsRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            externalDestinationDataClayID=Utils.get_msg_id(dest_dataclay_id),
-        )
-        lm_function = lambda request: self.lm_stub.federateAllObjects.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)    
               
     def get_external_dataclay_id(self, dcHost, dcPort):
         request = logicmodule_messages_pb2.GetExternalDataclayIDRequest(
@@ -1026,26 +613,15 @@ class LMClient(object):
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
 
-        return dataclay_yaml_load(response.extDataClayYaml)
+        return Utils.get_dataclay_instance(response.extDataClayInfo)
 
-    def check_object_is_federated_with_dataclay_instance(self, object_id, ext_dataclay_id):
-        request = logicmodule_messages_pb2.CheckObjectFederatedWithDataClayInstanceRequest(
-            objectID=Utils.get_msg_id(object_id),
-            extDataClayID=Utils.get_msg_id(ext_dataclay_id)
-        )
-        lm_function = lambda request: self.lm_stub.checkObjectIsFederatedWithDataClayInstance.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
+    def get_all_execution_environments_info(self, language, get_external=True):
 
-        return response.isFederated
-
-    def get_execution_environments_info(self, language):
-
-        request = logicmodule_messages_pb2.GetExecutionEnvironmentsInfoRequest(
+        request = logicmodule_messages_pb2.GetAllExecutionEnvironmentsInfoRequest(
             execEnvLang=language,
+            getExternal=get_external,
         )
-        lm_function = lambda request: self.lm_stub.getExecutionEnvironmentsInfo.future(request=request, metadata=self.metadata_call)
+        lm_function = lambda request: self.lm_stub.getAllExecutionEnvironmentsInfo.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
@@ -1053,25 +629,24 @@ class LMClient(object):
         result = dict()
 
         for k, v in response.execEnvs.items():
-            result[Utils.get_id_from_uuid(k)] = dataclay_yaml_load(v)
+            result[Utils.get_id(k)] = Utils.get_execution_environment(v)
 
         return result
 
-    def get_execution_environments_names(self, account_id, credential, language):
+    def get_all_external_execution_environments_info(self, dataclay_instance_id, language):
 
-        request = logicmodule_messages_pb2.GetExecutionEnvironmentsNamesRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
+        request = logicmodule_messages_pb2.GetAllExternalExecutionEnvironmentsInfoRequest(
             execEnvLang=language
         )
-        lm_function = lambda request: self.lm_stub.getExecutionEnvironmentsNames.future(request=request, metadata=self.metadata_call)
+        lm_function = lambda request: self.lm_stub.getAllExternalExecutionEnvironmentsInfo.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
 
-        result = list()
-        for k in response.execEnvs:
-            result.append(k)
+        result = dict()
+
+        for k, v in response.execEnvs.items():
+            result[Utils.get_id(k)] = Utils.get_external_execution_environment(v)
 
         return result
 
@@ -1128,46 +703,6 @@ class LMClient(object):
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    def new_version(self, session_id, object_id, optional_dest_backend_id):
-
-        request = logicmodule_messages_pb2.NewVersionRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objectID=Utils.get_msg_id(object_id),
-            optDestBackendID=Utils.get_msg_id(optional_dest_backend_id)
-        )
-        lm_function = lambda request: self.lm_stub.newVersion.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return dataclay_yaml_load(response.versionInfoYaml), response.versionInfoYaml
-
-    def consolidate_version(self, session_id, version):
-
-        request = logicmodule_messages_pb2.ConsolidateVersionRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            versionInfoYaml=version
-        )
-        lm_function = lambda request: self.lm_stub.consolidateVersion.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def new_replica(self, session_id, object_id, backend_id, recursive):
-
-        request = logicmodule_messages_pb2.NewReplicaRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objectID=Utils.get_msg_id(object_id),
-            destBackendID=Utils.get_msg_id(backend_id),
-            recursive=recursive
-        )
-        lm_function = lambda request: self.lm_stub.newReplica.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return Utils.get_id(response.destBackendID)
-
     def move_object(self, session_id, object_id, src_backend_id, dest_backend_id, recursive):
 
         request = logicmodule_messages_pb2.MoveObjectRequest(
@@ -1223,18 +758,6 @@ class LMClient(object):
             raise DataClayException(response.excInfo.exceptionMessage)
 
         return Utils.get_id(response.extDataClayID)
-    
-    def notify_registration_of_external_dataclay(self, dataclayid, exthostname, extport):
-
-        request = logicmodule_messages_pb2.NotifyRegistrationOfExternalDataClayRequest(
-            extDataClayID=dataclayid,
-            hostname=exthostname,
-            port=extport
-        )
-        lm_function = lambda request: self.lm_stub.notifyRegistrationOfExternalDataClay.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
 
     def get_metadata_by_oid(self, session_id, object_id):
 
@@ -1248,7 +771,7 @@ class LMClient(object):
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
 
-        return dataclay_yaml_load(response.objMdataYaml)
+        return Utils.get_metadata_info(response.mdInfo)
 
     # Methods for Execution Environment
 
@@ -1278,25 +801,6 @@ class LMClient(object):
         else:
             return None
 
-    def execute_method_on_target(self, session_id, object_id, operation_signature, params, backend_id):
-
-        request = logicmodule_messages_pb2.ExecuteMethodOnTargetRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objectID=Utils.get_msg_id(object_id),
-            operationNameAndSignature=operation_signature,
-            params=Utils.get_param_or_return(params),
-            targetBackendID=Utils.get_msg_id(backend_id)
-        )
-        lm_function = lambda request: self.lm_stub.executeMethodOnTarget.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        if 'response.ret' in globals() or 'response.ret' in locals():
-            return Utils.get_param_or_return(response.ret)
-
-        else:
-            return None
 
     def synchronize_federated_object(self, dataclay_id, object_id, impl_id, params):
         
@@ -1332,7 +836,7 @@ class LMClient(object):
         response = self._call_logicmodule(CommonMessages.EmptyMessage(), lm_function)
         if response.isException:
             raise DataClayException(response.exceptionMessage)
-    
+
     def object_exists_in_dataclay(self, object_id):
         request = logicmodule_messages_pb2.ObjectExistsInDataClayRequest(
             objectID=Utils.get_msg_id(object_id)
@@ -1413,46 +917,6 @@ class LMClient(object):
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    # Others Methods
-
-    def get_class_name_for_ds(self, class_id):
-
-        request = logicmodule_messages_pb2.GetClassNameForDSRequest(
-            classID=Utils.get_msg_id(class_id)
-        )
-        lm_function = lambda request: self.lm_stub.getClassNameForDS.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return response.className
-
-    def get_class_name_and_namespace_for_ds(self, class_id):
-
-        request = logicmodule_messages_pb2.GetClassNameAndNamespaceForDSRequest(
-            classID=Utils.get_msg_id(class_id)
-        )
-        lm_function = lambda request: self.lm_stub.getClassNameAndNamespaceForDS.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        t = (response.className, response.namespace)
-
-        return t
-
-    def get_contract_id_of_dataclay_provider(self, account_id, credential):
-
-        request = logicmodule_messages_pb2.GetContractIDOfDataClayProviderRequest(
-            applicantAccountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential)
-        )
-        lm_function = lambda request: self.lm_stub.getContractIDOfDataClayProvider.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return Utils.get_id(response.contractID)
 
     # Garbage Collector Methods
 
@@ -1494,24 +958,6 @@ class LMClient(object):
             result[k] = v
 
         return result
-    
-    def clean_metadata_caches(self):
-        lm_function = lambda request: self.lm_stub.cleanMetaDataCaches.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(CommonMessages.EmptyMessage(), lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def close_manager_db(self):
-        lm_function = lambda request: self.lm_stub.closeManagerDb.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(CommonMessages.EmptyMessage(), lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def close_db(self):
-        lm_function = lambda request: self.lm_stub.closeDb.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(CommonMessages.EmptyMessage(), lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
 
     def wait_and_process_async_req(self):
         # ToDo: wait all the async requests in a proper way

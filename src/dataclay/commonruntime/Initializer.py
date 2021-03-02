@@ -19,7 +19,7 @@ __copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
 
 # Manually forcing the dataclay root logger here
 logger = logging.getLogger("dataclay")
-LOGGING_FORMAT = '%(asctime)s [%(processName)s] [%(threadName)s] [%(name)s] [%(levelname)s] [%(module)s:%(lineno)d] %(message)s'
+LOGGING_FORMAT = '%(asctime)s %(levelname)s [%(threadName)s:%(module)s:%(lineno)d] %(message)s'
 
 ###################################################################
 # We like to have a little bit more of finesse wrt debug levels

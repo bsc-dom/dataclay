@@ -25,11 +25,6 @@ class LogicModuleStub(object):
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.AutoRegisterEERequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.AutoRegisterEEResponse.FromString,
         )
-    self.getStorageLocationID = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/getStorageLocationID',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationIDRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationIDResponse.FromString,
-        )
     self.unregisterStorageLocation = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/unregisterStorageLocation',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.UnregisterStorageLocationRequest.SerializeToString,
@@ -195,11 +190,6 @@ class LogicModuleStub(object):
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewClassRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewClassResponse.FromString,
         )
-    self.newClassID = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/newClassID',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewClassIDRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewClassIDResponse.FromString,
-        )
     self.removeClass = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/removeClass',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RemoveClassRequest.SerializeToString,
@@ -305,25 +295,25 @@ class LogicModuleStub(object):
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RemoveInterfaceRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
         )
-    self.getExecutionEnvironmentsInfo = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/getExecutionEnvironmentsInfo',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentsInfoRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentsInfoResponse.FromString,
+    self.getAllExecutionEnvironmentsInfo = channel.unary_unary(
+        '/dataclay.communication.grpc.logicmodule.LogicModule/getAllExecutionEnvironmentsInfo',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetAllExecutionEnvironmentsInfoRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetAllExecutionEnvironmentsInfoResponse.FromString,
         )
-    self.getExecutionEnvironmentsNames = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/getExecutionEnvironmentsNames',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentsNamesRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentsNamesResponse.FromString,
+    self.getStorageLocationID = channel.unary_unary(
+        '/dataclay.communication.grpc.logicmodule.LogicModule/getStorageLocationID',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationIDRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationIDResponse.FromString,
         )
-    self.getExecutionEnvironmentForDS = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/getExecutionEnvironmentForDS',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentForDSRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentForDSResponse.FromString,
+    self.getStorageLocationInfo = channel.unary_unary(
+        '/dataclay.communication.grpc.logicmodule.LogicModule/getStorageLocationInfo',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationInfoRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationInfoResponse.FromString,
         )
-    self.getStorageLocationForDS = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/getStorageLocationForDS',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationForDSRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationForDSResponse.FromString,
+    self.getExecutionEnvironmentInfo = channel.unary_unary(
+        '/dataclay.communication.grpc.logicmodule.LogicModule/getExecutionEnvironmentInfo',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentInfoRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentInfoResponse.FromString,
         )
     self.getObjectInfo = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/getObjectInfo',
@@ -360,35 +350,25 @@ class LogicModuleStub(object):
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.UnregisterObjectsRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
         )
-    self.registerObject = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/registerObject',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectResponse.FromString,
+    self.registerObjects = channel.unary_unary(
+        '/dataclay.communication.grpc.logicmodule.LogicModule/registerObjects',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectsRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectsResponse.FromString,
         )
     self.setDataSetIDFromGarbageCollector = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/setDataSetIDFromGarbageCollector',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.SetDataSetIDFromGarbageCollectorRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
         )
+    self.getMetadataByOID = channel.unary_unary(
+        '/dataclay.communication.grpc.logicmodule.LogicModule/getMetadataByOID',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetMetadataByOIDRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetMetadataByOIDResponse.FromString,
+        )
     self.setDataSetID = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/setDataSetID',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.SetDataSetIDRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
-        )
-    self.newVersion = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/newVersion',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewVersionRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewVersionResponse.FromString,
-        )
-    self.consolidateVersion = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/consolidateVersion',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ConsolidateVersionRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
-        )
-    self.newReplica = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/newReplica',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewReplicaRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewReplicaResponse.FromString,
         )
     self.moveObject = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/moveObject',
@@ -405,11 +385,6 @@ class LogicModuleStub(object):
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.SetObjectReadWriteRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
         )
-    self.getMetadataByOID = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/getMetadataByOID',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetMetadataByOIDRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetMetadataByOIDResponse.FromString,
-        )
     self.executeImplementation = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/executeImplementation',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ExecuteImplementationRequest.SerializeToString,
@@ -419,11 +394,6 @@ class LogicModuleStub(object):
         '/dataclay.communication.grpc.logicmodule.LogicModule/executeMethodOnTarget',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ExecuteMethodOnTargetRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ExecuteMethodOnTargetResponse.FromString,
-        )
-    self.synchronizeFederatedObject = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/synchronizeFederatedObject',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.SynchronizeFederatedObjectRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
         )
     self.getDataClayID = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/getDataClayID',
@@ -454,66 +424,6 @@ class LogicModuleStub(object):
         '/dataclay.communication.grpc.logicmodule.LogicModule/getExternalDataclayId',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExternalDataclayIDRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExternalDataclayIDResponse.FromString,
-        )
-    self.federateObject = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/federateObject',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.FederateObjectRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
-        )
-    self.unfederateObject = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/unfederateObject',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.UnfederateObjectRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
-        )
-    self.notifyUnfederatedObjects = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/notifyUnfederatedObjects',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NotifyUnfederatedObjectsRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
-        )
-    self.notifyFederatedObjects = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/notifyFederatedObjects',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NotifyFederatedObjectsRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
-        )
-    self.checkObjectIsFederatedWithDataClayInstance = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/checkObjectIsFederatedWithDataClayInstance',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.CheckObjectFederatedWithDataClayInstanceRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.CheckObjectFederatedWithDataClayInstanceResponse.FromString,
-        )
-    self.getDataClaysObjectIsFederatedWith = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/getDataClaysObjectIsFederatedWith',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetDataClaysObjectIsFederatedWithRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetDataClaysObjectIsFederatedWithResponse.FromString,
-        )
-    self.getExternalSourceDataClayOfObject = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/getExternalSourceDataClayOfObject',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExternalSourceDataClayOfObjectRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExternalSourceDataClayOfObjectResponse.FromString,
-        )
-    self.unfederateAllObjects = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/unfederateAllObjects',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.UnfederateAllObjectsRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
-        )
-    self.unfederateAllObjectsWithAllDCs = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/unfederateAllObjectsWithAllDCs',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.UnfederateAllObjectsWithAllDCsRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
-        )
-    self.unfederateObjectWithAllDCs = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/unfederateObjectWithAllDCs',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.UnfederateObjectWithAllDCsRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
-        )
-    self.migrateFederatedObjects = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/migrateFederatedObjects',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.MigrateFederatedObjectsRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
-        )
-    self.federateAllObjects = channel.unary_unary(
-        '/dataclay.communication.grpc.logicmodule.LogicModule/federateAllObjects',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.FederateAllObjectsRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
         )
     self.getClassesInNamespace = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/getClassesInNamespace',
@@ -624,13 +534,6 @@ class LogicModuleServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def autoregisterEE(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getStorageLocationID(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -868,13 +771,6 @@ class LogicModuleServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def newClassID(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def removeClass(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -1022,28 +918,28 @@ class LogicModuleServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getExecutionEnvironmentsInfo(self, request, context):
+  def getAllExecutionEnvironmentsInfo(self, request, context):
     """EE-SL information
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getExecutionEnvironmentsNames(self, request, context):
+  def getStorageLocationID(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getExecutionEnvironmentForDS(self, request, context):
-    """TODO: modify next functions also called from Python to more scalable information
-    """
+  def getStorageLocationInfo(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getStorageLocationForDS(self, request, context):
+  def getExecutionEnvironmentInfo(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -1099,7 +995,7 @@ class LogicModuleServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def registerObject(self, request, context):
+  def registerObjects(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -1113,30 +1009,16 @@ class LogicModuleServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def getMetadataByOID(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def setDataSetID(self, request, context):
     """Storage Location
     """
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def newVersion(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def consolidateVersion(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def newReplica(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -1162,13 +1044,6 @@ class LogicModuleServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getMetadataByOID(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def executeImplementation(self, request, context):
     """Execution Environment
     """
@@ -1177,13 +1052,6 @@ class LogicModuleServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def executeMethodOnTarget(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def synchronizeFederatedObject(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -1226,90 +1094,6 @@ class LogicModuleServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def getExternalDataclayId(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def federateObject(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def unfederateObject(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def notifyUnfederatedObjects(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def notifyFederatedObjects(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def checkObjectIsFederatedWithDataClayInstance(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getDataClaysObjectIsFederatedWith(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getExternalSourceDataClayOfObject(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def unfederateAllObjects(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def unfederateAllObjectsWithAllDCs(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def unfederateObjectWithAllDCs(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def migrateFederatedObjects(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def federateAllObjects(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -1461,11 +1245,6 @@ def add_LogicModuleServicer_to_server(servicer, server):
           servicer.autoregisterEE,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.AutoRegisterEERequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.AutoRegisterEEResponse.SerializeToString,
-      ),
-      'getStorageLocationID': grpc.unary_unary_rpc_method_handler(
-          servicer.getStorageLocationID,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationIDRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationIDResponse.SerializeToString,
       ),
       'unregisterStorageLocation': grpc.unary_unary_rpc_method_handler(
           servicer.unregisterStorageLocation,
@@ -1632,11 +1411,6 @@ def add_LogicModuleServicer_to_server(servicer, server):
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewClassRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewClassResponse.SerializeToString,
       ),
-      'newClassID': grpc.unary_unary_rpc_method_handler(
-          servicer.newClassID,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewClassIDRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewClassIDResponse.SerializeToString,
-      ),
       'removeClass': grpc.unary_unary_rpc_method_handler(
           servicer.removeClass,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RemoveClassRequest.FromString,
@@ -1742,25 +1516,25 @@ def add_LogicModuleServicer_to_server(servicer, server):
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RemoveInterfaceRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
       ),
-      'getExecutionEnvironmentsInfo': grpc.unary_unary_rpc_method_handler(
-          servicer.getExecutionEnvironmentsInfo,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentsInfoRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentsInfoResponse.SerializeToString,
+      'getAllExecutionEnvironmentsInfo': grpc.unary_unary_rpc_method_handler(
+          servicer.getAllExecutionEnvironmentsInfo,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetAllExecutionEnvironmentsInfoRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetAllExecutionEnvironmentsInfoResponse.SerializeToString,
       ),
-      'getExecutionEnvironmentsNames': grpc.unary_unary_rpc_method_handler(
-          servicer.getExecutionEnvironmentsNames,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentsNamesRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentsNamesResponse.SerializeToString,
+      'getStorageLocationID': grpc.unary_unary_rpc_method_handler(
+          servicer.getStorageLocationID,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationIDRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationIDResponse.SerializeToString,
       ),
-      'getExecutionEnvironmentForDS': grpc.unary_unary_rpc_method_handler(
-          servicer.getExecutionEnvironmentForDS,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentForDSRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentForDSResponse.SerializeToString,
+      'getStorageLocationInfo': grpc.unary_unary_rpc_method_handler(
+          servicer.getStorageLocationInfo,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationInfoRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationInfoResponse.SerializeToString,
       ),
-      'getStorageLocationForDS': grpc.unary_unary_rpc_method_handler(
-          servicer.getStorageLocationForDS,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationForDSRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetStorageLocationForDSResponse.SerializeToString,
+      'getExecutionEnvironmentInfo': grpc.unary_unary_rpc_method_handler(
+          servicer.getExecutionEnvironmentInfo,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentInfoRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExecutionEnvironmentInfoResponse.SerializeToString,
       ),
       'getObjectInfo': grpc.unary_unary_rpc_method_handler(
           servicer.getObjectInfo,
@@ -1797,35 +1571,25 @@ def add_LogicModuleServicer_to_server(servicer, server):
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.UnregisterObjectsRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
       ),
-      'registerObject': grpc.unary_unary_rpc_method_handler(
-          servicer.registerObject,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectResponse.SerializeToString,
+      'registerObjects': grpc.unary_unary_rpc_method_handler(
+          servicer.registerObjects,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectsRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.RegisterObjectsResponse.SerializeToString,
       ),
       'setDataSetIDFromGarbageCollector': grpc.unary_unary_rpc_method_handler(
           servicer.setDataSetIDFromGarbageCollector,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.SetDataSetIDFromGarbageCollectorRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
       ),
+      'getMetadataByOID': grpc.unary_unary_rpc_method_handler(
+          servicer.getMetadataByOID,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetMetadataByOIDRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetMetadataByOIDResponse.SerializeToString,
+      ),
       'setDataSetID': grpc.unary_unary_rpc_method_handler(
           servicer.setDataSetID,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.SetDataSetIDRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
-      ),
-      'newVersion': grpc.unary_unary_rpc_method_handler(
-          servicer.newVersion,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewVersionRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewVersionResponse.SerializeToString,
-      ),
-      'consolidateVersion': grpc.unary_unary_rpc_method_handler(
-          servicer.consolidateVersion,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ConsolidateVersionRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
-      ),
-      'newReplica': grpc.unary_unary_rpc_method_handler(
-          servicer.newReplica,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewReplicaRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NewReplicaResponse.SerializeToString,
       ),
       'moveObject': grpc.unary_unary_rpc_method_handler(
           servicer.moveObject,
@@ -1842,11 +1606,6 @@ def add_LogicModuleServicer_to_server(servicer, server):
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.SetObjectReadWriteRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
       ),
-      'getMetadataByOID': grpc.unary_unary_rpc_method_handler(
-          servicer.getMetadataByOID,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetMetadataByOIDRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetMetadataByOIDResponse.SerializeToString,
-      ),
       'executeImplementation': grpc.unary_unary_rpc_method_handler(
           servicer.executeImplementation,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ExecuteImplementationRequest.FromString,
@@ -1856,11 +1615,6 @@ def add_LogicModuleServicer_to_server(servicer, server):
           servicer.executeMethodOnTarget,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ExecuteMethodOnTargetRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.ExecuteMethodOnTargetResponse.SerializeToString,
-      ),
-      'synchronizeFederatedObject': grpc.unary_unary_rpc_method_handler(
-          servicer.synchronizeFederatedObject,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.SynchronizeFederatedObjectRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
       ),
       'getDataClayID': grpc.unary_unary_rpc_method_handler(
           servicer.getDataClayID,
@@ -1891,66 +1645,6 @@ def add_LogicModuleServicer_to_server(servicer, server):
           servicer.getExternalDataclayId,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExternalDataclayIDRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExternalDataclayIDResponse.SerializeToString,
-      ),
-      'federateObject': grpc.unary_unary_rpc_method_handler(
-          servicer.federateObject,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.FederateObjectRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
-      ),
-      'unfederateObject': grpc.unary_unary_rpc_method_handler(
-          servicer.unfederateObject,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.UnfederateObjectRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
-      ),
-      'notifyUnfederatedObjects': grpc.unary_unary_rpc_method_handler(
-          servicer.notifyUnfederatedObjects,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NotifyUnfederatedObjectsRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
-      ),
-      'notifyFederatedObjects': grpc.unary_unary_rpc_method_handler(
-          servicer.notifyFederatedObjects,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.NotifyFederatedObjectsRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
-      ),
-      'checkObjectIsFederatedWithDataClayInstance': grpc.unary_unary_rpc_method_handler(
-          servicer.checkObjectIsFederatedWithDataClayInstance,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.CheckObjectFederatedWithDataClayInstanceRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.CheckObjectFederatedWithDataClayInstanceResponse.SerializeToString,
-      ),
-      'getDataClaysObjectIsFederatedWith': grpc.unary_unary_rpc_method_handler(
-          servicer.getDataClaysObjectIsFederatedWith,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetDataClaysObjectIsFederatedWithRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetDataClaysObjectIsFederatedWithResponse.SerializeToString,
-      ),
-      'getExternalSourceDataClayOfObject': grpc.unary_unary_rpc_method_handler(
-          servicer.getExternalSourceDataClayOfObject,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExternalSourceDataClayOfObjectRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetExternalSourceDataClayOfObjectResponse.SerializeToString,
-      ),
-      'unfederateAllObjects': grpc.unary_unary_rpc_method_handler(
-          servicer.unfederateAllObjects,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.UnfederateAllObjectsRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
-      ),
-      'unfederateAllObjectsWithAllDCs': grpc.unary_unary_rpc_method_handler(
-          servicer.unfederateAllObjectsWithAllDCs,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.UnfederateAllObjectsWithAllDCsRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
-      ),
-      'unfederateObjectWithAllDCs': grpc.unary_unary_rpc_method_handler(
-          servicer.unfederateObjectWithAllDCs,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.UnfederateObjectWithAllDCsRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
-      ),
-      'migrateFederatedObjects': grpc.unary_unary_rpc_method_handler(
-          servicer.migrateFederatedObjects,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.MigrateFederatedObjectsRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
-      ),
-      'federateAllObjects': grpc.unary_unary_rpc_method_handler(
-          servicer.federateAllObjects,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.FederateAllObjectsRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
       ),
       'getClassesInNamespace': grpc.unary_unary_rpc_method_handler(
           servicer.getClassesInNamespace,

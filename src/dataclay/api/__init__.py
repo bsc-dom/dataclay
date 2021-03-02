@@ -8,6 +8,8 @@ import logging.config
 import os
 import sys
 import warnings
+
+
 from dataclay import getRuntime
 from dataclay.DataClayObject import DataClayObject
 from dataclay.commonruntime.ClientRuntime import settings, LANG_PYTHON
@@ -116,17 +118,33 @@ def get_backends():
 
 def get_backends_info():
     """Return all the dataClay BackendInfo present in the system."""
-    result = getRuntime().get_execution_environments_info(force_update=True)
+    result = getRuntime().get_all_execution_environments_info(force_update=True)
     logger.debug("Got %i python backend/s", len(result))
     return result
 
 
 def get_backend_id_by_name(name):
     """Return dataClay backend present in the system with name provided."""
-    all_backends = getRuntime().get_execution_environments_info(force_update=True)
+    all_backends = getRuntime().get_all_execution_environments_info(force_update=True)
     for backend in all_backends.values():
         if backend.name == name:
-            return backend.dataClayID
+            return backend.id
+    return None
+
+def get_external_backend_id_by_name(name, external_dataclay_id):
+    """Return dataClay backend present in the system with name provided."""
+    all_backends = getRuntime().get_all_execution_environments_at_dataclay(external_dataclay_id)
+    for backend in all_backends.values():
+        if backend.name == name:
+            return backend.id
+    return None
+
+def get_backend_id(hostname, port):
+    """Return dataClay backend present in the system with name provided."""
+    all_backends = getRuntime().get_all_execution_environments_info(force_update=True)
+    for backend in all_backends.values():
+        if backend.hostname == hostname and backend.port == port:
+            return backend.id
     return None
 
 
@@ -273,7 +291,7 @@ def post_network_init():
 
     name = settings.local_backend_name
     if name:
-        exec_envs = getRuntime().get_execution_environments_info()
+        exec_envs = getRuntime().get_all_execution_environments_info()
         for k, v in exec_envs.items():
             if exec_envs[k].name == name:
                 global LOCAL
@@ -361,6 +379,12 @@ def finish():
     # Unload stubs
     clean_babel_data()
     sys.path.remove(os.path.join(settings.stubs_folder, 'sources'))
+    # unload caches of stubs
+    from dataclay.commonruntime.ExecutionGateway import loaded_classes, class_extradata_cache_client, \
+        class_extradata_cache_exec_env
+    loaded_classes.clear()
+    class_extradata_cache_exec_env.clear()
+    class_extradata_cache_client.clear()
     # unload settings
     unload_settings()
     _initialized = False

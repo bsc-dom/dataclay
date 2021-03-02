@@ -161,12 +161,13 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                             self.get_session_id(), instance.get_dataset_id(), alias)
                 reg_infos.append(reg_info)
                 # TODO: Review if we use hint of the object or the hint of the runtime.
-                new_object_id = self.ready_clients["@LM"].register_objects(reg_infos, instance.get_hint(), LANG_PYTHON)
+                new_object_ids = self.ready_clients["@LM"].register_objects(reg_infos, instance.get_hint(), LANG_PYTHON)
+                new_object_id = next(iter(new_object_ids))
                 self.update_object_id(instance, new_object_id)
             else:
                 # Use case 2 and 3 - add new alias
-                self.ready_clients["@LM"].add_alias(instance.get_object_id(), alias)
-            
+                instance.set_alias(alias)
+
         return instance.get_location()
 
     def execute_implementation_aux(self, operation_name, instance, parameters, exeenv_id=None):
@@ -320,8 +321,8 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         object_id = volatile_obj.get_object_id()
         if hasattr(self.thread_local_info, "volatiles_under_deserialitzation"): 
             if self.thread_local_info.volatiles_under_deserialitzation is not None: 
-                for obj_with_data in  self.thread_local_info.volatiles_under_deserialitzation.values():
-                    curr_obj_id = obj_with_data[0]
+                for obj_with_data in  self.thread_local_info.volatiles_under_deserialitzation:
+                    curr_obj_id = obj_with_data.object_id
                     if object_id == curr_obj_id:
                         # deserialize it 
                         metaclass_id = volatile_obj.get_class_extradata().class_id
@@ -513,3 +514,19 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         :rtype: None
         """
         return self.ready_clients["@STORAGE"].update_to_db(settings.environment_id, object_id, obj_bytes, dirty)
+
+    def synchronize(self, instance, operation_name, params):
+        session_id = self.get_session_id()
+        object_id = instance.get_object_id()
+        operation = self.get_operation_info(instance.get_object_id(), operation_name)
+        implementation_id = self.get_implementation_id(instance.get_object_id(), operation_name)
+        # === SERIALIZE PARAMETERS ===
+        serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
+            params=[params],
+            iface_bitmaps=None,
+            params_spec=operation.params,
+            params_order=operation.paramsOrder,
+            hint_volatiles=instance.get_hint(),
+            runtime=self)
+        self.execution_environment.synchronize(session_id, object_id, implementation_id,
+                                               serialized_params)

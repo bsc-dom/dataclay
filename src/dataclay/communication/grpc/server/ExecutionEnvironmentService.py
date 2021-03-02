@@ -43,6 +43,7 @@ class DataServiceEE(ds.DataServiceServicer):
 
     def get_exception_info(self, ex):
         ex_message = None
+        logger.warning("Exception produced type: %s", type(ex))
         if hasattr(ex, "message"):
             ex_message = ex.message
             logger.warning("Exception produced with message:\n%s", ex_message)
@@ -103,9 +104,7 @@ class DataServiceEE(ds.DataServiceServicer):
             objects_list = []
             for vol_param in request.objects:
                 param = Utils.get_obj_with_data_param_or_return(vol_param)
-                serialized_obj = BytesIO(param[3])
-                dcobj = param[0], param[1], param[2], serialized_obj
-                objects_list.append(dcobj)
+                objects_list.append(param)
 
             ids_with_alias_set = set()
             session_id = Utils.get_id(request.sessionID)
@@ -121,7 +120,12 @@ class DataServiceEE(ds.DataServiceServicer):
     
     def makePersistent(self, request, context):
         try:
-            objects_to_persist = Utils.get_param_or_return(request.params)
+
+            objects_to_persist = []
+            for vol_param in request.objects:
+                param = Utils.get_obj_with_data_param_or_return(vol_param)
+                objects_to_persist.append(param)
+
             session_id = Utils.get_id(request.sessionID)
             self.execution_environment.make_persistent(session_id, objects_to_persist)
             logger.verbose("MakePersistent finished, sending response")
@@ -130,28 +134,56 @@ class DataServiceEE(ds.DataServiceServicer):
         except Exception as ex:
             traceback.print_exc()
             return self.get_exception_info(ex)
-            
+
     def federate(self, request, context):
         try:
             logger.verbose("Federation started")
-            objects_to_persist = Utils.get_param_or_return(request.params)
-            session_id = Utils.get_id(request.sessionID)
-            self.execution_environment.federate(session_id, objects_to_persist)
+            self.execution_environment.federate(Utils.get_id(request.sessionID),
+                                                Utils.get_id(request.objectID),
+                                                Utils.get_id(request.externalExecutionEnvironmentID),
+                                                request.recursive)
             logger.verbose("Federation finished, sending response")
             return common_messages_pb2.ExceptionInfo()
-
         except Exception as ex:
+            traceback.print_exc()
             return self.get_exception_info(ex)
 
     def unfederate(self, request, context):
         try:
             logger.verbose("Unfederation started")
+            self.execution_environment.unfederate(Utils.get_id(request.sessionID),
+                                                Utils.get_id(request.objectID),
+                                                Utils.get_id(request.externalExecutionEnvironmentID),
+                                                request.recursive)
+            logger.verbose("Unfederation finished, sending response")
+            return common_messages_pb2.ExceptionInfo()
+        except Exception as ex:
+            return self.get_exception_info(ex)
+
+    def notifyFederation(self, request, context):
+        try:
+            logger.verbose("Notify Federation started")
+            objects_to_persist = []
+            for vol_param in request.objects:
+                param = Utils.get_obj_with_data_param_or_return(vol_param)
+                objects_to_persist.append(param)
+            session_id = Utils.get_id(request.sessionID)
+            self.execution_environment.notify_federation(session_id, objects_to_persist)
+            logger.verbose("Notify Federation finished, sending response")
+            return common_messages_pb2.ExceptionInfo()
+
+        except Exception as ex:
+            return self.get_exception_info(ex)
+
+    def notifyUnfederation(self, request, context):
+        try:
+            logger.verbose("Notify Unfederation started")
             session_id = Utils.get_id(request.sessionID)
             object_ids = set()
             for oid in request.objectIDs:
                 object_ids.add(Utils.get_id(oid))
-            self.execution_environment.unfederate(session_id, object_ids)
-            logger.verbose("Unfederation finished, sending response")
+            self.execution_environment.notify_unfederation(session_id, object_ids)
+            logger.verbose("Notify Unfederation finished, sending response")
             return common_messages_pb2.ExceptionInfo()
 
         except Exception as ex:
@@ -175,6 +207,19 @@ class DataServiceEE(ds.DataServiceServicer):
             traceback.print_exc()
             return dataservice_messages_pb2.ExecuteImplementationResponse(
                 excInfo=self.get_exception_info(ex))
+
+    def synchronize(self, request, context):
+        try:
+            object_id = Utils.get_id(request.objectID)
+            implementation_id = Utils.get_id(request.implementationID)
+            serialized_params = Utils.get_param_or_return(request.params)
+            session_id = Utils.get_id(request.sessionID)
+            calling_backend_id = Utils.get_id(request.callingBackendID)
+            self.execution_environment.synchronize(session_id, object_id, implementation_id,
+                                                            serialized_params, calling_backend_id)
+            return common_messages_pb2.ExceptionInfo()
+        except DataClayException as ex:
+            return self.get_exception_info(ex)
 
     def getCopyOfObject(self, request, context):
         try:
@@ -215,10 +260,9 @@ class DataServiceEE(ds.DataServiceServicer):
             result = self.execution_environment.get_objects(Utils.get_id(request.sessionID),
                                             object_ids,
                                             request.recursive,
-                                            request.moving)
+                                            Utils.get_id(request.destBackendID))
 
             obj_list = []
-
             for entry in result:
                 obj_list.append(Utils.get_obj_with_data_param_or_return(entry))
 
@@ -229,84 +273,21 @@ class DataServiceEE(ds.DataServiceServicer):
                 excInfo=self.get_exception_info(ex)
             )
 
-    def getReferencedObjectsIDs(self, request, context):
-        try:
-            object_ids = set()
-            for oid in request.objectIDS:
-                object_ids.add(Utils.get_id(oid))
-            
-            result = self.execution_environment.get_referenced_objects_ids(
-                                            Utils.get_id(request.sessionID),
-                                            object_ids)
-            obj_list = []
-            for entry in result:
-                obj_list.append(Utils.get_msg_id(entry))
-    
-            return dataservice_messages_pb2.GetReferencedObjectIDsResponse(objectIDs=obj_list)
-
-        except Exception as ex:
-            return dataservice_messages_pb2.GetReferencedObjectIDsResponse(
-                excInfo=self.get_exception_info(ex)
-            )
-
-    def getFederatedObjects(self, request, context):
-        try:
-            object_ids = set()
-            for oid in request.objectIDS:
-                object_ids.add(Utils.get_id(oid))
-            
-            result = self.execution_environment.get_federated_objects(
-                Utils.get_id(request.extDataClayID),
-                object_ids
-            )
-            obj_list = []
-
-            for entry in result:
-                obj_list.append(Utils.get_obj_with_data_param_or_return(entry))
-    
-            return dataservice_messages_pb2.GetFederatedObjectsResponse(objects=obj_list)
-
-        except DataClayException as ex:
-            return dataservice_messages_pb2.GetFederatedObjectsResponse(
-                excInfo=self.get_exception_info(ex)
-            )
-
-    def newMetaData(self, request, context):
-
-        try:
-            md_infos = {}
-
-            for k, v in request.mdInfos.items():
-
-                md_infos[Utils.get_id_from_uuid(k)] = dataclay_yaml_load(v)
-
-            self.client.ds_new_metadata(md_infos)
-
-            return common_messages_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            return self.get_exception_info(ex)
 
     def newVersion(self, request, context):
-
         try:
-            result = self.execution_environment.new_version(
+            version_object_id = self.execution_environment.new_version(
                 Utils.get_id(request.sessionID),
                 Utils.get_id(request.objectID),
-                dataclay_yaml_load(request.metadataInfo)
+                Utils.get_id(request.destBackendID)
             )
 
-            vers_ids = dict()
-
-            for k, v in result[1].items():
-                vers_ids[Utils.prepare_bytes(str(k))] = Utils.prepare_bytes(str(v))
-
             return dataservice_messages_pb2.NewVersionResponse(
-                objectID=Utils.get_msg_id(result[0]),
-                versionedIDs=vers_ids
+                objectID=Utils.get_msg_id(version_object_id)
             )
 
         except Exception as ex:
+            traceback.print_exc()
             return dataservice_messages_pb2.NewVersionResponse(
                 excInfo=self.get_exception_info(ex)
             )
@@ -315,7 +296,7 @@ class DataServiceEE(ds.DataServiceServicer):
 
         try:
             self.execution_environment.consolidate_version(Utils.get_id(request.sessionID),
-                                           dataclay_yaml_load(request.versionInfo))
+                                                           Utils.get_id(request.versionObjectID))
 
             return common_messages_pb2.ExceptionInfo()
 
@@ -339,21 +320,17 @@ class DataServiceEE(ds.DataServiceServicer):
             return self.get_exception_info(ex)
 
     def newReplica(self, request, context):
-
-        ##### NOT WELL IMPL. NEW ALGORITHM MISSING FOR MOVING OBJECTS CHECKING FIRST THE MEMORY ######
-
         try:
             result = self.execution_environment.new_replica(Utils.get_id(request.sessionID),
                                             Utils.get_id(request.objectID),
+                                            Utils.get_id(request.destBackendID),
                                             request.recursive)
-
             repl_ids_list = []
-
             for oid in result:
                 repl_ids_list.append(Utils.get_msg_id(oid))
 
             return dataservice_messages_pb2.NewReplicaResponse(
-                replicatedIDs=repl_ids_list
+                replicatedObjects=repl_ids_list
             )
 
         except Exception as ex:
@@ -364,14 +341,11 @@ class DataServiceEE(ds.DataServiceServicer):
 
     def moveObjects(self, request, context):
 
-        ##### NOT WELL IMPL. NEW ALGORITHM MISSING FOR MOVING OBJECTS CHECKING FIRST THE MEMORY ######
-
         try:
             result = self.execution_environment.move_objects(Utils.get_id(request.sessionID),
                                                  Utils.get_id(request.objectID),
                                                  Utils.get_id(request.destLocID),
                                                  request.recursive)
-
             mov_obj_list = []
 
             for oid in result:
@@ -467,7 +441,7 @@ class DataServiceEE(ds.DataServiceServicer):
             backends = dict()
 
             for k, v in request.destStorageLocs.items():
-                backends[Utils.get_id_from_uuid(k)] = dataclay_yaml_load(v)
+                backends[Utils.get_id_from_uuid(k)] = Utils.get_storage_location(v)
 
             result = self.client.ds_migrate_objects_to_backends(backends)
 

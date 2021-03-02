@@ -1,6 +1,13 @@
 
 """ Class description goes here. """
+from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
+from dataclay.serialization.lib.PersistentParamOrReturn import PersistentParamOrReturn
 from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
+from dataclay.util.DataClayObjectMetaData import DataClayObjectMetaData
+from dataclay.util.management.metadataservice.DataClayInstance import DataClayInstance
+from dataclay.util.management.metadataservice.ExecutionEnvironment import ExecutionEnvironment
+from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
+from dataclay.util.management.metadataservice.StorageLocation import StorageLocation
 
 """Utility methods for gRPC clients/server."""
 
@@ -37,21 +44,23 @@ def get_credential(cred):
 
 
 def get_msg_id(id):
+    if id is None:
+        return None
     return str(id)
 
 def get_id(id_msg):
     """Create the ID based on protobuf message.
 
-    :param id_msg: Common protobuf message with uuid_most and uuid_least.
+    :param id_msg: Common protobuf message.
 
     :return: UUID based on param.
     """    
     if id_msg is None:
         return None
-    elif id_msg.uuid == "":
+    elif id_msg == "":
         return None
     else:
-        return uuid.UUID(id_msg.uuid)
+        return uuid.UUID(id_msg)
 
 
 def get_id_from_uuid(msg_str):
@@ -75,7 +84,6 @@ def get_metadata(metadata):
     :return: MetaData GRPC message.
     """
     if type(metadata) is common_messages.DataClayObjectMetaData:
-       
         oids = dict()
         for k, v in metadata.oids.items():
             oids[k] = get_id(v)
@@ -89,31 +97,53 @@ def get_metadata(metadata):
             hints[k] = get_id(v)
         
         num_refs = metadata.numRefs
-        
-        return oids, classids, hints, num_refs
+        orig_object_id = get_id(metadata.origObjectID)
+        root_location = get_id(metadata.rootLocation)
+        origin_location = get_id(metadata.originLocation)
+        alias = metadata.alias
+        is_read_only = metadata.isReadOnly
+        replica_locations = None
+        if metadata.replicaLocations is not None:
+            replica_locations = list()
+            for replica_loc in metadata.replicaLocations:
+                replica_locations.append(get_id(replica_loc))
+        return DataClayObjectMetaData(alias, is_read_only, oids, classids, hints, num_refs, orig_object_id,
+                                      root_location, origin_location, replica_locations)
 
     else:
 
         one = dict()
     
-        for k, v in metadata[0].items():
+        for k, v in metadata.tags_to_oids.items():
             one[k] = get_msg_id(v)
     
         two = dict()
     
-        for k, v in metadata[1].items():
+        for k, v in metadata.tags_to_class_ids.items():
             two[k] = get_msg_id(v)
 
         three = dict()
 
-        for k, v in metadata[2].items():
+        for k, v in metadata.tags_to_hints.items():
             three[k] = get_msg_id(v)
+
+        replica_locs = None
+        if metadata.replica_locations is not None:
+            replica_locs = list()
+            for replica_loc in metadata.replica_locations:
+                replica_locs.append(get_msg_id(replica_loc))
 
         request = common_messages.DataClayObjectMetaData(
             oids=one,
             classids=two,
             hints=three,
-            numRefs=metadata[3]
+            numRefs=metadata.num_refs_pointing_to_obj,
+            origObjectID=get_msg_id(metadata.orig_object_id),
+            rootLocation=get_msg_id(metadata.root_location),
+            originLocation=get_msg_id(metadata.origin_location),
+            replicaLocations=replica_locs,
+            alias=metadata.alias,
+            isReadOnly=metadata.is_read_only
         )
     
         return request
@@ -142,6 +172,88 @@ def convert_neg(x):
         x -= 18446744073709551616
     return x
 
+def get_storage_location(storage_loc):
+    if type(storage_loc) is common_messages.StorageLocationInfo:
+        id = get_id(storage_loc.id)
+        hostname = storage_loc.hostname
+        name = storage_loc.name
+        port = storage_loc.port
+        return StorageLocation(id, hostname, name, port)
+    else:
+        response = common_messages.StorageLocationInfo(
+            id=get_msg_id(storage_loc.object_id),
+            hostname=storage_loc.hostname,
+            name=storage_loc.name,
+            port=storage_loc.port
+        )
+        return response
+
+def get_execution_environment(execution_environment):
+    if type(execution_environment) is common_messages.ExecutionEnvironmentInfo:
+        id = get_id(execution_environment.id)
+        hostname = execution_environment.hostname
+        dataclay_instance_id = get_id(execution_environment.dataClayInstanceID)
+        name = execution_environment.name
+        port = execution_environment.port
+        language = execution_environment.language
+        return ExecutionEnvironment(id, hostname, name, port, language, dataclay_instance_id)
+    else:
+        response = common_messages.ExecutionEnvironmentInfo(
+            id=get_msg_id(execution_environment.object_id),
+            hostname=execution_environment.hostname,
+            name=execution_environment.name,
+            port=execution_environment.port,
+            language=execution_environment.language,
+            dataClayInstanceID=get_msg_id(execution_environment.dataclay_instance_id),
+        )
+        return response
+
+def get_dataclay_instance(dataclay_instance):
+    if type(dataclay_instance) is common_messages.DataClayInstance:
+        id = get_id(dataclay_instance.id)
+        hosts = dataclay_instance.hosts
+        ports = dataclay_instance.ports
+        return DataClayInstance(id, hosts, ports)
+    else:
+        response = common_messages.DataClayInstance(
+            id=get_msg_id(dataclay_instance.id),
+            hosts=dataclay_instance.hosts,
+            ports=dataclay_instance.ports
+        )
+        return response
+
+def get_metadata_info(metadata_info):
+    if type(metadata_info) is common_messages.MetaDataInfo:
+
+        if not hasattr(metadata_info, "id") or metadata_info.id == "" or metadata_info.id is None:
+            return None
+
+        id = get_id(metadata_info.id)
+        is_read_only = metadata_info.is_read_only
+        dataset_id = get_id(metadata_info.dataset_id)
+        metaclass_id = get_id(metadata_info.metaclass_id)
+        locations = set()
+        for loc in metadata_info.locations:
+            locations.append(get_id(loc))
+        alias = metadata_info.alias
+        owner_id = get_id(metadata_info.owner_id)
+
+        return MetaDataInfo(id, is_read_only, dataset_id, metaclass_id, locations, alias, owner_id)
+    else:
+        locations_ids = set()
+        for loc in metadata_info.locations:
+            locations_ids.append(get_msg_id(loc))
+        response = common_messages.MetaDataInfo(
+            objectID=get_msg_id(metadata_info.id),
+            isReadOnly=metadata_info.is_read_only,
+            datasetID=get_msg_id(metadata_info.dataset_id),
+            metaclassID=get_msg_id(metadata_info.metaclass_id),
+            locations=locations_ids,
+            alias=metadata_info.alias,
+            ownerID=get_msg_id(metadata_info.owner_id),
+        )
+        return response
+
 
 def get_obj_with_data_param_or_return(vol_param_or_ret):
     """
@@ -155,13 +267,13 @@ def get_obj_with_data_param_or_return(vol_param_or_ret):
         mdata = get_metadata(vol_param_or_ret.metadata)
         byte_array = vol_param_or_ret.objbytes
 
-        return oid, class_id, mdata, byte_array
+        return ObjectWithDataParamOrReturn(oid, class_id, mdata, byte_array)
     else:
         response = common_messages.ObjectWithDataParamOrReturn(
-            oid=get_msg_id(vol_param_or_ret[0]),
-            classid=get_msg_id(vol_param_or_ret[1]),
-            metadata=get_metadata(vol_param_or_ret[2]),
-            objbytes=vol_param_or_ret[3]
+            oid=get_msg_id(vol_param_or_ret.object_id),
+            classid=get_msg_id(vol_param_or_ret.class_id),
+            metadata=get_metadata(vol_param_or_ret.metadata),
+            objbytes=vol_param_or_ret.obj_bytes
         )
         return response
 
@@ -214,19 +326,12 @@ def get_persistent_param_or_return(param_or_ret):
         class_id = get_id(param_or_ret.classID)
         hint = get_id(param_or_ret.hint)
 
-        return oid, hint, class_id
+        return PersistentParamOrReturn(oid, hint, class_id)
 
     else:
-        class_id = None
-        hint = None
-        oid = param_or_ret[0]
-
-        if param_or_ret[1] is not None:
-            hint = param_or_ret[1]
-
-        if param_or_ret[2] is not None:
-            class_id = param_or_ret[2]
-
+        class_id = param_or_ret.class_id
+        oid = param_or_ret.object_id
+        hint = param_or_ret.hint
         request = common_messages.PersistentParamOrReturn(
             oid=get_msg_id(oid),
             hint=get_msg_id(hint),
@@ -266,33 +371,35 @@ def get_param_or_return(param_or_ret_msg):
         for k, v in param_or_ret_msg.persParams.items():
             pers_objs[k] = get_persistent_param_or_return(v)
             
-        return SerializedParametersOrReturn(num_params, imm_objs, lang_objs, vol_objs, pers_objs)
+        return SerializedParametersOrReturn(num_params=num_params, imm_objs=imm_objs,
+                                            lang_objs=lang_objs, vol_objs=vol_objs,
+                                            pers_objs=pers_objs)
     elif type(param_or_ret_msg) is SerializedParametersOrReturn:
         # create and return serialized message
+        imm_objs = dict()
+        lang_objs = dict()
+        vol_objs = dict()
+        pers_objs = dict()
         num_params = param_or_ret_msg.num_params
-        imm_objs = param_or_ret_msg.imm_objs
-        lang_objs = param_or_ret_msg.lang_objs
-        vol_objs = param_or_ret_msg.vol_objs
-        pers_obj = param_or_ret_msg.persistent_refs
-        
-        for k, v in param_or_ret_msg[1].items():
+
+        for k, v in param_or_ret_msg.imm_objs.items():
             imm_objs[k] = get_immutable_param_or_return(v)
         
-        for k, v in param_or_ret_msg[2].items():
+        for k, v in param_or_ret_msg.lang_objs.items():
             lang_objs[k] = get_lang_param_or_return(v)
         
-        for k, v in param_or_ret_msg[3].items():
+        for k, v in param_or_ret_msg.vol_objs.items():
             vol_objs[k] = get_obj_with_data_param_or_return(v)
         
-        for k, v in param_or_ret_msg[4].items():
-            pers_obj[k] = get_persistent_param_or_return(v)
+        for k, v in param_or_ret_msg.persistent_refs.items():
+            pers_objs[k] = get_persistent_param_or_return(v)
 
         request = common_messages.SerializedParametersOrReturn(
                 numParams=num_params,
                 immParams=imm_objs,
                 langParams=lang_objs,
                 volatileParams=vol_objs,
-                persParams=pers_obj
+                persParams=pers_objs
         )
         
         return request
