@@ -581,9 +581,11 @@ class DataClayRuntime(object):
         dest_backend = None
         if dest_backend_id is None:
             if backend_hostname is not None:
-                dest_backend = list(self.get_all_execution_environments_at_host(backend_hostname).values())[0]
-                dest_backend_id = dest_backend.id
-            else:
+                exec_envs_at_host = self.get_all_execution_environments_at_host(backend_hostname)
+                if len(exec_envs_at_host) > 0:
+                    dest_backend = list(exec_envs_at_host.values())[0]
+                    dest_backend_id = dest_backend.id
+            if dest_backend is None:
                 if different_location:
                     # no destination specified, get one destination in which object is not already replicated
                     obj_locations = self.get_all_locations(object_id)
@@ -593,7 +595,7 @@ class DataClayRuntime(object):
                             dest_backend_id = exec_env_id
                             dest_backend = exec_env
                             break
-                else:
+                if dest_backend is None:
                     dest_backend_id = object_hint
                     dest_backend = self.get_execution_environment_info(dest_backend_id)
 
