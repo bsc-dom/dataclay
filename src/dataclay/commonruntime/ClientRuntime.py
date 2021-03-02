@@ -14,6 +14,9 @@ from dataclay.heap.ClientHeapManager import ClientHeapManager
 from dataclay.loader.ClientObjectLoader import ClientObjectLoader
 
 # Sentinel-like object to catch some typical mistakes
+from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
+from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
+
 UNDEFINED_LOCAL = object()
 
 
@@ -89,10 +92,13 @@ class ClientRuntime(DataClayRuntime):
 
                 # From client side, we cannot check if object is registered or not (we do not have isPendingToRegister like EE)
                 # Therefore, we call LogicModule with all information for registration.
-                reg_info = [instance.get_object_id(), instance.get_class_extradata().class_id,
-                            self.get_session_id(), instance.get_dataset_id()]
-                new_object_id = self.ready_clients["@LM"].register_object(reg_info, location, alias, LANG_PYTHON)
-                
+                reg_infos = list()
+                reg_info = RegistrationInfo(instance.get_object_id(), instance.get_class_extradata().class_id,
+                            self.get_session_id(), instance.get_dataset_id(), alias)
+                reg_infos.append(reg_info)
+                new_object_ids = self.ready_clients["@LM"].register_objects(reg_infos, location, LANG_PYTHON)
+                self.logger.debug(f"Received ids: {new_object_ids}")
+                new_object_id = next(iter(new_object_ids))
                 self.update_object_id(instance, new_object_id)
                 
                 self.alias_cache[alias] = instance.get_object_id(), instance.get_class_extradata().class_id, location
@@ -101,6 +107,7 @@ class ClientRuntime(DataClayRuntime):
             self.logger.debug("Instance with object ID %s being send to EE", instance.get_object_id())
             # set the default master location
             instance.set_master_location(location)
+            instance.set_alias(alias)
             # We serialize objects like volatile parameters
             parameters = list()
             parameters.append(instance)
@@ -119,13 +126,13 @@ class ClientRuntime(DataClayRuntime):
             
             # Avoid some race-conditions in communication (make persistent + execute where
             # execute arrives before).
-            self.add_volatiles_under_deserialization(serialized_objs[3])
+            self.add_volatiles_under_deserialization(serialized_objs.vol_objs)
             
             # Get EE
             try:
                 execution_client = self.ready_clients[location]
             except KeyError:
-                exeenv = self.get_execution_environments_info()[location] 
+                exeenv = self.get_execution_environment_info(location)
                 self.logger.debug("Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
                                    location, exeenv.hostname, exeenv.port)
                 execution_client = EEClient(exeenv.hostname, exeenv.port)
@@ -133,14 +140,20 @@ class ClientRuntime(DataClayRuntime):
     
             # Call EE
             self.logger.verbose("Calling make persistent to EE %s ", location)
-            execution_client.make_persistent(settings.current_session_id, serialized_objs)
+            execution_client.make_persistent(settings.current_session_id, serialized_objs.vol_objs.values())
 
             # update the hint with the location, and return it
             instance.set_hint(location)
             
             # remove volatiles under deserialization
             self.remove_volatiles_under_deserialization()
-        
+
+        object_id = instance.get_object_id()
+        locations = set()
+        locations.add(location)
+        metadata_info = MetaDataInfo(object_id, False, instance.get_dataset_id(),
+                                     instance.get_class_extradata().class_id, locations, alias, None)
+        self.metadata_cache[object_id] = metadata_info
         return location
     
     def add_session_reference(self, object_id):
@@ -163,6 +176,7 @@ class ClientRuntime(DataClayRuntime):
         if instance.get_hint() is not None:
             exeenv_id = instance.get_hint()
             self.logger.verbose("Using hint = %s", exeenv_id)
+            using_hint = True
         else:
             exeenv_id = next(iter(self.get_metadata(object_id).locations))
             
@@ -187,4 +201,27 @@ class ClientRuntime(DataClayRuntime):
     
     def get_session_id(self):
         return settings.current_session_id
+
+    def synchronize(self, instance, operation_name, params):
+        session_id = self.get_session_id()
+        object_id = instance.get_object_id()
+        dest_backend_id = self.get_location(instance.get_object_id())
+        operation = self.get_operation_info(instance.get_object_id(), operation_name)
+        implementation_id = self.get_implementation_id(instance.get_object_id(), operation_name)
+        # === SERIALIZE PARAMETER ===
+        serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
+            params=[params],
+            iface_bitmaps=None,
+            params_spec=operation.params,
+            params_order=operation.paramsOrder,
+            hint_volatiles=instance.get_hint(),
+            runtime=self)
+        try:
+            execution_client = self.ready_clients[dest_backend_id]
+        except KeyError:
+            exeenv = self.get_execution_environment_info(dest_backend_id)
+            execution_client = EEClient(exeenv.hostname, exeenv.port)
+            self.ready_clients[dest_backend_id] = execution_client
+        execution_client.synchronize(session_id, object_id, implementation_id, serialized_params)
+
     

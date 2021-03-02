@@ -128,6 +128,7 @@ class DataClayObject(object):
             dc_ced = class_extradata_cache_exec_env.get(full_name)
 
         if dc_ced is not None:
+            logger.debug("Found class %s extradata in cache" % full_name)
             return dc_ced
 
         logger.verbose('Proceeding to prepare the class `%s` from the ExecutionGateway',
@@ -346,15 +347,16 @@ class DataClayObject(object):
         return getRuntime().get_all_locations(self.__dclay_instance_extradata.object_id)
     
     def new_replica(self, backend_id=None, recursive=True):
-        getRuntime().new_replica(self.get_object_id(), self.get_class_extradata().class_id,
-                                 self.get_hint(), backend_id, recursive)
+        return getRuntime().new_replica(self.get_object_id(), self.get_hint(),
+                                        backend_id, None, recursive)
 
-    def new_version(self, backend_id):
-        return getRuntime().new_version(self.get_object_id(), self.get_class_extradata().class_id,
-                                        self.get_hint(), backend_id)
+    def new_version(self, backend_id=None, recursive=True):
+        return getRuntime().new_version(self.get_object_id(), self.get_hint(), self.get_class_id(),
+                                        self.get_dataset_id(), backend_id, None, recursive)
 
-    def consolidate_version(self, version_info):
-        getRuntime().consolidate_version(version_info)
+    def consolidate_version(self):
+        """ Consolidate: copy contents of current version object to original object"""
+        return getRuntime().consolidate_version(self.get_object_id(), self.get_hint())
 
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
         if alias == "":
@@ -362,7 +364,7 @@ class DataClayObject(object):
         getRuntime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
     def get_execution_environments_info(self):
-        return getRuntime().get_execution_environments_info()
+        return getRuntime().get_all_execution_environments_info()
 
     @classmethod
     def dc_clone_by_alias(cls, alias, recursive=False):
@@ -419,6 +421,57 @@ class DataClayObject(object):
         @param new_object_id: object id
         """
         self.__dclay_instance_extradata.object_id = new_object_id
+
+    def get_alias(self):
+        return self.__dclay_instance_extradata.alias
+
+    def set_alias(self, new_alias):
+        self.__dclay_instance_extradata.alias = new_alias
+
+    def is_read_only(self):
+        return self.__dclay_instance_extradata.is_read_only
+
+    def set_read_only(self, new_read_only):
+        self.__dclay_instance_extradata.is_read_only = new_read_only
+
+    def get_original_object_id(self):
+        """
+        @postcondition: Return original object id of the object if any
+        @return Original Object id
+        """
+        return self.__dclay_instance_extradata.original_object_id
+
+    def set_original_object_id(self, new_original_object_id):
+        """
+        @postcondition: Set original object id of the object
+        @param new_original_object_id: original object id of the object
+        """
+        self.__dclay_instance_extradata.original_object_id = new_original_object_id
+
+    def get_root_location(self):
+        return self.__dclay_instance_extradata.root_location
+
+    def set_root_location(self, new_root_location):
+        self.__dclay_instance_extradata.root_location = new_root_location
+
+    def get_origin_location(self):
+        return self.__dclay_instance_extradata.origin_location
+
+    def set_origin_location(self, new_origin_location):
+        self.__dclay_instance_extradata.origin_location = new_origin_location
+
+    def get_replica_locations(self):
+        return self.__dclay_instance_extradata.replica_locations
+
+    def set_replica_locations(self, new_replica_locations):
+        self.__dclay_instance_extradata.replica_locations = new_replica_locations
+
+    def add_replica_location(self, new_replica_location):
+        replica_locations = self.__dclay_instance_extradata.replica_locations
+        if replica_locations is None:
+            replica_locations = list()
+            self.__dclay_instance_extradata.replica_locations = replica_locations
+        replica_locations.append(new_replica_location)
 
     def get_memory_pinned(self):
         """
@@ -512,7 +565,10 @@ class DataClayObject(object):
         @return is loaded flag
         """
         return self.__dclay_instance_extradata.loaded_flag
-    
+
+    def get_class_id(self):
+        return self.get_class_extradata().class_id
+
     def get_owner_session_id(self):
         """
         @postcondition: Get owner session id
@@ -569,32 +625,26 @@ class DataClayObject(object):
         """
         self.__dclay_instance_extradata.execenv_id = new_hint
 
+    def federate_to_backend(self, ext_execution_env_id, recursive=True):
+        getRuntime().federate_to_backend(self.get_object_id(), self.get_hint(), ext_execution_env_id, recursive)
+
     def federate(self, ext_dataclay_id, recursive=True):
-        """
-        @postcondition: Federates this object with an external dataClay instance
-        @param ext_dataclay_id: id of the external dataClay instance
-        @param recursive: Indicates if all sub-objects must be federated as well.
-        """
-        getRuntime().federate_object(self.get_object_id(), ext_dataclay_id, recursive,
-                                     self.get_class_extradata().class_id, self.get_hint())
-    
+        getRuntime().federate_object(self.get_object_id(), self.get_hint(), ext_dataclay_id, recursive)
+
+    def unfederate_from_backend(self, ext_execution_env_id, recursive=True):
+        getRuntime().unfederate_from_backend(self.get_object_id(), self.get_hint(), ext_execution_env_id, recursive)
+
+
     def unfederate(self, ext_dataclay_id=None, recursive=True):
-        """
-        @postcondition: Unfederate this object with an external dataClay instance
-        @param ext_dataclay_id: id of the external dataClay instance (none means to unfederate with all dcs)
-        @param recursive: Indicates if all sub-objects must be unfederated as well.
-        """
-        if ext_dataclay_id is not None:
-            getRuntime().unfederate_object(self.get_object_id(), ext_dataclay_id, recursive)
-        else:
-            getRuntime().unfederate_object_with_all_dcs(self.get_object_id(), recursive)          
+        getRuntime().unfederate_object(self.get_object_id(), self.get_hint(), ext_dataclay_id, recursive)
+
 
     def get_external_dataclay_id(self, dcHost, dcPort):
         return getRuntime().ready_clients["@LM"].get_external_dataclay_id(dcHost, dcPort)
 
-    def set_in_backend(self, backend_id, field_name, value):
+    def synchronize(self, field_name, value):
         from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
-        return getRuntime().run_remote(self.get_object_id(), backend_id, DCLAY_SETTER_PREFIX + field_name, value)
+        return getRuntime().synchronize(self, DCLAY_SETTER_PREFIX + field_name, value)
 
     def get_external_dataclay_info(self, dataclay_id):
         """ Get external dataClay information
@@ -604,24 +654,6 @@ class DataClayObject(object):
         :rtype: DataClayInstance
         """
         return getRuntime().get_external_dataclay_info(dataclay_id)
-
-    def get_federation_source(self):
-        """ Retrieve dataClay instance id where the object comes from or NULL
-        :return: dataClay instance ids where this object is federated
-        :rtype: UUID
-        """
-        return getRuntime().get_external_source_of_dataclay_object(self.get_object_id())
-
-    def get_federation_targets(self):
-        """ Retrieve dataClay instances ids where the object is federated
-        :return: dataClay instances ids where this object is federated
-        :rtype: set of UUID
-        """
-        return getRuntime().get_dataclays_object_is_federated_with(self.get_object_id())
-
-    def set_in_dataclay_instance(self, dc_info, field_name, params):
-        from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
-        getRuntime().synchronize_federated(self, params, DCLAY_SETTER_PREFIX + field_name, dc_info)
 
     def serialize(self, io_file, ignore_user_types, iface_bitmaps,
                   cur_serialized_objs, pending_objs, reference_counting):

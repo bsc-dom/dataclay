@@ -1,6 +1,3 @@
-
-""" Class description goes here. """
-
 """Serialization code related to DataClay objects
 
 The code implemented in this module is (at "this moment") identical to the ones
@@ -9,15 +6,19 @@ functions are more or less adapted here.
 """
 from io import BytesIO
 import logging
-
 import dataclay
 from dataclay.exceptions.exceptions import InvalidPythonSignature
+from dataclay.serialization.lib.PersistentParamOrReturn import PersistentParamOrReturn
 from dataclay.serialization.python.lang.VLQIntegerWrapper import VLQIntegerWrapper
 from dataclay.serialization.python.util.PyTypeWildcardWrapper import PyTypeWildcardWrapper, safe_wait_if_compss_future
+from dataclay.util.DataClayObjectMetaData import DataClayObjectMetaData
 from dataclay.util.IdentityDict import IdentityDict
 import dataclay.communication.grpc.messages.common.common_messages_pb2 as common_messages
 from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.util.ReferenceCounting import ReferenceCounting
+from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
+from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
+
 
 __author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
 __copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
@@ -48,11 +49,14 @@ class SerializationLibUtils(object):
         if return_none_if_no_ref_counting:
             if reference_counting.has_no_references():
                 return None
-        metadata = self.create_metadata(cur_serialized_objs, None, 0)
+        metadata = self.create_metadata(cur_serialized_objs, None, 0, instance.get_original_object_id(),
+                                        instance.get_root_location(),
+                                        instance.get_origin_location(), instance.get_replica_locations(),
+                                        instance.get_alias(), instance.is_read_only())
         dcc_extradata = instance.get_class_extradata()
         byte_array = buffer.getvalue()
         buffer.close()
-        return instance.get_object_id(), dcc_extradata.class_id, metadata, byte_array
+        return ObjectWithDataParamOrReturn(instance.get_object_id(), dcc_extradata.class_id, metadata, byte_array)
 
     def serialize_association(self,
             io_output,  # final DataClayByteBuffer
@@ -122,7 +126,7 @@ class SerializationLibUtils(object):
                             class_id = param.get_class_extradata().class_id
                             hint = param.get_hint()
 
-                            pers_param = [oid, hint, class_id, False]
+                            pers_param = PersistentParamOrReturn(oid, hint, class_id)
                             pers_params[i] = pers_param
 
                         else:
@@ -143,6 +147,7 @@ class SerializationLibUtils(object):
                     except AttributeError:
                         try:
                             # ToDo: support for notifications (which is said to leave params_spec None)
+
                             param_type = params_spec[param_name]
                             ptw = PyTypeWildcardWrapper(param_type.signature)
                         except InvalidPythonSignature:
@@ -171,7 +176,7 @@ class SerializationLibUtils(object):
                         class_id = param.get_class_extradata().class_id
                         hint = param.get_hint()
 
-                        pers_param = [oid, hint, class_id, False]
+                        pers_param = PersistentParamOrReturn(oid, hint, class_id)
                         pers_params[i] = pers_param
                     else:
                         logger.debug("Serializing sub-object volatile parameter/return with oid %s", oid)
@@ -190,13 +195,9 @@ class SerializationLibUtils(object):
         else:
             logger.debug("Call with no parameters, no serialization required")
 
-        for vol in vol_params.values():
-            logger.debug("Serialized volatile: %s", vol)
-        for persi in pers_params.values():
-            logger.debug("Serialized persistent param: %s", persi)
-
-        serialized_params = [num_params, imm_objs, lang_objs, vol_params, pers_params]
-
+        serialized_params = SerializedParametersOrReturn(num_params=num_params, imm_objs=imm_objs,
+                                                         lang_objs=lang_objs, vol_objs=vol_params,
+                                                         pers_objs=pers_params)
         return serialized_params
 
     def serialize_dcobj_with_data(self, dc_object, pending_objs, ignore_user_types, hint, runtime,
@@ -239,7 +240,8 @@ class SerializationLibUtils(object):
             runtime.unlock(object_id)
         return object_with_data
 
-    def create_metadata(self, cur_ser_objs, hint_for_missing, num_refs_pointing_to_obj):
+    def create_metadata(self, cur_ser_objs, hint_for_missing, num_refs_pointing_to_obj, orig_object_id,
+                        root_location, origin_location, replica_locs, alias, is_read_only):
 
         # Prepare metadata structure
 
@@ -270,7 +272,9 @@ class SerializationLibUtils(object):
                         logger.debug("[==Hint==] Setting hint %s association for tag %s", hint_for_missing, tag)
                         tags_to_hint[tag] = hint_for_missing
 
-        response = tags_to_oids, tags_to_class_id, tags_to_hint, num_refs_pointing_to_obj
+        response = DataClayObjectMetaData(alias, is_read_only, tags_to_oids, tags_to_class_id, tags_to_hint, num_refs_pointing_to_obj,
+                                          orig_object_id, root_location,
+                                          origin_location, replica_locs)
 
         return response
 
@@ -307,7 +311,7 @@ class SerializationLibUtils(object):
         if return_none_if_no_ref_counting:
             if obj_data == None:
                 return None
-        return self.serialize_for_db(instance.get_object_id(), obj_data[2], obj_data[3], False)
+        return self.serialize_for_db(instance.get_object_id(), obj_data.metadata, obj_data.obj_bytes, False)
 
     def serialize_for_db_gc_not_dirty(self, instance, ignore_user_types, ifacebitmaps, return_none_if_no_ref_counting=True):
         """
@@ -329,7 +333,7 @@ class SerializationLibUtils(object):
         if return_none_if_no_ref_counting:
             if obj_data == None:
                 return None
-        return obj_data[3]
+        return obj_data.obj_bytes
 
 
 SerializationLibUtilsSingleton = SerializationLibUtils()

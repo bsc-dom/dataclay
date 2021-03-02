@@ -122,4 +122,14 @@ def track_local_available_classes():
 def clean_babel_data():
     """Remove current babel data loaded"""
     global _babel_data
+    import sys
+    for class_data in _babel_data:
+        namespace = class_data.namespace
+        full_name = "%s.%s" % (namespace, class_data.className.split('.')[0])
+        if namespace in sys.modules.keys():
+            logger.debug(f"Unloading module {namespace}")
+            sys.modules.pop(f"{namespace}")
+        if full_name in sys.modules.keys():
+            logger.debug(f"Unloading module {full_name}")
+            sys.modules.pop(f"{full_name}")
     _babel_data = None

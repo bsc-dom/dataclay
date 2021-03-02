@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='dataclay.communication.grpc.logicmodule',
   syntax='proto3',
   serialized_options=_b('\n7es.bsc.dataclay.communication.grpc.messages.logicmoduleP\000'),
-  serialized_pb=_b('\nKdataclay/communication/grpc/messages/logicmodule/logicmodule_messages.proto\x12\'dataclay.communication.grpc.logicmodule\x1a\x41\x64\x61taclay/communication/grpc/messages/common/common_messages.proto\"2\n\x18NewAccountNoAdminRequest\x12\x16\n\x0eyamlNewAccount\x18\x01 \x01(\t\"\xb4\x01\n\x11NewAccountRequest\x12>\n\x07\x61\x64minID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12G\n\x0f\x61\x64mincredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x16\n\x0eyamlNewAccount\x18\x03 \x01(\t\"\x9d\x01\n\x12NewAccountResponse\x12\x43\n\x0cnewAccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"7\n\x15PublishAddressRequest\x12\x10\n\x08hostname\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"*\n\x13GetAccountIDRequest\x12\x13\n\x0b\x61\x63\x63ountName\x18\x01 \x01(\t\"\x9f\x01\n\x14GetAccountIDResponse\x12\x43\n\x0cnewAccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x9d\x01\n\x15\x41utoRegisterSLRequest\x12P\n\x11storageLocationID\x18\x01 \x01(\x0b\x32\x35.dataclay.communication.grpc.common.StorageLocationID\x12\x0e\n\x06\x64sName\x18\x02 \x01(\t\x12\x12\n\ndsHostname\x18\x03 \x01(\t\x12\x0e\n\x06\x64sPort\x18\x04 \x01(\x05\"\xe0\x01\n\x15\x41utoRegisterEERequest\x12Z\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\x12\x0e\n\x06\x65\x65Name\x18\x02 \x01(\t\x12\x12\n\neeHostname\x18\x03 \x01(\t\x12\x0e\n\x06\x65\x65Port\x18\x04 \x01(\x05\x12\x37\n\x04lang\x18\x05 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"\xae\x01\n\x16\x41utoRegisterEEResponse\x12P\n\x11storageLocationID\x18\x01 \x01(\x0b\x32\x35.dataclay.communication.grpc.common.StorageLocationID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"t\n UnregisterStorageLocationRequest\x12P\n\x11storageLocationID\x18\x01 \x01(\x0b\x32\x35.dataclay.communication.grpc.common.StorageLocationID\"\x83\x01\n%UnregisterExecutionEnvironmentRequest\x12Z\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\"\xaf\x01\n\x19PerformSetAccountsRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x0c\n\x04yaml\x18\x03 \x01(\t\"t\n\x1aPerformSetAccountsResponse\x12\x12\n\nresultYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xb1\x01\n\x1bPerformSetOperationsRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x0c\n\x04yaml\x18\x03 \x01(\t\"v\n\x1cPerformSetOperationsResponse\x12\x12\n\nresultYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xa0\x01\n\x15GetAccountListRequest\x12>\n\x07\x61\x64minID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12G\n\x0f\x61\x64mincredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"p\n\x16GetAccountListResponse\x12\x12\n\naccountIDs\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xa6\x03\n\x11NewSessionRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x43\n\x0b\x63ontractIDs\x18\x03 \x03(\x0b\x32..dataclay.communication.grpc.common.ContractID\x12\x41\n\ndataSetIDs\x18\x04 \x03(\x0b\x32-.dataclay.communication.grpc.common.DataSetID\x12\x43\n\x0cstoreDataSet\x18\x05 \x01(\x0b\x32-.dataclay.communication.grpc.common.DataSetID\x12>\n\x0bsessionLang\x18\x06 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"m\n\x12NewSessionResponse\x12\x13\n\x0bsessionInfo\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"`\n\x1cGetInfoOfSessionForDSRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\"\xf6\x01\n\x1dGetInfoOfSessionForDSResponse\x12@\n\tdataSetID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.DataSetID\x12\x0c\n\x04\x64\x61te\x18\x02 \x01(\x03\x12\x41\n\ndataSetIDs\x18\x03 \x03(\x0b\x32-.dataclay.communication.grpc.common.DataSetID\x12\x42\n\x07\x65xcInfo\x18\x04 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xb5\x01\n\x13NewNamespaceRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x18\n\x10newNamespaceYaml\x18\x03 \x01(\t\"\xa0\x01\n\x14NewNamespaceResponse\x12\x44\n\x0bnamespaceID\x18\x01 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x9c\x01\n\x14GetNamespacesRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"o\n\x15GetNamespacesResponse\x12\x12\n\nnamespaces\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xb5\x01\n\x16RemoveNamespaceRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rnamespaceName\x18\x03 \x01(\t\"\xb4\x01\n\x15GetNamespaceIDRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rnamespaceName\x18\x03 \x01(\t\"\xa2\x01\n\x16GetNamespaceIDResponse\x12\x44\n\x0bnamespaceID\x18\x01 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xb6\x01\n\x17GetNamespaceLangRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rnamespaceName\x18\x03 \x01(\t\"\x9b\x01\n\x18GetNamespaceLangResponse\x12;\n\x08language\x18\x01 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x9d\x01\n\x19GetObjectDataSetIDRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\"\xa2\x01\n\x1aGetObjectDataSetIDResponse\x12@\n\tdataSetID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.DataSetID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xee\x02\n\x16ImportInterfaceRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x42\n\ncontractID\x18\x04 \x01(\x0b\x32..dataclay.communication.grpc.common.ContractID\x12\x44\n\x0binterfaceID\x18\x05 \x01(\x0b\x32/.dataclay.communication.grpc.common.InterfaceID\"\xa7\x02\n\x15ImportContractRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x42\n\ncontractID\x18\x04 \x01(\x0b\x32..dataclay.communication.grpc.common.ContractID\"\xae\x01\n\x11NewDataSetRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x64\x61taSetYaml\x18\x03 \x01(\t\"\x9a\x01\n\x12NewDataSetResponse\x12@\n\tdataSetID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.DataSetID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xb1\x01\n\x14RemoveDataSetRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x64\x61taSetName\x18\x03 \x01(\t\"\xb0\x01\n\x13GetDataSetIDRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x64\x61taSetName\x18\x03 \x01(\t\"\x9c\x01\n\x14GetDataSetIDResponse\x12@\n\tdataSetID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.DataSetID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xa0\x01\n\x18GetPublicDataSetsRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"q\n\x19GetPublicDataSetsResponse\x12\x10\n\x08\x64\x61taSets\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xa1\x01\n\x19GetAccountDataSetsRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"r\n\x1aGetAccountDataSetsResponse\x12\x10\n\x08\x64\x61taSets\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"_\n\x1b\x43heckDataSetIsPublicRequest\x12@\n\tdataSetID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.DataSetID\"t\n\x1c\x43heckDataSetIsPublicResponse\x12\x10\n\x08isPublic\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xe5\x02\n\x0fNewClassRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12;\n\x08language\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\\\n\nnewClasses\x18\x04 \x03(\x0b\x32H.dataclay.communication.grpc.logicmodule.NewClassRequest.NewClassesEntry\x1a\x31\n\x0fNewClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xe8\x01\n\x10NewClassResponse\x12]\n\nnewClasses\x18\x01 \x03(\x0b\x32I.dataclay.communication.grpc.logicmodule.NewClassResponse.NewClassesEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x31\n\x0fNewClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xfc\x02\n\x11NewClassIDRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12;\n\x08language\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x11\n\tclassName\x18\x04 \x01(\t\x12^\n\nnewClasses\x18\x05 \x03(\x0b\x32J.dataclay.communication.grpc.logicmodule.NewClassIDRequest.NewClassesEntry\x1a\x31\n\x0fNewClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x9a\x01\n\x12NewClassIDResponse\x12@\n\x07\x63lassID\x18\x01 \x01(\x0b\x32/.dataclay.communication.grpc.common.MetaClassID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xf3\x01\n\x12RemoveClassRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x11\n\tclassName\x18\x04 \x01(\t\"\x9a\x02\n\x16RemoveOperationRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x11\n\tclassName\x18\x04 \x01(\t\x12!\n\x19operationNameAndSignature\x18\x05 \x01(\t\"\xcc\x02\n\x1bRemoveImplementationRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x11\n\tclassName\x18\x04 \x01(\t\x12N\n\x10implementationID\x18\x05 \x01(\x0b\x32\x34.dataclay.communication.grpc.common.ImplementationID\"\x99\x02\n\x15GetOperationIDRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x11\n\tclassName\x18\x04 \x01(\t\x12!\n\x19operationNameAndSignature\x18\x05 \x01(\t\"\xa2\x01\n\x16GetOperationIDResponse\x12\x44\n\x0boperationID\x18\x01 \x01(\x0b\x32/.dataclay.communication.grpc.common.OperationID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x8b\x02\n\x14GetPropertyIDRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x11\n\tclassName\x18\x04 \x01(\t\x12\x14\n\x0cpropertyName\x18\x05 \x01(\t\"\x9f\x01\n\x15GetPropertyIDResponse\x12\x42\n\npropertyID\x18\x01 \x01(\x0b\x32..dataclay.communication.grpc.common.PropertyID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xf2\x01\n\x11GetClassIDRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x11\n\tclassName\x18\x04 \x01(\t\"\x9a\x01\n\x12GetClassIDResponse\x12@\n\x07\x63lassID\x18\x01 \x01(\x0b\x32/.dataclay.communication.grpc.common.MetaClassID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xf4\x01\n\x13GetClassInfoRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x11\n\tclassName\x18\x04 \x01(\t\"q\n\x14GetClassInfoResponse\x12\x15\n\rmetaClassYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xf0\x01\n\"GetInfoOfClassesInNamespaceRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\"\x91\x02\n#GetInfoOfClassesInNamespaceResponse\x12r\n\x0b\x63lassesInfo\x18\x01 \x03(\x0b\x32].dataclay.communication.grpc.logicmodule.GetInfoOfClassesInNamespaceResponse.ClassesInfoEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x32\n\x10\x43lassesInfoEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xf6\x01\n(GetImportedClassesInfoInNamespaceRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\"\xaa\x02\n)GetImportedClassesInfoInNamespaceResponse\x12\x80\x01\n\x0fimportedClasses\x18\x01 \x03(\x0b\x32g.dataclay.communication.grpc.logicmodule.GetImportedClassesInfoInNamespaceResponse.ImportedClassesEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x36\n\x14ImportedClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xfc\x01\n\x1bGetClassIDFromImportRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x11\n\tclassName\x18\x04 \x01(\t\"\xa4\x01\n\x1cGetClassIDFromImportResponse\x12@\n\x07\x63lassID\x18\x01 \x01(\x0b\x32/.dataclay.communication.grpc.common.MetaClassID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xb3\x01\n\x12NewContractRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x17\n\x0fnewContractYaml\x18\x03 \x01(\t\"\x9d\x01\n\x13NewContractResponse\x12\x42\n\ncontractID\x18\x01 \x01(\x0b\x32..dataclay.communication.grpc.common.ContractID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xeb\x01\n\x1fRegisterToPublicContractRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x42\n\ncontractID\x18\x03 \x01(\x0b\x32..dataclay.communication.grpc.common.ContractID\"\xf8\x01\n*RegisterToPublicContractOfNamespaceRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\"\xb5\x01\n+RegisterToPublicContractOfNamespaceResponse\x12\x42\n\ncontractID\x18\x01 \x01(\x0b\x32..dataclay.communication.grpc.common.ContractID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xaa\x01\n GetContractIDsOfApplicantRequest\x12\x42\n\x0b\x61pplicantID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"\x87\x02\n!GetContractIDsOfApplicantResponse\x12l\n\tcontracts\x18\x01 \x03(\x0b\x32Y.dataclay.communication.grpc.logicmodule.GetContractIDsOfApplicantResponse.ContractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0e\x43ontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xf8\x01\n\x1fGetContractIDsOfProviderRequest\x12\x41\n\nproviderID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12N\n\x15namespaceIDOfProvider\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\"\x85\x02\n GetContractIDsOfProviderResponse\x12k\n\tcontracts\x18\x01 \x03(\x0b\x32X.dataclay.communication.grpc.logicmodule.GetContractIDsOfProviderResponse.ContractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0e\x43ontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x80\x02\n&GetContractsOfApplicantWithProvRequest\x12\x42\n\x0b\x61pplicantID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12N\n\x15namespaceIDOfProvider\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\"\x93\x02\n\'GetContractsOfApplicantWithProvResponse\x12r\n\tcontracts\x18\x01 \x03(\x0b\x32_.dataclay.communication.grpc.logicmodule.GetContractsOfApplicantWithProvResponse.ContractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0e\x43ontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xb8\x01\n\x16NewDataContractRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x18\n\x10\x64\x61taContractYaml\x18\x03 \x01(\t\"\xa9\x01\n\x17NewDataContractResponse\x12J\n\x0e\x64\x61taContractID\x18\x01 \x01(\x0b\x32\x32.dataclay.communication.grpc.common.DataContractID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xf7\x01\n#RegisterToPublicDataContractRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12J\n\x0e\x64\x61taContractID\x18\x03 \x01(\x0b\x32\x32.dataclay.communication.grpc.common.DataContractID\"\xae\x01\n$GetDataContractIDsOfApplicantRequest\x12\x42\n\x0b\x61pplicantID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"\x9b\x02\n%GetDataContractIDsOfApplicantResponse\x12x\n\rdatacontracts\x18\x01 \x03(\x0b\x32\x61.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfApplicantResponse.DatacontractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x34\n\x12\x44\x61tacontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xf8\x01\n#GetDataContractIDsOfProviderRequest\x12\x41\n\nproviderID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12J\n\x13\x64\x61taSetIDOfProvider\x18\x03 \x01(\x0b\x32-.dataclay.communication.grpc.common.DataSetID\"\x99\x02\n$GetDataContractIDsOfProviderResponse\x12w\n\rdatacontracts\x18\x01 \x03(\x0b\x32`.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfProviderResponse.DatacontractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x34\n\x12\x44\x61tacontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x83\x02\n-GetDataContractInfoOfApplicantWithProvRequest\x12\x42\n\x0b\x61pplicantID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12J\n\x13\x64\x61taSetIDOfProvider\x18\x03 \x01(\x0b\x32-.dataclay.communication.grpc.common.DataSetID\"\x8e\x01\n.GetDataContractInfoOfApplicantWithProvResponse\x12\x18\n\x10\x64\x61taContractInfo\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xb4\x01\n\x13NewInterfaceRequest\x12\x42\n\x0b\x61pplicantID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rinterfaceYaml\x18\x03 \x01(\t\"\xa0\x01\n\x14NewInterfaceResponse\x12\x44\n\x0binterfaceID\x18\x01 \x01(\x0b\x32/.dataclay.communication.grpc.common.InterfaceID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xe7\x01\n\x17GetInterfaceInfoRequest\x12\x42\n\x0b\x61pplicantID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0binterfaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.InterfaceID\"u\n\x18GetInterfaceInfoResponse\x12\x15\n\rinterfaceYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xac\x02\n\x16RemoveInterfaceRequest\x12\x42\n\x0b\x61pplicantID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x44\n\x0bnamespaceID\x18\x03 \x01(\x0b\x32/.dataclay.communication.grpc.common.NamespaceID\x12\x44\n\x0binterfaceID\x18\x04 \x01(\x0b\x32/.dataclay.communication.grpc.common.InterfaceID\"r\n\x1eGetStorageLocationForDSRequest\x12P\n\x11storageLocationID\x18\x01 \x01(\x0b\x32\x35.dataclay.communication.grpc.common.StorageLocationID\"\x82\x01\n\x1fGetStorageLocationForDSResponse\x12\x1b\n\x13storageLocationYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"t\n#GetExecutionEnvironmentForDSRequest\x12M\n\texecEnvID\x18\x01 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\"\x7f\n$GetExecutionEnvironmentForDSResponse\x12\x13\n\x0b\x65xecEnvYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xa7\x01\n\x15GetDataClayIDResponse\x12J\n\ndataClayID\x18\x01 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"A\n\x1fRegisterExternalDataClayRequest\x12\x10\n\x08hostname\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\xf5\x01\n0RegisterExternalDataClayOverrideAuthorityRequest\x12\x45\n\x0e\x61\x64minAccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12G\n\x0f\x61\x64minCredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x10\n\x08hostname\x18\x03 \x01(\t\x12\x0c\n\x04port\x18\x04 \x01(\x05\x12\x11\n\tauthority\x18\x05 \x01(\t\"\xb5\x01\n RegisterExternalDataClayResponse\x12M\n\rextDataClayID\x18\x01 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x9c\x01\n+NotifyRegistrationOfExternalDataClayRequest\x12M\n\rextDataClayID\x18\x01 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12\x10\n\x08hostname\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\x05\"\xc1\x01\n,NotifyRegistrationOfExternalDataClayResponse\x12M\n\rextDataClayID\x18\x01 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\":\n\x1cGetExternalDataclayIDRequest\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\xb2\x01\n\x1dGetExternalDataclayIDResponse\x12M\n\rextDataClayID\x18\x01 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"j\n\x19GetExtDataClayInfoRequest\x12M\n\rextDataClayID\x18\x01 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\"y\n\x1aGetExtDataClayInfoResponse\x12\x17\n\x0f\x65xtDataClayYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xfb\x01\n\x15\x46\x65\x64\x65rateObjectRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12M\n\rextDataClayID\x18\x03 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12\x11\n\trecursive\x18\x04 \x01(\x08\"\xfd\x01\n\x17UnfederateObjectRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12M\n\rextDataClayID\x18\x03 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12\x11\n\trecursive\x18\x04 \x01(\x08\"\xb8\x01\n!UnfederateObjectWithAllDCsRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12\x11\n\trecursive\x18\x03 \x01(\x08\"\x9b\x02\n\x1eMigrateFederatedObjectsRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12X\n\x18\x65xternalOriginDataClayID\x18\x02 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12]\n\x1d\x65xternalDestinationDataClayID\x18\x03 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\"\xbc\x01\n\x19\x46\x65\x64\x65rateAllObjectsRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12]\n\x1d\x65xternalDestinationDataClayID\x18\x03 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\"\xae\x01\n\x1bUnfederateAllObjectsRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12M\n\rextDataClayID\x18\x02 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\"i\n%UnfederateAllObjectsWithAllDCsRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\"\xa3\x04\n\x1dNotifyFederatedObjectsRequest\x12G\n\x07srcDcID\x18\x01 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12\x11\n\tsrcDcHost\x18\x02 \x01(\t\x12\x11\n\tsrcDcPort\x18\x03 \x01(\x05\x12l\n\x0bobjectsInfo\x18\x04 \x03(\x0b\x32W.dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.ObjectsInfoEntry\x12v\n\x10\x66\x65\x64\x65ratedObjects\x18\x05 \x03(\x0b\x32\\.dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.FederatedObjectsEntry\x1a\x32\n\x10ObjectsInfoEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1ay\n\x15\x46\x65\x64\x65ratedObjectsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12O\n\x05value\x18\x02 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn:\x02\x38\x01\"\xac\x01\n\x1fNotifyUnfederatedObjectsRequest\x12G\n\x07srcDcID\x18\x01 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12@\n\nobjectsIDs\x18\x02 \x03(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\"\xc0\x01\n/CheckObjectFederatedWithDataClayInstanceRequest\x12>\n\x08objectID\x18\x01 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12M\n\rextDataClayID\x18\x02 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\"\x8b\x01\n0CheckObjectFederatedWithDataClayInstanceResponse\x12\x13\n\x0bisFederated\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"]\n\x1b\x43heckObjectFederatedRequest\x12>\n\x08objectID\x18\x01 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\"w\n\x1c\x43heckObjectFederatedResponse\x12\x13\n\x0bisFederated\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"j\n(GetDataClaysObjectIsFederatedWithRequest\x12>\n\x08objectID\x18\x01 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\"\xbf\x01\n)GetDataClaysObjectIsFederatedWithResponse\x12N\n\x0e\x65xtDataClayIDs\x18\x01 \x03(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"j\n(GetExternalSourceDataClayOfObjectRequest\x12>\n\x08objectID\x18\x01 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\"\xbe\x01\n)GetExternalSourceDataClayOfObjectResponse\x12M\n\rextDataClayID\x18\x01 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xb2\x01\n\x1aRegisterObjectForGCRequest\x12\x45\n\x07regInfo\x18\x01 \x01(\x0b\x32\x34.dataclay.communication.grpc.common.RegistrationInfo\x12M\n\tbackendID\x18\x02 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\"\xf5\x01\n\x15RegisterObjectRequest\x12\x45\n\x07regInfo\x18\x01 \x01(\x0b\x32\x34.dataclay.communication.grpc.common.RegistrationInfo\x12M\n\tbackendID\x18\x02 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\x12\r\n\x05\x61lias\x18\x03 \x01(\t\x12\x37\n\x04lang\x18\x04 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"\xbb\x01\n#GetExecutionEnvironmentsInfoRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x0b\x65xecEnvLang\x18\x02 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x12\n\nfromClient\x18\x03 \x01(\x08\"\x8a\x02\n$GetExecutionEnvironmentsInfoResponse\x12m\n\x08\x65xecEnvs\x18\x01 \x03(\x0b\x32[.dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoResponse.ExecEnvsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a/\n\rExecEnvsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xec\x01\n$GetExecutionEnvironmentsNamesRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12>\n\x0b\x65xecEnvLang\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"}\n%GetExecutionEnvironmentsNamesResponse\x12\x10\n\x08\x65xecEnvs\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x98\x01\n\x14GetObjectInfoRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\"\x81\x01\n\x15GetObjectInfoResponse\x12\x11\n\tclassname\x18\x01 \x01(\t\x12\x11\n\tnamespace\x18\x02 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"l\n\x19GetObjectFromAliasRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12\r\n\x05\x61lias\x18\x02 \x01(\t\"\xac\x02\n\x1aGetObjectFromAliasResponse\x12>\n\x08objectID\x18\x01 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12@\n\x07\x63lassID\x18\x02 \x01(\x0b\x32/.dataclay.communication.grpc.common.MetaClassID\x12H\n\x04hint\x18\x03 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\x12\x42\n\x07\x65xcInfo\x18\x04 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x9c\x01\n\x16RegisterObjectResponse\x12>\n\x08objectID\x18\x01 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"k\n\x0f\x41\x64\x64\x41liasRequest\x12I\n\x13objectIDToHaveAlias\x18\x01 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12\r\n\x05\x61lias\x18\x02 \x01(\t\"e\n\x12\x44\x65leteAliasRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12\r\n\x05\x61lias\x18\x02 \x01(\t\"m\n)GetObjectsMetaDataInfoOfClassForNMRequest\x12@\n\x07\x63lassID\x18\x01 \x01(\x0b\x32/.dataclay.communication.grpc.common.MetaClassID\"\x99\x02\n*GetObjectsMetaDataInfoOfClassForNMResponse\x12u\n\tmdataInfo\x18\x01 \x03(\x0b\x32\x62.dataclay.communication.grpc.logicmodule.GetObjectsMetaDataInfoOfClassForNMResponse.MdataInfoEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0eMdataInfoEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xd9\x01\n\x13SetDataSetIDRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12@\n\tdatasetID\x18\x03 \x01(\x0b\x32-.dataclay.communication.grpc.common.DataSetID\"\xab\x01\n\'SetDataSetIDFromGarbageCollectorRequest\x12>\n\x08objectID\x18\x01 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12@\n\tdatasetID\x18\x02 \x01(\x0b\x32-.dataclay.communication.grpc.common.DataSetID\"\xeb\x01\n\x11NewVersionRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12T\n\x10optDestBackendID\x18\x03 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\"q\n\x12NewVersionResponse\x12\x17\n\x0fversionInfoYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"v\n\x19\x43onsolidateVersionRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12\x17\n\x0fversionInfoYaml\x18\x02 \x01(\t\"\xfb\x01\n\x11NewReplicaRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12Q\n\rdestBackendID\x18\x03 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\x12\x11\n\trecursive\x18\x04 \x01(\x08\"\xab\x01\n\x12NewReplicaResponse\x12Q\n\rdestBackendID\x18\x01 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xcd\x02\n\x11MoveObjectRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12P\n\x0csrcBackendID\x18\x03 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\x12Q\n\rdestBackendID\x18\x04 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\x12\x11\n\trecursive\x18\x05 \x01(\x08\"\x99\x01\n\x12MoveObjectResponse\x12?\n\tobjectIDs\x18\x01 \x03(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x9c\x01\n\x18SetObjectReadOnlyRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\"\x9d\x01\n\x19SetObjectReadWriteRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\"\x9b\x01\n\x17GetMetadataByOIDRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\"t\n\x18GetMetadataByOIDResponse\x12\x14\n\x0cobjMdataYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"^\n\x1cGetMetadataByOIDForDSRequest\x12>\n\x08objectID\x18\x01 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\"y\n\x1dGetMetadataByOIDForDSResponse\x12\x14\n\x0cobjMdataYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x92\x04\n\x1c\x45xecuteImplementationRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12\x44\n\x0boperationID\x18\x02 \x01(\x0b\x32/.dataclay.communication.grpc.common.OperationID\x12N\n\x10implementationID\x18\x03 \x01(\x0b\x32\x34.dataclay.communication.grpc.common.ImplementationID\x12\x42\n\ncontractID\x18\x04 \x01(\x0b\x32..dataclay.communication.grpc.common.ContractID\x12\x44\n\x0binterfaceID\x18\x05 \x01(\x0b\x32/.dataclay.communication.grpc.common.InterfaceID\x12>\n\x08objectID\x18\x06 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12P\n\x06params\x18\x07 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\"\xb2\x01\n\x1d\x45xecuteImplementationResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xea\x02\n\x1c\x45xecuteMethodOnTargetRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12!\n\x19operationNameAndSignature\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12S\n\x0ftargetBackendID\x18\x05 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\"\xb2\x01\n\x1d\x45xecuteMethodOnTargetResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xe9\x02\n!SynchronizeFederatedObjectRequest\x12M\n\rextDataClayID\x18\x01 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\x12>\n\x08objectID\x18\x02 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\x12N\n\x10implementationID\x18\x03 \x01(\x0b\x32\x34.dataclay.communication.grpc.common.ImplementationID\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x13\n\x0b\x61llBackends\x18\x05 \x01(\x08\"\xa3\x02\n\x0fGetStubsRequest\x12I\n\x12\x61pplicantAccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12;\n\x08language\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x43\n\x0b\x63ontractIDs\x18\x04 \x03(\x0b\x32..dataclay.communication.grpc.common.ContractID\"\xd9\x01\n\x10GetStubsResponse\x12S\n\x05stubs\x18\x01 \x03(\x0b\x32\x44.dataclay.communication.grpc.logicmodule.GetStubsResponse.StubsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a,\n\nStubsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"\xe2\x01\n\x14GetBabelStubsRequest\x12@\n\taccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x43\n\x0b\x63ontractIDs\x18\x04 \x03(\x0b\x32..dataclay.communication.grpc.common.ContractID\"m\n\x15GetBabelStubsResponse\x12\x10\n\x08yamlStub\x18\x01 \x01(\x0c\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\\\n\x18GetClassNameForDSRequest\x12@\n\x07\x63lassID\x18\x01 \x01(\x0b\x32/.dataclay.communication.grpc.common.MetaClassID\"r\n\x19GetClassNameForDSResponse\x12\x11\n\tclassName\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"h\n$GetClassNameAndNamespaceForDSRequest\x12@\n\x07\x63lassID\x18\x01 \x01(\x0b\x32/.dataclay.communication.grpc.common.MetaClassID\"\x91\x01\n%GetClassNameAndNamespaceForDSResponse\x12\x11\n\tclassName\x18\x01 \x01(\t\x12\x11\n\tnamespace\x18\x02 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xb1\x01\n\x12RegisterECARequest\x12I\n\x12\x61pplicantAccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x0b\n\x03\x65\x63\x61\x18\x03 \x01(\t\"\'\n\x12\x41\x64viseEventRequest\x12\x11\n\teventYaml\x18\x01 \x01(\t\"\xb8\x01\n&GetContractIDOfDataClayProviderRequest\x12I\n\x12\x61pplicantAccountID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.AccountID\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"\xb1\x01\n\'GetContractIDOfDataClayProviderResponse\x12\x42\n\ncontractID\x18\x01 \x01(\x0b\x32..dataclay.communication.grpc.common.ContractID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"(\n\x16\x41\x63tivateTracingRequest\x12\x0e\n\x06taskid\x18\x01 \x01(\x05\"W\n\x13\x43loseSessionRequest\x12@\n\tsessionID\x18\x01 \x01(\x0b\x32-.dataclay.communication.grpc.common.SessionID\"e\n\x18UnregisterObjectsRequest\x12I\n\x13objectsToUnregister\x18\x01 \x03(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\"s\n\x1cIsPrefetchingEnabledResponse\x12\x0f\n\x07\x65nabled\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"_\n\x1dObjectExistsInDataClayRequest\x12>\n\x08objectID\x18\x01 \x01(\x0b\x32,.dataclay.communication.grpc.common.ObjectID\"t\n\x1eObjectExistsInDataClayResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"5\n\x1cGetClassesInNamespaceRequest\x12\x15\n\rnamespaceName\x18\x01 \x01(\t\"\x91\x01\n\x1dGetClassesInNamespaceResponse\x12\x15\n\rnamespaceYaml\x18\x01 \x01(\t\x12\x15\n\rmetaClassYaml\x18\x02 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x8c\x01\n\'ImportModelsFromExternalDataClayRequest\x12\x15\n\rnamespaceName\x18\x01 \x01(\t\x12J\n\ndataClayID\x18\x02 \x01(\x0b\x32\x36.dataclay.communication.grpc.common.DataClayInstanceID\"-\n\x1bGetStorageLocationIDRequest\x12\x0e\n\x06slName\x18\x01 \x01(\t\"\xb4\x01\n\x1cGetStorageLocationIDResponse\x12P\n\x11storageLocationID\x18\x01 \x01(\x0b\x32\x35.dataclay.communication.grpc.common.StorageLocationID\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x87\x01\n)NotifyExecutionEnvironmentShutdownRequest\x12Z\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\x0b\x32:.dataclay.communication.grpc.common.ExecutionEnvironmentID\"x\n$NotifyStorageLocationShutdownRequest\x12P\n\x11storageLocationID\x18\x01 \x01(\x0b\x32\x35.dataclay.communication.grpc.common.StorageLocationID\"x\n$ExistsActiveEnvironmentsForSLRequest\x12P\n\x11storageLocationID\x18\x01 \x01(\x0b\x32\x35.dataclay.communication.grpc.common.StorageLocationID\"{\n%ExistsActiveEnvironmentsForSLResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfoB;\n7es.bsc.dataclay.communication.grpc.messages.logicmoduleP\x00\x62\x06proto3')
+  serialized_pb=_b('\nKdataclay/communication/grpc/messages/logicmodule/logicmodule_messages.proto\x12\'dataclay.communication.grpc.logicmodule\x1a\x41\x64\x61taclay/communication/grpc/messages/common/common_messages.proto\"2\n\x18NewAccountNoAdminRequest\x12\x16\n\x0eyamlNewAccount\x18\x01 \x01(\t\"\x85\x01\n\x11NewAccountRequest\x12\x0f\n\x07\x61\x64minID\x18\x01 \x01(\t\x12G\n\x0f\x61\x64mincredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x16\n\x0eyamlNewAccount\x18\x03 \x01(\t\"n\n\x12NewAccountResponse\x12\x14\n\x0cnewAccountID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"7\n\x15PublishAddressRequest\x12\x10\n\x08hostname\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"*\n\x13GetAccountIDRequest\x12\x13\n\x0b\x61\x63\x63ountName\x18\x01 \x01(\t\"p\n\x14GetAccountIDResponse\x12\x14\n\x0cnewAccountID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"f\n\x15\x41utoRegisterSLRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\x12\x0e\n\x06\x64sName\x18\x02 \x01(\t\x12\x12\n\ndsHostname\x18\x03 \x01(\t\x12\x0e\n\x06\x64sPort\x18\x04 \x01(\x05\"\xa4\x01\n\x15\x41utoRegisterEERequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x0e\n\x06\x65\x65Name\x18\x02 \x01(\t\x12\x12\n\neeHostname\x18\x03 \x01(\t\x12\x0e\n\x06\x65\x65Port\x18\x04 \x01(\x05\x12\x37\n\x04lang\x18\x05 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"w\n\x16\x41utoRegisterEEResponse\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"=\n UnregisterStorageLocationRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\"G\n%UnregisterExecutionEnvironmentRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\"\x80\x01\n\x19PerformSetAccountsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x0c\n\x04yaml\x18\x03 \x01(\t\"t\n\x1aPerformSetAccountsResponse\x12\x12\n\nresultYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x82\x01\n\x1bPerformSetOperationsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x0c\n\x04yaml\x18\x03 \x01(\t\"v\n\x1cPerformSetOperationsResponse\x12\x12\n\nresultYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"q\n\x15GetAccountListRequest\x12\x0f\n\x07\x61\x64minID\x18\x01 \x01(\t\x12G\n\x0f\x61\x64mincredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"p\n\x16GetAccountListResponse\x12\x12\n\naccountIDs\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xe9\x01\n\x11NewSessionRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x63ontractIDs\x18\x03 \x03(\t\x12\x12\n\ndataSetIDs\x18\x04 \x03(\t\x12\x14\n\x0cstoreDataSet\x18\x05 \x01(\t\x12>\n\x0bsessionLang\x18\x06 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"m\n\x12NewSessionResponse\x12\x13\n\x0bsessionInfo\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"1\n\x1cGetInfoOfSessionForDSRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\"\x98\x01\n\x1dGetInfoOfSessionForDSResponse\x12\x11\n\tdataSetID\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61te\x18\x02 \x01(\x03\x12\x12\n\ndataSetIDs\x18\x03 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x04 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x86\x01\n\x13NewNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x18\n\x10newNamespaceYaml\x18\x03 \x01(\t\"o\n\x14NewNamespaceResponse\x12\x13\n\x0bnamespaceID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"m\n\x14GetNamespacesRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"o\n\x15GetNamespacesResponse\x12\x12\n\nnamespaces\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x86\x01\n\x16RemoveNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rnamespaceName\x18\x03 \x01(\t\"\x85\x01\n\x15GetNamespaceIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rnamespaceName\x18\x03 \x01(\t\"q\n\x16GetNamespaceIDResponse\x12\x13\n\x0bnamespaceID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x87\x01\n\x17GetNamespaceLangRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rnamespaceName\x18\x03 \x01(\t\"\x9b\x01\n\x18GetNamespaceLangResponse\x12;\n\x08language\x18\x01 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"@\n\x19GetObjectDataSetIDRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"s\n\x1aGetObjectDataSetIDResponse\x12\x11\n\tdataSetID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xad\x01\n\x16ImportInterfaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x12\n\ncontractID\x18\x04 \x01(\t\x12\x13\n\x0binterfaceID\x18\x05 \x01(\t\"\x97\x01\n\x15ImportContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x12\n\ncontractID\x18\x04 \x01(\t\"\x7f\n\x11NewDataSetRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x64\x61taSetYaml\x18\x03 \x01(\t\"k\n\x12NewDataSetResponse\x12\x11\n\tdataSetID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x82\x01\n\x14RemoveDataSetRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x64\x61taSetName\x18\x03 \x01(\t\"\x81\x01\n\x13GetDataSetIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x64\x61taSetName\x18\x03 \x01(\t\"m\n\x14GetDataSetIDResponse\x12\x11\n\tdataSetID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"q\n\x18GetPublicDataSetsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"q\n\x19GetPublicDataSetsResponse\x12\x10\n\x08\x64\x61taSets\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"r\n\x19GetAccountDataSetsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"r\n\x1aGetAccountDataSetsResponse\x12\x10\n\x08\x64\x61taSets\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"0\n\x1b\x43heckDataSetIsPublicRequest\x12\x11\n\tdataSetID\x18\x01 \x01(\t\"t\n\x1c\x43heckDataSetIsPublicResponse\x12\x10\n\x08isPublic\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xb6\x02\n\x0fNewClassRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12;\n\x08language\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\\\n\nnewClasses\x18\x04 \x03(\x0b\x32H.dataclay.communication.grpc.logicmodule.NewClassRequest.NewClassesEntry\x1a\x31\n\x0fNewClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xe8\x01\n\x10NewClassResponse\x12]\n\nnewClasses\x18\x01 \x03(\x0b\x32I.dataclay.communication.grpc.logicmodule.NewClassResponse.NewClassesEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x31\n\x0fNewClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x93\x01\n\x12RemoveClassRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\"\xba\x01\n\x16RemoveOperationRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\x12!\n\x19operationNameAndSignature\x18\x05 \x01(\t\"\xb6\x01\n\x1bRemoveImplementationRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\x12\x18\n\x10implementationID\x18\x05 \x01(\t\"\xb9\x01\n\x15GetOperationIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\x12!\n\x19operationNameAndSignature\x18\x05 \x01(\t\"q\n\x16GetOperationIDResponse\x12\x13\n\x0boperationID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xab\x01\n\x14GetPropertyIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\x12\x14\n\x0cpropertyName\x18\x05 \x01(\t\"o\n\x15GetPropertyIDResponse\x12\x12\n\npropertyID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x92\x01\n\x11GetClassIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\"i\n\x12GetClassIDResponse\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x94\x01\n\x13GetClassInfoRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\"q\n\x14GetClassInfoResponse\x12\x15\n\rmetaClassYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x90\x01\n\"GetInfoOfClassesInNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\"\x91\x02\n#GetInfoOfClassesInNamespaceResponse\x12r\n\x0b\x63lassesInfo\x18\x01 \x03(\x0b\x32].dataclay.communication.grpc.logicmodule.GetInfoOfClassesInNamespaceResponse.ClassesInfoEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x32\n\x10\x43lassesInfoEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x96\x01\n(GetImportedClassesInfoInNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\"\xaa\x02\n)GetImportedClassesInfoInNamespaceResponse\x12\x80\x01\n\x0fimportedClasses\x18\x01 \x03(\x0b\x32g.dataclay.communication.grpc.logicmodule.GetImportedClassesInfoInNamespaceResponse.ImportedClassesEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x36\n\x14ImportedClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x9c\x01\n\x1bGetClassIDFromImportRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\"s\n\x1cGetClassIDFromImportResponse\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x84\x01\n\x12NewContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x17\n\x0fnewContractYaml\x18\x03 \x01(\t\"m\n\x13NewContractResponse\x12\x12\n\ncontractID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x8c\x01\n\x1fRegisterToPublicContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x12\n\ncontractID\x18\x03 \x01(\t\"\x98\x01\n*RegisterToPublicContractOfNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\"\x85\x01\n+RegisterToPublicContractOfNamespaceResponse\x12\x12\n\ncontractID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"{\n GetContractIDsOfApplicantRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"\x87\x02\n!GetContractIDsOfApplicantResponse\x12l\n\tcontracts\x18\x01 \x03(\x0b\x32Y.dataclay.communication.grpc.logicmodule.GetContractIDsOfApplicantResponse.ContractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0e\x43ontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x98\x01\n\x1fGetContractIDsOfProviderRequest\x12\x12\n\nproviderID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x1d\n\x15namespaceIDOfProvider\x18\x03 \x01(\t\"\x85\x02\n GetContractIDsOfProviderResponse\x12k\n\tcontracts\x18\x01 \x03(\x0b\x32X.dataclay.communication.grpc.logicmodule.GetContractIDsOfProviderResponse.ContractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0e\x43ontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa0\x01\n&GetContractsOfApplicantWithProvRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x1d\n\x15namespaceIDOfProvider\x18\x03 \x01(\t\"\x93\x02\n\'GetContractsOfApplicantWithProvResponse\x12r\n\tcontracts\x18\x01 \x03(\x0b\x32_.dataclay.communication.grpc.logicmodule.GetContractsOfApplicantWithProvResponse.ContractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0e\x43ontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x89\x01\n\x16NewDataContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x18\n\x10\x64\x61taContractYaml\x18\x03 \x01(\t\"u\n\x17NewDataContractResponse\x12\x16\n\x0e\x64\x61taContractID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x94\x01\n#RegisterToPublicDataContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x16\n\x0e\x64\x61taContractID\x18\x03 \x01(\t\"\x7f\n$GetDataContractIDsOfApplicantRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"\x9b\x02\n%GetDataContractIDsOfApplicantResponse\x12x\n\rdatacontracts\x18\x01 \x03(\x0b\x32\x61.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfApplicantResponse.DatacontractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x34\n\x12\x44\x61tacontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x9a\x01\n#GetDataContractIDsOfProviderRequest\x12\x12\n\nproviderID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x1b\n\x13\x64\x61taSetIDOfProvider\x18\x03 \x01(\t\"\x99\x02\n$GetDataContractIDsOfProviderResponse\x12w\n\rdatacontracts\x18\x01 \x03(\x0b\x32`.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfProviderResponse.DatacontractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x34\n\x12\x44\x61tacontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa5\x01\n-GetDataContractInfoOfApplicantWithProvRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x1b\n\x13\x64\x61taSetIDOfProvider\x18\x03 \x01(\t\"\x8e\x01\n.GetDataContractInfoOfApplicantWithProvResponse\x12\x18\n\x10\x64\x61taContractInfo\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x85\x01\n\x13NewInterfaceRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rinterfaceYaml\x18\x03 \x01(\t\"o\n\x14NewInterfaceResponse\x12\x13\n\x0binterfaceID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x87\x01\n\x17GetInterfaceInfoRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0binterfaceID\x18\x03 \x01(\t\"u\n\x18GetInterfaceInfoResponse\x12\x15\n\rinterfaceYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x9b\x01\n\x16RemoveInterfaceRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x13\n\x0binterfaceID\x18\x04 \x01(\t\":\n\x1dGetStorageLocationInfoRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\"\xba\x01\n\x1eGetStorageLocationInfoResponse\x12T\n\x13storageLocationInfo\x18\x01 \x01(\x0b\x32\x37.dataclay.communication.grpc.common.StorageLocationInfo\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"7\n\"GetExecutionEnvironmentInfoRequest\x12\x11\n\texecEnvID\x18\x01 \x01(\t\"\xc9\x01\n#GetExecutionEnvironmentInfoResponse\x12^\n\x18\x65xecutionEnvironmentInfo\x18\x01 \x01(\x0b\x32<.dataclay.communication.grpc.common.ExecutionEnvironmentInfo\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"o\n\x15GetDataClayIDResponse\x12\x12\n\ndataClayID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"A\n\x1fRegisterExternalDataClayRequest\x12\x10\n\x08hostname\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\xc6\x01\n0RegisterExternalDataClayOverrideAuthorityRequest\x12\x16\n\x0e\x61\x64minAccountID\x18\x01 \x01(\t\x12G\n\x0f\x61\x64minCredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x10\n\x08hostname\x18\x03 \x01(\t\x12\x0c\n\x04port\x18\x04 \x01(\x05\x12\x11\n\tauthority\x18\x05 \x01(\t\"}\n RegisterExternalDataClayResponse\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"d\n+NotifyRegistrationOfExternalDataClayRequest\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x10\n\x08hostname\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\x05\"\x89\x01\n,NotifyRegistrationOfExternalDataClayResponse\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\":\n\x1cGetExternalDataclayIDRequest\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"z\n\x1dGetExternalDataclayIDResponse\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"2\n\x19GetExtDataClayInfoRequest\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\"\xaf\x01\n\x1aGetExtDataClayInfoResponse\x12M\n\x0f\x65xtDataClayInfo\x18\x01 \x01(\x0b\x32\x34.dataclay.communication.grpc.common.DataClayInstance\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"v\n\x1aRegisterObjectForGCRequest\x12\x45\n\x07regInfo\x18\x01 \x01(\x0b\x32\x34.dataclay.communication.grpc.common.RegistrationInfo\x12\x11\n\tbackendID\x18\x02 \x01(\t\"\xac\x01\n\x16RegisterObjectsRequest\x12\x46\n\x08regInfos\x18\x01 \x03(\x0b\x32\x34.dataclay.communication.grpc.common.RegistrationInfo\x12\x11\n\tbackendID\x18\x02 \x01(\t\x12\x37\n\x04lang\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"p\n\x17RegisterObjectsResponse\x12\x11\n\tobjectIDs\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"}\n&GetAllExecutionEnvironmentsInfoRequest\x12>\n\x0b\x65xecEnvLang\x18\x01 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x13\n\x0bgetExternal\x18\x02 \x01(\x08\"\xce\x02\n\'GetAllExecutionEnvironmentsInfoResponse\x12p\n\x08\x65xecEnvs\x18\x01 \x03(\x0b\x32^.dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse.ExecEnvsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1am\n\rExecEnvsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12K\n\x05value\x18\x02 \x01(\x0b\x32<.dataclay.communication.grpc.common.ExecutionEnvironmentInfo:\x02\x38\x01\";\n\x14GetObjectInfoRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"\x81\x01\n\x15GetObjectInfoResponse\x12\x11\n\tclassname\x18\x01 \x01(\t\x12\x11\n\tnamespace\x18\x02 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"=\n\x19GetObjectFromAliasRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\r\n\x05\x61lias\x18\x02 \x01(\t\"\x91\x01\n\x1aGetObjectFromAliasResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x0f\n\x07\x63lassID\x18\x02 \x01(\t\x12\x0c\n\x04hint\x18\x03 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x04 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"=\n\x0f\x41\x64\x64\x41liasRequest\x12\x1b\n\x13objectIDToHaveAlias\x18\x01 \x01(\t\x12\r\n\x05\x61lias\x18\x02 \x01(\t\"6\n\x12\x44\x65leteAliasRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\r\n\x05\x61lias\x18\x02 \x01(\t\"<\n)GetObjectsMetaDataInfoOfClassForNMRequest\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\"\xcb\x02\n*GetObjectsMetaDataInfoOfClassForNMResponse\x12u\n\tmdataInfo\x18\x01 \x03(\x0b\x32\x62.dataclay.communication.grpc.logicmodule.GetObjectsMetaDataInfoOfClassForNMResponse.MdataInfoEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x62\n\x0eMdataInfoEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12?\n\x05value\x18\x02 \x01(\x0b\x32\x30.dataclay.communication.grpc.common.MetaDataInfo:\x02\x38\x01\"M\n\x13SetDataSetIDRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x11\n\tdatasetID\x18\x03 \x01(\t\"N\n\'SetDataSetIDFromGarbageCollectorRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x11\n\tdatasetID\x18\x02 \x01(\t\"x\n\x11MoveObjectRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x14\n\x0csrcBackendID\x18\x03 \x01(\t\x12\x15\n\rdestBackendID\x18\x04 \x01(\t\x12\x11\n\trecursive\x18\x05 \x01(\x08\"k\n\x12MoveObjectResponse\x12\x11\n\tobjectIDs\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"?\n\x18SetObjectReadOnlyRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"@\n\x19SetObjectReadWriteRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\">\n\x17GetMetadataByOIDRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"\xa0\x01\n\x18GetMetadataByOIDResponse\x12@\n\x06mdInfo\x18\x01 \x01(\x0b\x32\x30.dataclay.communication.grpc.common.MetaDataInfo\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"0\n\x1cGetMetadataByOIDForDSRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"\xa5\x01\n\x1dGetMetadataByOIDForDSResponse\x12@\n\x06mdInfo\x18\x01 \x01(\x0b\x32\x30.dataclay.communication.grpc.common.MetaDataInfo\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xed\x01\n\x1c\x45xecuteImplementationRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x13\n\x0boperationID\x18\x02 \x01(\t\x12\x18\n\x10implementationID\x18\x03 \x01(\t\x12\x12\n\ncontractID\x18\x04 \x01(\t\x12\x13\n\x0binterfaceID\x18\x05 \x01(\t\x12\x10\n\x08objectID\x18\x06 \x01(\t\x12P\n\x06params\x18\x07 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\"\xb2\x01\n\x1d\x45xecuteImplementationResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xd1\x01\n\x1c\x45xecuteMethodOnTargetRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12!\n\x19operationNameAndSignature\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x17\n\x0ftargetBackendID\x18\x05 \x01(\t\"\xb2\x01\n\x1d\x45xecuteMethodOnTargetResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xcd\x01\n!SynchronizeFederatedObjectRequest\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x18\n\x10implementationID\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x13\n\x0b\x61llBackends\x18\x05 \x01(\x08\"\xc4\x01\n\x0fGetStubsRequest\x12\x1a\n\x12\x61pplicantAccountID\x18\x01 \x01(\t\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12;\n\x08language\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x13\n\x0b\x63ontractIDs\x18\x04 \x03(\t\"\xd9\x01\n\x10GetStubsResponse\x12S\n\x05stubs\x18\x01 \x03(\x0b\x32\x44.dataclay.communication.grpc.logicmodule.GetStubsResponse.StubsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a,\n\nStubsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"\x83\x01\n\x14GetBabelStubsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x63ontractIDs\x18\x04 \x03(\t\"m\n\x15GetBabelStubsResponse\x12\x10\n\x08yamlStub\x18\x01 \x01(\x0c\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"+\n\x18GetClassNameForDSRequest\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\"r\n\x19GetClassNameForDSResponse\x12\x11\n\tclassName\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"7\n$GetClassNameAndNamespaceForDSRequest\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\"\x91\x01\n%GetClassNameAndNamespaceForDSResponse\x12\x11\n\tclassName\x18\x01 \x01(\t\x12\x11\n\tnamespace\x18\x02 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x82\x01\n\x12RegisterECARequest\x12\x1a\n\x12\x61pplicantAccountID\x18\x01 \x01(\t\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x0b\n\x03\x65\x63\x61\x18\x03 \x01(\t\"\'\n\x12\x41\x64viseEventRequest\x12\x11\n\teventYaml\x18\x01 \x01(\t\"\x89\x01\n&GetContractIDOfDataClayProviderRequest\x12\x1a\n\x12\x61pplicantAccountID\x18\x01 \x01(\t\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"\x81\x01\n\'GetContractIDOfDataClayProviderResponse\x12\x12\n\ncontractID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"(\n\x16\x41\x63tivateTracingRequest\x12\x0e\n\x06taskid\x18\x01 \x01(\x05\"(\n\x13\x43loseSessionRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\"7\n\x18UnregisterObjectsRequest\x12\x1b\n\x13objectsToUnregister\x18\x01 \x03(\t\"s\n\x1cIsPrefetchingEnabledResponse\x12\x0f\n\x07\x65nabled\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"1\n\x1dObjectExistsInDataClayRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"t\n\x1eObjectExistsInDataClayResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"5\n\x1cGetClassesInNamespaceRequest\x12\x15\n\rnamespaceName\x18\x01 \x01(\t\"\x91\x01\n\x1dGetClassesInNamespaceResponse\x12\x15\n\rnamespaceYaml\x18\x01 \x01(\t\x12\x15\n\rmetaClassYaml\x18\x02 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"T\n\'ImportModelsFromExternalDataClayRequest\x12\x15\n\rnamespaceName\x18\x01 \x01(\t\x12\x12\n\ndataClayID\x18\x02 \x01(\t\"-\n\x1bGetStorageLocationIDRequest\x12\x0e\n\x06slName\x18\x01 \x01(\t\"}\n\x1cGetStorageLocationIDResponse\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"K\n)NotifyExecutionEnvironmentShutdownRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\"A\n$NotifyStorageLocationShutdownRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\"A\n$ExistsActiveEnvironmentsForSLRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\"{\n%ExistsActiveEnvironmentsForSLResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x91\x01\n\x0cMetadataInfo\x12\x12\n\ndataClayID\x18\x01 \x01(\t\x12\x12\n\nisReadOnly\x18\x02 \x01(\x08\x12\x11\n\tdatasetID\x18\x03 \x01(\t\x12\x13\n\x0bmetaclassID\x18\x04 \x01(\t\x12\x11\n\tlocations\x18\x05 \x03(\t\x12\r\n\x05\x61lias\x18\x06 \x01(\t\x12\x0f\n\x07ownerID\x18\x07 \x01(\tB;\n7es.bsc.dataclay.communication.grpc.messages.logicmoduleP\x00\x62\x06proto3')
   ,
   dependencies=[dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.DESCRIPTOR,])
 
@@ -68,8 +68,8 @@ _NEWACCOUNTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='adminID', full_name='dataclay.communication.grpc.logicmodule.NewAccountRequest.adminID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -100,7 +100,7 @@ _NEWACCOUNTREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=240,
-  serialized_end=420,
+  serialized_end=373,
 )
 
 
@@ -113,8 +113,8 @@ _NEWACCOUNTRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='newAccountID', full_name='dataclay.communication.grpc.logicmodule.NewAccountResponse.newAccountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -137,8 +137,8 @@ _NEWACCOUNTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=423,
-  serialized_end=580,
+  serialized_start=375,
+  serialized_end=485,
 )
 
 
@@ -175,8 +175,8 @@ _PUBLISHADDRESSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=582,
-  serialized_end=637,
+  serialized_start=487,
+  serialized_end=542,
 )
 
 
@@ -206,8 +206,8 @@ _GETACCOUNTIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=639,
-  serialized_end=681,
+  serialized_start=544,
+  serialized_end=586,
 )
 
 
@@ -220,8 +220,8 @@ _GETACCOUNTIDRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='newAccountID', full_name='dataclay.communication.grpc.logicmodule.GetAccountIDResponse.newAccountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -244,8 +244,8 @@ _GETACCOUNTIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=684,
-  serialized_end=843,
+  serialized_start=588,
+  serialized_end=700,
 )
 
 
@@ -258,8 +258,8 @@ _AUTOREGISTERSLREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='storageLocationID', full_name='dataclay.communication.grpc.logicmodule.AutoRegisterSLRequest.storageLocationID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -296,8 +296,8 @@ _AUTOREGISTERSLREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=846,
-  serialized_end=1003,
+  serialized_start=702,
+  serialized_end=804,
 )
 
 
@@ -310,8 +310,8 @@ _AUTOREGISTEREEREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='executionEnvironmentID', full_name='dataclay.communication.grpc.logicmodule.AutoRegisterEERequest.executionEnvironmentID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -355,8 +355,8 @@ _AUTOREGISTEREEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1006,
-  serialized_end=1230,
+  serialized_start=807,
+  serialized_end=971,
 )
 
 
@@ -369,8 +369,8 @@ _AUTOREGISTEREERESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='storageLocationID', full_name='dataclay.communication.grpc.logicmodule.AutoRegisterEEResponse.storageLocationID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -393,8 +393,8 @@ _AUTOREGISTEREERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1233,
-  serialized_end=1407,
+  serialized_start=973,
+  serialized_end=1092,
 )
 
 
@@ -407,8 +407,8 @@ _UNREGISTERSTORAGELOCATIONREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='storageLocationID', full_name='dataclay.communication.grpc.logicmodule.UnregisterStorageLocationRequest.storageLocationID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -424,8 +424,8 @@ _UNREGISTERSTORAGELOCATIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1409,
-  serialized_end=1525,
+  serialized_start=1094,
+  serialized_end=1155,
 )
 
 
@@ -438,8 +438,8 @@ _UNREGISTEREXECUTIONENVIRONMENTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='executionEnvironmentID', full_name='dataclay.communication.grpc.logicmodule.UnregisterExecutionEnvironmentRequest.executionEnvironmentID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -455,8 +455,8 @@ _UNREGISTEREXECUTIONENVIRONMENTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1528,
-  serialized_end=1659,
+  serialized_start=1157,
+  serialized_end=1228,
 )
 
 
@@ -469,8 +469,8 @@ _PERFORMSETACCOUNTSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.PerformSetAccountsRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -500,8 +500,8 @@ _PERFORMSETACCOUNTSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1662,
-  serialized_end=1837,
+  serialized_start=1231,
+  serialized_end=1359,
 )
 
 
@@ -538,8 +538,8 @@ _PERFORMSETACCOUNTSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1839,
-  serialized_end=1955,
+  serialized_start=1361,
+  serialized_end=1477,
 )
 
 
@@ -552,8 +552,8 @@ _PERFORMSETOPERATIONSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.PerformSetOperationsRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -583,8 +583,8 @@ _PERFORMSETOPERATIONSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1958,
-  serialized_end=2135,
+  serialized_start=1480,
+  serialized_end=1610,
 )
 
 
@@ -621,8 +621,8 @@ _PERFORMSETOPERATIONSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2137,
-  serialized_end=2255,
+  serialized_start=1612,
+  serialized_end=1730,
 )
 
 
@@ -635,8 +635,8 @@ _GETACCOUNTLISTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='adminID', full_name='dataclay.communication.grpc.logicmodule.GetAccountListRequest.adminID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -659,8 +659,8 @@ _GETACCOUNTLISTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2258,
-  serialized_end=2418,
+  serialized_start=1732,
+  serialized_end=1845,
 )
 
 
@@ -697,8 +697,8 @@ _GETACCOUNTLISTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2420,
-  serialized_end=2532,
+  serialized_start=1847,
+  serialized_end=1959,
 )
 
 
@@ -711,8 +711,8 @@ _NEWSESSIONREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.NewSessionRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -725,22 +725,22 @@ _NEWSESSIONREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='contractIDs', full_name='dataclay.communication.grpc.logicmodule.NewSessionRequest.contractIDs', index=2,
-      number=3, type=11, cpp_type=10, label=3,
+      number=3, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dataSetIDs', full_name='dataclay.communication.grpc.logicmodule.NewSessionRequest.dataSetIDs', index=3,
-      number=4, type=11, cpp_type=10, label=3,
+      number=4, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='storeDataSet', full_name='dataclay.communication.grpc.logicmodule.NewSessionRequest.storeDataSet', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -763,8 +763,8 @@ _NEWSESSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2535,
-  serialized_end=2957,
+  serialized_start=1962,
+  serialized_end=2195,
 )
 
 
@@ -801,8 +801,8 @@ _NEWSESSIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2959,
-  serialized_end=3068,
+  serialized_start=2197,
+  serialized_end=2306,
 )
 
 
@@ -815,8 +815,8 @@ _GETINFOOFSESSIONFORDSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.GetInfoOfSessionForDSRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -832,8 +832,8 @@ _GETINFOOFSESSIONFORDSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3070,
-  serialized_end=3166,
+  serialized_start=2308,
+  serialized_end=2357,
 )
 
 
@@ -846,8 +846,8 @@ _GETINFOOFSESSIONFORDSRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='dataSetID', full_name='dataclay.communication.grpc.logicmodule.GetInfoOfSessionForDSResponse.dataSetID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -860,7 +860,7 @@ _GETINFOOFSESSIONFORDSRESPONSE = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dataSetIDs', full_name='dataclay.communication.grpc.logicmodule.GetInfoOfSessionForDSResponse.dataSetIDs', index=2,
-      number=3, type=11, cpp_type=10, label=3,
+      number=3, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -884,8 +884,8 @@ _GETINFOOFSESSIONFORDSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3169,
-  serialized_end=3415,
+  serialized_start=2360,
+  serialized_end=2512,
 )
 
 
@@ -898,8 +898,8 @@ _NEWNAMESPACEREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.NewNamespaceRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -929,8 +929,8 @@ _NEWNAMESPACEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3418,
-  serialized_end=3599,
+  serialized_start=2515,
+  serialized_end=2649,
 )
 
 
@@ -943,8 +943,8 @@ _NEWNAMESPACERESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.NewNamespaceResponse.namespaceID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -967,8 +967,8 @@ _NEWNAMESPACERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3602,
-  serialized_end=3762,
+  serialized_start=2651,
+  serialized_end=2762,
 )
 
 
@@ -981,8 +981,8 @@ _GETNAMESPACESREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetNamespacesRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1005,8 +1005,8 @@ _GETNAMESPACESREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3765,
-  serialized_end=3921,
+  serialized_start=2764,
+  serialized_end=2873,
 )
 
 
@@ -1043,8 +1043,8 @@ _GETNAMESPACESRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3923,
-  serialized_end=4034,
+  serialized_start=2875,
+  serialized_end=2986,
 )
 
 
@@ -1057,8 +1057,8 @@ _REMOVENAMESPACEREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.RemoveNamespaceRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1088,8 +1088,8 @@ _REMOVENAMESPACEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4037,
-  serialized_end=4218,
+  serialized_start=2989,
+  serialized_end=3123,
 )
 
 
@@ -1102,8 +1102,8 @@ _GETNAMESPACEIDREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetNamespaceIDRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1133,8 +1133,8 @@ _GETNAMESPACEIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4221,
-  serialized_end=4401,
+  serialized_start=3126,
+  serialized_end=3259,
 )
 
 
@@ -1147,8 +1147,8 @@ _GETNAMESPACEIDRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.GetNamespaceIDResponse.namespaceID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1171,8 +1171,8 @@ _GETNAMESPACEIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4404,
-  serialized_end=4566,
+  serialized_start=3261,
+  serialized_end=3374,
 )
 
 
@@ -1185,8 +1185,8 @@ _GETNAMESPACELANGREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetNamespaceLangRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1216,8 +1216,8 @@ _GETNAMESPACELANGREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4569,
-  serialized_end=4751,
+  serialized_start=3377,
+  serialized_end=3512,
 )
 
 
@@ -1254,8 +1254,8 @@ _GETNAMESPACELANGRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4754,
-  serialized_end=4909,
+  serialized_start=3515,
+  serialized_end=3670,
 )
 
 
@@ -1268,15 +1268,15 @@ _GETOBJECTDATASETIDREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.GetObjectDataSetIDRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.GetObjectDataSetIDRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1292,8 +1292,8 @@ _GETOBJECTDATASETIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4912,
-  serialized_end=5069,
+  serialized_start=3672,
+  serialized_end=3736,
 )
 
 
@@ -1306,8 +1306,8 @@ _GETOBJECTDATASETIDRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='dataSetID', full_name='dataclay.communication.grpc.logicmodule.GetObjectDataSetIDResponse.dataSetID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1330,8 +1330,8 @@ _GETOBJECTDATASETIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5072,
-  serialized_end=5234,
+  serialized_start=3738,
+  serialized_end=3853,
 )
 
 
@@ -1344,8 +1344,8 @@ _IMPORTINTERFACEREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.ImportInterfaceRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1358,22 +1358,22 @@ _IMPORTINTERFACEREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.ImportInterfaceRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='contractID', full_name='dataclay.communication.grpc.logicmodule.ImportInterfaceRequest.contractID', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='interfaceID', full_name='dataclay.communication.grpc.logicmodule.ImportInterfaceRequest.interfaceID', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1389,8 +1389,8 @@ _IMPORTINTERFACEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5237,
-  serialized_end=5603,
+  serialized_start=3856,
+  serialized_end=4029,
 )
 
 
@@ -1403,8 +1403,8 @@ _IMPORTCONTRACTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.ImportContractRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1417,15 +1417,15 @@ _IMPORTCONTRACTREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.ImportContractRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='contractID', full_name='dataclay.communication.grpc.logicmodule.ImportContractRequest.contractID', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1441,8 +1441,8 @@ _IMPORTCONTRACTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5606,
-  serialized_end=5901,
+  serialized_start=4032,
+  serialized_end=4183,
 )
 
 
@@ -1455,8 +1455,8 @@ _NEWDATASETREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.NewDataSetRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1486,8 +1486,8 @@ _NEWDATASETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5904,
-  serialized_end=6078,
+  serialized_start=4185,
+  serialized_end=4312,
 )
 
 
@@ -1500,8 +1500,8 @@ _NEWDATASETRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='dataSetID', full_name='dataclay.communication.grpc.logicmodule.NewDataSetResponse.dataSetID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1524,8 +1524,8 @@ _NEWDATASETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6081,
-  serialized_end=6235,
+  serialized_start=4314,
+  serialized_end=4421,
 )
 
 
@@ -1538,8 +1538,8 @@ _REMOVEDATASETREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.RemoveDataSetRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1569,8 +1569,8 @@ _REMOVEDATASETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6238,
-  serialized_end=6415,
+  serialized_start=4424,
+  serialized_end=4554,
 )
 
 
@@ -1583,8 +1583,8 @@ _GETDATASETIDREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetDataSetIDRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1614,8 +1614,8 @@ _GETDATASETIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6418,
-  serialized_end=6594,
+  serialized_start=4557,
+  serialized_end=4686,
 )
 
 
@@ -1628,8 +1628,8 @@ _GETDATASETIDRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='dataSetID', full_name='dataclay.communication.grpc.logicmodule.GetDataSetIDResponse.dataSetID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1652,8 +1652,8 @@ _GETDATASETIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6597,
-  serialized_end=6753,
+  serialized_start=4688,
+  serialized_end=4797,
 )
 
 
@@ -1666,8 +1666,8 @@ _GETPUBLICDATASETSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetPublicDataSetsRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1690,8 +1690,8 @@ _GETPUBLICDATASETSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6756,
-  serialized_end=6916,
+  serialized_start=4799,
+  serialized_end=4912,
 )
 
 
@@ -1728,8 +1728,8 @@ _GETPUBLICDATASETSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6918,
-  serialized_end=7031,
+  serialized_start=4914,
+  serialized_end=5027,
 )
 
 
@@ -1742,8 +1742,8 @@ _GETACCOUNTDATASETSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetAccountDataSetsRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1766,8 +1766,8 @@ _GETACCOUNTDATASETSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7034,
-  serialized_end=7195,
+  serialized_start=5029,
+  serialized_end=5143,
 )
 
 
@@ -1804,8 +1804,8 @@ _GETACCOUNTDATASETSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7197,
-  serialized_end=7311,
+  serialized_start=5145,
+  serialized_end=5259,
 )
 
 
@@ -1818,8 +1818,8 @@ _CHECKDATASETISPUBLICREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='dataSetID', full_name='dataclay.communication.grpc.logicmodule.CheckDataSetIsPublicRequest.dataSetID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1835,8 +1835,8 @@ _CHECKDATASETISPUBLICREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7313,
-  serialized_end=7408,
+  serialized_start=5261,
+  serialized_end=5309,
 )
 
 
@@ -1873,8 +1873,8 @@ _CHECKDATASETISPUBLICRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7410,
-  serialized_end=7526,
+  serialized_start=5311,
+  serialized_end=5427,
 )
 
 
@@ -1911,8 +1911,8 @@ _NEWCLASSREQUEST_NEWCLASSESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7837,
-  serialized_end=7886,
+  serialized_start=5691,
+  serialized_end=5740,
 )
 
 _NEWCLASSREQUEST = _descriptor.Descriptor(
@@ -1924,8 +1924,8 @@ _NEWCLASSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.NewClassRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1962,8 +1962,8 @@ _NEWCLASSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7529,
-  serialized_end=7886,
+  serialized_start=5430,
+  serialized_end=5740,
 )
 
 
@@ -2000,8 +2000,8 @@ _NEWCLASSRESPONSE_NEWCLASSESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7837,
-  serialized_end=7886,
+  serialized_start=5691,
+  serialized_end=5740,
 )
 
 _NEWCLASSRESPONSE = _descriptor.Descriptor(
@@ -2037,142 +2037,8 @@ _NEWCLASSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7889,
-  serialized_end=8121,
-)
-
-
-_NEWCLASSIDREQUEST_NEWCLASSESENTRY = _descriptor.Descriptor(
-  name='NewClassesEntry',
-  full_name='dataclay.communication.grpc.logicmodule.NewClassIDRequest.NewClassesEntry',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='key', full_name='dataclay.communication.grpc.logicmodule.NewClassIDRequest.NewClassesEntry.key', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='value', full_name='dataclay.communication.grpc.logicmodule.NewClassIDRequest.NewClassesEntry.value', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=_b('8\001'),
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=7837,
-  serialized_end=7886,
-)
-
-_NEWCLASSIDREQUEST = _descriptor.Descriptor(
-  name='NewClassIDRequest',
-  full_name='dataclay.communication.grpc.logicmodule.NewClassIDRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='accountID', full_name='dataclay.communication.grpc.logicmodule.NewClassIDRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='credential', full_name='dataclay.communication.grpc.logicmodule.NewClassIDRequest.credential', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='language', full_name='dataclay.communication.grpc.logicmodule.NewClassIDRequest.language', index=2,
-      number=3, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='className', full_name='dataclay.communication.grpc.logicmodule.NewClassIDRequest.className', index=3,
-      number=4, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='newClasses', full_name='dataclay.communication.grpc.logicmodule.NewClassIDRequest.newClasses', index=4,
-      number=5, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[_NEWCLASSIDREQUEST_NEWCLASSESENTRY, ],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=8124,
-  serialized_end=8504,
-)
-
-
-_NEWCLASSIDRESPONSE = _descriptor.Descriptor(
-  name='NewClassIDResponse',
-  full_name='dataclay.communication.grpc.logicmodule.NewClassIDResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='classID', full_name='dataclay.communication.grpc.logicmodule.NewClassIDResponse.classID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.NewClassIDResponse.excInfo', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=8507,
-  serialized_end=8661,
+  serialized_start=5743,
+  serialized_end=5975,
 )
 
 
@@ -2185,8 +2051,8 @@ _REMOVECLASSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.RemoveClassRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2199,8 +2065,8 @@ _REMOVECLASSREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.RemoveClassRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2223,8 +2089,8 @@ _REMOVECLASSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=8664,
-  serialized_end=8907,
+  serialized_start=5978,
+  serialized_end=6125,
 )
 
 
@@ -2237,8 +2103,8 @@ _REMOVEOPERATIONREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.RemoveOperationRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2251,8 +2117,8 @@ _REMOVEOPERATIONREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.RemoveOperationRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2282,8 +2148,8 @@ _REMOVEOPERATIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=8910,
-  serialized_end=9192,
+  serialized_start=6128,
+  serialized_end=6314,
 )
 
 
@@ -2296,8 +2162,8 @@ _REMOVEIMPLEMENTATIONREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.RemoveImplementationRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2310,8 +2176,8 @@ _REMOVEIMPLEMENTATIONREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.RemoveImplementationRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2324,8 +2190,8 @@ _REMOVEIMPLEMENTATIONREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='implementationID', full_name='dataclay.communication.grpc.logicmodule.RemoveImplementationRequest.implementationID', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2341,8 +2207,8 @@ _REMOVEIMPLEMENTATIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=9195,
-  serialized_end=9527,
+  serialized_start=6317,
+  serialized_end=6499,
 )
 
 
@@ -2355,8 +2221,8 @@ _GETOPERATIONIDREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetOperationIDRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2369,8 +2235,8 @@ _GETOPERATIONIDREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.GetOperationIDRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2400,8 +2266,8 @@ _GETOPERATIONIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=9530,
-  serialized_end=9811,
+  serialized_start=6502,
+  serialized_end=6687,
 )
 
 
@@ -2414,8 +2280,8 @@ _GETOPERATIONIDRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='operationID', full_name='dataclay.communication.grpc.logicmodule.GetOperationIDResponse.operationID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2438,8 +2304,8 @@ _GETOPERATIONIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=9814,
-  serialized_end=9976,
+  serialized_start=6689,
+  serialized_end=6802,
 )
 
 
@@ -2452,8 +2318,8 @@ _GETPROPERTYIDREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetPropertyIDRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2466,8 +2332,8 @@ _GETPROPERTYIDREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.GetPropertyIDRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2497,8 +2363,8 @@ _GETPROPERTYIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=9979,
-  serialized_end=10246,
+  serialized_start=6805,
+  serialized_end=6976,
 )
 
 
@@ -2511,8 +2377,8 @@ _GETPROPERTYIDRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='propertyID', full_name='dataclay.communication.grpc.logicmodule.GetPropertyIDResponse.propertyID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2535,8 +2401,8 @@ _GETPROPERTYIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=10249,
-  serialized_end=10408,
+  serialized_start=6978,
+  serialized_end=7089,
 )
 
 
@@ -2549,8 +2415,8 @@ _GETCLASSIDREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetClassIDRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2563,8 +2429,8 @@ _GETCLASSIDREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.GetClassIDRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2587,8 +2453,8 @@ _GETCLASSIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=10411,
-  serialized_end=10653,
+  serialized_start=7092,
+  serialized_end=7238,
 )
 
 
@@ -2601,8 +2467,8 @@ _GETCLASSIDRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='classID', full_name='dataclay.communication.grpc.logicmodule.GetClassIDResponse.classID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2625,8 +2491,8 @@ _GETCLASSIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=10656,
-  serialized_end=10810,
+  serialized_start=7240,
+  serialized_end=7345,
 )
 
 
@@ -2639,8 +2505,8 @@ _GETCLASSINFOREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetClassInfoRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2653,8 +2519,8 @@ _GETCLASSINFOREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.GetClassInfoRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2677,8 +2543,8 @@ _GETCLASSINFOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=10813,
-  serialized_end=11057,
+  serialized_start=7348,
+  serialized_end=7496,
 )
 
 
@@ -2715,8 +2581,8 @@ _GETCLASSINFORESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=11059,
-  serialized_end=11172,
+  serialized_start=7498,
+  serialized_end=7611,
 )
 
 
@@ -2729,8 +2595,8 @@ _GETINFOOFCLASSESINNAMESPACEREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetInfoOfClassesInNamespaceRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2743,8 +2609,8 @@ _GETINFOOFCLASSESINNAMESPACEREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.GetInfoOfClassesInNamespaceRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2760,8 +2626,8 @@ _GETINFOOFCLASSESINNAMESPACEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=11175,
-  serialized_end=11415,
+  serialized_start=7614,
+  serialized_end=7758,
 )
 
 
@@ -2798,8 +2664,8 @@ _GETINFOOFCLASSESINNAMESPACERESPONSE_CLASSESINFOENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=11641,
-  serialized_end=11691,
+  serialized_start=7984,
+  serialized_end=8034,
 )
 
 _GETINFOOFCLASSESINNAMESPACERESPONSE = _descriptor.Descriptor(
@@ -2835,8 +2701,8 @@ _GETINFOOFCLASSESINNAMESPACERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=11418,
-  serialized_end=11691,
+  serialized_start=7761,
+  serialized_end=8034,
 )
 
 
@@ -2849,8 +2715,8 @@ _GETIMPORTEDCLASSESINFOINNAMESPACEREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetImportedClassesInfoInNamespaceRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2863,8 +2729,8 @@ _GETIMPORTEDCLASSESINFOINNAMESPACEREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.GetImportedClassesInfoInNamespaceRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2880,8 +2746,8 @@ _GETIMPORTEDCLASSESINFOINNAMESPACEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=11694,
-  serialized_end=11940,
+  serialized_start=8037,
+  serialized_end=8187,
 )
 
 
@@ -2918,8 +2784,8 @@ _GETIMPORTEDCLASSESINFOINNAMESPACERESPONSE_IMPORTEDCLASSESENTRY = _descriptor.De
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=12187,
-  serialized_end=12241,
+  serialized_start=8434,
+  serialized_end=8488,
 )
 
 _GETIMPORTEDCLASSESINFOINNAMESPACERESPONSE = _descriptor.Descriptor(
@@ -2955,8 +2821,8 @@ _GETIMPORTEDCLASSESINFOINNAMESPACERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=11943,
-  serialized_end=12241,
+  serialized_start=8190,
+  serialized_end=8488,
 )
 
 
@@ -2969,8 +2835,8 @@ _GETCLASSIDFROMIMPORTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetClassIDFromImportRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -2983,8 +2849,8 @@ _GETCLASSIDFROMIMPORTREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.GetClassIDFromImportRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3007,8 +2873,8 @@ _GETCLASSIDFROMIMPORTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=12244,
-  serialized_end=12496,
+  serialized_start=8491,
+  serialized_end=8647,
 )
 
 
@@ -3021,8 +2887,8 @@ _GETCLASSIDFROMIMPORTRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='classID', full_name='dataclay.communication.grpc.logicmodule.GetClassIDFromImportResponse.classID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3045,8 +2911,8 @@ _GETCLASSIDFROMIMPORTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=12499,
-  serialized_end=12663,
+  serialized_start=8649,
+  serialized_end=8764,
 )
 
 
@@ -3059,8 +2925,8 @@ _NEWCONTRACTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.NewContractRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3090,8 +2956,8 @@ _NEWCONTRACTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=12666,
-  serialized_end=12845,
+  serialized_start=8767,
+  serialized_end=8899,
 )
 
 
@@ -3104,8 +2970,8 @@ _NEWCONTRACTRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='contractID', full_name='dataclay.communication.grpc.logicmodule.NewContractResponse.contractID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3128,8 +2994,8 @@ _NEWCONTRACTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=12848,
-  serialized_end=13005,
+  serialized_start=8901,
+  serialized_end=9010,
 )
 
 
@@ -3142,8 +3008,8 @@ _REGISTERTOPUBLICCONTRACTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.RegisterToPublicContractRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3156,8 +3022,8 @@ _REGISTERTOPUBLICCONTRACTREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='contractID', full_name='dataclay.communication.grpc.logicmodule.RegisterToPublicContractRequest.contractID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3173,8 +3039,8 @@ _REGISTERTOPUBLICCONTRACTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13008,
-  serialized_end=13243,
+  serialized_start=9013,
+  serialized_end=9153,
 )
 
 
@@ -3187,8 +3053,8 @@ _REGISTERTOPUBLICCONTRACTOFNAMESPACEREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.RegisterToPublicContractOfNamespaceRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3201,8 +3067,8 @@ _REGISTERTOPUBLICCONTRACTOFNAMESPACEREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.RegisterToPublicContractOfNamespaceRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3218,8 +3084,8 @@ _REGISTERTOPUBLICCONTRACTOFNAMESPACEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13246,
-  serialized_end=13494,
+  serialized_start=9156,
+  serialized_end=9308,
 )
 
 
@@ -3232,8 +3098,8 @@ _REGISTERTOPUBLICCONTRACTOFNAMESPACERESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='contractID', full_name='dataclay.communication.grpc.logicmodule.RegisterToPublicContractOfNamespaceResponse.contractID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3256,8 +3122,8 @@ _REGISTERTOPUBLICCONTRACTOFNAMESPACERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13497,
-  serialized_end=13678,
+  serialized_start=9311,
+  serialized_end=9444,
 )
 
 
@@ -3270,8 +3136,8 @@ _GETCONTRACTIDSOFAPPLICANTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='applicantID', full_name='dataclay.communication.grpc.logicmodule.GetContractIDsOfApplicantRequest.applicantID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3294,8 +3160,8 @@ _GETCONTRACTIDSOFAPPLICANTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13681,
-  serialized_end=13851,
+  serialized_start=9446,
+  serialized_end=9569,
 )
 
 
@@ -3332,8 +3198,8 @@ _GETCONTRACTIDSOFAPPLICANTRESPONSE_CONTRACTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14069,
-  serialized_end=14117,
+  serialized_start=9787,
+  serialized_end=9835,
 )
 
 _GETCONTRACTIDSOFAPPLICANTRESPONSE = _descriptor.Descriptor(
@@ -3369,8 +3235,8 @@ _GETCONTRACTIDSOFAPPLICANTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13854,
-  serialized_end=14117,
+  serialized_start=9572,
+  serialized_end=9835,
 )
 
 
@@ -3383,8 +3249,8 @@ _GETCONTRACTIDSOFPROVIDERREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='providerID', full_name='dataclay.communication.grpc.logicmodule.GetContractIDsOfProviderRequest.providerID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3397,8 +3263,8 @@ _GETCONTRACTIDSOFPROVIDERREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceIDOfProvider', full_name='dataclay.communication.grpc.logicmodule.GetContractIDsOfProviderRequest.namespaceIDOfProvider', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3414,8 +3280,8 @@ _GETCONTRACTIDSOFPROVIDERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14120,
-  serialized_end=14368,
+  serialized_start=9838,
+  serialized_end=9990,
 )
 
 
@@ -3452,8 +3318,8 @@ _GETCONTRACTIDSOFPROVIDERRESPONSE_CONTRACTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14069,
-  serialized_end=14117,
+  serialized_start=9787,
+  serialized_end=9835,
 )
 
 _GETCONTRACTIDSOFPROVIDERRESPONSE = _descriptor.Descriptor(
@@ -3489,8 +3355,8 @@ _GETCONTRACTIDSOFPROVIDERRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14371,
-  serialized_end=14632,
+  serialized_start=9993,
+  serialized_end=10254,
 )
 
 
@@ -3503,8 +3369,8 @@ _GETCONTRACTSOFAPPLICANTWITHPROVREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='applicantID', full_name='dataclay.communication.grpc.logicmodule.GetContractsOfApplicantWithProvRequest.applicantID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3517,8 +3383,8 @@ _GETCONTRACTSOFAPPLICANTWITHPROVREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceIDOfProvider', full_name='dataclay.communication.grpc.logicmodule.GetContractsOfApplicantWithProvRequest.namespaceIDOfProvider', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3534,8 +3400,8 @@ _GETCONTRACTSOFAPPLICANTWITHPROVREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14635,
-  serialized_end=14891,
+  serialized_start=10257,
+  serialized_end=10417,
 )
 
 
@@ -3572,8 +3438,8 @@ _GETCONTRACTSOFAPPLICANTWITHPROVRESPONSE_CONTRACTSENTRY = _descriptor.Descriptor
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14069,
-  serialized_end=14117,
+  serialized_start=9787,
+  serialized_end=9835,
 )
 
 _GETCONTRACTSOFAPPLICANTWITHPROVRESPONSE = _descriptor.Descriptor(
@@ -3609,8 +3475,8 @@ _GETCONTRACTSOFAPPLICANTWITHPROVRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14894,
-  serialized_end=15169,
+  serialized_start=10420,
+  serialized_end=10695,
 )
 
 
@@ -3623,8 +3489,8 @@ _NEWDATACONTRACTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.NewDataContractRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3654,8 +3520,8 @@ _NEWDATACONTRACTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15172,
-  serialized_end=15356,
+  serialized_start=10698,
+  serialized_end=10835,
 )
 
 
@@ -3668,8 +3534,8 @@ _NEWDATACONTRACTRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='dataContractID', full_name='dataclay.communication.grpc.logicmodule.NewDataContractResponse.dataContractID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3692,8 +3558,8 @@ _NEWDATACONTRACTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15359,
-  serialized_end=15528,
+  serialized_start=10837,
+  serialized_end=10954,
 )
 
 
@@ -3706,8 +3572,8 @@ _REGISTERTOPUBLICDATACONTRACTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.RegisterToPublicDataContractRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3720,8 +3586,8 @@ _REGISTERTOPUBLICDATACONTRACTREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dataContractID', full_name='dataclay.communication.grpc.logicmodule.RegisterToPublicDataContractRequest.dataContractID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3737,8 +3603,8 @@ _REGISTERTOPUBLICDATACONTRACTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15531,
-  serialized_end=15778,
+  serialized_start=10957,
+  serialized_end=11105,
 )
 
 
@@ -3751,8 +3617,8 @@ _GETDATACONTRACTIDSOFAPPLICANTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='applicantID', full_name='dataclay.communication.grpc.logicmodule.GetDataContractIDsOfApplicantRequest.applicantID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3775,8 +3641,8 @@ _GETDATACONTRACTIDSOFAPPLICANTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15781,
-  serialized_end=15955,
+  serialized_start=11107,
+  serialized_end=11234,
 )
 
 
@@ -3813,8 +3679,8 @@ _GETDATACONTRACTIDSOFAPPLICANTRESPONSE_DATACONTRACTSENTRY = _descriptor.Descript
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16189,
-  serialized_end=16241,
+  serialized_start=11468,
+  serialized_end=11520,
 )
 
 _GETDATACONTRACTIDSOFAPPLICANTRESPONSE = _descriptor.Descriptor(
@@ -3850,8 +3716,8 @@ _GETDATACONTRACTIDSOFAPPLICANTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15958,
-  serialized_end=16241,
+  serialized_start=11237,
+  serialized_end=11520,
 )
 
 
@@ -3864,8 +3730,8 @@ _GETDATACONTRACTIDSOFPROVIDERREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='providerID', full_name='dataclay.communication.grpc.logicmodule.GetDataContractIDsOfProviderRequest.providerID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3878,8 +3744,8 @@ _GETDATACONTRACTIDSOFPROVIDERREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dataSetIDOfProvider', full_name='dataclay.communication.grpc.logicmodule.GetDataContractIDsOfProviderRequest.dataSetIDOfProvider', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3895,8 +3761,8 @@ _GETDATACONTRACTIDSOFPROVIDERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16244,
-  serialized_end=16492,
+  serialized_start=11523,
+  serialized_end=11677,
 )
 
 
@@ -3933,8 +3799,8 @@ _GETDATACONTRACTIDSOFPROVIDERRESPONSE_DATACONTRACTSENTRY = _descriptor.Descripto
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16189,
-  serialized_end=16241,
+  serialized_start=11468,
+  serialized_end=11520,
 )
 
 _GETDATACONTRACTIDSOFPROVIDERRESPONSE = _descriptor.Descriptor(
@@ -3970,8 +3836,8 @@ _GETDATACONTRACTIDSOFPROVIDERRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16495,
-  serialized_end=16776,
+  serialized_start=11680,
+  serialized_end=11961,
 )
 
 
@@ -3984,8 +3850,8 @@ _GETDATACONTRACTINFOOFAPPLICANTWITHPROVREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='applicantID', full_name='dataclay.communication.grpc.logicmodule.GetDataContractInfoOfApplicantWithProvRequest.applicantID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -3998,8 +3864,8 @@ _GETDATACONTRACTINFOOFAPPLICANTWITHPROVREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dataSetIDOfProvider', full_name='dataclay.communication.grpc.logicmodule.GetDataContractInfoOfApplicantWithProvRequest.dataSetIDOfProvider', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4015,8 +3881,8 @@ _GETDATACONTRACTINFOOFAPPLICANTWITHPROVREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16779,
-  serialized_end=17038,
+  serialized_start=11964,
+  serialized_end=12129,
 )
 
 
@@ -4053,8 +3919,8 @@ _GETDATACONTRACTINFOOFAPPLICANTWITHPROVRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17041,
-  serialized_end=17183,
+  serialized_start=12132,
+  serialized_end=12274,
 )
 
 
@@ -4067,8 +3933,8 @@ _NEWINTERFACEREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='applicantID', full_name='dataclay.communication.grpc.logicmodule.NewInterfaceRequest.applicantID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4098,8 +3964,8 @@ _NEWINTERFACEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17186,
-  serialized_end=17366,
+  serialized_start=12277,
+  serialized_end=12410,
 )
 
 
@@ -4112,8 +3978,8 @@ _NEWINTERFACERESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='interfaceID', full_name='dataclay.communication.grpc.logicmodule.NewInterfaceResponse.interfaceID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4136,8 +4002,8 @@ _NEWINTERFACERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17369,
-  serialized_end=17529,
+  serialized_start=12412,
+  serialized_end=12523,
 )
 
 
@@ -4150,8 +4016,8 @@ _GETINTERFACEINFOREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='applicantID', full_name='dataclay.communication.grpc.logicmodule.GetInterfaceInfoRequest.applicantID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4164,8 +4030,8 @@ _GETINTERFACEINFOREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='interfaceID', full_name='dataclay.communication.grpc.logicmodule.GetInterfaceInfoRequest.interfaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4181,8 +4047,8 @@ _GETINTERFACEINFOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17532,
-  serialized_end=17763,
+  serialized_start=12526,
+  serialized_end=12661,
 )
 
 
@@ -4219,8 +4085,8 @@ _GETINTERFACEINFORESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17765,
-  serialized_end=17882,
+  serialized_start=12663,
+  serialized_end=12780,
 )
 
 
@@ -4233,8 +4099,8 @@ _REMOVEINTERFACEREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='applicantID', full_name='dataclay.communication.grpc.logicmodule.RemoveInterfaceRequest.applicantID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4247,15 +4113,15 @@ _REMOVEINTERFACEREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespaceID', full_name='dataclay.communication.grpc.logicmodule.RemoveInterfaceRequest.namespaceID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='interfaceID', full_name='dataclay.communication.grpc.logicmodule.RemoveInterfaceRequest.interfaceID', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4271,58 +4137,58 @@ _REMOVEINTERFACEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17885,
-  serialized_end=18185,
+  serialized_start=12783,
+  serialized_end=12938,
 )
 
 
-_GETSTORAGELOCATIONFORDSREQUEST = _descriptor.Descriptor(
-  name='GetStorageLocationForDSRequest',
-  full_name='dataclay.communication.grpc.logicmodule.GetStorageLocationForDSRequest',
+_GETSTORAGELOCATIONINFOREQUEST = _descriptor.Descriptor(
+  name='GetStorageLocationInfoRequest',
+  full_name='dataclay.communication.grpc.logicmodule.GetStorageLocationInfoRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='storageLocationID', full_name='dataclay.communication.grpc.logicmodule.GetStorageLocationForDSRequest.storageLocationID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=18187,
-  serialized_end=18301,
-)
-
-
-_GETSTORAGELOCATIONFORDSRESPONSE = _descriptor.Descriptor(
-  name='GetStorageLocationForDSResponse',
-  full_name='dataclay.communication.grpc.logicmodule.GetStorageLocationForDSResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='storageLocationYaml', full_name='dataclay.communication.grpc.logicmodule.GetStorageLocationForDSResponse.storageLocationYaml', index=0,
+      name='storageLocationID', full_name='dataclay.communication.grpc.logicmodule.GetStorageLocationInfoRequest.storageLocationID', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=12940,
+  serialized_end=12998,
+)
+
+
+_GETSTORAGELOCATIONINFORESPONSE = _descriptor.Descriptor(
+  name='GetStorageLocationInfoResponse',
+  full_name='dataclay.communication.grpc.logicmodule.GetStorageLocationInfoResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
     _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.GetStorageLocationForDSResponse.excInfo', index=1,
+      name='storageLocationInfo', full_name='dataclay.communication.grpc.logicmodule.GetStorageLocationInfoResponse.storageLocationInfo', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.GetStorageLocationInfoResponse.excInfo', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -4340,22 +4206,22 @@ _GETSTORAGELOCATIONFORDSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18304,
-  serialized_end=18434,
+  serialized_start=13001,
+  serialized_end=13187,
 )
 
 
-_GETEXECUTIONENVIRONMENTFORDSREQUEST = _descriptor.Descriptor(
-  name='GetExecutionEnvironmentForDSRequest',
-  full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentForDSRequest',
+_GETEXECUTIONENVIRONMENTINFOREQUEST = _descriptor.Descriptor(
+  name='GetExecutionEnvironmentInfoRequest',
+  full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentInfoRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='execEnvID', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentForDSRequest.execEnvID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='execEnvID', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentInfoRequest.execEnvID', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4371,27 +4237,27 @@ _GETEXECUTIONENVIRONMENTFORDSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18436,
-  serialized_end=18552,
+  serialized_start=13189,
+  serialized_end=13244,
 )
 
 
-_GETEXECUTIONENVIRONMENTFORDSRESPONSE = _descriptor.Descriptor(
-  name='GetExecutionEnvironmentForDSResponse',
-  full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentForDSResponse',
+_GETEXECUTIONENVIRONMENTINFORESPONSE = _descriptor.Descriptor(
+  name='GetExecutionEnvironmentInfoResponse',
+  full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentInfoResponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='execEnvYaml', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentForDSResponse.execEnvYaml', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='executionEnvironmentInfo', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentInfoResponse.executionEnvironmentInfo', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentForDSResponse.excInfo', index=1,
+      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentInfoResponse.excInfo', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -4409,8 +4275,8 @@ _GETEXECUTIONENVIRONMENTFORDSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18554,
-  serialized_end=18681,
+  serialized_start=13247,
+  serialized_end=13448,
 )
 
 
@@ -4423,8 +4289,8 @@ _GETDATACLAYIDRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='dataClayID', full_name='dataclay.communication.grpc.logicmodule.GetDataClayIDResponse.dataClayID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4447,8 +4313,8 @@ _GETDATACLAYIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18684,
-  serialized_end=18851,
+  serialized_start=13450,
+  serialized_end=13561,
 )
 
 
@@ -4485,8 +4351,8 @@ _REGISTEREXTERNALDATACLAYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18853,
-  serialized_end=18918,
+  serialized_start=13563,
+  serialized_end=13628,
 )
 
 
@@ -4499,8 +4365,8 @@ _REGISTEREXTERNALDATACLAYOVERRIDEAUTHORITYREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='adminAccountID', full_name='dataclay.communication.grpc.logicmodule.RegisterExternalDataClayOverrideAuthorityRequest.adminAccountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4544,8 +4410,8 @@ _REGISTEREXTERNALDATACLAYOVERRIDEAUTHORITYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18921,
-  serialized_end=19166,
+  serialized_start=13631,
+  serialized_end=13829,
 )
 
 
@@ -4558,8 +4424,8 @@ _REGISTEREXTERNALDATACLAYRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='extDataClayID', full_name='dataclay.communication.grpc.logicmodule.RegisterExternalDataClayResponse.extDataClayID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4582,8 +4448,8 @@ _REGISTEREXTERNALDATACLAYRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19169,
-  serialized_end=19350,
+  serialized_start=13831,
+  serialized_end=13956,
 )
 
 
@@ -4596,8 +4462,8 @@ _NOTIFYREGISTRATIONOFEXTERNALDATACLAYREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='extDataClayID', full_name='dataclay.communication.grpc.logicmodule.NotifyRegistrationOfExternalDataClayRequest.extDataClayID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4627,8 +4493,8 @@ _NOTIFYREGISTRATIONOFEXTERNALDATACLAYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19353,
-  serialized_end=19509,
+  serialized_start=13958,
+  serialized_end=14058,
 )
 
 
@@ -4641,8 +4507,8 @@ _NOTIFYREGISTRATIONOFEXTERNALDATACLAYRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='extDataClayID', full_name='dataclay.communication.grpc.logicmodule.NotifyRegistrationOfExternalDataClayResponse.extDataClayID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4665,8 +4531,8 @@ _NOTIFYREGISTRATIONOFEXTERNALDATACLAYRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19512,
-  serialized_end=19705,
+  serialized_start=14061,
+  serialized_end=14198,
 )
 
 
@@ -4703,8 +4569,8 @@ _GETEXTERNALDATACLAYIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19707,
-  serialized_end=19765,
+  serialized_start=14200,
+  serialized_end=14258,
 )
 
 
@@ -4717,8 +4583,8 @@ _GETEXTERNALDATACLAYIDRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='extDataClayID', full_name='dataclay.communication.grpc.logicmodule.GetExternalDataclayIDResponse.extDataClayID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4741,8 +4607,8 @@ _GETEXTERNALDATACLAYIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19768,
-  serialized_end=19946,
+  serialized_start=14260,
+  serialized_end=14382,
 )
 
 
@@ -4755,8 +4621,8 @@ _GETEXTDATACLAYINFOREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='extDataClayID', full_name='dataclay.communication.grpc.logicmodule.GetExtDataClayInfoRequest.extDataClayID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4772,8 +4638,8 @@ _GETEXTDATACLAYINFOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19948,
-  serialized_end=20054,
+  serialized_start=14384,
+  serialized_end=14434,
 )
 
 
@@ -4785,9 +4651,9 @@ _GETEXTDATACLAYINFORESPONSE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='extDataClayYaml', full_name='dataclay.communication.grpc.logicmodule.GetExtDataClayInfoResponse.extDataClayYaml', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='extDataClayInfo', full_name='dataclay.communication.grpc.logicmodule.GetExtDataClayInfoResponse.extDataClayInfo', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -4810,763 +4676,8 @@ _GETEXTDATACLAYINFORESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20056,
-  serialized_end=20177,
-)
-
-
-_FEDERATEOBJECTREQUEST = _descriptor.Descriptor(
-  name='FederateObjectRequest',
-  full_name='dataclay.communication.grpc.logicmodule.FederateObjectRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sessionID', full_name='dataclay.communication.grpc.logicmodule.FederateObjectRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='objectID', full_name='dataclay.communication.grpc.logicmodule.FederateObjectRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='extDataClayID', full_name='dataclay.communication.grpc.logicmodule.FederateObjectRequest.extDataClayID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='recursive', full_name='dataclay.communication.grpc.logicmodule.FederateObjectRequest.recursive', index=3,
-      number=4, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=20180,
-  serialized_end=20431,
-)
-
-
-_UNFEDERATEOBJECTREQUEST = _descriptor.Descriptor(
-  name='UnfederateObjectRequest',
-  full_name='dataclay.communication.grpc.logicmodule.UnfederateObjectRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sessionID', full_name='dataclay.communication.grpc.logicmodule.UnfederateObjectRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='objectID', full_name='dataclay.communication.grpc.logicmodule.UnfederateObjectRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='extDataClayID', full_name='dataclay.communication.grpc.logicmodule.UnfederateObjectRequest.extDataClayID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='recursive', full_name='dataclay.communication.grpc.logicmodule.UnfederateObjectRequest.recursive', index=3,
-      number=4, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=20434,
-  serialized_end=20687,
-)
-
-
-_UNFEDERATEOBJECTWITHALLDCSREQUEST = _descriptor.Descriptor(
-  name='UnfederateObjectWithAllDCsRequest',
-  full_name='dataclay.communication.grpc.logicmodule.UnfederateObjectWithAllDCsRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sessionID', full_name='dataclay.communication.grpc.logicmodule.UnfederateObjectWithAllDCsRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='objectID', full_name='dataclay.communication.grpc.logicmodule.UnfederateObjectWithAllDCsRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='recursive', full_name='dataclay.communication.grpc.logicmodule.UnfederateObjectWithAllDCsRequest.recursive', index=2,
-      number=3, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=20690,
-  serialized_end=20874,
-)
-
-
-_MIGRATEFEDERATEDOBJECTSREQUEST = _descriptor.Descriptor(
-  name='MigrateFederatedObjectsRequest',
-  full_name='dataclay.communication.grpc.logicmodule.MigrateFederatedObjectsRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sessionID', full_name='dataclay.communication.grpc.logicmodule.MigrateFederatedObjectsRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='externalOriginDataClayID', full_name='dataclay.communication.grpc.logicmodule.MigrateFederatedObjectsRequest.externalOriginDataClayID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='externalDestinationDataClayID', full_name='dataclay.communication.grpc.logicmodule.MigrateFederatedObjectsRequest.externalDestinationDataClayID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=20877,
-  serialized_end=21160,
-)
-
-
-_FEDERATEALLOBJECTSREQUEST = _descriptor.Descriptor(
-  name='FederateAllObjectsRequest',
-  full_name='dataclay.communication.grpc.logicmodule.FederateAllObjectsRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sessionID', full_name='dataclay.communication.grpc.logicmodule.FederateAllObjectsRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='externalDestinationDataClayID', full_name='dataclay.communication.grpc.logicmodule.FederateAllObjectsRequest.externalDestinationDataClayID', index=1,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=21163,
-  serialized_end=21351,
-)
-
-
-_UNFEDERATEALLOBJECTSREQUEST = _descriptor.Descriptor(
-  name='UnfederateAllObjectsRequest',
-  full_name='dataclay.communication.grpc.logicmodule.UnfederateAllObjectsRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sessionID', full_name='dataclay.communication.grpc.logicmodule.UnfederateAllObjectsRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='extDataClayID', full_name='dataclay.communication.grpc.logicmodule.UnfederateAllObjectsRequest.extDataClayID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=21354,
-  serialized_end=21528,
-)
-
-
-_UNFEDERATEALLOBJECTSWITHALLDCSREQUEST = _descriptor.Descriptor(
-  name='UnfederateAllObjectsWithAllDCsRequest',
-  full_name='dataclay.communication.grpc.logicmodule.UnfederateAllObjectsWithAllDCsRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sessionID', full_name='dataclay.communication.grpc.logicmodule.UnfederateAllObjectsWithAllDCsRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=21530,
-  serialized_end=21635,
-)
-
-
-_NOTIFYFEDERATEDOBJECTSREQUEST_OBJECTSINFOENTRY = _descriptor.Descriptor(
-  name='ObjectsInfoEntry',
-  full_name='dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.ObjectsInfoEntry',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='key', full_name='dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.ObjectsInfoEntry.key', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='value', full_name='dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.ObjectsInfoEntry.value', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=_b('8\001'),
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=22012,
-  serialized_end=22062,
-)
-
-_NOTIFYFEDERATEDOBJECTSREQUEST_FEDERATEDOBJECTSENTRY = _descriptor.Descriptor(
-  name='FederatedObjectsEntry',
-  full_name='dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.FederatedObjectsEntry',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='key', full_name='dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.FederatedObjectsEntry.key', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='value', full_name='dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.FederatedObjectsEntry.value', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=_b('8\001'),
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=22064,
-  serialized_end=22185,
-)
-
-_NOTIFYFEDERATEDOBJECTSREQUEST = _descriptor.Descriptor(
-  name='NotifyFederatedObjectsRequest',
-  full_name='dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='srcDcID', full_name='dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.srcDcID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='srcDcHost', full_name='dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.srcDcHost', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='srcDcPort', full_name='dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.srcDcPort', index=2,
-      number=3, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='objectsInfo', full_name='dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.objectsInfo', index=3,
-      number=4, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='federatedObjects', full_name='dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.federatedObjects', index=4,
-      number=5, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[_NOTIFYFEDERATEDOBJECTSREQUEST_OBJECTSINFOENTRY, _NOTIFYFEDERATEDOBJECTSREQUEST_FEDERATEDOBJECTSENTRY, ],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=21638,
-  serialized_end=22185,
-)
-
-
-_NOTIFYUNFEDERATEDOBJECTSREQUEST = _descriptor.Descriptor(
-  name='NotifyUnfederatedObjectsRequest',
-  full_name='dataclay.communication.grpc.logicmodule.NotifyUnfederatedObjectsRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='srcDcID', full_name='dataclay.communication.grpc.logicmodule.NotifyUnfederatedObjectsRequest.srcDcID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='objectsIDs', full_name='dataclay.communication.grpc.logicmodule.NotifyUnfederatedObjectsRequest.objectsIDs', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=22188,
-  serialized_end=22360,
-)
-
-
-_CHECKOBJECTFEDERATEDWITHDATACLAYINSTANCEREQUEST = _descriptor.Descriptor(
-  name='CheckObjectFederatedWithDataClayInstanceRequest',
-  full_name='dataclay.communication.grpc.logicmodule.CheckObjectFederatedWithDataClayInstanceRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='objectID', full_name='dataclay.communication.grpc.logicmodule.CheckObjectFederatedWithDataClayInstanceRequest.objectID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='extDataClayID', full_name='dataclay.communication.grpc.logicmodule.CheckObjectFederatedWithDataClayInstanceRequest.extDataClayID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=22363,
-  serialized_end=22555,
-)
-
-
-_CHECKOBJECTFEDERATEDWITHDATACLAYINSTANCERESPONSE = _descriptor.Descriptor(
-  name='CheckObjectFederatedWithDataClayInstanceResponse',
-  full_name='dataclay.communication.grpc.logicmodule.CheckObjectFederatedWithDataClayInstanceResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='isFederated', full_name='dataclay.communication.grpc.logicmodule.CheckObjectFederatedWithDataClayInstanceResponse.isFederated', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.CheckObjectFederatedWithDataClayInstanceResponse.excInfo', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=22558,
-  serialized_end=22697,
-)
-
-
-_CHECKOBJECTFEDERATEDREQUEST = _descriptor.Descriptor(
-  name='CheckObjectFederatedRequest',
-  full_name='dataclay.communication.grpc.logicmodule.CheckObjectFederatedRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='objectID', full_name='dataclay.communication.grpc.logicmodule.CheckObjectFederatedRequest.objectID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=22699,
-  serialized_end=22792,
-)
-
-
-_CHECKOBJECTFEDERATEDRESPONSE = _descriptor.Descriptor(
-  name='CheckObjectFederatedResponse',
-  full_name='dataclay.communication.grpc.logicmodule.CheckObjectFederatedResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='isFederated', full_name='dataclay.communication.grpc.logicmodule.CheckObjectFederatedResponse.isFederated', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.CheckObjectFederatedResponse.excInfo', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=22794,
-  serialized_end=22913,
-)
-
-
-_GETDATACLAYSOBJECTISFEDERATEDWITHREQUEST = _descriptor.Descriptor(
-  name='GetDataClaysObjectIsFederatedWithRequest',
-  full_name='dataclay.communication.grpc.logicmodule.GetDataClaysObjectIsFederatedWithRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='objectID', full_name='dataclay.communication.grpc.logicmodule.GetDataClaysObjectIsFederatedWithRequest.objectID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=22915,
-  serialized_end=23021,
-)
-
-
-_GETDATACLAYSOBJECTISFEDERATEDWITHRESPONSE = _descriptor.Descriptor(
-  name='GetDataClaysObjectIsFederatedWithResponse',
-  full_name='dataclay.communication.grpc.logicmodule.GetDataClaysObjectIsFederatedWithResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='extDataClayIDs', full_name='dataclay.communication.grpc.logicmodule.GetDataClaysObjectIsFederatedWithResponse.extDataClayIDs', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.GetDataClaysObjectIsFederatedWithResponse.excInfo', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=23024,
-  serialized_end=23215,
-)
-
-
-_GETEXTERNALSOURCEDATACLAYOFOBJECTREQUEST = _descriptor.Descriptor(
-  name='GetExternalSourceDataClayOfObjectRequest',
-  full_name='dataclay.communication.grpc.logicmodule.GetExternalSourceDataClayOfObjectRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='objectID', full_name='dataclay.communication.grpc.logicmodule.GetExternalSourceDataClayOfObjectRequest.objectID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=23217,
-  serialized_end=23323,
-)
-
-
-_GETEXTERNALSOURCEDATACLAYOFOBJECTRESPONSE = _descriptor.Descriptor(
-  name='GetExternalSourceDataClayOfObjectResponse',
-  full_name='dataclay.communication.grpc.logicmodule.GetExternalSourceDataClayOfObjectResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='extDataClayID', full_name='dataclay.communication.grpc.logicmodule.GetExternalSourceDataClayOfObjectResponse.extDataClayID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.GetExternalSourceDataClayOfObjectResponse.excInfo', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=23326,
-  serialized_end=23516,
+  serialized_start=14437,
+  serialized_end=14612,
 )
 
 
@@ -5586,141 +4697,6 @@ _REGISTEROBJECTFORGCREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='backendID', full_name='dataclay.communication.grpc.logicmodule.RegisterObjectForGCRequest.backendID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=23519,
-  serialized_end=23697,
-)
-
-
-_REGISTEROBJECTREQUEST = _descriptor.Descriptor(
-  name='RegisterObjectRequest',
-  full_name='dataclay.communication.grpc.logicmodule.RegisterObjectRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='regInfo', full_name='dataclay.communication.grpc.logicmodule.RegisterObjectRequest.regInfo', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='backendID', full_name='dataclay.communication.grpc.logicmodule.RegisterObjectRequest.backendID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='alias', full_name='dataclay.communication.grpc.logicmodule.RegisterObjectRequest.alias', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='lang', full_name='dataclay.communication.grpc.logicmodule.RegisterObjectRequest.lang', index=3,
-      number=4, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=23700,
-  serialized_end=23945,
-)
-
-
-_GETEXECUTIONENVIRONMENTSINFOREQUEST = _descriptor.Descriptor(
-  name='GetExecutionEnvironmentsInfoRequest',
-  full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sessionID', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='execEnvLang', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoRequest.execEnvLang', index=1,
-      number=2, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='fromClient', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoRequest.fromClient', index=2,
-      number=3, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=23948,
-  serialized_end=24135,
-)
-
-
-_GETEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY = _descriptor.Descriptor(
-  name='ExecEnvsEntry',
-  full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoResponse.ExecEnvsEntry',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='key', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoResponse.ExecEnvsEntry.key', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='value', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoResponse.ExecEnvsEntry.value', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -5732,77 +4708,40 @@ _GETEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY = _descriptor.Descriptor(
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=_b('8\001'),
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=24357,
-  serialized_end=24404,
-)
-
-_GETEXECUTIONENVIRONMENTSINFORESPONSE = _descriptor.Descriptor(
-  name='GetExecutionEnvironmentsInfoResponse',
-  full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='execEnvs', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoResponse.execEnvs', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoResponse.excInfo', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[_GETEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY, ],
-  enum_types=[
-  ],
   serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=24138,
-  serialized_end=24404,
+  serialized_start=14614,
+  serialized_end=14732,
 )
 
 
-_GETEXECUTIONENVIRONMENTSNAMESREQUEST = _descriptor.Descriptor(
-  name='GetExecutionEnvironmentsNamesRequest',
-  full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsNamesRequest',
+_REGISTEROBJECTSREQUEST = _descriptor.Descriptor(
+  name='RegisterObjectsRequest',
+  full_name='dataclay.communication.grpc.logicmodule.RegisterObjectsRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsNamesRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='regInfos', full_name='dataclay.communication.grpc.logicmodule.RegisterObjectsRequest.regInfos', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='credential', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsNamesRequest.credential', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='backendID', full_name='dataclay.communication.grpc.logicmodule.RegisterObjectsRequest.backendID', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='execEnvLang', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsNamesRequest.execEnvLang', index=2,
+      name='lang', full_name='dataclay.communication.grpc.logicmodule.RegisterObjectsRequest.lang', index=2,
       number=3, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -5820,27 +4759,27 @@ _GETEXECUTIONENVIRONMENTSNAMESREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=24407,
-  serialized_end=24643,
+  serialized_start=14735,
+  serialized_end=14907,
 )
 
 
-_GETEXECUTIONENVIRONMENTSNAMESRESPONSE = _descriptor.Descriptor(
-  name='GetExecutionEnvironmentsNamesResponse',
-  full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsNamesResponse',
+_REGISTEROBJECTSRESPONSE = _descriptor.Descriptor(
+  name='RegisterObjectsResponse',
+  full_name='dataclay.communication.grpc.logicmodule.RegisterObjectsResponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='execEnvs', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsNamesResponse.execEnvs', index=0,
+      name='objectIDs', full_name='dataclay.communication.grpc.logicmodule.RegisterObjectsResponse.objectIDs', index=0,
       number=1, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsNamesResponse.excInfo', index=1,
+      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.RegisterObjectsResponse.excInfo', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -5858,8 +4797,121 @@ _GETEXECUTIONENVIRONMENTSNAMESRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=24645,
-  serialized_end=24770,
+  serialized_start=14909,
+  serialized_end=15021,
+)
+
+
+_GETALLEXECUTIONENVIRONMENTSINFOREQUEST = _descriptor.Descriptor(
+  name='GetAllExecutionEnvironmentsInfoRequest',
+  full_name='dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='execEnvLang', full_name='dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoRequest.execEnvLang', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='getExternal', full_name='dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoRequest.getExternal', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=15023,
+  serialized_end=15148,
+)
+
+
+_GETALLEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY = _descriptor.Descriptor(
+  name='ExecEnvsEntry',
+  full_name='dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse.ExecEnvsEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse.ExecEnvsEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse.ExecEnvsEntry.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=_b('8\001'),
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=15376,
+  serialized_end=15485,
+)
+
+_GETALLEXECUTIONENVIRONMENTSINFORESPONSE = _descriptor.Descriptor(
+  name='GetAllExecutionEnvironmentsInfoResponse',
+  full_name='dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='execEnvs', full_name='dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse.execEnvs', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse.excInfo', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_GETALLEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=15151,
+  serialized_end=15485,
 )
 
 
@@ -5872,15 +4924,15 @@ _GETOBJECTINFOREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.GetObjectInfoRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.GetObjectInfoRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -5896,8 +4948,8 @@ _GETOBJECTINFOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=24773,
-  serialized_end=24925,
+  serialized_start=15487,
+  serialized_end=15546,
 )
 
 
@@ -5941,8 +4993,8 @@ _GETOBJECTINFORESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=24928,
-  serialized_end=25057,
+  serialized_start=15549,
+  serialized_end=15678,
 )
 
 
@@ -5955,8 +5007,8 @@ _GETOBJECTFROMALIASREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.GetObjectFromAliasRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -5979,8 +5031,8 @@ _GETOBJECTFROMALIASREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=25059,
-  serialized_end=25167,
+  serialized_start=15680,
+  serialized_end=15741,
 )
 
 
@@ -5993,22 +5045,22 @@ _GETOBJECTFROMALIASRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.GetObjectFromAliasResponse.objectID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='classID', full_name='dataclay.communication.grpc.logicmodule.GetObjectFromAliasResponse.classID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='hint', full_name='dataclay.communication.grpc.logicmodule.GetObjectFromAliasResponse.hint', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6031,46 +5083,8 @@ _GETOBJECTFROMALIASRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=25170,
-  serialized_end=25470,
-)
-
-
-_REGISTEROBJECTRESPONSE = _descriptor.Descriptor(
-  name='RegisterObjectResponse',
-  full_name='dataclay.communication.grpc.logicmodule.RegisterObjectResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='objectID', full_name='dataclay.communication.grpc.logicmodule.RegisterObjectResponse.objectID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.RegisterObjectResponse.excInfo', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=25473,
-  serialized_end=25629,
+  serialized_start=15744,
+  serialized_end=15889,
 )
 
 
@@ -6083,8 +5097,8 @@ _ADDALIASREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='objectIDToHaveAlias', full_name='dataclay.communication.grpc.logicmodule.AddAliasRequest.objectIDToHaveAlias', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6107,8 +5121,8 @@ _ADDALIASREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=25631,
-  serialized_end=25738,
+  serialized_start=15891,
+  serialized_end=15952,
 )
 
 
@@ -6121,8 +5135,8 @@ _DELETEALIASREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.DeleteAliasRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6145,8 +5159,8 @@ _DELETEALIASREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=25740,
-  serialized_end=25841,
+  serialized_start=15954,
+  serialized_end=16008,
 )
 
 
@@ -6159,8 +5173,8 @@ _GETOBJECTSMETADATAINFOOFCLASSFORNMREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='classID', full_name='dataclay.communication.grpc.logicmodule.GetObjectsMetaDataInfoOfClassForNMRequest.classID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6176,8 +5190,8 @@ _GETOBJECTSMETADATAINFOOFCLASSFORNMREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=25843,
-  serialized_end=25952,
+  serialized_start=16010,
+  serialized_end=16070,
 )
 
 
@@ -6197,8 +5211,8 @@ _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE_MDATAINFOENTRY = _descriptor.Descrip
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='dataclay.communication.grpc.logicmodule.GetObjectsMetaDataInfoOfClassForNMResponse.MdataInfoEntry.value', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6214,8 +5228,8 @@ _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE_MDATAINFOENTRY = _descriptor.Descrip
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=26188,
-  serialized_end=26236,
+  serialized_start=16306,
+  serialized_end=16404,
 )
 
 _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE = _descriptor.Descriptor(
@@ -6251,8 +5265,8 @@ _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=25955,
-  serialized_end=26236,
+  serialized_start=16073,
+  serialized_end=16404,
 )
 
 
@@ -6265,22 +5279,22 @@ _SETDATASETIDREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.SetDataSetIDRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.SetDataSetIDRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='datasetID', full_name='dataclay.communication.grpc.logicmodule.SetDataSetIDRequest.datasetID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6296,8 +5310,8 @@ _SETDATASETIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=26239,
-  serialized_end=26456,
+  serialized_start=16406,
+  serialized_end=16483,
 )
 
 
@@ -6310,134 +5324,13 @@ _SETDATASETIDFROMGARBAGECOLLECTORREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.SetDataSetIDFromGarbageCollectorRequest.objectID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='datasetID', full_name='dataclay.communication.grpc.logicmodule.SetDataSetIDFromGarbageCollectorRequest.datasetID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=26459,
-  serialized_end=26630,
-)
-
-
-_NEWVERSIONREQUEST = _descriptor.Descriptor(
-  name='NewVersionRequest',
-  full_name='dataclay.communication.grpc.logicmodule.NewVersionRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sessionID', full_name='dataclay.communication.grpc.logicmodule.NewVersionRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='objectID', full_name='dataclay.communication.grpc.logicmodule.NewVersionRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='optDestBackendID', full_name='dataclay.communication.grpc.logicmodule.NewVersionRequest.optDestBackendID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=26633,
-  serialized_end=26868,
-)
-
-
-_NEWVERSIONRESPONSE = _descriptor.Descriptor(
-  name='NewVersionResponse',
-  full_name='dataclay.communication.grpc.logicmodule.NewVersionResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='versionInfoYaml', full_name='dataclay.communication.grpc.logicmodule.NewVersionResponse.versionInfoYaml', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.NewVersionResponse.excInfo', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=26870,
-  serialized_end=26983,
-)
-
-
-_CONSOLIDATEVERSIONREQUEST = _descriptor.Descriptor(
-  name='ConsolidateVersionRequest',
-  full_name='dataclay.communication.grpc.logicmodule.ConsolidateVersionRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sessionID', full_name='dataclay.communication.grpc.logicmodule.ConsolidateVersionRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='versionInfoYaml', full_name='dataclay.communication.grpc.logicmodule.ConsolidateVersionRequest.versionInfoYaml', index=1,
+      name='datasetID', full_name='dataclay.communication.grpc.logicmodule.SetDataSetIDFromGarbageCollectorRequest.datasetID', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -6455,98 +5348,8 @@ _CONSOLIDATEVERSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=26985,
-  serialized_end=27103,
-)
-
-
-_NEWREPLICAREQUEST = _descriptor.Descriptor(
-  name='NewReplicaRequest',
-  full_name='dataclay.communication.grpc.logicmodule.NewReplicaRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sessionID', full_name='dataclay.communication.grpc.logicmodule.NewReplicaRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='objectID', full_name='dataclay.communication.grpc.logicmodule.NewReplicaRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='destBackendID', full_name='dataclay.communication.grpc.logicmodule.NewReplicaRequest.destBackendID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='recursive', full_name='dataclay.communication.grpc.logicmodule.NewReplicaRequest.recursive', index=3,
-      number=4, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=27106,
-  serialized_end=27357,
-)
-
-
-_NEWREPLICARESPONSE = _descriptor.Descriptor(
-  name='NewReplicaResponse',
-  full_name='dataclay.communication.grpc.logicmodule.NewReplicaResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='destBackendID', full_name='dataclay.communication.grpc.logicmodule.NewReplicaResponse.destBackendID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='excInfo', full_name='dataclay.communication.grpc.logicmodule.NewReplicaResponse.excInfo', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=27360,
-  serialized_end=27531,
+  serialized_start=16485,
+  serialized_end=16563,
 )
 
 
@@ -6559,29 +5362,29 @@ _MOVEOBJECTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.MoveObjectRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.MoveObjectRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='srcBackendID', full_name='dataclay.communication.grpc.logicmodule.MoveObjectRequest.srcBackendID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='destBackendID', full_name='dataclay.communication.grpc.logicmodule.MoveObjectRequest.destBackendID', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6604,8 +5407,8 @@ _MOVEOBJECTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=27534,
-  serialized_end=27867,
+  serialized_start=16565,
+  serialized_end=16685,
 )
 
 
@@ -6618,7 +5421,7 @@ _MOVEOBJECTRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='objectIDs', full_name='dataclay.communication.grpc.logicmodule.MoveObjectResponse.objectIDs', index=0,
-      number=1, type=11, cpp_type=10, label=3,
+      number=1, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -6642,8 +5445,8 @@ _MOVEOBJECTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=27870,
-  serialized_end=28023,
+  serialized_start=16687,
+  serialized_end=16794,
 )
 
 
@@ -6656,15 +5459,15 @@ _SETOBJECTREADONLYREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.SetObjectReadOnlyRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.SetObjectReadOnlyRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6680,8 +5483,8 @@ _SETOBJECTREADONLYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=28026,
-  serialized_end=28182,
+  serialized_start=16796,
+  serialized_end=16859,
 )
 
 
@@ -6694,15 +5497,15 @@ _SETOBJECTREADWRITEREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.SetObjectReadWriteRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.SetObjectReadWriteRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6718,8 +5521,8 @@ _SETOBJECTREADWRITEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=28185,
-  serialized_end=28342,
+  serialized_start=16861,
+  serialized_end=16925,
 )
 
 
@@ -6732,15 +5535,15 @@ _GETMETADATABYOIDREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.GetMetadataByOIDRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.GetMetadataByOIDRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6756,8 +5559,8 @@ _GETMETADATABYOIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=28345,
-  serialized_end=28500,
+  serialized_start=16927,
+  serialized_end=16989,
 )
 
 
@@ -6769,9 +5572,9 @@ _GETMETADATABYOIDRESPONSE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='objMdataYaml', full_name='dataclay.communication.grpc.logicmodule.GetMetadataByOIDResponse.objMdataYaml', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='mdInfo', full_name='dataclay.communication.grpc.logicmodule.GetMetadataByOIDResponse.mdInfo', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6794,8 +5597,8 @@ _GETMETADATABYOIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=28502,
-  serialized_end=28618,
+  serialized_start=16992,
+  serialized_end=17152,
 )
 
 
@@ -6808,8 +5611,8 @@ _GETMETADATABYOIDFORDSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.GetMetadataByOIDForDSRequest.objectID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6825,8 +5628,8 @@ _GETMETADATABYOIDFORDSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=28620,
-  serialized_end=28714,
+  serialized_start=17154,
+  serialized_end=17202,
 )
 
 
@@ -6838,9 +5641,9 @@ _GETMETADATABYOIDFORDSRESPONSE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='objMdataYaml', full_name='dataclay.communication.grpc.logicmodule.GetMetadataByOIDForDSResponse.objMdataYaml', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='mdInfo', full_name='dataclay.communication.grpc.logicmodule.GetMetadataByOIDForDSResponse.mdInfo', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6863,8 +5666,8 @@ _GETMETADATABYOIDFORDSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=28716,
-  serialized_end=28837,
+  serialized_start=17205,
+  serialized_end=17370,
 )
 
 
@@ -6877,43 +5680,43 @@ _EXECUTEIMPLEMENTATIONREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.ExecuteImplementationRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='operationID', full_name='dataclay.communication.grpc.logicmodule.ExecuteImplementationRequest.operationID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='implementationID', full_name='dataclay.communication.grpc.logicmodule.ExecuteImplementationRequest.implementationID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='contractID', full_name='dataclay.communication.grpc.logicmodule.ExecuteImplementationRequest.contractID', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='interfaceID', full_name='dataclay.communication.grpc.logicmodule.ExecuteImplementationRequest.interfaceID', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.ExecuteImplementationRequest.objectID', index=5,
-      number=6, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -6936,8 +5739,8 @@ _EXECUTEIMPLEMENTATIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=28840,
-  serialized_end=29370,
+  serialized_start=17373,
+  serialized_end=17610,
 )
 
 
@@ -6974,8 +5777,8 @@ _EXECUTEIMPLEMENTATIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=29373,
-  serialized_end=29551,
+  serialized_start=17613,
+  serialized_end=17791,
 )
 
 
@@ -6988,15 +5791,15 @@ _EXECUTEMETHODONTARGETREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.ExecuteMethodOnTargetRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.ExecuteMethodOnTargetRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7016,8 +5819,8 @@ _EXECUTEMETHODONTARGETREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='targetBackendID', full_name='dataclay.communication.grpc.logicmodule.ExecuteMethodOnTargetRequest.targetBackendID', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7033,8 +5836,8 @@ _EXECUTEMETHODONTARGETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=29554,
-  serialized_end=29916,
+  serialized_start=17794,
+  serialized_end=18003,
 )
 
 
@@ -7071,8 +5874,8 @@ _EXECUTEMETHODONTARGETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=29919,
-  serialized_end=30097,
+  serialized_start=18006,
+  serialized_end=18184,
 )
 
 
@@ -7085,22 +5888,22 @@ _SYNCHRONIZEFEDERATEDOBJECTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='extDataClayID', full_name='dataclay.communication.grpc.logicmodule.SynchronizeFederatedObjectRequest.extDataClayID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.SynchronizeFederatedObjectRequest.objectID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='implementationID', full_name='dataclay.communication.grpc.logicmodule.SynchronizeFederatedObjectRequest.implementationID', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7130,8 +5933,8 @@ _SYNCHRONIZEFEDERATEDOBJECTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=30100,
-  serialized_end=30461,
+  serialized_start=18187,
+  serialized_end=18392,
 )
 
 
@@ -7144,8 +5947,8 @@ _GETSTUBSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='applicantAccountID', full_name='dataclay.communication.grpc.logicmodule.GetStubsRequest.applicantAccountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7165,7 +5968,7 @@ _GETSTUBSREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='contractIDs', full_name='dataclay.communication.grpc.logicmodule.GetStubsRequest.contractIDs', index=3,
-      number=4, type=11, cpp_type=10, label=3,
+      number=4, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -7182,8 +5985,8 @@ _GETSTUBSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=30464,
-  serialized_end=30755,
+  serialized_start=18395,
+  serialized_end=18591,
 )
 
 
@@ -7220,8 +6023,8 @@ _GETSTUBSRESPONSE_STUBSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=30931,
-  serialized_end=30975,
+  serialized_start=18767,
+  serialized_end=18811,
 )
 
 _GETSTUBSRESPONSE = _descriptor.Descriptor(
@@ -7257,8 +6060,8 @@ _GETSTUBSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=30758,
-  serialized_end=30975,
+  serialized_start=18594,
+  serialized_end=18811,
 )
 
 
@@ -7271,8 +6074,8 @@ _GETBABELSTUBSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='accountID', full_name='dataclay.communication.grpc.logicmodule.GetBabelStubsRequest.accountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7285,7 +6088,7 @@ _GETBABELSTUBSREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='contractIDs', full_name='dataclay.communication.grpc.logicmodule.GetBabelStubsRequest.contractIDs', index=2,
-      number=4, type=11, cpp_type=10, label=3,
+      number=4, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -7302,8 +6105,8 @@ _GETBABELSTUBSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=30978,
-  serialized_end=31204,
+  serialized_start=18814,
+  serialized_end=18945,
 )
 
 
@@ -7340,8 +6143,8 @@ _GETBABELSTUBSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=31206,
-  serialized_end=31315,
+  serialized_start=18947,
+  serialized_end=19056,
 )
 
 
@@ -7354,8 +6157,8 @@ _GETCLASSNAMEFORDSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='classID', full_name='dataclay.communication.grpc.logicmodule.GetClassNameForDSRequest.classID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7371,8 +6174,8 @@ _GETCLASSNAMEFORDSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=31317,
-  serialized_end=31409,
+  serialized_start=19058,
+  serialized_end=19101,
 )
 
 
@@ -7409,8 +6212,8 @@ _GETCLASSNAMEFORDSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=31411,
-  serialized_end=31525,
+  serialized_start=19103,
+  serialized_end=19217,
 )
 
 
@@ -7423,8 +6226,8 @@ _GETCLASSNAMEANDNAMESPACEFORDSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='classID', full_name='dataclay.communication.grpc.logicmodule.GetClassNameAndNamespaceForDSRequest.classID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7440,8 +6243,8 @@ _GETCLASSNAMEANDNAMESPACEFORDSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=31527,
-  serialized_end=31631,
+  serialized_start=19219,
+  serialized_end=19274,
 )
 
 
@@ -7485,8 +6288,8 @@ _GETCLASSNAMEANDNAMESPACEFORDSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=31634,
-  serialized_end=31779,
+  serialized_start=19277,
+  serialized_end=19422,
 )
 
 
@@ -7499,8 +6302,8 @@ _REGISTERECAREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='applicantAccountID', full_name='dataclay.communication.grpc.logicmodule.RegisterECARequest.applicantAccountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7530,8 +6333,8 @@ _REGISTERECAREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=31782,
-  serialized_end=31959,
+  serialized_start=19425,
+  serialized_end=19555,
 )
 
 
@@ -7561,8 +6364,8 @@ _ADVISEEVENTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=31961,
-  serialized_end=32000,
+  serialized_start=19557,
+  serialized_end=19596,
 )
 
 
@@ -7575,8 +6378,8 @@ _GETCONTRACTIDOFDATACLAYPROVIDERREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='applicantAccountID', full_name='dataclay.communication.grpc.logicmodule.GetContractIDOfDataClayProviderRequest.applicantAccountID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7599,8 +6402,8 @@ _GETCONTRACTIDOFDATACLAYPROVIDERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=32003,
-  serialized_end=32187,
+  serialized_start=19599,
+  serialized_end=19736,
 )
 
 
@@ -7613,8 +6416,8 @@ _GETCONTRACTIDOFDATACLAYPROVIDERRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='contractID', full_name='dataclay.communication.grpc.logicmodule.GetContractIDOfDataClayProviderResponse.contractID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7637,8 +6440,8 @@ _GETCONTRACTIDOFDATACLAYPROVIDERRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=32190,
-  serialized_end=32367,
+  serialized_start=19739,
+  serialized_end=19868,
 )
 
 
@@ -7668,8 +6471,8 @@ _ACTIVATETRACINGREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=32369,
-  serialized_end=32409,
+  serialized_start=19870,
+  serialized_end=19910,
 )
 
 
@@ -7682,8 +6485,8 @@ _CLOSESESSIONREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sessionID', full_name='dataclay.communication.grpc.logicmodule.CloseSessionRequest.sessionID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7699,8 +6502,8 @@ _CLOSESESSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=32411,
-  serialized_end=32498,
+  serialized_start=19912,
+  serialized_end=19952,
 )
 
 
@@ -7713,7 +6516,7 @@ _UNREGISTEROBJECTSREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='objectsToUnregister', full_name='dataclay.communication.grpc.logicmodule.UnregisterObjectsRequest.objectsToUnregister', index=0,
-      number=1, type=11, cpp_type=10, label=3,
+      number=1, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -7730,8 +6533,8 @@ _UNREGISTEROBJECTSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=32500,
-  serialized_end=32601,
+  serialized_start=19954,
+  serialized_end=20009,
 )
 
 
@@ -7768,8 +6571,8 @@ _ISPREFETCHINGENABLEDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=32603,
-  serialized_end=32718,
+  serialized_start=20011,
+  serialized_end=20126,
 )
 
 
@@ -7782,8 +6585,8 @@ _OBJECTEXISTSINDATACLAYREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='objectID', full_name='dataclay.communication.grpc.logicmodule.ObjectExistsInDataClayRequest.objectID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7799,8 +6602,8 @@ _OBJECTEXISTSINDATACLAYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=32720,
-  serialized_end=32815,
+  serialized_start=20128,
+  serialized_end=20177,
 )
 
 
@@ -7837,8 +6640,8 @@ _OBJECTEXISTSINDATACLAYRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=32817,
-  serialized_end=32933,
+  serialized_start=20179,
+  serialized_end=20295,
 )
 
 
@@ -7868,8 +6671,8 @@ _GETCLASSESINNAMESPACEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=32935,
-  serialized_end=32988,
+  serialized_start=20297,
+  serialized_end=20350,
 )
 
 
@@ -7913,8 +6716,8 @@ _GETCLASSESINNAMESPACERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=32991,
-  serialized_end=33136,
+  serialized_start=20353,
+  serialized_end=20498,
 )
 
 
@@ -7934,8 +6737,8 @@ _IMPORTMODELSFROMEXTERNALDATACLAYREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dataClayID', full_name='dataclay.communication.grpc.logicmodule.ImportModelsFromExternalDataClayRequest.dataClayID', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -7951,8 +6754,8 @@ _IMPORTMODELSFROMEXTERNALDATACLAYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=33139,
-  serialized_end=33279,
+  serialized_start=20500,
+  serialized_end=20584,
 )
 
 
@@ -7982,8 +6785,8 @@ _GETSTORAGELOCATIONIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=33281,
-  serialized_end=33326,
+  serialized_start=20586,
+  serialized_end=20631,
 )
 
 
@@ -7996,8 +6799,8 @@ _GETSTORAGELOCATIONIDRESPONSE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='storageLocationID', full_name='dataclay.communication.grpc.logicmodule.GetStorageLocationIDResponse.storageLocationID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -8020,8 +6823,8 @@ _GETSTORAGELOCATIONIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=33329,
-  serialized_end=33509,
+  serialized_start=20633,
+  serialized_end=20758,
 )
 
 
@@ -8034,8 +6837,8 @@ _NOTIFYEXECUTIONENVIRONMENTSHUTDOWNREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='executionEnvironmentID', full_name='dataclay.communication.grpc.logicmodule.NotifyExecutionEnvironmentShutdownRequest.executionEnvironmentID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -8051,8 +6854,8 @@ _NOTIFYEXECUTIONENVIRONMENTSHUTDOWNREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=33512,
-  serialized_end=33647,
+  serialized_start=20760,
+  serialized_end=20835,
 )
 
 
@@ -8065,8 +6868,8 @@ _NOTIFYSTORAGELOCATIONSHUTDOWNREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='storageLocationID', full_name='dataclay.communication.grpc.logicmodule.NotifyStorageLocationShutdownRequest.storageLocationID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -8082,8 +6885,8 @@ _NOTIFYSTORAGELOCATIONSHUTDOWNREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=33649,
-  serialized_end=33769,
+  serialized_start=20837,
+  serialized_end=20902,
 )
 
 
@@ -8096,8 +6899,8 @@ _EXISTSACTIVEENVIRONMENTSFORSLREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='storageLocationID', full_name='dataclay.communication.grpc.logicmodule.ExistsActiveEnvironmentsForSLRequest.storageLocationID', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -8113,8 +6916,8 @@ _EXISTSACTIVEENVIRONMENTSFORSLREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=33771,
-  serialized_end=33891,
+  serialized_start=20904,
+  serialized_end=20969,
 )
 
 
@@ -8151,379 +6954,238 @@ _EXISTSACTIVEENVIRONMENTSFORSLRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=33893,
-  serialized_end=34016,
+  serialized_start=20971,
+  serialized_end=21094,
 )
 
-_NEWACCOUNTREQUEST.fields_by_name['adminID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
+
+_METADATAINFO = _descriptor.Descriptor(
+  name='MetadataInfo',
+  full_name='dataclay.communication.grpc.logicmodule.MetadataInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='dataClayID', full_name='dataclay.communication.grpc.logicmodule.MetadataInfo.dataClayID', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='isReadOnly', full_name='dataclay.communication.grpc.logicmodule.MetadataInfo.isReadOnly', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='datasetID', full_name='dataclay.communication.grpc.logicmodule.MetadataInfo.datasetID', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='metaclassID', full_name='dataclay.communication.grpc.logicmodule.MetadataInfo.metaclassID', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='locations', full_name='dataclay.communication.grpc.logicmodule.MetadataInfo.locations', index=4,
+      number=5, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='alias', full_name='dataclay.communication.grpc.logicmodule.MetadataInfo.alias', index=5,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ownerID', full_name='dataclay.communication.grpc.logicmodule.MetadataInfo.ownerID', index=6,
+      number=7, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=21097,
+  serialized_end=21242,
+)
+
 _NEWACCOUNTREQUEST.fields_by_name['admincredential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_NEWACCOUNTRESPONSE.fields_by_name['newAccountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _NEWACCOUNTRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETACCOUNTIDRESPONSE.fields_by_name['newAccountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETACCOUNTIDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_AUTOREGISTERSLREQUEST.fields_by_name['storageLocationID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._STORAGELOCATIONID
-_AUTOREGISTEREEREQUEST.fields_by_name['executionEnvironmentID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
 _AUTOREGISTEREEREQUEST.fields_by_name['lang'].enum_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._LANGS
-_AUTOREGISTEREERESPONSE.fields_by_name['storageLocationID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._STORAGELOCATIONID
 _AUTOREGISTEREERESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_UNREGISTERSTORAGELOCATIONREQUEST.fields_by_name['storageLocationID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._STORAGELOCATIONID
-_UNREGISTEREXECUTIONENVIRONMENTREQUEST.fields_by_name['executionEnvironmentID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
-_PERFORMSETACCOUNTSREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _PERFORMSETACCOUNTSREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
 _PERFORMSETACCOUNTSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_PERFORMSETOPERATIONSREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _PERFORMSETOPERATIONSREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
 _PERFORMSETOPERATIONSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETACCOUNTLISTREQUEST.fields_by_name['adminID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETACCOUNTLISTREQUEST.fields_by_name['admincredential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
 _GETACCOUNTLISTRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_NEWSESSIONREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _NEWSESSIONREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_NEWSESSIONREQUEST.fields_by_name['contractIDs'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CONTRACTID
-_NEWSESSIONREQUEST.fields_by_name['dataSetIDs'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATASETID
-_NEWSESSIONREQUEST.fields_by_name['storeDataSet'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATASETID
 _NEWSESSIONREQUEST.fields_by_name['sessionLang'].enum_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._LANGS
 _NEWSESSIONRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETINFOOFSESSIONFORDSREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_GETINFOOFSESSIONFORDSRESPONSE.fields_by_name['dataSetID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATASETID
-_GETINFOOFSESSIONFORDSRESPONSE.fields_by_name['dataSetIDs'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATASETID
 _GETINFOOFSESSIONFORDSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_NEWNAMESPACEREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _NEWNAMESPACEREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_NEWNAMESPACERESPONSE.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
 _NEWNAMESPACERESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETNAMESPACESREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETNAMESPACESREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
 _GETNAMESPACESRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_REMOVENAMESPACEREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _REMOVENAMESPACEREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETNAMESPACEIDREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETNAMESPACEIDREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETNAMESPACEIDRESPONSE.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
 _GETNAMESPACEIDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETNAMESPACELANGREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETNAMESPACELANGREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
 _GETNAMESPACELANGRESPONSE.fields_by_name['language'].enum_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._LANGS
 _GETNAMESPACELANGRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETOBJECTDATASETIDREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_GETOBJECTDATASETIDREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_GETOBJECTDATASETIDRESPONSE.fields_by_name['dataSetID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATASETID
 _GETOBJECTDATASETIDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_IMPORTINTERFACEREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _IMPORTINTERFACEREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_IMPORTINTERFACEREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
-_IMPORTINTERFACEREQUEST.fields_by_name['contractID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CONTRACTID
-_IMPORTINTERFACEREQUEST.fields_by_name['interfaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._INTERFACEID
-_IMPORTCONTRACTREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _IMPORTCONTRACTREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_IMPORTCONTRACTREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
-_IMPORTCONTRACTREQUEST.fields_by_name['contractID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CONTRACTID
-_NEWDATASETREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _NEWDATASETREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_NEWDATASETRESPONSE.fields_by_name['dataSetID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATASETID
 _NEWDATASETRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_REMOVEDATASETREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _REMOVEDATASETREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETDATASETIDREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETDATASETIDREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETDATASETIDRESPONSE.fields_by_name['dataSetID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATASETID
 _GETDATASETIDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETPUBLICDATASETSREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETPUBLICDATASETSREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
 _GETPUBLICDATASETSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETACCOUNTDATASETSREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETACCOUNTDATASETSREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
 _GETACCOUNTDATASETSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_CHECKDATASETISPUBLICREQUEST.fields_by_name['dataSetID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATASETID
 _CHECKDATASETISPUBLICRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _NEWCLASSREQUEST_NEWCLASSESENTRY.containing_type = _NEWCLASSREQUEST
-_NEWCLASSREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _NEWCLASSREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
 _NEWCLASSREQUEST.fields_by_name['language'].enum_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._LANGS
 _NEWCLASSREQUEST.fields_by_name['newClasses'].message_type = _NEWCLASSREQUEST_NEWCLASSESENTRY
 _NEWCLASSRESPONSE_NEWCLASSESENTRY.containing_type = _NEWCLASSRESPONSE
 _NEWCLASSRESPONSE.fields_by_name['newClasses'].message_type = _NEWCLASSRESPONSE_NEWCLASSESENTRY
 _NEWCLASSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_NEWCLASSIDREQUEST_NEWCLASSESENTRY.containing_type = _NEWCLASSIDREQUEST
-_NEWCLASSIDREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
-_NEWCLASSIDREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_NEWCLASSIDREQUEST.fields_by_name['language'].enum_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._LANGS
-_NEWCLASSIDREQUEST.fields_by_name['newClasses'].message_type = _NEWCLASSIDREQUEST_NEWCLASSESENTRY
-_NEWCLASSIDRESPONSE.fields_by_name['classID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._METACLASSID
-_NEWCLASSIDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_REMOVECLASSREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _REMOVECLASSREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_REMOVECLASSREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
-_REMOVEOPERATIONREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _REMOVEOPERATIONREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_REMOVEOPERATIONREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
-_REMOVEIMPLEMENTATIONREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _REMOVEIMPLEMENTATIONREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_REMOVEIMPLEMENTATIONREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
-_REMOVEIMPLEMENTATIONREQUEST.fields_by_name['implementationID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._IMPLEMENTATIONID
-_GETOPERATIONIDREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETOPERATIONIDREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETOPERATIONIDREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
-_GETOPERATIONIDRESPONSE.fields_by_name['operationID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OPERATIONID
 _GETOPERATIONIDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETPROPERTYIDREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETPROPERTYIDREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETPROPERTYIDREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
-_GETPROPERTYIDRESPONSE.fields_by_name['propertyID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._PROPERTYID
 _GETPROPERTYIDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETCLASSIDREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETCLASSIDREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETCLASSIDREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
-_GETCLASSIDRESPONSE.fields_by_name['classID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._METACLASSID
 _GETCLASSIDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETCLASSINFOREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETCLASSINFOREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETCLASSINFOREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
 _GETCLASSINFORESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETINFOOFCLASSESINNAMESPACEREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETINFOOFCLASSESINNAMESPACEREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETINFOOFCLASSESINNAMESPACEREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
 _GETINFOOFCLASSESINNAMESPACERESPONSE_CLASSESINFOENTRY.containing_type = _GETINFOOFCLASSESINNAMESPACERESPONSE
 _GETINFOOFCLASSESINNAMESPACERESPONSE.fields_by_name['classesInfo'].message_type = _GETINFOOFCLASSESINNAMESPACERESPONSE_CLASSESINFOENTRY
 _GETINFOOFCLASSESINNAMESPACERESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETIMPORTEDCLASSESINFOINNAMESPACEREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETIMPORTEDCLASSESINFOINNAMESPACEREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETIMPORTEDCLASSESINFOINNAMESPACEREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
 _GETIMPORTEDCLASSESINFOINNAMESPACERESPONSE_IMPORTEDCLASSESENTRY.containing_type = _GETIMPORTEDCLASSESINFOINNAMESPACERESPONSE
 _GETIMPORTEDCLASSESINFOINNAMESPACERESPONSE.fields_by_name['importedClasses'].message_type = _GETIMPORTEDCLASSESINFOINNAMESPACERESPONSE_IMPORTEDCLASSESENTRY
 _GETIMPORTEDCLASSESINFOINNAMESPACERESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETCLASSIDFROMIMPORTREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETCLASSIDFROMIMPORTREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETCLASSIDFROMIMPORTREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
-_GETCLASSIDFROMIMPORTRESPONSE.fields_by_name['classID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._METACLASSID
 _GETCLASSIDFROMIMPORTRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_NEWCONTRACTREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _NEWCONTRACTREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_NEWCONTRACTRESPONSE.fields_by_name['contractID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CONTRACTID
 _NEWCONTRACTRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_REGISTERTOPUBLICCONTRACTREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _REGISTERTOPUBLICCONTRACTREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_REGISTERTOPUBLICCONTRACTREQUEST.fields_by_name['contractID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CONTRACTID
-_REGISTERTOPUBLICCONTRACTOFNAMESPACEREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _REGISTERTOPUBLICCONTRACTOFNAMESPACEREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_REGISTERTOPUBLICCONTRACTOFNAMESPACEREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
-_REGISTERTOPUBLICCONTRACTOFNAMESPACERESPONSE.fields_by_name['contractID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CONTRACTID
 _REGISTERTOPUBLICCONTRACTOFNAMESPACERESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETCONTRACTIDSOFAPPLICANTREQUEST.fields_by_name['applicantID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETCONTRACTIDSOFAPPLICANTREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
 _GETCONTRACTIDSOFAPPLICANTRESPONSE_CONTRACTSENTRY.containing_type = _GETCONTRACTIDSOFAPPLICANTRESPONSE
 _GETCONTRACTIDSOFAPPLICANTRESPONSE.fields_by_name['contracts'].message_type = _GETCONTRACTIDSOFAPPLICANTRESPONSE_CONTRACTSENTRY
 _GETCONTRACTIDSOFAPPLICANTRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETCONTRACTIDSOFPROVIDERREQUEST.fields_by_name['providerID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETCONTRACTIDSOFPROVIDERREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETCONTRACTIDSOFPROVIDERREQUEST.fields_by_name['namespaceIDOfProvider'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
 _GETCONTRACTIDSOFPROVIDERRESPONSE_CONTRACTSENTRY.containing_type = _GETCONTRACTIDSOFPROVIDERRESPONSE
 _GETCONTRACTIDSOFPROVIDERRESPONSE.fields_by_name['contracts'].message_type = _GETCONTRACTIDSOFPROVIDERRESPONSE_CONTRACTSENTRY
 _GETCONTRACTIDSOFPROVIDERRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETCONTRACTSOFAPPLICANTWITHPROVREQUEST.fields_by_name['applicantID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETCONTRACTSOFAPPLICANTWITHPROVREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETCONTRACTSOFAPPLICANTWITHPROVREQUEST.fields_by_name['namespaceIDOfProvider'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
 _GETCONTRACTSOFAPPLICANTWITHPROVRESPONSE_CONTRACTSENTRY.containing_type = _GETCONTRACTSOFAPPLICANTWITHPROVRESPONSE
 _GETCONTRACTSOFAPPLICANTWITHPROVRESPONSE.fields_by_name['contracts'].message_type = _GETCONTRACTSOFAPPLICANTWITHPROVRESPONSE_CONTRACTSENTRY
 _GETCONTRACTSOFAPPLICANTWITHPROVRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_NEWDATACONTRACTREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _NEWDATACONTRACTREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_NEWDATACONTRACTRESPONSE.fields_by_name['dataContractID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACONTRACTID
 _NEWDATACONTRACTRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_REGISTERTOPUBLICDATACONTRACTREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _REGISTERTOPUBLICDATACONTRACTREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_REGISTERTOPUBLICDATACONTRACTREQUEST.fields_by_name['dataContractID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACONTRACTID
-_GETDATACONTRACTIDSOFAPPLICANTREQUEST.fields_by_name['applicantID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETDATACONTRACTIDSOFAPPLICANTREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
 _GETDATACONTRACTIDSOFAPPLICANTRESPONSE_DATACONTRACTSENTRY.containing_type = _GETDATACONTRACTIDSOFAPPLICANTRESPONSE
 _GETDATACONTRACTIDSOFAPPLICANTRESPONSE.fields_by_name['datacontracts'].message_type = _GETDATACONTRACTIDSOFAPPLICANTRESPONSE_DATACONTRACTSENTRY
 _GETDATACONTRACTIDSOFAPPLICANTRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETDATACONTRACTIDSOFPROVIDERREQUEST.fields_by_name['providerID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETDATACONTRACTIDSOFPROVIDERREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETDATACONTRACTIDSOFPROVIDERREQUEST.fields_by_name['dataSetIDOfProvider'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATASETID
 _GETDATACONTRACTIDSOFPROVIDERRESPONSE_DATACONTRACTSENTRY.containing_type = _GETDATACONTRACTIDSOFPROVIDERRESPONSE
 _GETDATACONTRACTIDSOFPROVIDERRESPONSE.fields_by_name['datacontracts'].message_type = _GETDATACONTRACTIDSOFPROVIDERRESPONSE_DATACONTRACTSENTRY
 _GETDATACONTRACTIDSOFPROVIDERRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETDATACONTRACTINFOOFAPPLICANTWITHPROVREQUEST.fields_by_name['applicantID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETDATACONTRACTINFOOFAPPLICANTWITHPROVREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETDATACONTRACTINFOOFAPPLICANTWITHPROVREQUEST.fields_by_name['dataSetIDOfProvider'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATASETID
 _GETDATACONTRACTINFOOFAPPLICANTWITHPROVRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_NEWINTERFACEREQUEST.fields_by_name['applicantID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _NEWINTERFACEREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_NEWINTERFACERESPONSE.fields_by_name['interfaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._INTERFACEID
 _NEWINTERFACERESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETINTERFACEINFOREQUEST.fields_by_name['applicantID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETINTERFACEINFOREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETINTERFACEINFOREQUEST.fields_by_name['interfaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._INTERFACEID
 _GETINTERFACEINFORESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_REMOVEINTERFACEREQUEST.fields_by_name['applicantID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _REMOVEINTERFACEREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_REMOVEINTERFACEREQUEST.fields_by_name['namespaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._NAMESPACEID
-_REMOVEINTERFACEREQUEST.fields_by_name['interfaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._INTERFACEID
-_GETSTORAGELOCATIONFORDSREQUEST.fields_by_name['storageLocationID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._STORAGELOCATIONID
-_GETSTORAGELOCATIONFORDSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETEXECUTIONENVIRONMENTFORDSREQUEST.fields_by_name['execEnvID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
-_GETEXECUTIONENVIRONMENTFORDSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETDATACLAYIDRESPONSE.fields_by_name['dataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
+_GETSTORAGELOCATIONINFORESPONSE.fields_by_name['storageLocationInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._STORAGELOCATIONINFO
+_GETSTORAGELOCATIONINFORESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
+_GETEXECUTIONENVIRONMENTINFORESPONSE.fields_by_name['executionEnvironmentInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTINFO
+_GETEXECUTIONENVIRONMENTINFORESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _GETDATACLAYIDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_REGISTEREXTERNALDATACLAYOVERRIDEAUTHORITYREQUEST.fields_by_name['adminAccountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _REGISTEREXTERNALDATACLAYOVERRIDEAUTHORITYREQUEST.fields_by_name['adminCredential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_REGISTEREXTERNALDATACLAYRESPONSE.fields_by_name['extDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
 _REGISTEREXTERNALDATACLAYRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_NOTIFYREGISTRATIONOFEXTERNALDATACLAYREQUEST.fields_by_name['extDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_NOTIFYREGISTRATIONOFEXTERNALDATACLAYRESPONSE.fields_by_name['extDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
 _NOTIFYREGISTRATIONOFEXTERNALDATACLAYRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETEXTERNALDATACLAYIDRESPONSE.fields_by_name['extDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
 _GETEXTERNALDATACLAYIDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETEXTDATACLAYINFOREQUEST.fields_by_name['extDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
+_GETEXTDATACLAYINFORESPONSE.fields_by_name['extDataClayInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCE
 _GETEXTDATACLAYINFORESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_FEDERATEOBJECTREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_FEDERATEOBJECTREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_FEDERATEOBJECTREQUEST.fields_by_name['extDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_UNFEDERATEOBJECTREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_UNFEDERATEOBJECTREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_UNFEDERATEOBJECTREQUEST.fields_by_name['extDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_UNFEDERATEOBJECTWITHALLDCSREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_UNFEDERATEOBJECTWITHALLDCSREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_MIGRATEFEDERATEDOBJECTSREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_MIGRATEFEDERATEDOBJECTSREQUEST.fields_by_name['externalOriginDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_MIGRATEFEDERATEDOBJECTSREQUEST.fields_by_name['externalDestinationDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_FEDERATEALLOBJECTSREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_FEDERATEALLOBJECTSREQUEST.fields_by_name['externalDestinationDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_UNFEDERATEALLOBJECTSREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_UNFEDERATEALLOBJECTSREQUEST.fields_by_name['extDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_UNFEDERATEALLOBJECTSWITHALLDCSREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_NOTIFYFEDERATEDOBJECTSREQUEST_OBJECTSINFOENTRY.containing_type = _NOTIFYFEDERATEDOBJECTSREQUEST
-_NOTIFYFEDERATEDOBJECTSREQUEST_FEDERATEDOBJECTSENTRY.fields_by_name['value'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SERIALIZEDPARAMETERSORRETURN
-_NOTIFYFEDERATEDOBJECTSREQUEST_FEDERATEDOBJECTSENTRY.containing_type = _NOTIFYFEDERATEDOBJECTSREQUEST
-_NOTIFYFEDERATEDOBJECTSREQUEST.fields_by_name['srcDcID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_NOTIFYFEDERATEDOBJECTSREQUEST.fields_by_name['objectsInfo'].message_type = _NOTIFYFEDERATEDOBJECTSREQUEST_OBJECTSINFOENTRY
-_NOTIFYFEDERATEDOBJECTSREQUEST.fields_by_name['federatedObjects'].message_type = _NOTIFYFEDERATEDOBJECTSREQUEST_FEDERATEDOBJECTSENTRY
-_NOTIFYUNFEDERATEDOBJECTSREQUEST.fields_by_name['srcDcID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_NOTIFYUNFEDERATEDOBJECTSREQUEST.fields_by_name['objectsIDs'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_CHECKOBJECTFEDERATEDWITHDATACLAYINSTANCEREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_CHECKOBJECTFEDERATEDWITHDATACLAYINSTANCEREQUEST.fields_by_name['extDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_CHECKOBJECTFEDERATEDWITHDATACLAYINSTANCERESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_CHECKOBJECTFEDERATEDREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_CHECKOBJECTFEDERATEDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETDATACLAYSOBJECTISFEDERATEDWITHREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_GETDATACLAYSOBJECTISFEDERATEDWITHRESPONSE.fields_by_name['extDataClayIDs'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_GETDATACLAYSOBJECTISFEDERATEDWITHRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETEXTERNALSOURCEDATACLAYOFOBJECTREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_GETEXTERNALSOURCEDATACLAYOFOBJECTRESPONSE.fields_by_name['extDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_GETEXTERNALSOURCEDATACLAYOFOBJECTRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _REGISTEROBJECTFORGCREQUEST.fields_by_name['regInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._REGISTRATIONINFO
-_REGISTEROBJECTFORGCREQUEST.fields_by_name['backendID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
-_REGISTEROBJECTREQUEST.fields_by_name['regInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._REGISTRATIONINFO
-_REGISTEROBJECTREQUEST.fields_by_name['backendID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
-_REGISTEROBJECTREQUEST.fields_by_name['lang'].enum_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._LANGS
-_GETEXECUTIONENVIRONMENTSINFOREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_GETEXECUTIONENVIRONMENTSINFOREQUEST.fields_by_name['execEnvLang'].enum_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._LANGS
-_GETEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY.containing_type = _GETEXECUTIONENVIRONMENTSINFORESPONSE
-_GETEXECUTIONENVIRONMENTSINFORESPONSE.fields_by_name['execEnvs'].message_type = _GETEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY
-_GETEXECUTIONENVIRONMENTSINFORESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETEXECUTIONENVIRONMENTSNAMESREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
-_GETEXECUTIONENVIRONMENTSNAMESREQUEST.fields_by_name['credential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETEXECUTIONENVIRONMENTSNAMESREQUEST.fields_by_name['execEnvLang'].enum_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._LANGS
-_GETEXECUTIONENVIRONMENTSNAMESRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETOBJECTINFOREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_GETOBJECTINFOREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
+_REGISTEROBJECTSREQUEST.fields_by_name['regInfos'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._REGISTRATIONINFO
+_REGISTEROBJECTSREQUEST.fields_by_name['lang'].enum_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._LANGS
+_REGISTEROBJECTSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
+_GETALLEXECUTIONENVIRONMENTSINFOREQUEST.fields_by_name['execEnvLang'].enum_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._LANGS
+_GETALLEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY.fields_by_name['value'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTINFO
+_GETALLEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY.containing_type = _GETALLEXECUTIONENVIRONMENTSINFORESPONSE
+_GETALLEXECUTIONENVIRONMENTSINFORESPONSE.fields_by_name['execEnvs'].message_type = _GETALLEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY
+_GETALLEXECUTIONENVIRONMENTSINFORESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _GETOBJECTINFORESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETOBJECTFROMALIASREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_GETOBJECTFROMALIASRESPONSE.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_GETOBJECTFROMALIASRESPONSE.fields_by_name['classID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._METACLASSID
-_GETOBJECTFROMALIASRESPONSE.fields_by_name['hint'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
 _GETOBJECTFROMALIASRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_REGISTEROBJECTRESPONSE.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_REGISTEROBJECTRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_ADDALIASREQUEST.fields_by_name['objectIDToHaveAlias'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_DELETEALIASREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_GETOBJECTSMETADATAINFOOFCLASSFORNMREQUEST.fields_by_name['classID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._METACLASSID
+_GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE_MDATAINFOENTRY.fields_by_name['value'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._METADATAINFO
 _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE_MDATAINFOENTRY.containing_type = _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE
 _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE.fields_by_name['mdataInfo'].message_type = _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE_MDATAINFOENTRY
 _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_SETDATASETIDREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_SETDATASETIDREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_SETDATASETIDREQUEST.fields_by_name['datasetID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATASETID
-_SETDATASETIDFROMGARBAGECOLLECTORREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_SETDATASETIDFROMGARBAGECOLLECTORREQUEST.fields_by_name['datasetID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATASETID
-_NEWVERSIONREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_NEWVERSIONREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_NEWVERSIONREQUEST.fields_by_name['optDestBackendID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
-_NEWVERSIONRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_CONSOLIDATEVERSIONREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_NEWREPLICAREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_NEWREPLICAREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_NEWREPLICAREQUEST.fields_by_name['destBackendID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
-_NEWREPLICARESPONSE.fields_by_name['destBackendID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
-_NEWREPLICARESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_MOVEOBJECTREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_MOVEOBJECTREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_MOVEOBJECTREQUEST.fields_by_name['srcBackendID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
-_MOVEOBJECTREQUEST.fields_by_name['destBackendID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
-_MOVEOBJECTRESPONSE.fields_by_name['objectIDs'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
 _MOVEOBJECTRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_SETOBJECTREADONLYREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_SETOBJECTREADONLYREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_SETOBJECTREADWRITEREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_SETOBJECTREADWRITEREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_GETMETADATABYOIDREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_GETMETADATABYOIDREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
+_GETMETADATABYOIDRESPONSE.fields_by_name['mdInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._METADATAINFO
 _GETMETADATABYOIDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETMETADATABYOIDFORDSREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
+_GETMETADATABYOIDFORDSRESPONSE.fields_by_name['mdInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._METADATAINFO
 _GETMETADATABYOIDFORDSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_EXECUTEIMPLEMENTATIONREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_EXECUTEIMPLEMENTATIONREQUEST.fields_by_name['operationID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OPERATIONID
-_EXECUTEIMPLEMENTATIONREQUEST.fields_by_name['implementationID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._IMPLEMENTATIONID
-_EXECUTEIMPLEMENTATIONREQUEST.fields_by_name['contractID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CONTRACTID
-_EXECUTEIMPLEMENTATIONREQUEST.fields_by_name['interfaceID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._INTERFACEID
-_EXECUTEIMPLEMENTATIONREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
 _EXECUTEIMPLEMENTATIONREQUEST.fields_by_name['params'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SERIALIZEDPARAMETERSORRETURN
 _EXECUTEIMPLEMENTATIONRESPONSE.fields_by_name['ret'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SERIALIZEDPARAMETERSORRETURN
 _EXECUTEIMPLEMENTATIONRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_EXECUTEMETHODONTARGETREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_EXECUTEMETHODONTARGETREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
 _EXECUTEMETHODONTARGETREQUEST.fields_by_name['params'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SERIALIZEDPARAMETERSORRETURN
-_EXECUTEMETHODONTARGETREQUEST.fields_by_name['targetBackendID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
 _EXECUTEMETHODONTARGETRESPONSE.fields_by_name['ret'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SERIALIZEDPARAMETERSORRETURN
 _EXECUTEMETHODONTARGETRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_SYNCHRONIZEFEDERATEDOBJECTREQUEST.fields_by_name['extDataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_SYNCHRONIZEFEDERATEDOBJECTREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
-_SYNCHRONIZEFEDERATEDOBJECTREQUEST.fields_by_name['implementationID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._IMPLEMENTATIONID
 _SYNCHRONIZEFEDERATEDOBJECTREQUEST.fields_by_name['params'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SERIALIZEDPARAMETERSORRETURN
-_GETSTUBSREQUEST.fields_by_name['applicantAccountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETSTUBSREQUEST.fields_by_name['credentials'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
 _GETSTUBSREQUEST.fields_by_name['language'].enum_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._LANGS
-_GETSTUBSREQUEST.fields_by_name['contractIDs'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CONTRACTID
 _GETSTUBSRESPONSE_STUBSENTRY.containing_type = _GETSTUBSRESPONSE
 _GETSTUBSRESPONSE.fields_by_name['stubs'].message_type = _GETSTUBSRESPONSE_STUBSENTRY
 _GETSTUBSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETBABELSTUBSREQUEST.fields_by_name['accountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETBABELSTUBSREQUEST.fields_by_name['credentials'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETBABELSTUBSREQUEST.fields_by_name['contractIDs'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CONTRACTID
 _GETBABELSTUBSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETCLASSNAMEFORDSREQUEST.fields_by_name['classID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._METACLASSID
 _GETCLASSNAMEFORDSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_GETCLASSNAMEANDNAMESPACEFORDSREQUEST.fields_by_name['classID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._METACLASSID
 _GETCLASSNAMEANDNAMESPACEFORDSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_REGISTERECAREQUEST.fields_by_name['applicantAccountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _REGISTERECAREQUEST.fields_by_name['credentials'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETCONTRACTIDOFDATACLAYPROVIDERREQUEST.fields_by_name['applicantAccountID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._ACCOUNTID
 _GETCONTRACTIDOFDATACLAYPROVIDERREQUEST.fields_by_name['credentials'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL
-_GETCONTRACTIDOFDATACLAYPROVIDERRESPONSE.fields_by_name['contractID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CONTRACTID
 _GETCONTRACTIDOFDATACLAYPROVIDERRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_CLOSESESSIONREQUEST.fields_by_name['sessionID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SESSIONID
-_UNREGISTEROBJECTSREQUEST.fields_by_name['objectsToUnregister'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
 _ISPREFETCHINGENABLEDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_OBJECTEXISTSINDATACLAYREQUEST.fields_by_name['objectID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._OBJECTID
 _OBJECTEXISTSINDATACLAYRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _GETCLASSESINNAMESPACERESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_IMPORTMODELSFROMEXTERNALDATACLAYREQUEST.fields_by_name['dataClayID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._DATACLAYINSTANCEID
-_GETSTORAGELOCATIONIDRESPONSE.fields_by_name['storageLocationID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._STORAGELOCATIONID
 _GETSTORAGELOCATIONIDRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
-_NOTIFYEXECUTIONENVIRONMENTSHUTDOWNREQUEST.fields_by_name['executionEnvironmentID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXECUTIONENVIRONMENTID
-_NOTIFYSTORAGELOCATIONSHUTDOWNREQUEST.fields_by_name['storageLocationID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._STORAGELOCATIONID
-_EXISTSACTIVEENVIRONMENTSFORSLREQUEST.fields_by_name['storageLocationID'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._STORAGELOCATIONID
 _EXISTSACTIVEENVIRONMENTSFORSLRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 DESCRIPTOR.message_types_by_name['NewAccountNoAdminRequest'] = _NEWACCOUNTNOADMINREQUEST
 DESCRIPTOR.message_types_by_name['NewAccountRequest'] = _NEWACCOUNTREQUEST
@@ -8572,8 +7234,6 @@ DESCRIPTOR.message_types_by_name['CheckDataSetIsPublicRequest'] = _CHECKDATASETI
 DESCRIPTOR.message_types_by_name['CheckDataSetIsPublicResponse'] = _CHECKDATASETISPUBLICRESPONSE
 DESCRIPTOR.message_types_by_name['NewClassRequest'] = _NEWCLASSREQUEST
 DESCRIPTOR.message_types_by_name['NewClassResponse'] = _NEWCLASSRESPONSE
-DESCRIPTOR.message_types_by_name['NewClassIDRequest'] = _NEWCLASSIDREQUEST
-DESCRIPTOR.message_types_by_name['NewClassIDResponse'] = _NEWCLASSIDRESPONSE
 DESCRIPTOR.message_types_by_name['RemoveClassRequest'] = _REMOVECLASSREQUEST
 DESCRIPTOR.message_types_by_name['RemoveOperationRequest'] = _REMOVEOPERATIONREQUEST
 DESCRIPTOR.message_types_by_name['RemoveImplementationRequest'] = _REMOVEIMPLEMENTATIONREQUEST
@@ -8616,10 +7276,10 @@ DESCRIPTOR.message_types_by_name['NewInterfaceResponse'] = _NEWINTERFACERESPONSE
 DESCRIPTOR.message_types_by_name['GetInterfaceInfoRequest'] = _GETINTERFACEINFOREQUEST
 DESCRIPTOR.message_types_by_name['GetInterfaceInfoResponse'] = _GETINTERFACEINFORESPONSE
 DESCRIPTOR.message_types_by_name['RemoveInterfaceRequest'] = _REMOVEINTERFACEREQUEST
-DESCRIPTOR.message_types_by_name['GetStorageLocationForDSRequest'] = _GETSTORAGELOCATIONFORDSREQUEST
-DESCRIPTOR.message_types_by_name['GetStorageLocationForDSResponse'] = _GETSTORAGELOCATIONFORDSRESPONSE
-DESCRIPTOR.message_types_by_name['GetExecutionEnvironmentForDSRequest'] = _GETEXECUTIONENVIRONMENTFORDSREQUEST
-DESCRIPTOR.message_types_by_name['GetExecutionEnvironmentForDSResponse'] = _GETEXECUTIONENVIRONMENTFORDSRESPONSE
+DESCRIPTOR.message_types_by_name['GetStorageLocationInfoRequest'] = _GETSTORAGELOCATIONINFOREQUEST
+DESCRIPTOR.message_types_by_name['GetStorageLocationInfoResponse'] = _GETSTORAGELOCATIONINFORESPONSE
+DESCRIPTOR.message_types_by_name['GetExecutionEnvironmentInfoRequest'] = _GETEXECUTIONENVIRONMENTINFOREQUEST
+DESCRIPTOR.message_types_by_name['GetExecutionEnvironmentInfoResponse'] = _GETEXECUTIONENVIRONMENTINFORESPONSE
 DESCRIPTOR.message_types_by_name['GetDataClayIDResponse'] = _GETDATACLAYIDRESPONSE
 DESCRIPTOR.message_types_by_name['RegisterExternalDataClayRequest'] = _REGISTEREXTERNALDATACLAYREQUEST
 DESCRIPTOR.message_types_by_name['RegisterExternalDataClayOverrideAuthorityRequest'] = _REGISTEREXTERNALDATACLAYOVERRIDEAUTHORITYREQUEST
@@ -8630,45 +7290,21 @@ DESCRIPTOR.message_types_by_name['GetExternalDataclayIDRequest'] = _GETEXTERNALD
 DESCRIPTOR.message_types_by_name['GetExternalDataclayIDResponse'] = _GETEXTERNALDATACLAYIDRESPONSE
 DESCRIPTOR.message_types_by_name['GetExtDataClayInfoRequest'] = _GETEXTDATACLAYINFOREQUEST
 DESCRIPTOR.message_types_by_name['GetExtDataClayInfoResponse'] = _GETEXTDATACLAYINFORESPONSE
-DESCRIPTOR.message_types_by_name['FederateObjectRequest'] = _FEDERATEOBJECTREQUEST
-DESCRIPTOR.message_types_by_name['UnfederateObjectRequest'] = _UNFEDERATEOBJECTREQUEST
-DESCRIPTOR.message_types_by_name['UnfederateObjectWithAllDCsRequest'] = _UNFEDERATEOBJECTWITHALLDCSREQUEST
-DESCRIPTOR.message_types_by_name['MigrateFederatedObjectsRequest'] = _MIGRATEFEDERATEDOBJECTSREQUEST
-DESCRIPTOR.message_types_by_name['FederateAllObjectsRequest'] = _FEDERATEALLOBJECTSREQUEST
-DESCRIPTOR.message_types_by_name['UnfederateAllObjectsRequest'] = _UNFEDERATEALLOBJECTSREQUEST
-DESCRIPTOR.message_types_by_name['UnfederateAllObjectsWithAllDCsRequest'] = _UNFEDERATEALLOBJECTSWITHALLDCSREQUEST
-DESCRIPTOR.message_types_by_name['NotifyFederatedObjectsRequest'] = _NOTIFYFEDERATEDOBJECTSREQUEST
-DESCRIPTOR.message_types_by_name['NotifyUnfederatedObjectsRequest'] = _NOTIFYUNFEDERATEDOBJECTSREQUEST
-DESCRIPTOR.message_types_by_name['CheckObjectFederatedWithDataClayInstanceRequest'] = _CHECKOBJECTFEDERATEDWITHDATACLAYINSTANCEREQUEST
-DESCRIPTOR.message_types_by_name['CheckObjectFederatedWithDataClayInstanceResponse'] = _CHECKOBJECTFEDERATEDWITHDATACLAYINSTANCERESPONSE
-DESCRIPTOR.message_types_by_name['CheckObjectFederatedRequest'] = _CHECKOBJECTFEDERATEDREQUEST
-DESCRIPTOR.message_types_by_name['CheckObjectFederatedResponse'] = _CHECKOBJECTFEDERATEDRESPONSE
-DESCRIPTOR.message_types_by_name['GetDataClaysObjectIsFederatedWithRequest'] = _GETDATACLAYSOBJECTISFEDERATEDWITHREQUEST
-DESCRIPTOR.message_types_by_name['GetDataClaysObjectIsFederatedWithResponse'] = _GETDATACLAYSOBJECTISFEDERATEDWITHRESPONSE
-DESCRIPTOR.message_types_by_name['GetExternalSourceDataClayOfObjectRequest'] = _GETEXTERNALSOURCEDATACLAYOFOBJECTREQUEST
-DESCRIPTOR.message_types_by_name['GetExternalSourceDataClayOfObjectResponse'] = _GETEXTERNALSOURCEDATACLAYOFOBJECTRESPONSE
 DESCRIPTOR.message_types_by_name['RegisterObjectForGCRequest'] = _REGISTEROBJECTFORGCREQUEST
-DESCRIPTOR.message_types_by_name['RegisterObjectRequest'] = _REGISTEROBJECTREQUEST
-DESCRIPTOR.message_types_by_name['GetExecutionEnvironmentsInfoRequest'] = _GETEXECUTIONENVIRONMENTSINFOREQUEST
-DESCRIPTOR.message_types_by_name['GetExecutionEnvironmentsInfoResponse'] = _GETEXECUTIONENVIRONMENTSINFORESPONSE
-DESCRIPTOR.message_types_by_name['GetExecutionEnvironmentsNamesRequest'] = _GETEXECUTIONENVIRONMENTSNAMESREQUEST
-DESCRIPTOR.message_types_by_name['GetExecutionEnvironmentsNamesResponse'] = _GETEXECUTIONENVIRONMENTSNAMESRESPONSE
+DESCRIPTOR.message_types_by_name['RegisterObjectsRequest'] = _REGISTEROBJECTSREQUEST
+DESCRIPTOR.message_types_by_name['RegisterObjectsResponse'] = _REGISTEROBJECTSRESPONSE
+DESCRIPTOR.message_types_by_name['GetAllExecutionEnvironmentsInfoRequest'] = _GETALLEXECUTIONENVIRONMENTSINFOREQUEST
+DESCRIPTOR.message_types_by_name['GetAllExecutionEnvironmentsInfoResponse'] = _GETALLEXECUTIONENVIRONMENTSINFORESPONSE
 DESCRIPTOR.message_types_by_name['GetObjectInfoRequest'] = _GETOBJECTINFOREQUEST
 DESCRIPTOR.message_types_by_name['GetObjectInfoResponse'] = _GETOBJECTINFORESPONSE
 DESCRIPTOR.message_types_by_name['GetObjectFromAliasRequest'] = _GETOBJECTFROMALIASREQUEST
 DESCRIPTOR.message_types_by_name['GetObjectFromAliasResponse'] = _GETOBJECTFROMALIASRESPONSE
-DESCRIPTOR.message_types_by_name['RegisterObjectResponse'] = _REGISTEROBJECTRESPONSE
 DESCRIPTOR.message_types_by_name['AddAliasRequest'] = _ADDALIASREQUEST
 DESCRIPTOR.message_types_by_name['DeleteAliasRequest'] = _DELETEALIASREQUEST
 DESCRIPTOR.message_types_by_name['GetObjectsMetaDataInfoOfClassForNMRequest'] = _GETOBJECTSMETADATAINFOOFCLASSFORNMREQUEST
 DESCRIPTOR.message_types_by_name['GetObjectsMetaDataInfoOfClassForNMResponse'] = _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE
 DESCRIPTOR.message_types_by_name['SetDataSetIDRequest'] = _SETDATASETIDREQUEST
 DESCRIPTOR.message_types_by_name['SetDataSetIDFromGarbageCollectorRequest'] = _SETDATASETIDFROMGARBAGECOLLECTORREQUEST
-DESCRIPTOR.message_types_by_name['NewVersionRequest'] = _NEWVERSIONREQUEST
-DESCRIPTOR.message_types_by_name['NewVersionResponse'] = _NEWVERSIONRESPONSE
-DESCRIPTOR.message_types_by_name['ConsolidateVersionRequest'] = _CONSOLIDATEVERSIONREQUEST
-DESCRIPTOR.message_types_by_name['NewReplicaRequest'] = _NEWREPLICAREQUEST
-DESCRIPTOR.message_types_by_name['NewReplicaResponse'] = _NEWREPLICARESPONSE
 DESCRIPTOR.message_types_by_name['MoveObjectRequest'] = _MOVEOBJECTREQUEST
 DESCRIPTOR.message_types_by_name['MoveObjectResponse'] = _MOVEOBJECTRESPONSE
 DESCRIPTOR.message_types_by_name['SetObjectReadOnlyRequest'] = _SETOBJECTREADONLYREQUEST
@@ -8709,6 +7345,7 @@ DESCRIPTOR.message_types_by_name['NotifyExecutionEnvironmentShutdownRequest'] = 
 DESCRIPTOR.message_types_by_name['NotifyStorageLocationShutdownRequest'] = _NOTIFYSTORAGELOCATIONSHUTDOWNREQUEST
 DESCRIPTOR.message_types_by_name['ExistsActiveEnvironmentsForSLRequest'] = _EXISTSACTIVEENVIRONMENTSFORSLREQUEST
 DESCRIPTOR.message_types_by_name['ExistsActiveEnvironmentsForSLResponse'] = _EXISTSACTIVEENVIRONMENTSFORSLRESPONSE
+DESCRIPTOR.message_types_by_name['MetadataInfo'] = _METADATAINFO
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 NewAccountNoAdminRequest = _reflection.GeneratedProtocolMessageType('NewAccountNoAdminRequest', (_message.Message,), {
@@ -9055,28 +7692,6 @@ NewClassResponse = _reflection.GeneratedProtocolMessageType('NewClassResponse', 
   })
 _sym_db.RegisterMessage(NewClassResponse)
 _sym_db.RegisterMessage(NewClassResponse.NewClassesEntry)
-
-NewClassIDRequest = _reflection.GeneratedProtocolMessageType('NewClassIDRequest', (_message.Message,), {
-
-  'NewClassesEntry' : _reflection.GeneratedProtocolMessageType('NewClassesEntry', (_message.Message,), {
-    'DESCRIPTOR' : _NEWCLASSIDREQUEST_NEWCLASSESENTRY,
-    '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-    # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.NewClassIDRequest.NewClassesEntry)
-    })
-  ,
-  'DESCRIPTOR' : _NEWCLASSIDREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.NewClassIDRequest)
-  })
-_sym_db.RegisterMessage(NewClassIDRequest)
-_sym_db.RegisterMessage(NewClassIDRequest.NewClassesEntry)
-
-NewClassIDResponse = _reflection.GeneratedProtocolMessageType('NewClassIDResponse', (_message.Message,), {
-  'DESCRIPTOR' : _NEWCLASSIDRESPONSE,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.NewClassIDResponse)
-  })
-_sym_db.RegisterMessage(NewClassIDResponse)
 
 RemoveClassRequest = _reflection.GeneratedProtocolMessageType('RemoveClassRequest', (_message.Message,), {
   'DESCRIPTOR' : _REMOVECLASSREQUEST,
@@ -9428,33 +8043,33 @@ RemoveInterfaceRequest = _reflection.GeneratedProtocolMessageType('RemoveInterfa
   })
 _sym_db.RegisterMessage(RemoveInterfaceRequest)
 
-GetStorageLocationForDSRequest = _reflection.GeneratedProtocolMessageType('GetStorageLocationForDSRequest', (_message.Message,), {
-  'DESCRIPTOR' : _GETSTORAGELOCATIONFORDSREQUEST,
+GetStorageLocationInfoRequest = _reflection.GeneratedProtocolMessageType('GetStorageLocationInfoRequest', (_message.Message,), {
+  'DESCRIPTOR' : _GETSTORAGELOCATIONINFOREQUEST,
   '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetStorageLocationForDSRequest)
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetStorageLocationInfoRequest)
   })
-_sym_db.RegisterMessage(GetStorageLocationForDSRequest)
+_sym_db.RegisterMessage(GetStorageLocationInfoRequest)
 
-GetStorageLocationForDSResponse = _reflection.GeneratedProtocolMessageType('GetStorageLocationForDSResponse', (_message.Message,), {
-  'DESCRIPTOR' : _GETSTORAGELOCATIONFORDSRESPONSE,
+GetStorageLocationInfoResponse = _reflection.GeneratedProtocolMessageType('GetStorageLocationInfoResponse', (_message.Message,), {
+  'DESCRIPTOR' : _GETSTORAGELOCATIONINFORESPONSE,
   '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetStorageLocationForDSResponse)
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetStorageLocationInfoResponse)
   })
-_sym_db.RegisterMessage(GetStorageLocationForDSResponse)
+_sym_db.RegisterMessage(GetStorageLocationInfoResponse)
 
-GetExecutionEnvironmentForDSRequest = _reflection.GeneratedProtocolMessageType('GetExecutionEnvironmentForDSRequest', (_message.Message,), {
-  'DESCRIPTOR' : _GETEXECUTIONENVIRONMENTFORDSREQUEST,
+GetExecutionEnvironmentInfoRequest = _reflection.GeneratedProtocolMessageType('GetExecutionEnvironmentInfoRequest', (_message.Message,), {
+  'DESCRIPTOR' : _GETEXECUTIONENVIRONMENTINFOREQUEST,
   '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentForDSRequest)
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentInfoRequest)
   })
-_sym_db.RegisterMessage(GetExecutionEnvironmentForDSRequest)
+_sym_db.RegisterMessage(GetExecutionEnvironmentInfoRequest)
 
-GetExecutionEnvironmentForDSResponse = _reflection.GeneratedProtocolMessageType('GetExecutionEnvironmentForDSResponse', (_message.Message,), {
-  'DESCRIPTOR' : _GETEXECUTIONENVIRONMENTFORDSRESPONSE,
+GetExecutionEnvironmentInfoResponse = _reflection.GeneratedProtocolMessageType('GetExecutionEnvironmentInfoResponse', (_message.Message,), {
+  'DESCRIPTOR' : _GETEXECUTIONENVIRONMENTINFORESPONSE,
   '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentForDSResponse)
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentInfoResponse)
   })
-_sym_db.RegisterMessage(GetExecutionEnvironmentForDSResponse)
+_sym_db.RegisterMessage(GetExecutionEnvironmentInfoResponse)
 
 GetDataClayIDResponse = _reflection.GeneratedProtocolMessageType('GetDataClayIDResponse', (_message.Message,), {
   'DESCRIPTOR' : _GETDATACLAYIDRESPONSE,
@@ -9526,141 +8141,6 @@ GetExtDataClayInfoResponse = _reflection.GeneratedProtocolMessageType('GetExtDat
   })
 _sym_db.RegisterMessage(GetExtDataClayInfoResponse)
 
-FederateObjectRequest = _reflection.GeneratedProtocolMessageType('FederateObjectRequest', (_message.Message,), {
-  'DESCRIPTOR' : _FEDERATEOBJECTREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.FederateObjectRequest)
-  })
-_sym_db.RegisterMessage(FederateObjectRequest)
-
-UnfederateObjectRequest = _reflection.GeneratedProtocolMessageType('UnfederateObjectRequest', (_message.Message,), {
-  'DESCRIPTOR' : _UNFEDERATEOBJECTREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.UnfederateObjectRequest)
-  })
-_sym_db.RegisterMessage(UnfederateObjectRequest)
-
-UnfederateObjectWithAllDCsRequest = _reflection.GeneratedProtocolMessageType('UnfederateObjectWithAllDCsRequest', (_message.Message,), {
-  'DESCRIPTOR' : _UNFEDERATEOBJECTWITHALLDCSREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.UnfederateObjectWithAllDCsRequest)
-  })
-_sym_db.RegisterMessage(UnfederateObjectWithAllDCsRequest)
-
-MigrateFederatedObjectsRequest = _reflection.GeneratedProtocolMessageType('MigrateFederatedObjectsRequest', (_message.Message,), {
-  'DESCRIPTOR' : _MIGRATEFEDERATEDOBJECTSREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.MigrateFederatedObjectsRequest)
-  })
-_sym_db.RegisterMessage(MigrateFederatedObjectsRequest)
-
-FederateAllObjectsRequest = _reflection.GeneratedProtocolMessageType('FederateAllObjectsRequest', (_message.Message,), {
-  'DESCRIPTOR' : _FEDERATEALLOBJECTSREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.FederateAllObjectsRequest)
-  })
-_sym_db.RegisterMessage(FederateAllObjectsRequest)
-
-UnfederateAllObjectsRequest = _reflection.GeneratedProtocolMessageType('UnfederateAllObjectsRequest', (_message.Message,), {
-  'DESCRIPTOR' : _UNFEDERATEALLOBJECTSREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.UnfederateAllObjectsRequest)
-  })
-_sym_db.RegisterMessage(UnfederateAllObjectsRequest)
-
-UnfederateAllObjectsWithAllDCsRequest = _reflection.GeneratedProtocolMessageType('UnfederateAllObjectsWithAllDCsRequest', (_message.Message,), {
-  'DESCRIPTOR' : _UNFEDERATEALLOBJECTSWITHALLDCSREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.UnfederateAllObjectsWithAllDCsRequest)
-  })
-_sym_db.RegisterMessage(UnfederateAllObjectsWithAllDCsRequest)
-
-NotifyFederatedObjectsRequest = _reflection.GeneratedProtocolMessageType('NotifyFederatedObjectsRequest', (_message.Message,), {
-
-  'ObjectsInfoEntry' : _reflection.GeneratedProtocolMessageType('ObjectsInfoEntry', (_message.Message,), {
-    'DESCRIPTOR' : _NOTIFYFEDERATEDOBJECTSREQUEST_OBJECTSINFOENTRY,
-    '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-    # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.ObjectsInfoEntry)
-    })
-  ,
-
-  'FederatedObjectsEntry' : _reflection.GeneratedProtocolMessageType('FederatedObjectsEntry', (_message.Message,), {
-    'DESCRIPTOR' : _NOTIFYFEDERATEDOBJECTSREQUEST_FEDERATEDOBJECTSENTRY,
-    '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-    # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest.FederatedObjectsEntry)
-    })
-  ,
-  'DESCRIPTOR' : _NOTIFYFEDERATEDOBJECTSREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.NotifyFederatedObjectsRequest)
-  })
-_sym_db.RegisterMessage(NotifyFederatedObjectsRequest)
-_sym_db.RegisterMessage(NotifyFederatedObjectsRequest.ObjectsInfoEntry)
-_sym_db.RegisterMessage(NotifyFederatedObjectsRequest.FederatedObjectsEntry)
-
-NotifyUnfederatedObjectsRequest = _reflection.GeneratedProtocolMessageType('NotifyUnfederatedObjectsRequest', (_message.Message,), {
-  'DESCRIPTOR' : _NOTIFYUNFEDERATEDOBJECTSREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.NotifyUnfederatedObjectsRequest)
-  })
-_sym_db.RegisterMessage(NotifyUnfederatedObjectsRequest)
-
-CheckObjectFederatedWithDataClayInstanceRequest = _reflection.GeneratedProtocolMessageType('CheckObjectFederatedWithDataClayInstanceRequest', (_message.Message,), {
-  'DESCRIPTOR' : _CHECKOBJECTFEDERATEDWITHDATACLAYINSTANCEREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.CheckObjectFederatedWithDataClayInstanceRequest)
-  })
-_sym_db.RegisterMessage(CheckObjectFederatedWithDataClayInstanceRequest)
-
-CheckObjectFederatedWithDataClayInstanceResponse = _reflection.GeneratedProtocolMessageType('CheckObjectFederatedWithDataClayInstanceResponse', (_message.Message,), {
-  'DESCRIPTOR' : _CHECKOBJECTFEDERATEDWITHDATACLAYINSTANCERESPONSE,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.CheckObjectFederatedWithDataClayInstanceResponse)
-  })
-_sym_db.RegisterMessage(CheckObjectFederatedWithDataClayInstanceResponse)
-
-CheckObjectFederatedRequest = _reflection.GeneratedProtocolMessageType('CheckObjectFederatedRequest', (_message.Message,), {
-  'DESCRIPTOR' : _CHECKOBJECTFEDERATEDREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.CheckObjectFederatedRequest)
-  })
-_sym_db.RegisterMessage(CheckObjectFederatedRequest)
-
-CheckObjectFederatedResponse = _reflection.GeneratedProtocolMessageType('CheckObjectFederatedResponse', (_message.Message,), {
-  'DESCRIPTOR' : _CHECKOBJECTFEDERATEDRESPONSE,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.CheckObjectFederatedResponse)
-  })
-_sym_db.RegisterMessage(CheckObjectFederatedResponse)
-
-GetDataClaysObjectIsFederatedWithRequest = _reflection.GeneratedProtocolMessageType('GetDataClaysObjectIsFederatedWithRequest', (_message.Message,), {
-  'DESCRIPTOR' : _GETDATACLAYSOBJECTISFEDERATEDWITHREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetDataClaysObjectIsFederatedWithRequest)
-  })
-_sym_db.RegisterMessage(GetDataClaysObjectIsFederatedWithRequest)
-
-GetDataClaysObjectIsFederatedWithResponse = _reflection.GeneratedProtocolMessageType('GetDataClaysObjectIsFederatedWithResponse', (_message.Message,), {
-  'DESCRIPTOR' : _GETDATACLAYSOBJECTISFEDERATEDWITHRESPONSE,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetDataClaysObjectIsFederatedWithResponse)
-  })
-_sym_db.RegisterMessage(GetDataClaysObjectIsFederatedWithResponse)
-
-GetExternalSourceDataClayOfObjectRequest = _reflection.GeneratedProtocolMessageType('GetExternalSourceDataClayOfObjectRequest', (_message.Message,), {
-  'DESCRIPTOR' : _GETEXTERNALSOURCEDATACLAYOFOBJECTREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetExternalSourceDataClayOfObjectRequest)
-  })
-_sym_db.RegisterMessage(GetExternalSourceDataClayOfObjectRequest)
-
-GetExternalSourceDataClayOfObjectResponse = _reflection.GeneratedProtocolMessageType('GetExternalSourceDataClayOfObjectResponse', (_message.Message,), {
-  'DESCRIPTOR' : _GETEXTERNALSOURCEDATACLAYOFOBJECTRESPONSE,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetExternalSourceDataClayOfObjectResponse)
-  })
-_sym_db.RegisterMessage(GetExternalSourceDataClayOfObjectResponse)
-
 RegisterObjectForGCRequest = _reflection.GeneratedProtocolMessageType('RegisterObjectForGCRequest', (_message.Message,), {
   'DESCRIPTOR' : _REGISTEROBJECTFORGCREQUEST,
   '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
@@ -9668,48 +8148,41 @@ RegisterObjectForGCRequest = _reflection.GeneratedProtocolMessageType('RegisterO
   })
 _sym_db.RegisterMessage(RegisterObjectForGCRequest)
 
-RegisterObjectRequest = _reflection.GeneratedProtocolMessageType('RegisterObjectRequest', (_message.Message,), {
-  'DESCRIPTOR' : _REGISTEROBJECTREQUEST,
+RegisterObjectsRequest = _reflection.GeneratedProtocolMessageType('RegisterObjectsRequest', (_message.Message,), {
+  'DESCRIPTOR' : _REGISTEROBJECTSREQUEST,
   '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.RegisterObjectRequest)
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.RegisterObjectsRequest)
   })
-_sym_db.RegisterMessage(RegisterObjectRequest)
+_sym_db.RegisterMessage(RegisterObjectsRequest)
 
-GetExecutionEnvironmentsInfoRequest = _reflection.GeneratedProtocolMessageType('GetExecutionEnvironmentsInfoRequest', (_message.Message,), {
-  'DESCRIPTOR' : _GETEXECUTIONENVIRONMENTSINFOREQUEST,
+RegisterObjectsResponse = _reflection.GeneratedProtocolMessageType('RegisterObjectsResponse', (_message.Message,), {
+  'DESCRIPTOR' : _REGISTEROBJECTSRESPONSE,
   '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoRequest)
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.RegisterObjectsResponse)
   })
-_sym_db.RegisterMessage(GetExecutionEnvironmentsInfoRequest)
+_sym_db.RegisterMessage(RegisterObjectsResponse)
 
-GetExecutionEnvironmentsInfoResponse = _reflection.GeneratedProtocolMessageType('GetExecutionEnvironmentsInfoResponse', (_message.Message,), {
+GetAllExecutionEnvironmentsInfoRequest = _reflection.GeneratedProtocolMessageType('GetAllExecutionEnvironmentsInfoRequest', (_message.Message,), {
+  'DESCRIPTOR' : _GETALLEXECUTIONENVIRONMENTSINFOREQUEST,
+  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoRequest)
+  })
+_sym_db.RegisterMessage(GetAllExecutionEnvironmentsInfoRequest)
+
+GetAllExecutionEnvironmentsInfoResponse = _reflection.GeneratedProtocolMessageType('GetAllExecutionEnvironmentsInfoResponse', (_message.Message,), {
 
   'ExecEnvsEntry' : _reflection.GeneratedProtocolMessageType('ExecEnvsEntry', (_message.Message,), {
-    'DESCRIPTOR' : _GETEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY,
+    'DESCRIPTOR' : _GETALLEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY,
     '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-    # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoResponse.ExecEnvsEntry)
+    # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse.ExecEnvsEntry)
     })
   ,
-  'DESCRIPTOR' : _GETEXECUTIONENVIRONMENTSINFORESPONSE,
+  'DESCRIPTOR' : _GETALLEXECUTIONENVIRONMENTSINFORESPONSE,
   '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsInfoResponse)
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse)
   })
-_sym_db.RegisterMessage(GetExecutionEnvironmentsInfoResponse)
-_sym_db.RegisterMessage(GetExecutionEnvironmentsInfoResponse.ExecEnvsEntry)
-
-GetExecutionEnvironmentsNamesRequest = _reflection.GeneratedProtocolMessageType('GetExecutionEnvironmentsNamesRequest', (_message.Message,), {
-  'DESCRIPTOR' : _GETEXECUTIONENVIRONMENTSNAMESREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsNamesRequest)
-  })
-_sym_db.RegisterMessage(GetExecutionEnvironmentsNamesRequest)
-
-GetExecutionEnvironmentsNamesResponse = _reflection.GeneratedProtocolMessageType('GetExecutionEnvironmentsNamesResponse', (_message.Message,), {
-  'DESCRIPTOR' : _GETEXECUTIONENVIRONMENTSNAMESRESPONSE,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentsNamesResponse)
-  })
-_sym_db.RegisterMessage(GetExecutionEnvironmentsNamesResponse)
+_sym_db.RegisterMessage(GetAllExecutionEnvironmentsInfoResponse)
+_sym_db.RegisterMessage(GetAllExecutionEnvironmentsInfoResponse.ExecEnvsEntry)
 
 GetObjectInfoRequest = _reflection.GeneratedProtocolMessageType('GetObjectInfoRequest', (_message.Message,), {
   'DESCRIPTOR' : _GETOBJECTINFOREQUEST,
@@ -9738,13 +8211,6 @@ GetObjectFromAliasResponse = _reflection.GeneratedProtocolMessageType('GetObject
   # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.GetObjectFromAliasResponse)
   })
 _sym_db.RegisterMessage(GetObjectFromAliasResponse)
-
-RegisterObjectResponse = _reflection.GeneratedProtocolMessageType('RegisterObjectResponse', (_message.Message,), {
-  'DESCRIPTOR' : _REGISTEROBJECTRESPONSE,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.RegisterObjectResponse)
-  })
-_sym_db.RegisterMessage(RegisterObjectResponse)
 
 AddAliasRequest = _reflection.GeneratedProtocolMessageType('AddAliasRequest', (_message.Message,), {
   'DESCRIPTOR' : _ADDALIASREQUEST,
@@ -9795,41 +8261,6 @@ SetDataSetIDFromGarbageCollectorRequest = _reflection.GeneratedProtocolMessageTy
   # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.SetDataSetIDFromGarbageCollectorRequest)
   })
 _sym_db.RegisterMessage(SetDataSetIDFromGarbageCollectorRequest)
-
-NewVersionRequest = _reflection.GeneratedProtocolMessageType('NewVersionRequest', (_message.Message,), {
-  'DESCRIPTOR' : _NEWVERSIONREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.NewVersionRequest)
-  })
-_sym_db.RegisterMessage(NewVersionRequest)
-
-NewVersionResponse = _reflection.GeneratedProtocolMessageType('NewVersionResponse', (_message.Message,), {
-  'DESCRIPTOR' : _NEWVERSIONRESPONSE,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.NewVersionResponse)
-  })
-_sym_db.RegisterMessage(NewVersionResponse)
-
-ConsolidateVersionRequest = _reflection.GeneratedProtocolMessageType('ConsolidateVersionRequest', (_message.Message,), {
-  'DESCRIPTOR' : _CONSOLIDATEVERSIONREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.ConsolidateVersionRequest)
-  })
-_sym_db.RegisterMessage(ConsolidateVersionRequest)
-
-NewReplicaRequest = _reflection.GeneratedProtocolMessageType('NewReplicaRequest', (_message.Message,), {
-  'DESCRIPTOR' : _NEWREPLICAREQUEST,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.NewReplicaRequest)
-  })
-_sym_db.RegisterMessage(NewReplicaRequest)
-
-NewReplicaResponse = _reflection.GeneratedProtocolMessageType('NewReplicaResponse', (_message.Message,), {
-  'DESCRIPTOR' : _NEWREPLICARESPONSE,
-  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.NewReplicaResponse)
-  })
-_sym_db.RegisterMessage(NewReplicaResponse)
 
 MoveObjectRequest = _reflection.GeneratedProtocolMessageType('MoveObjectRequest', (_message.Message,), {
   'DESCRIPTOR' : _MOVEOBJECTREQUEST,
@@ -10119,11 +8550,17 @@ ExistsActiveEnvironmentsForSLResponse = _reflection.GeneratedProtocolMessageType
   })
 _sym_db.RegisterMessage(ExistsActiveEnvironmentsForSLResponse)
 
+MetadataInfo = _reflection.GeneratedProtocolMessageType('MetadataInfo', (_message.Message,), {
+  'DESCRIPTOR' : _METADATAINFO,
+  '__module__' : 'dataclay.communication.grpc.messages.logicmodule.logicmodule_messages_pb2'
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.logicmodule.MetadataInfo)
+  })
+_sym_db.RegisterMessage(MetadataInfo)
+
 
 DESCRIPTOR._options = None
 _NEWCLASSREQUEST_NEWCLASSESENTRY._options = None
 _NEWCLASSRESPONSE_NEWCLASSESENTRY._options = None
-_NEWCLASSIDREQUEST_NEWCLASSESENTRY._options = None
 _GETINFOOFCLASSESINNAMESPACERESPONSE_CLASSESINFOENTRY._options = None
 _GETIMPORTEDCLASSESINFOINNAMESPACERESPONSE_IMPORTEDCLASSESENTRY._options = None
 _GETCONTRACTIDSOFAPPLICANTRESPONSE_CONTRACTSENTRY._options = None
@@ -10131,9 +8568,7 @@ _GETCONTRACTIDSOFPROVIDERRESPONSE_CONTRACTSENTRY._options = None
 _GETCONTRACTSOFAPPLICANTWITHPROVRESPONSE_CONTRACTSENTRY._options = None
 _GETDATACONTRACTIDSOFAPPLICANTRESPONSE_DATACONTRACTSENTRY._options = None
 _GETDATACONTRACTIDSOFPROVIDERRESPONSE_DATACONTRACTSENTRY._options = None
-_NOTIFYFEDERATEDOBJECTSREQUEST_OBJECTSINFOENTRY._options = None
-_NOTIFYFEDERATEDOBJECTSREQUEST_FEDERATEDOBJECTSENTRY._options = None
-_GETEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY._options = None
+_GETALLEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY._options = None
 _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE_MDATAINFOENTRY._options = None
 _GETSTUBSRESPONSE_STUBSENTRY._options = None
 # @@protoc_insertion_point(module_scope)

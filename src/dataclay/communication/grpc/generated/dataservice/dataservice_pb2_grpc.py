@@ -65,11 +65,6 @@ class DataServiceStub(object):
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetObjectsRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetObjectsResponse.FromString,
         )
-    self.newMetaData = channel.unary_unary(
-        '/dataclay.communication.grpc.dataservice.DataService/newMetaData',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.NewMetaDataRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
-        )
     self.newVersion = channel.unary_unary(
         '/dataclay.communication.grpc.dataservice.DataService/newVersion',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.NewVersionRequest.SerializeToString,
@@ -130,25 +125,25 @@ class DataServiceStub(object):
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.UnfederateRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
         )
+    self.notifyFederation = channel.unary_unary(
+        '/dataclay.communication.grpc.dataservice.DataService/notifyFederation',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.NotifyFederationRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
+        )
+    self.notifyUnfederation = channel.unary_unary(
+        '/dataclay.communication.grpc.dataservice.DataService/notifyUnfederation',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.NotifyUnfederationRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
+        )
     self.exists = channel.unary_unary(
         '/dataclay.communication.grpc.dataservice.DataService/exists',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.ExistsRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.ExistsResponse.FromString,
         )
-    self.getFederatedObjects = channel.unary_unary(
-        '/dataclay.communication.grpc.dataservice.DataService/getFederatedObjects',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetFederatedObjectsRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetFederatedObjectsResponse.FromString,
-        )
-    self.getReferencedObjectsIDs = channel.unary_unary(
-        '/dataclay.communication.grpc.dataservice.DataService/getReferencedObjectsIDs',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetReferencedObjectIDsRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetReferencedObjectIDsResponse.FromString,
-        )
-    self.filterObject = channel.unary_unary(
-        '/dataclay.communication.grpc.dataservice.DataService/filterObject',
-        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.FilterObjectRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.FilterObjectResponse.FromString,
+    self.synchronize = channel.unary_unary(
+        '/dataclay.communication.grpc.dataservice.DataService/synchronize',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.SynchronizeRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
         )
     self.storeToDB = channel.unary_unary(
         '/dataclay.communication.grpc.dataservice.DataService/storeToDB',
@@ -311,13 +306,6 @@ class DataServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def newMetaData(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def newVersion(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -402,6 +390,20 @@ class DataServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def notifyFederation(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def notifyUnfederation(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def exists(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -409,23 +411,9 @@ class DataServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getFederatedObjects(self, request, context):
-    """Federation
-    """
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getReferencedObjectsIDs(self, request, context):
+  def synchronize(self, request, context):
     # missing associated documentation comment in .proto file
     pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def filterObject(self, request, context):
-    """Filtering
-    """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -602,11 +590,6 @@ def add_DataServiceServicer_to_server(servicer, server):
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetObjectsRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetObjectsResponse.SerializeToString,
       ),
-      'newMetaData': grpc.unary_unary_rpc_method_handler(
-          servicer.newMetaData,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.NewMetaDataRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
-      ),
       'newVersion': grpc.unary_unary_rpc_method_handler(
           servicer.newVersion,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.NewVersionRequest.FromString,
@@ -667,25 +650,25 @@ def add_DataServiceServicer_to_server(servicer, server):
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.UnfederateRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
       ),
+      'notifyFederation': grpc.unary_unary_rpc_method_handler(
+          servicer.notifyFederation,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.NotifyFederationRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
+      ),
+      'notifyUnfederation': grpc.unary_unary_rpc_method_handler(
+          servicer.notifyUnfederation,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.NotifyUnfederationRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
+      ),
       'exists': grpc.unary_unary_rpc_method_handler(
           servicer.exists,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.ExistsRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.ExistsResponse.SerializeToString,
       ),
-      'getFederatedObjects': grpc.unary_unary_rpc_method_handler(
-          servicer.getFederatedObjects,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetFederatedObjectsRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetFederatedObjectsResponse.SerializeToString,
-      ),
-      'getReferencedObjectsIDs': grpc.unary_unary_rpc_method_handler(
-          servicer.getReferencedObjectsIDs,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetReferencedObjectIDsRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetReferencedObjectIDsResponse.SerializeToString,
-      ),
-      'filterObject': grpc.unary_unary_rpc_method_handler(
-          servicer.filterObject,
-          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.FilterObjectRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.FilterObjectResponse.SerializeToString,
+      'synchronize': grpc.unary_unary_rpc_method_handler(
+          servicer.synchronize,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.SynchronizeRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
       ),
       'storeToDB': grpc.unary_unary_rpc_method_handler(
           servicer.storeToDB,

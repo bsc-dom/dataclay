@@ -146,17 +146,17 @@ class ExecutionEnvironmentSrv(object):
         settings.environment_id = execution_environment_id
     
         # Retrieve the storage_location connection data
-        storage_location = lm_client.get_storage_location_for_ds(storage_location_id)
+        storage_location = lm_client.get_storage_location_info(storage_location_id)
     
         logger.debug("StorageLocation data: {name: '%s', hostname: '%s', port: %d}",
                      storage_location.name,
                      storage_location.hostname,
-                     storage_location.storageTCPPort)
+                     storage_location.port)
     
         logger.info("Starting client to StorageLocation {%s} at %s:%d",
-                    storage_location_id, storage_location.hostname, storage_location.storageTCPPort)
+                    storage_location_id, storage_location.hostname, storage_location.port)
     
-        storage_client = EEClient(storage_location.hostname, storage_location.storageTCPPort)
+        storage_client = EEClient(storage_location.hostname, storage_location.port)
     
         # Leave the ready client to the Storage Location globally available
         self.execution_environment.get_runtime().ready_clients["@STORAGE"] = storage_client

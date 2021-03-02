@@ -17,9 +17,13 @@ from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.commonruntime.Runtime import threadLocal
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
+from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util import Configuration
+from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
+from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
+
 
 class NULL_NAMESPACE:
     """null Namespace for uuid3, same as java's UUID.nameUUIDFromBytes"""
@@ -66,7 +70,11 @@ class DataClayRuntime(object):
         self.thread_local_info = threadLocal
         
         """ Cache of metadata """
-        self.metadata_cache = LRU(50)
+        self.metadata_cache = LRU(10000)
+
+        """ Current dataClay ID """
+        self.dataclay_id = None
+
         
     @abstractmethod
     def initialize_runtime_aux(self): pass
@@ -222,7 +230,7 @@ class DataClayRuntime(object):
         try:
             execution_client = self.ready_clients[backend_id]
         except KeyError:
-            exeenv = self.get_execution_environments_info()[backend_id]
+            exeenv = self.get_execution_environment_info(backend_id)
             execution_client = EEClient(exeenv.hostname, exeenv.port)
             self.ready_clients[backend_id] = execution_client
         
@@ -238,7 +246,7 @@ class DataClayRuntime(object):
         try:
             execution_client = self.ready_clients[backend_id]
         except KeyError:
-            exeenv = self.get_execution_environments_info()[backend_id]
+            exeenv = self.get_execution_environment_info(backend_id)
             execution_client = EEClient(exeenv.hostname, exeenv.port)
             self.ready_clients[backend_id] = execution_client
         
@@ -250,7 +258,7 @@ class DataClayRuntime(object):
         params_order.append("object")
         params_spec = dict()
         params_spec["object"] = "DataClayObject"  # not used, see serialized_params_or_return
-        ser_from = SerializationLibUtilsSingleton.serialize_params_or_return(
+        serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
             params=parameters,
             iface_bitmaps=None,
             params_spec=params_spec,
@@ -260,32 +268,36 @@ class DataClayRuntime(object):
             recursive=True,
             for_update=True)
         
-        vol_objects = ser_from[3]
+        vol_objects = serialized_params.vol_objs
         if vol_objects is not None:
             new_ids = dict()
             
             for tag in vol_objects:
-                cur_oid = ser_from[3][tag][0]
+                cur_oid = serialized_params.vol_objs[tag].object_id
                 if cur_oid not in new_ids:
                     if cur_oid == from_object.get_object_id():
                         new_ids[cur_oid] = into_object.get_object_id()
                     else:
                         new_ids[cur_oid] = uuid.uuid4()
-                
-                ser_from[3][tag] = (new_ids[cur_oid],) + ser_from[3][tag][1:]
+
+                serialized_params.vol_objs[tag] = ObjectWithDataParamOrReturn(new_ids[cur_oid],
+                                                                              serialized_params.vol_objs[tag].class_id,
+                                                                              serialized_params.vol_objs[tag].metadata,
+                                                                              serialized_params.vol_objs[tag].obj_bytes)
+
             
             for vol_tag in vol_objects:
-                oids = ser_from[3][vol_tag][2][0]
+                oids = serialized_params.vol_objs[vol_tag].metadata.tags_to_oids
                 for tag, oid in oids.items():
                     if oid in new_ids:
                         try:
-                            ser_from[3][vol_tag][2][0][tag] = new_ids[oid]
+                            serialized_params.vol_objs[vol_tag].metadata.tags_to_oids[tag] = new_ids[oid]
                         except KeyError: 
                             pass
         
-        self.logger.debug("Sending updated metadata: %s", str(ser_from))
+        self.logger.debug("Sending updated metadata: %s", str(serialized_params))
 
-        execution_client.ds_update_object(session_id, into_object.get_object_id(), ser_from)
+        execution_client.ds_update_object(session_id, into_object.get_object_id(), serialized_params)
         
     def get_from_heap(self, object_id):
         """
@@ -316,12 +328,12 @@ class DataClayRuntime(object):
         try:
             execution_client = self.ready_clients[backend_id]
         except KeyError:
-            exeenv = self.get_execution_environments_info()[backend_id]
+            exeenv = self.get_execution_environment_info(backend_id)
             execution_client = EEClient(exeenv.hostname, exeenv.port)
             self.ready_clients[backend_id] = execution_client
 
         operation = self.get_operation_info(object_id, operation_name)
-        value = SerializationLibUtilsSingleton.serialize_params_or_return(
+        serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
             params=(value,),
             iface_bitmaps=None,
             params_spec=operation.params,
@@ -331,7 +343,7 @@ class DataClayRuntime(object):
         )
 
         ret = execution_client.ds_execute_implementation(object_id, implementation_id,
-            session_id, value)
+            session_id, serialized_params)
 
         if ret is not None:
             self.logger.trace("Execution return %s of type %s", ret, operation.returnType)
@@ -353,9 +365,9 @@ class DataClayRuntime(object):
             hint_volatiles=exeenv_id,
             runtime=self)
         
-        if serialized_params is not None and serialized_params[3] is not None:
-            for param in serialized_params[3].values():
-                self.volatile_parameters_being_send.add(param[0])
+        if serialized_params is not None and serialized_params.vol_objs is not None:
+            for param in serialized_params.vol_objs.values():
+                self.volatile_parameters_being_send.add(param.object_id)
             
         # // === EXECUTE === //
         max_retry = Configuration.MAX_EXECUTION_RETRIES
@@ -366,7 +378,7 @@ class DataClayRuntime(object):
                 self.logger.verbose("Obtaining API for remote execution in %s ", exeenv_id)
                 execution_client = self.ready_clients[exeenv_id]
             except KeyError:
-                exeenv = self.get_execution_environments_info()[exeenv_id] 
+                exeenv = self.get_execution_environment_info(exeenv_id)
                 self.logger.debug("Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
                                exeenv_id, exeenv.hostname, exeenv.port)
                 execution_client = EEClient(exeenv.hostname, exeenv.port)
@@ -386,18 +398,15 @@ class DataClayRuntime(object):
                 self.logger.warning("Execution resulted in an error, retrying...", exc_info=dce)
 
                 is_race_condition = False
-                if serialized_params is not None and serialized_params[4] is not None:
-                    for param in serialized_params[4]:
-                        if param.get_object_id() in self.volatile_parameters_being_send:
+                if serialized_params is not None and serialized_params.persistent_refs is not None:
+                    for param in serialized_params.persistent_refs:
+                        if param.object_id in self.volatile_parameters_being_send:
                             is_race_condition = True
                             break
                 if not is_race_condition:
                     num_misses = num_misses + 1
                     self.logger.debug("Exception dataclay during execution. Retrying...")
                     self.logger.debug(str(dce))
-                    if object_id in self.metadata_cache:   
-                        del self.metadata_cache[object_id]
-
                     try:
                         metadata = self.get_metadata(object_id)
                         new_location = False
@@ -418,16 +427,13 @@ class DataClayRuntime(object):
                         
                     if not new_location: 
                         exeenv_id = next(iter(metadata.locations))
-                
                     if using_hint:
                         instance.set_hint(exeenv_id)
-                    
                     self.logger.debug("[==Miss Jump==] MISS. The object %s was not in the exec.location %s. Retrying execution." 
                                 % (instance.get_object_id(), str(exeenv_id)));
     
-        self.logger.verbose("Result of operation named '%s' received", operation_name)
-        if serialized_params is not None and serialized_params[3] is not None:
-            for param in serialized_params[3].values():
+        if serialized_params is not None and serialized_params.vol_objs is not None:
+            for param in serialized_params.vol_objs.values():
                 if num_misses > 0: 
                     #===========================================================
                     # if there was a miss, it means that the persistent object in which we were executing 
@@ -438,130 +444,76 @@ class DataClayRuntime(object):
                     # hint we set in volatile parameters is wrong, because they are going to be deserialized/stored
                     # in the same location as the object with the method to execute
                     #===========================================================
-                    param_instance = self.get_from_heap(param[0])
+                    param_instance = self.get_from_heap(param.object_id)
                     param_instance.set_hint(exeenv_id)
-                self.volatile_parameters_being_send.remove(param[0])
+                self.volatile_parameters_being_send.remove(param.object_id)
     
         if not executed: 
             raise RuntimeError("[dataClay] ERROR: Trying to execute remotely object  but something went wrong. "
                                "Maybe the object is still not stored (in case of asynchronous makepersistent) and "
                                "waiting time is not enough. Maybe the object does not exist anymore due to a remove. "
                                "Or Maybe an exception happened in the server and the call failed.")
-    
-        if ret is None:
-            return None
-        else:
-            return DeserializationLibUtilsSingleton.deserialize_return(ret, None, operation.returnType, self)
-    
-    def synchronize_federated(self, instance, params, operation_name, dc_info_id):
-        self.logger.debug("Calling external dataClay to run %s operation in object %s"
-                          , operation_name, instance.get_object_id())
-        operation = self.get_operation_info(instance.get_object_id(), operation_name)
-        implementation_id = self.get_implementation_id(instance.get_object_id(), operation_name)
-        # === SERIALIZE PARAMETERS === 
-        # Between DC - DC , ifaceBitMaps = null
-        serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
-            params=params,
-            iface_bitmaps=None,
-            params_spec=operation.params,
-            params_order=operation.paramsOrder,
-            hint_volatiles=instance.get_hint(),
-            runtime=self)
-        
-        dc_info = self.get_external_dataclay_info(dc_info_id)
-        hosts = dc_info.hosts 
-        ports = dc_info.ports 
-        for i in range(0, len(hosts)):
-            try:
-                lm_client = self.get_lm_api(hosts[i], ports[i])
-                self.logger.debug("[==JUMP==] Request execution to external dataClay %s with host %s and port %s for object %s"
-                                  , dc_info_id, hosts[i], ports[i], instance.get_object_id())
 
-                lm_client.synchronize_federated_object(self.get_dataclay_id(), instance.get_object_id(),
-                                               implementation_id, serialized_params)     
-            except:
-                traceback.print_exc()
-                if i + 1 == len(hosts):
-                    raise RuntimeError("[dataClay] ERROR: Cannot connect to external dataClay with ID %s" % (str(dc_info_id)))
-        
-    def ensure_object_is_registered(self, session_id, object_id, class_id, hint):
-        """ 
-        Ensure registration of an object. new replica/version/consolidate/move
-        algorithms should not require registered metadata in LogicModule since
-        new make persistent implementation behaves like volatiles and metadata
-        is created eventually, not synchronously. Currently, we try to register
-        it and if it is already registered, just continue.
-        :param session_id: ID of session registering object
-        :param object_id: ID of object to register
-        :param class_id: ID of class of the object
-        :param hint: Hint of the object
-        :returns: None
-        :type session_id: dataClay ID
-        :type object_id: dataClay ID
-        :type class_id: dataClay ID
-        :type hint: dataClay ID
-        :rtype: None
-        """
-        # FIXME: new replica/version/consolidate/move algorithms should not require
-        # registered metadata in LogicModule since new make persistent implementation
-        # behaves like volatiles and metadata is created eventually, not synchronously.
-        # Currently, we try to register it and if it is already registered, just continue.
-        # Make sure object is registered.
-        # DataSet is None since it is obtained from session at LM.
-        reg_info = [object_id, class_id, session_id, None]
-        # In next call, alias must be null
-        # NOTE: LogicModule register object function does not return an exception for already registered
-        # object. We should never call registerObject for already registered objects and that's dataClay
-        # code (check isPendingToRegister in EE or isPersistent,.. see makePersistent), and remember that,
-        # this is a workaround, registerObject should never be called for replica/version/consolidate algorithms,
-        # we must change the algorithms to not depend on metadata.
-        # Also, location in which to register the object is the hint (in case it is not registered yet).
+        result = None
+        if ret is None:
+            self.logger.debug(f"Result of operation named {operation_name} received: None")
+        else:
+            self.logger.debug(f"Deserializing result of operation named {operation_name}, return type is {operation.returnType.signature}")
+            result = DeserializationLibUtilsSingleton.deserialize_return(ret, None, operation.returnType, self)
+            self.logger.debug(f"Deserialization of result of operation named {operation_name} successfully finished.")
+        return result
+
+    def federate_object(self, object_id, hint, ext_dataclay_id, recursive):
+        external_execution_environment_id = next(iter(self.get_all_execution_environments_at_dataclay(ext_dataclay_id)))
+        self.federate_to_backend(object_id, hint, external_execution_environment_id, recursive)
+
+    def federate_to_backend(self, object_id, hint, external_execution_environment_id, recursive):
+        session_id = self.get_session_id()
+        exec_location_id = hint
+        if exec_location_id is None:
+            exec_location_id = self.get_location(object_id)
         try:
-            self.ready_clients["@LM"].register_object(reg_info, hint, None, LANG_PYTHON)
-        except:
-            pass
-    
-    def federate_object(self, object_id, ext_dataclay_id, recursive, class_id, hint):
+            execution_client = self.ready_clients[exec_location_id]
+        except KeyError:
+            exeenv = self.get_execution_environment_info(exec_location_id)
+            execution_client = EEClient(exeenv.hostname, exeenv.port)
+            self.ready_clients[exec_location_id] = execution_client
+
+        self.logger.debug("[==FederateObject==] Starting federation of object by %s calling EE %s with dest dataClay %s, and session %s",
+                        object_id, exec_location_id, external_execution_environment_id, session_id)
+        execution_client.federate(session_id, object_id, external_execution_environment_id, recursive)
+
+    def unfederate_object(self, object_id, hint, ext_dataclay_id, recursive):
+        self.unfederate_from_backend(object_id, hint, None, recursive)
+
+    def unfederate_from_backend(self, object_id, hint, external_execution_environment_id, recursive):
         session_id = self.get_session_id()
-        self.logger.debug("[==FederateObject==] Starting federation of object %s with dataClay %s, and session %s", object_id, ext_dataclay_id, session_id)
-        self.ensure_object_is_registered(session_id, object_id, class_id, hint)
-        self.ready_clients["@LM"].federate_object(session_id, object_id, ext_dataclay_id, recursive)
-    
-    def unfederate_object(self, object_id, ext_dataclay_id, recursive):
-        session_id = self.get_session_id()
-        self.logger.debug("[==UnfederateObject==] Starting unfederation of object %s with dataClay %s, and session %s", object_id, ext_dataclay_id, session_id)
-        self.ready_clients["@LM"].unfederate_object(session_id, object_id, ext_dataclay_id, recursive)
-        # FIXME: ALIAS CACHE SHOULD BE UPDATED FOR OBJECTS WITH ALIAS REMOVED?
+        self.logger.debug("[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s", object_id, external_execution_environment_id, session_id)
+        exec_location_id = hint
+        if exec_location_id is None:
+            exec_location_id = self.get_location(object_id)
+        try:
+            execution_client = self.ready_clients[exec_location_id]
+        except KeyError:
+            exeenv = self.get_execution_environment_info(exec_location_id)
+            execution_client = EEClient(exeenv.hostname, exeenv.port)
+            self.ready_clients[exec_location_id] = execution_client
+        execution_client.unfederate(session_id, object_id, external_execution_environment_id, recursive)
 
     def unfederate_all_objects(self, ext_dataclay_id):
-        session_id = self.get_session_id()
-        self.logger.debug("[==UnfederateAllObjects==] Starting unfederation of all objects with dataClay %s, and session %s", ext_dataclay_id, session_id)
-        self.ready_clients["@LM"].unfederate_all_objects(session_id, ext_dataclay_id)
-        # FIXME: ALIAS CACHE SHOULD BE UPDATED FOR OBJECTS WITH ALIAS REMOVED?
+        raise NotImplementedError()
 
     def unfederate_all_objects_with_all_dcs(self):
-        session_id = self.get_session_id()
-        self.logger.debug("[==UnfederateAllObjectsWithAllDCs==] Starting unfederation of all objects with all dcs, and session %s", session_id)
-        self.ready_clients["@LM"].unfederate_all_objects_with_all_dcs(session_id)
-        # FIXME: ALIAS CACHE SHOULD BE UPDATED FOR OBJECTS WITH ALIAS REMOVED?
+        raise NotImplementedError()
         
     def unfederate_object_with_all_dcs(self, object_id, recursive):
-        session_id = self.get_session_id()
-        self.logger.debug("[==UnfederateObjectWithAllDCs==] Starting unfederation of object with all dcs, and session %s", session_id)
-        self.ready_clients["@LM"].unfederate_object_with_all_dcs(session_id, object_id, recursive)
-        # FIXME: ALIAS CACHE SHOULD BE UPDATED FOR OBJECTS WITH ALIAS REMOVED?
+        raise NotImplementedError()
     
     def migrate_federated_objects(self, origin_dataclay_id, dest_dataclay_id):
-        session_id = self.get_session_id()
-        self.logger.debug("[==MigrateFederatedObjects==] Starting migration of federated objects using session %s", session_id)
-        self.ready_clients["@LM"].migrate_federated_objects(session_id, origin_dataclay_id, dest_dataclay_id)
-        # FIXME: ALIAS CACHE SHOULD BE UPDATED FOR OBJECTS WITH ALIAS REMOVED?
+        raise NotImplementedError()
     
     def federate_all_objects(self, dest_dataclay_id):
-        session_id = self.get_session_id()
-        self.logger.debug("[==FederateAllObjects==] Starting federation of all my objects using session %s", session_id)
-        self.ready_clients["@LM"].federate_all_objects(session_id, dest_dataclay_id)
-        # FIXME: ALIAS CACHE SHOULD BE UPDATED FOR OBJECTS WITH ALIAS REMOVED?
+        raise NotImplementedError()
 
     def import_models_from_external_dataclay(self, namespace, ext_dataclay_id) -> None:
         """ Import models in namespace specified from an external dataClay
@@ -595,7 +547,7 @@ class DataClayRuntime(object):
         return uuid.uuid3(NULL_NAMESPACE, alias)
     
     def get_object_location_by_id(self, object_id):
-        exec_envs = list(self.get_execution_environments_info())
+        exec_envs = list(self.get_all_execution_environments_at_dataclay(self.get_dataclay_id()))
         return exec_envs[hash(object_id) % len(exec_envs)]
     
     def get_object_location_by_alias(self, alias):
@@ -606,29 +558,108 @@ class DataClayRuntime(object):
         self.logger.debug("Removing from cache alias %s", alias)     
         if alias in self.alias_cache :   
             del self.alias_cache[alias]
-    
-    def new_replica(self, object_id, class_id, hint, backend_id, recursive):
-        self.logger.debug("Starting new replica")
+
+
+    def prepare_for_new_replica_version_consolidate(self, object_id, object_hint,
+                                                    backend_id, backend_hostname,
+                                                    different_location):
+        """
+        Helper function to prepare information for new replica - version - consolidate algorithms
+        :param object_id: id of the object
+        :param backend_id: Destination backend ID to get information from (can be none)
+        :param backend_hostname: Destination hostname to get information from (can be null)
+        :param different_location: if true indicates that destination backend should be different to any location of the object
+        :return: Tuple with destination backend API to call and:
+	  		Either information of dest backend with id provided, some exec env in host provided or random exec env.
+        """
+
+        backend_id_to_call = object_hint
+        if backend_id_to_call is None:
+            backend_id_to_call = self.get_location(object_id)
+
+        dest_backend_id = backend_id
+        dest_backend = None
+        if dest_backend_id is None:
+            if backend_hostname is not None:
+                dest_backend = list(self.get_all_execution_environments_at_host(backend_hostname).values())[0]
+                dest_backend_id = dest_backend.id
+            else:
+                if different_location:
+                    # no destination specified, get one destination in which object is not already replicated
+                    obj_locations = self.get_all_locations(object_id)
+                    all_exec_envs = self.get_all_execution_environments_at_dataclay(self.get_dataclay_id())
+                    for exec_env_id, exec_env in all_exec_envs.items():
+                        if exec_env_id not in obj_locations:
+                            dest_backend_id = exec_env_id
+                            dest_backend = exec_env
+                            break
+                else:
+                    dest_backend_id = object_hint
+                    dest_backend = self.get_execution_environment_info(dest_backend_id)
+
+        else:
+            dest_backend = self.get_execution_environment_info(dest_backend_id)
+
+        try:
+            execution_client = self.ready_clients[backend_id_to_call]
+        except KeyError:
+            backend_to_call = self.get_execution_environment_info(backend_id_to_call)
+            execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
+            self.ready_clients[backend_id_to_call] = execution_client
+        return execution_client, dest_backend
+
+
+    def new_replica(self, object_id, hint, backend_id, backend_hostname, recursive):
+        self.logger.debug(f"Starting new replica of {object_id}")
+        # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
         session_id = self.get_session_id()
-        DataClayRuntime.ensure_object_is_registered(self, session_id, object_id, class_id, hint)
-        result = self.ready_clients["@LM"].new_replica(session_id, object_id, backend_id, recursive)
-        if object_id in self.metadata_cache :   
-            del self.metadata_cache[object_id]
-        return result
-    
-    def new_version(self, object_id, class_id, hint, backend_id):
-        self.logger.debug("Starting new version")
+
+        execution_client, dest_backend = self.prepare_for_new_replica_version_consolidate(object_id, hint,
+                                                                                          backend_id, backend_hostname, True)
+        dest_backend_id = dest_backend.id
+        replicated_objs = execution_client.new_replica(session_id, object_id, dest_backend_id, recursive)
+        self.logger.debug(f"Replicated: {replicated_objs} into {dest_backend_id}")
+        # Update replicated objects metadata
+        for replicated_obj_id in replicated_objs:
+            self.metadata_cache[replicated_obj_id].locations.add(dest_backend_id)
+        return dest_backend_id
+
+    def new_version(self, object_id, hint, class_id, dataset_id, backend_id, backend_hostname, recursive):
+        # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
+        self.logger.debug(f"Starting new version of {object_id}")
         session_id = self.get_session_id()
-        DataClayRuntime.ensure_object_is_registered(self, session_id, object_id, class_id, hint)
-        result = self.ready_clients["@LM"].new_version(session_id, object_id, backend_id)
-        if object_id in self.metadata_cache :   
-            del self.metadata_cache[object_id]
-        return result
-    
-    def consolidate_version(self, version_info):
+        execution_client, dest_backend = self.prepare_for_new_replica_version_consolidate(object_id, hint,
+                                                                                          backend_id,
+                                                                                          backend_hostname, False)
+        dest_backend_id = dest_backend.id
+        version_id = execution_client.new_version(session_id, object_id, dest_backend_id)
+        locations = set()
+        locations.add(dest_backend_id)
+        metadata_info = MetaDataInfo(version_id, False, dataset_id,
+                                     class_id, locations, None, None)
+        self.metadata_cache[object_id] = metadata_info
+        self.logger.debug(f"Finished new version of {object_id}, created version {version_id}")
+        return version_id, dest_backend_id
+
+    def consolidate_version(self, version_id, version_hint):
+        # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
+        self.logger.debug(f"Starting consolidate version of {version_id}")
         session_id = self.get_session_id()
-        return self.ready_clients["@LM"].consolidate_version(session_id, version_info)
-    
+        backend_id_to_call = version_hint
+        if backend_id_to_call is None:
+            backend_id_to_call = self.get_location(version_id)
+
+        try:
+            execution_client = self.ready_clients[backend_id_to_call]
+        except KeyError:
+            backend_to_call = self.get_execution_environment_info(backend_id_to_call)
+            execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
+            self.ready_clients[backend_id_to_call] = execution_client
+
+        execution_client.consolidate_version(session_id, version_id)
+        self.logger.debug(f"Finished consolidate version of {version_id}")
+
+
     def move_object(self, instance, source_backend_id, dest_backend_id, recursive):
         self.logger.debug("Moving object %r from %s to %s",
                      instance, source_backend_id, dest_backend_id)
@@ -668,7 +699,7 @@ class DataClayRuntime(object):
         if metaclass_id is None:
             metadata = self.ready_clients["@LM"].get_metadata_by_oid(
                 self.get_session_id(), object_id)
-            metaclass_id = metadata.metaclassID
+            metaclass_id = metadata.metaclass_id
 
         return self.dataclay_object_loader.get_or_new_persistent_instance(metaclass_id, object_id, hint)
     
@@ -677,8 +708,10 @@ class DataClayRuntime(object):
         :return: ID of current dataclay
         :rtype: UUID
         """
-        return self.ready_clients["@LM"].get_dataclay_id()
-    
+        if self.dataclay_id is None:
+            self.dataclay_id = self.ready_clients["@LM"].get_dataclay_id()
+        return self.dataclay_id
+
     def get_external_dataclay_id(self, exthostname, extport):
         """ Get external dataClay ID with host and port identified
         :param exthostname: external dataClay host name
@@ -698,24 +731,6 @@ class DataClayRuntime(object):
         :rtype: DataClayInstance
         """
         return self.ready_clients["@LM"].get_external_dataclay_info(dataclay_id)
-    
-    def get_dataclays_object_is_federated_with(self, object_id):
-        """ Retrieve dataClay instance ids where the object is federated
-        :param object_id: ID of the object
-        :return: dataClay instance ids where this object is federated
-        :type object_id: UUID
-        :rtype: set of UUID
-        """
-        return self.ready_clients["@LM"].get_dataclays_object_is_federated_with(object_id)
-    
-    def get_external_source_of_dataclay_object(self, object_id):
-        """ Retrieve dataClay instance id where the object comes from or NULL
-        :param object_id: ID of the object
-        :return: dataClay instance ids where this object is federated
-        :type object_id: UUID
-        :rtype: UUID
-        """
-        return self.ready_clients["@LM"].get_external_source_of_dataclay_object(object_id)
 
     def get_location(self, object_id):
         self.logger.debug("Looking for location of object %s", str(object_id))
@@ -737,8 +752,9 @@ class DataClayRuntime(object):
 
     def get_metadata(self, object_id):
         if object_id in self.metadata_cache:
-            self.logger.debug("Object %s metadata found in cache", object_id)
             metadata = self.metadata_cache[object_id]
+            self.logger.debug(f"Object metadata found in cache: {metadata}")
+            return metadata
         else:
             metadata = self.ready_clients["@LM"].get_metadata_by_oid(
                     self.get_session_id(), object_id)
@@ -746,34 +762,46 @@ class DataClayRuntime(object):
                 self.logger.debug("Object %s not registered", object_id)
                 raise DataClayException("The object %s is not registered" % object_id)
             self.metadata_cache[object_id] = metadata
-            self.logger.debug("Received the following MetaDataInfo for object %s: %s",
-                    object_id, metadata)
-        return metadata
+            self.logger.debug(f"Obtained metadata: {metadata}")
+            return metadata
+
+    def remove_metadata_from_cache(self, object_id):
+        if object_id in self.metadata_cache:
+            del self.metadata_cache[object_id]
 
     def get_all_locations(self, object_id):
         self.logger.debug("Getting all locations of object %s", object_id)
         try:
             metadata = self.get_metadata(object_id)
-            return metadata.locations
+            locations = set()
+            for loc in metadata.locations:
+                locations.add(loc)
+            # add hint location
+            obj = self.get_from_heap(object_id)
+            if obj is not None:
+                hint = obj.get_hint()
+                if hint is not None:
+                    locations.add(hint)
+
+            return locations
         except:
-            self.logger.debug("Object %s has not metadata", object_id)
+            self.logger.debug("Object %s has no metadata", object_id)
             obj = self.get_from_heap(object_id)
             if obj is not None:
                 hint = obj.get_hint()
                 if hint is not None:
                     self.logger.debug("Returning list with hint from heap object")
                     locations = dict()
-                    locations[hint] = self.get_execution_environments_info()[hint]
+                    locations[hint] = self.get_execution_environment_info(hint)
                     return locations
                 else:
                     raise DataClayException("The object %s is not initialized well, hint missing or not exist" % object_id)
             else:
                 raise DataClayException("The object %s is not initialized" % object_id)
 
-    def get_execution_environments_info(self):
-        if self.ee_info_map is None:
-            self.ee_info_map = self.ready_clients["@LM"].get_execution_environments_info(self.get_session_id(), LANG_PYTHON,
-                                                                                         not self.is_exec_env())
+    def get_all_execution_environments_info(self, force_update=False):
+        if self.ee_info_map is None or self.ee_info_map is not None and force_update:
+            self.ee_info_map = self.ready_clients["@LM"].get_all_execution_environments_info(LANG_PYTHON)
             if self.logger.isEnabledFor(TRACE):
                 n = len(self.ee_info_map)
                 self.logger.trace("Response of ExecutionEnvironmentsInfo returned #%d ExecutionEnvironmentsInfo", n)
@@ -783,15 +811,68 @@ class DataClayRuntime(object):
 
         return self.ee_info_map
 
-    def get_execution_environments_names(self, username, password):
-        credential = (None, password)
-        user_id = self.ready_clients["@LM"].get_account_id(username)
-        ee_names = self.ready_clients["@LM"].get_execution_environments_names(user_id, credential, LANG_PYTHON)
+    def get_execution_environment_info(self, backend_id):
+        exec_envs = self.get_all_execution_environments_info(force_update=False)
+        if backend_id in exec_envs:
+            return exec_envs[backend_id]
+        else:
+            exec_envs = self.get_all_execution_environments_info(force_update=True)
+            return exec_envs[backend_id]
+
+
+    def get_all_execution_environments_at_host(self, hostname):
+        exec_envs_at_host = dict()
+        exec_envs = self.get_all_execution_environments_info(force_update=False)
+        for exec_env_id, exec_env in exec_envs.items():
+            if exec_env.hostname == hostname:
+                exec_envs_at_host[exec_env_id] = exec_env
+        if not bool(exec_envs_at_host):
+            exec_envs = self.get_all_execution_environments_info(force_update=True)
+            for exec_env_id, exec_env in exec_envs.items():
+                if exec_env.hostname == hostname:
+                    exec_envs_at_host[exec_env_id] = exec_env
+        return exec_envs_at_host
+
+    def get_all_execution_environments_at_dataclay(self, dataclay_instance_id):
+        exec_envs_at_dataclay_instance_id = dict()
+        exec_envs = self.get_all_execution_environments_info(force_update=False)
+        for exec_env_id, exec_env in exec_envs.items():
+            self.logger.debug(f"Checking if {exec_env} belongs to dataclay with id {dataclay_instance_id}")
+            if exec_env.dataclay_instance_id == dataclay_instance_id:
+                exec_envs_at_dataclay_instance_id[exec_env_id] = exec_env
+        if not bool(exec_envs_at_dataclay_instance_id):
+            exec_envs = self.get_all_execution_environments_info(force_update=True)
+            for exec_env_id, exec_env in exec_envs.items():
+                self.logger.debug(f"Checking if {exec_env} belongs to dataclay with id {dataclay_instance_id}")
+                if exec_env.dataclay_instance_id == dataclay_instance_id:
+                    exec_envs_at_dataclay_instance_id[exec_env_id] = exec_env
+        return exec_envs_at_dataclay_instance_id
+
+
+    def get_all_execution_environments_with_name(self, dsname):
+        exec_envs_with_name = dict()
+        exec_envs = self.get_all_execution_environments_info(force_update=False)
+        for exec_env_id, exec_env in exec_envs.items():
+            self.get_dataclay_id()
+            if exec_env.name == dsname and exec_env.dataclay_instance_id == self.get_dataclay_id():
+                exec_envs_with_name[exec_env_id] = exec_env
+        if not bool(exec_envs_with_name):
+            exec_envs = self.get_all_execution_environments_info(force_update=True)
+            for exec_env_id, exec_env in exec_envs.items():
+                if exec_env.name == dsname and exec_env.dataclay_instance_id == self.get_dataclay_id():
+                    exec_envs_with_name[exec_env_id] = exec_env
+        return exec_envs_with_name
+
+    def get_execution_environments_names(self, force_update=False):
+        exec_envs_names = list()
+        exec_envs = self.get_all_execution_environments_info(force_update=force_update)
+        for exec_env_id, exec_env in exec_envs.items():
+            if exec_env.dataclay_instance_id == self.get_dataclay_id():
+                exec_envs_names.append(exec_env.name)
         if self.logger.isEnabledFor(TRACE):
-            n = len(ee_names)
+            n = len(exec_envs_names)
             self.logger.trace("Response of ExecutionEnvironmentsInfo returned #%d ExecutionEnvironmentsInfo", n)
-            
-        return ee_names
+        return exec_envs_names
 
     def choose_location(self, instance, alias=None):
         """ Choose execution/make persistent location.
@@ -875,6 +956,7 @@ class DataClayRuntime(object):
         
         # Stop HeapManager
         self.stop_gc()
+        self.dataclay_id = None
         
     ################## EXTRAE IGNORED FUNCTIONS ###########################
     deactivate_tracing.do_not_trace = True
