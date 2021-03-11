@@ -531,9 +531,14 @@ class ExecutionEnvironment(object):
             for object_id in object_ids:
                 instance = self.get_local_instance(object_id, True)
 
-                if instance.get_alias() is not None:
-                    self.get_runtime().delete_alias(instance.get_alias())
+                try:
+                    if instance.get_alias() is not None:
+                        instance.set_alias(None)
+                        self.get_runtime().delete_alias(instance.get_alias())
 
+                except:
+                    # ignore if object was not registered yet
+                    pass
                 try:
                     instance.when_unfederated()
                 except:
