@@ -43,9 +43,9 @@ class Configuration(object):
         
     # ANY CALL TO LOGICMODULE: clients can wait at init waitForBackends
     # Default value for number of retries in connection to LogicModule. 
-    MAX_RETRIES_LOGICMODULE = 5
+    MAX_RETRIES_LOGICMODULE = int(os.getenv("MAX_RETRIES_LOGICMODULE", default=1))
     # Default value for sleeping before retrying in LM in seconds. 
-    SLEEP_RETRIES_LOGICMODULE = 10
+    SLEEP_RETRIES_LOGICMODULE = int(os.getenv("SLEEP_RETRIES_LOGICMODULE", default=15))
         
     # EXECUTION RETRIES
     # Default value for number of retries IN EXECUTION
@@ -58,7 +58,7 @@ class Configuration(object):
     SLEEP_WAIT_REGISTERED = 50
     
     # CHECK ALIVE TIME OUT IN GRPC in seconds
-    GRPC_CHECK_ALIVE_TIMEOUT = 600
+    GRPC_CHECK_ALIVE_TIMEOUT = int(os.getenv("GRPC_CHECK_ALIVE_TIMEOUT", default=600))
     
     # Indicates where EE id is stored
     EE_PERSISTENT_INFO_PATH = os.getcwd() + "/"
@@ -67,23 +67,29 @@ class Configuration(object):
     TRACES_DEST_PATH = os.getcwd()
 
     # How many worker threads should be created/used by ThreadPoolExecutor
-    THREAD_POOL_WORKERS = 2
+    THREAD_POOL_WORKERS = os.getenv("THREAD_POOL_WORKERS", default=None)
 
     # Path to Trusted certificates for verifying the remote endpoint's certificate. 
-    SSL_CLIENT_TRUSTED_CERTIFICATES = ""
+    SSL_CLIENT_TRUSTED_CERTIFICATES = os.getenv("SSL_CLIENT_TRUSTED_CERTIFICATES", default="")
 
     # Path to identifying certificate for this host
-    SSL_CLIENT_CERTIFICATE = ""
+    SSL_CLIENT_CERTIFICATE = os.getenv("SSL_CLIENT_CERTIFICATE", default="")
 
     # Path to identifying certificate for this host. 
-    SSL_CLIENT_KEY = ""
-    
-    # Custom header of service alias for calls to Logic module. Used in Traefik.
-    LM_SERVICE_ALIAS_HEADERMSG = "logicmodule1"
-    
+    SSL_CLIENT_KEY = os.getenv("SSL_CLIENT_KEY", default="")
+
     # Override authority hostname in SSL calls
-    SSL_TARGET_AUTHORITY = "proxy"
-    
+    SSL_TARGET_AUTHORITY = os.getenv("SSL_TARGET_AUTHORITY", default="proxy")
+
+    # Custom header of service alias for calls to Logic module. Used in Traefik.
+    SSL_TARGET_LM_ALIAS = os.getenv("SSL_TARGET_LM_ALIAS", default="11034")
+
+    # Custom header of service alias for calls to EE. Used in Traefik.
+    SSL_TARGET_EE_ALIAS = os.getenv("SSL_TARGET_EE_ALIAS", default="6867")
+
+    # Custom header of service alias for calls to SL. Used in Traefik.
+    SSL_TARGET_SL_ALIAS = os.getenv("SSL_TARGET_SL_ALIAS", default="2127")
+
     # Path to state file
     STATE_FILE_PATH = "state.txt"
 

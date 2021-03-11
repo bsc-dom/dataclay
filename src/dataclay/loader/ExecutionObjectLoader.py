@@ -125,7 +125,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
                     obj_bytes = self.runtime.get_from_sl(object_id)
                     msg = DeserializationLibUtilsSingleton.deserialize_grpc_message_from_db(obj_bytes)
                     metadata = get_metadata(msg.metadata)
-                    instance_class_id = metadata[1][0]
+                    instance_class_id = metadata.tags_to_class_ids[0]
                     instance = self.new_instance(instance_class_id, object_id)
                     instance.initialize_object_as_persistent()
                     DeserializationLibUtilsSingleton.deserialize_object_from_db_bytes_aux(instance, metadata, msg.data, self.runtime)

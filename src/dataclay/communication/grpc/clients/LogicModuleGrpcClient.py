@@ -40,21 +40,31 @@ class LMClient(object):
     def __init__(self, hostname, port):
         self.channel = None
         self.lm_stub = None
+        self.metadata_call = []
         self.create_stubs(hostname, port)
-        self.metadata_call = [('service-alias', Configuration.LM_SERVICE_ALIAS_HEADERMSG)]
+
 
     def create_stubs(self, hostname, port):
         """Create the stub and the channel at the address passed by the server."""
         address = str(hostname) + ":" + str(port)
 
         options = [(ChannelArgKey.max_send_message_length, -1),
-                   (ChannelArgKey.max_receive_message_length, -1),
-                   ('grpc.ssl_target_name_override', Configuration.SSL_TARGET_AUTHORITY)]
+                   (ChannelArgKey.max_receive_message_length, -1)]
 
         if Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != "" or \
             Configuration.SSL_CLIENT_CERTIFICATE != "" or \
             Configuration.SSL_CLIENT_KEY != "":
             # read in certificates
+            options.append(('grpc.ssl_target_name_override', Configuration.SSL_TARGET_AUTHORITY))
+            if port != 443:
+                service_alias = str(port)
+                self.metadata_call.append(('service-alias', service_alias))
+                address = f"{hostname}:443"
+                logger.info(f"SSL configured: changed address {hostname}:{port} to {hostname}:443")
+                logger.info("SSL configured: using service-alias " + service_alias)
+            else:
+                self.metadata_call.append(('service-alias', Configuration.SSL_TARGET_LM_ALIAS))
+
             try:
                 if Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != "":
                     with open(Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES, "rb") as f:
@@ -83,7 +93,6 @@ class LMClient(object):
             logger.info("SSL configured: using SSL_CLIENT_TRUSTED_CERTIFICATES located at " + Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES)
             logger.info("SSL configured: using SSL_CLIENT_CERTIFICATE located at " + Configuration.SSL_CLIENT_CERTIFICATE)
             logger.info("SSL configured: using SSL_CLIENT_KEY located at " + Configuration.SSL_CLIENT_KEY)
-            logger.info("SSL configured: using header  " + Configuration.LM_SERVICE_ALIAS_HEADERMSG)
             logger.info("SSL configured: using authority  " + Configuration.SSL_TARGET_AUTHORITY)
      
         else:

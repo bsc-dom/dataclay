@@ -37,8 +37,55 @@ class EEClient(object):
         self.address = str(hostname) + ":" + str(port)
         options = [(ChannelArgKey.max_send_message_length, -1),
                    (ChannelArgKey.max_receive_message_length, -1)]
+        self.metadata_call = []
+        if Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != "" or \
+                Configuration.SSL_CLIENT_CERTIFICATE != "" or \
+                Configuration.SSL_CLIENT_KEY != "":
+            # read in certificates
+            options.append(('grpc.ssl_target_name_override', Configuration.SSL_TARGET_AUTHORITY))
+            if port != 443:
+                service_alias = str(port)
+                self.metadata_call.append(('service-alias', service_alias))
+                self.address = f"{hostname}:443"
+                logger.info(f"SSL configured: changed address {hostname}:{port} to {hostname}:443")
+                logger.info("SSL configured: using service-alias  " + service_alias)
+            else:
+                self.metadata_call.append(('service-alias', Configuration.SSL_TARGET_EE_ALIAS))
 
-        self.channel = grpc.insecure_channel(self.address, options)
+            try:
+                if Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != "":
+                    with open(Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES, "rb") as f:
+                        trusted_certs = f.read()
+                if Configuration.SSL_CLIENT_CERTIFICATE != "":
+                    with open(Configuration.SSL_CLIENT_CERTIFICATE, "rb") as f:
+                        client_cert = f.read()
+
+                if Configuration.SSL_CLIENT_KEY != "":
+                    with open(Configuration.SSL_CLIENT_KEY, "rb") as f:
+                        client_key = f.read()
+            except Exception as e:
+                logger.error('failed-to-read-cert-keys', reason=e)
+
+            # create credentials
+            if trusted_certs is not None:
+                credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs,
+                                                           private_key=client_key,
+                                                           certificate_chain=client_cert)
+            else:
+                credentials = grpc.ssl_channel_credentials(private_key=client_key,
+                                                           certificate_chain=client_cert)
+
+            self.channel = grpc.secure_channel(self.address, credentials, options)
+
+            logger.info("SSL configured: using SSL_CLIENT_TRUSTED_CERTIFICATES located at " + Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES)
+            logger.info("SSL configured: using SSL_CLIENT_CERTIFICATE located at " + Configuration.SSL_CLIENT_CERTIFICATE)
+            logger.info("SSL configured: using SSL_CLIENT_KEY located at " + Configuration.SSL_CLIENT_KEY)
+            logger.info("SSL configured: using authority  " + Configuration.SSL_TARGET_AUTHORITY)
+
+        else:
+            self.channel = grpc.insecure_channel(self.address, options)
+            logger.info("SSL not configured")
+
         try:
             grpc.channel_ready_future(self.channel).result(timeout=Configuration.GRPC_CHECK_ALIVE_TIMEOUT)
         except Exception as e:
@@ -65,7 +112,7 @@ class EEClient(object):
         )
 
         try:
-            response = self.ds_stub.deployMetaClasses(request)
+            response = self.ds_stub.deployMetaClasses(request=request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             raise e
@@ -96,7 +143,7 @@ class EEClient(object):
         )
 
         try:
-            response = self.ds_stub.newPersistentInstance(request)
+            response = self.ds_stub.newPersistentInstance(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             raise e
@@ -127,7 +174,7 @@ class EEClient(object):
         )
 
         try:
-            response = self.ds_stub.storeObjects(request)
+            response = self.ds_stub.storeObjects(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             traceback.print_exc(file=sys.stdout)
@@ -145,7 +192,7 @@ class EEClient(object):
         )
         
         try:
-            response = self.ds_stub.getCopyOfObject(request)
+            response = self.ds_stub.getCopyOfObject(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             raise e
@@ -165,7 +212,7 @@ class EEClient(object):
         )
         
         try:
-            response = self.ds_stub.updateObject(request)
+            response = self.ds_stub.updateObject(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             raise e
@@ -187,7 +234,7 @@ class EEClient(object):
         )
 
         try:
-            response = self.ds_stub.getObjects(request)
+            response = self.ds_stub.getObjects(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             raise e
@@ -208,7 +255,7 @@ class EEClient(object):
             destBackendID=Utils.get_msg_id(dest_backend_id)
         )
         try:
-            response = self.ds_stub.newVersion(request)
+            response = self.ds_stub.newVersion(request, metadata=self.metadata_call)
         except RuntimeError as e:
             raise e
 
@@ -224,7 +271,7 @@ class EEClient(object):
             versionObjectID=Utils.get_msg_id(version_object_id),
         )
         try:
-            response = self.ds_stub.consolidateVersion(request)
+            response = self.ds_stub.consolidateVersion(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             raise e
@@ -243,7 +290,7 @@ class EEClient(object):
                 bytesUpdate=obj_byt_list)
 
         try:
-            response = self.ds_stub.upsertObjects(request)
+            response = self.ds_stub.upsertObjects(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             raise e
@@ -263,7 +310,7 @@ class EEClient(object):
         )
 
         try:
-            response = self.ds_stub.makePersistent(request)
+            response = self.ds_stub.makePersistent(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             logger.error('Failed to make persistent', exc_info=True)
@@ -280,7 +327,7 @@ class EEClient(object):
                 externalExecutionEnvironmentID=Utils.get_msg_id(external_execution_env_id),
                 recursive=recursive
             )
-            response = self.ds_stub.federate(request)
+            response = self.ds_stub.federate(request, metadata=self.metadata_call)
         except RuntimeError as e:
             traceback.print_exc()
             logger.error('Failed to federate', exc_info=True)
@@ -297,7 +344,7 @@ class EEClient(object):
             recursive=recursive
         )
         try:
-            response = self.ds_stub.unfederate(request)
+            response = self.ds_stub.unfederate(request, metadata=self.metadata_call)
         except RuntimeError as e:
             logger.error('Failed to unfederate', exc_info=True)
             raise e
@@ -315,7 +362,7 @@ class EEClient(object):
         )
 
         try:
-            response = self.ds_stub.notifyFederation(request)
+            response = self.ds_stub.notifyFederation(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             logger.error('Failed to federate', exc_info=True)
@@ -335,7 +382,7 @@ class EEClient(object):
         )
 
         try:
-            response = self.ds_stub.notifyUnfederation(request)
+            response = self.ds_stub.notifyUnfederation(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             logger.error('Failed to federate', exc_info=True)
@@ -355,7 +402,7 @@ class EEClient(object):
         )
 
         try:
-            response = self.ds_stub.executeImplementation(request)
+            response = self.ds_stub.executeImplementation(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             logger.error('Failed to execute implementation', exc_info=True)
@@ -383,7 +430,7 @@ class EEClient(object):
             callingBackendID=Utils.get_msg_id(calling_backend_id)
         )
         try:
-            response = self.ds_stub.synchronize(request)
+            response = self.ds_stub.synchronize(request, metadata=self.metadata_call)
         except RuntimeError as e:
             raise e
         if response.isException:
@@ -399,7 +446,7 @@ class EEClient(object):
         )
 
         try:
-            response = self.ds_stub.newReplica(request)
+            response = self.ds_stub.newReplica(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             raise e
@@ -424,7 +471,7 @@ class EEClient(object):
         )
 
         try:
-            response = self.ds_stub.moveObjects(request)
+            response = self.ds_stub.moveObjects(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             raise e
@@ -454,7 +501,7 @@ class EEClient(object):
         )
 
         try:
-            response = self.ds_stub.removeObjects(request)
+            response = self.ds_stub.removeObjects(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             raise e
@@ -481,7 +528,7 @@ class EEClient(object):
         )
 
         try:
-            response = self.ds_stub.migrateObjectsToBackends(request)
+            response = self.ds_stub.migrateObjectsToBackends(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
             raise e
@@ -508,104 +555,6 @@ class EEClient(object):
         t = (result, non_migrated)
 
         return t
-    
-    # STORAGE LOCATION - DBHANDLER
-
-    def update_refs(self, ref_counting):
-        
-        """ ref_counting is a dict uuid - integer """ 
-        request = dataservice_messages_pb2.UpdateRefsRequest(
-            refsToUpdate=ref_counting
-        )
-
-        try:
-            response = self.ds_stub.updateRefs(request)
-        
-        except RuntimeError as e:
-            raise e
-        
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def store_to_db(self, execution_environment_id, object_id, obj_bytes):
-        
-        request = dataservice_messages_pb2.StoreToDBRequest(
-            executionEnvironmentID=Utils.get_msg_id(execution_environment_id),
-            objectID=Utils.get_msg_id(object_id),
-            objBytes=obj_bytes
-        )
-
-        try:
-            response = self.ds_stub.storeToDB(request)
-        
-        except RuntimeError as e:
-            raise e
-        
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def get_from_db(self, execution_environment_id, object_id):
-
-        request = dataservice_messages_pb2.GetFromDBRequest(
-            executionEnvironmentID=Utils.get_msg_id(execution_environment_id),
-            objectID=Utils.get_msg_id(object_id),
-        )
-        try:
-            response = self.ds_stub.getFromDB(request)
-
-        except RuntimeError as e:
-            raise e
-
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return response.objBytes
-    
-    def update_to_db(self, execution_environment_id, object_id, new_obj_bytes, dirty):
-        request = dataservice_messages_pb2.UpdateToDBRequest(
-            executionEnvironmentID=Utils.get_msg_id(execution_environment_id),
-            objectID=Utils.get_msg_id(object_id),
-            objBytes=new_obj_bytes,
-            dirty=dirty
-        )
-
-        try:
-            response = self.ds_stub.updateToDB(request)
-        
-        except RuntimeError as e:
-            raise e
-        
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-    
-    def delete_to_db(self, execution_environment_id, object_id):
-        request = dataservice_messages_pb2.DeleteToDBRequest(
-            executionEnvironmentID=Utils.get_msg_id(execution_environment_id),
-            objectID=Utils.get_msg_id(object_id),
-        )
-
-        try:
-            response = self.ds_stub.deleteToDB(request)
-        
-        except RuntimeError as e:
-            raise e
-        
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-        
-    def associate_execution_environment(self, execution_environment_id):
-        request = dataservice_messages_pb2.AssociateExecutionEnvironmentRequest(
-            executionEnvironmentID=Utils.get_msg_id(execution_environment_id)
-        )
-
-        try:
-            response = self.ds_stub.associateExecutionEnvironment(request)
-        
-        except RuntimeError as e:
-            raise e
-        
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
 
     def activate_tracing(self, task_id):
         request = dataservice_messages_pb2.ActivateTracingRequest(
@@ -613,7 +562,7 @@ class EEClient(object):
         )
         
         try:
-            response = self.ds_stub.activateTracing(request)
+            response = self.ds_stub.activateTracing(request, metadata=self.metadata_call)
         
         except RuntimeError as e:
             raise e
@@ -623,7 +572,7 @@ class EEClient(object):
 
     def deactivate_tracing(self):
         try:
-            response = self.ds_stub.deactivateTracing(CommonMessages.EmptyMessage())
+            response = self.ds_stub.deactivateTracing(CommonMessages.EmptyMessage(), metadata=self.metadata_call)
         
         except RuntimeError as e:
             raise e
@@ -633,7 +582,7 @@ class EEClient(object):
         
     def get_traces(self):
         try:
-            response = self.ds_stub.getTraces(CommonMessages.EmptyMessage())
+            response = self.ds_stub.getTraces(CommonMessages.EmptyMessage(), metadata=self.metadata_call)
         except RuntimeError as e:
             raise e
         

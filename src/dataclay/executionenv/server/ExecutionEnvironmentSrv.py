@@ -26,7 +26,7 @@ import traceback
 
 from dataclay.commonruntime.Runtime import clean_runtime
 from dataclay.commonruntime.Settings import settings
-from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
+from dataclay.communication.grpc.clients.StorageLocationGrpcClient import SLClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
 from dataclay.communication.grpc.server.ExecutionEnvironmentService import DataServiceEE
@@ -156,7 +156,7 @@ class ExecutionEnvironmentSrv(object):
         logger.info("Starting client to StorageLocation {%s} at %s:%d",
                     storage_location_id, storage_location.hostname, storage_location.port)
     
-        storage_client = EEClient(storage_location.hostname, storage_location.port)
+        storage_client = SLClient(storage_location.hostname, storage_location.port)
     
         # Leave the ready client to the Storage Location globally available
         self.execution_environment.get_runtime().ready_clients["@STORAGE"] = storage_client
