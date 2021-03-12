@@ -60,8 +60,8 @@ class Configuration(object):
     # CHECK ALIVE TIME OUT IN GRPC in seconds
     GRPC_CHECK_ALIVE_TIMEOUT = int(os.getenv("GRPC_CHECK_ALIVE_TIMEOUT", default=600))
     
-    # Indicates where EE id is stored
-    EE_PERSISTENT_INFO_PATH = os.getcwd() + "/"
+    # Indicates storage path for persistent data
+    STORAGE_PATH = os.getenv("STORAGE_PATH", default="/dataclay/storage/")
 
     # Destination path for traces
     TRACES_DEST_PATH = os.getcwd()

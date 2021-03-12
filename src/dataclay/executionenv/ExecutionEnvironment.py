@@ -60,7 +60,7 @@ class ExecutionEnvironment(object):
         """
         Initialize EE information (ID). Try to find information in stored files first, otherwise create EE ID. 
         """
-        info_file = Configuration.EE_PERSISTENT_INFO_PATH + "infoEE" + self.ee_name
+        info_file = Configuration.STORAGE_PATH + "/python_ee_" + self.ee_name + ".info"
         exists = os.path.isfile(info_file)
         self.logger.info("Reading EE info from %s" % str(info_file))
         if exists:
@@ -79,7 +79,7 @@ class ExecutionEnvironment(object):
         """
         Store EE information in file 
         """
-        info_file = Configuration.EE_PERSISTENT_INFO_PATH + "infoEE" + self.ee_name
+        info_file = Configuration.STORAGE_PATH + "/python_ee_" + self.ee_name + ".info"
         self.logger.info("Storing EE info to %s" % str(info_file))
         exists = os.path.isfile(info_file)
         if not exists:
