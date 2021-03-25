@@ -1,6 +1,6 @@
 lru-dict
 Jinja2
-PyYAML==5.2
+PyYAML==5.4
 decorator
 grpcio==1.25.0
 protobuf==3.10.0
