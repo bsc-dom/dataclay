@@ -20,7 +20,9 @@ def _dclayMethod(f, self, *args, **kwargs):
     try:
         if (is_exec_env and self.is_loaded()) \
                 or (not is_exec_env and not self.is_persistent())\
-                or f._dclay_local:
+                or f._dclay_local \
+                or f.__name__ == "__setstate__"\
+                or f.__name__ == "__getstate__":
             return f(self, *args, **kwargs)
         else:
             return getRuntime().execute_implementation_aux(f.__name__, self, args, self.get_hint())

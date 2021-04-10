@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='dataclay.communication.grpc.logicmodule',
   syntax='proto3',
   serialized_options=_b('\n8es.bsc.dataclay.communication.grpc.generated.logicmoduleB\026LogicModuleGrpcService'),
-  serialized_pb=_b('\nCdataclay/communication/grpc/generated/logicmodule/logicmodule.proto\x12\'dataclay.communication.grpc.logicmodule\x1aKdataclay/communication/grpc/messages/logicmodule/logicmodule_messages.proto\x1a\x41\x64\x61taclay/communication/grpc/messages/common/common_messages.proto2\xab|\n\x0bLogicModule\x12\x85\x01\n\x0e\x61utoregisterSL\x12>.dataclay.communication.grpc.logicmodule.AutoRegisterSLRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x93\x01\n\x0e\x61utoregisterEE\x12>.dataclay.communication.grpc.logicmodule.AutoRegisterEERequest\x1a?.dataclay.communication.grpc.logicmodule.AutoRegisterEEResponse\"\x00\x12\x9b\x01\n\x19unregisterStorageLocation\x12I.dataclay.communication.grpc.logicmodule.UnregisterStorageLocationRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xa5\x01\n\x1eunregisterExecutionEnvironment\x12N.dataclay.communication.grpc.logicmodule.UnregisterExecutionEnvironmentRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12s\n\ncheckAlive\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xad\x01\n\"notifyExecutionEnvironmentShutdown\x12R.dataclay.communication.grpc.logicmodule.NotifyExecutionEnvironmentShutdownRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xa3\x01\n\x1dnotifyStorageLocationShutdown\x12M.dataclay.communication.grpc.logicmodule.NotifyStorageLocationShutdownRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xc0\x01\n\x1d\x65xistsActiveEnvironmentsForSL\x12M.dataclay.communication.grpc.logicmodule.ExistsActiveEnvironmentsForSLRequest\x1aN.dataclay.communication.grpc.logicmodule.ExistsActiveEnvironmentsForSLResponse\"\x00\x12\xa4\x01\n\x17performSetOfNewAccounts\x12\x42.dataclay.communication.grpc.logicmodule.PerformSetAccountsRequest\x1a\x43.dataclay.communication.grpc.logicmodule.PerformSetAccountsResponse\"\x00\x12\xa7\x01\n\x16performSetOfOperations\x12\x44.dataclay.communication.grpc.logicmodule.PerformSetOperationsRequest\x1a\x45.dataclay.communication.grpc.logicmodule.PerformSetOperationsResponse\"\x00\x12\x85\x01\n\x0epublishAddress\x12>.dataclay.communication.grpc.logicmodule.PublishAddressRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x95\x01\n\x11newAccountNoAdmin\x12\x41.dataclay.communication.grpc.logicmodule.NewAccountNoAdminRequest\x1a;.dataclay.communication.grpc.logicmodule.NewAccountResponse\"\x00\x12\x87\x01\n\nnewAccount\x12:.dataclay.communication.grpc.logicmodule.NewAccountRequest\x1a;.dataclay.communication.grpc.logicmodule.NewAccountResponse\"\x00\x12\x8d\x01\n\x0cgetAccountID\x12<.dataclay.communication.grpc.logicmodule.GetAccountIDRequest\x1a=.dataclay.communication.grpc.logicmodule.GetAccountIDResponse\"\x00\x12\x93\x01\n\x0egetAccountList\x12>.dataclay.communication.grpc.logicmodule.GetAccountListRequest\x1a?.dataclay.communication.grpc.logicmodule.GetAccountListResponse\"\x00\x12\x87\x01\n\nnewSession\x12:.dataclay.communication.grpc.logicmodule.NewSessionRequest\x1a;.dataclay.communication.grpc.logicmodule.NewSessionResponse\"\x00\x12\xa8\x01\n\x15getInfoOfSessionForDS\x12\x45.dataclay.communication.grpc.logicmodule.GetInfoOfSessionForDSRequest\x1a\x46.dataclay.communication.grpc.logicmodule.GetInfoOfSessionForDSResponse\"\x00\x12\x8d\x01\n\x0cnewNamespace\x12<.dataclay.communication.grpc.logicmodule.NewNamespaceRequest\x1a=.dataclay.communication.grpc.logicmodule.NewNamespaceResponse\"\x00\x12\x87\x01\n\x0fremoveNamespace\x12?.dataclay.communication.grpc.logicmodule.RemoveNamespaceRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x93\x01\n\x0egetNamespaceID\x12>.dataclay.communication.grpc.logicmodule.GetNamespaceIDRequest\x1a?.dataclay.communication.grpc.logicmodule.GetNamespaceIDResponse\"\x00\x12\x99\x01\n\x10getNamespaceLang\x12@.dataclay.communication.grpc.logicmodule.GetNamespaceLangRequest\x1a\x41.dataclay.communication.grpc.logicmodule.GetNamespaceLangResponse\"\x00\x12\x9f\x01\n\x12getObjectDataSetID\x12\x42.dataclay.communication.grpc.logicmodule.GetObjectDataSetIDRequest\x1a\x43.dataclay.communication.grpc.logicmodule.GetObjectDataSetIDResponse\"\x00\x12\x87\x01\n\x0fimportInterface\x12?.dataclay.communication.grpc.logicmodule.ImportInterfaceRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x85\x01\n\x0eimportContract\x12>.dataclay.communication.grpc.logicmodule.ImportContractRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xba\x01\n\x1bgetInfoOfClassesInNamespace\x12K.dataclay.communication.grpc.logicmodule.GetInfoOfClassesInNamespaceRequest\x1aL.dataclay.communication.grpc.logicmodule.GetInfoOfClassesInNamespaceResponse\"\x00\x12\xcc\x01\n!getImportedClassesInfoInNamespace\x12Q.dataclay.communication.grpc.logicmodule.GetImportedClassesInfoInNamespaceRequest\x1aR.dataclay.communication.grpc.logicmodule.GetImportedClassesInfoInNamespaceResponse\"\x00\x12\xa5\x01\n\x14getClassIDfromImport\x12\x44.dataclay.communication.grpc.logicmodule.GetClassIDFromImportRequest\x1a\x45.dataclay.communication.grpc.logicmodule.GetClassIDFromImportResponse\"\x00\x12\x90\x01\n\rgetNamespaces\x12=.dataclay.communication.grpc.logicmodule.GetNamespacesRequest\x1a>.dataclay.communication.grpc.logicmodule.GetNamespacesResponse\"\x00\x12\x87\x01\n\nnewDataSet\x12:.dataclay.communication.grpc.logicmodule.NewDataSetRequest\x1a;.dataclay.communication.grpc.logicmodule.NewDataSetResponse\"\x00\x12\x83\x01\n\rremoveDataSet\x12=.dataclay.communication.grpc.logicmodule.RemoveDataSetRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x8d\x01\n\x0cgetDataSetID\x12<.dataclay.communication.grpc.logicmodule.GetDataSetIDRequest\x1a=.dataclay.communication.grpc.logicmodule.GetDataSetIDResponse\"\x00\x12\xa5\x01\n\x14\x63heckDataSetIsPublic\x12\x44.dataclay.communication.grpc.logicmodule.CheckDataSetIsPublicRequest\x1a\x45.dataclay.communication.grpc.logicmodule.CheckDataSetIsPublicResponse\"\x00\x12\x9c\x01\n\x11getPublicDataSets\x12\x41.dataclay.communication.grpc.logicmodule.GetPublicDataSetsRequest\x1a\x42.dataclay.communication.grpc.logicmodule.GetPublicDataSetsResponse\"\x00\x12\x9f\x01\n\x12getAccountDataSets\x12\x42.dataclay.communication.grpc.logicmodule.GetAccountDataSetsRequest\x1a\x43.dataclay.communication.grpc.logicmodule.GetAccountDataSetsResponse\"\x00\x12\x81\x01\n\x08newClass\x12\x38.dataclay.communication.grpc.logicmodule.NewClassRequest\x1a\x39.dataclay.communication.grpc.logicmodule.NewClassResponse\"\x00\x12\x7f\n\x0bremoveClass\x12;.dataclay.communication.grpc.logicmodule.RemoveClassRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\x0fremoveOperation\x12?.dataclay.communication.grpc.logicmodule.RemoveOperationRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x91\x01\n\x14removeImplementation\x12\x44.dataclay.communication.grpc.logicmodule.RemoveImplementationRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x93\x01\n\x0egetOperationID\x12>.dataclay.communication.grpc.logicmodule.GetOperationIDRequest\x1a?.dataclay.communication.grpc.logicmodule.GetOperationIDResponse\"\x00\x12\x90\x01\n\rgetPropertyID\x12=.dataclay.communication.grpc.logicmodule.GetPropertyIDRequest\x1a>.dataclay.communication.grpc.logicmodule.GetPropertyIDResponse\"\x00\x12\x87\x01\n\ngetClassID\x12:.dataclay.communication.grpc.logicmodule.GetClassIDRequest\x1a;.dataclay.communication.grpc.logicmodule.GetClassIDResponse\"\x00\x12\x8d\x01\n\x0cgetClassInfo\x12<.dataclay.communication.grpc.logicmodule.GetClassInfoRequest\x1a=.dataclay.communication.grpc.logicmodule.GetClassInfoResponse\"\x00\x12\x8a\x01\n\x0bnewContract\x12;.dataclay.communication.grpc.logicmodule.NewContractRequest\x1a<.dataclay.communication.grpc.logicmodule.NewContractResponse\"\x00\x12\x99\x01\n\x18registerToPublicContract\x12H.dataclay.communication.grpc.logicmodule.RegisterToPublicContractRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xd2\x01\n#registerToPublicContractOfNamespace\x12S.dataclay.communication.grpc.logicmodule.RegisterToPublicContractOfNamespaceRequest\x1aT.dataclay.communication.grpc.logicmodule.RegisterToPublicContractOfNamespaceResponse\"\x00\x12\xb4\x01\n\x19getContractIDsOfApplicant\x12I.dataclay.communication.grpc.logicmodule.GetContractIDsOfApplicantRequest\x1aJ.dataclay.communication.grpc.logicmodule.GetContractIDsOfApplicantResponse\"\x00\x12\xb1\x01\n\x18getContractIDsOfProvider\x12H.dataclay.communication.grpc.logicmodule.GetContractIDsOfProviderRequest\x1aI.dataclay.communication.grpc.logicmodule.GetContractIDsOfProviderResponse\"\x00\x12\xcc\x01\n%getContractIDsOfApplicantWithProvider\x12O.dataclay.communication.grpc.logicmodule.GetContractsOfApplicantWithProvRequest\x1aP.dataclay.communication.grpc.logicmodule.GetContractsOfApplicantWithProvResponse\"\x00\x12\x96\x01\n\x0fnewDataContract\x12?.dataclay.communication.grpc.logicmodule.NewDataContractRequest\x1a@.dataclay.communication.grpc.logicmodule.NewDataContractResponse\"\x00\x12\xa1\x01\n\x1cregisterToPublicDataContract\x12L.dataclay.communication.grpc.logicmodule.RegisterToPublicDataContractRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xc0\x01\n\x1dgetDataContractIDsOfApplicant\x12M.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfApplicantRequest\x1aN.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfApplicantResponse\"\x00\x12\xbd\x01\n\x1cgetDataContractIDsOfProvider\x12L.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfProviderRequest\x1aM.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfProviderResponse\"\x00\x12\xdf\x01\n*getDataContractInfoOfApplicantWithProvider\x12V.dataclay.communication.grpc.logicmodule.GetDataContractInfoOfApplicantWithProvRequest\x1aW.dataclay.communication.grpc.logicmodule.GetDataContractInfoOfApplicantWithProvResponse\"\x00\x12\x8d\x01\n\x0cnewInterface\x12<.dataclay.communication.grpc.logicmodule.NewInterfaceRequest\x1a=.dataclay.communication.grpc.logicmodule.NewInterfaceResponse\"\x00\x12\x99\x01\n\x10getInterfaceInfo\x12@.dataclay.communication.grpc.logicmodule.GetInterfaceInfoRequest\x1a\x41.dataclay.communication.grpc.logicmodule.GetInterfaceInfoResponse\"\x00\x12\x87\x01\n\x0fremoveInterface\x12?.dataclay.communication.grpc.logicmodule.RemoveInterfaceRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xc6\x01\n\x1fgetAllExecutionEnvironmentsInfo\x12O.dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoRequest\x1aP.dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse\"\x00\x12\xa5\x01\n\x14getStorageLocationID\x12\x44.dataclay.communication.grpc.logicmodule.GetStorageLocationIDRequest\x1a\x45.dataclay.communication.grpc.logicmodule.GetStorageLocationIDResponse\"\x00\x12\xab\x01\n\x16getStorageLocationInfo\x12\x46.dataclay.communication.grpc.logicmodule.GetStorageLocationInfoRequest\x1aG.dataclay.communication.grpc.logicmodule.GetStorageLocationInfoResponse\"\x00\x12\xba\x01\n\x1bgetExecutionEnvironmentInfo\x12K.dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentInfoRequest\x1aL.dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentInfoResponse\"\x00\x12\x90\x01\n\rgetObjectInfo\x12=.dataclay.communication.grpc.logicmodule.GetObjectInfoRequest\x1a>.dataclay.communication.grpc.logicmodule.GetObjectInfoResponse\"\x00\x12\x9f\x01\n\x12getObjectFromAlias\x12\x42.dataclay.communication.grpc.logicmodule.GetObjectFromAliasRequest\x1a\x43.dataclay.communication.grpc.logicmodule.GetObjectFromAliasResponse\"\x00\x12\x7f\n\x0b\x64\x65leteAlias\x12;.dataclay.communication.grpc.logicmodule.DeleteAliasRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xcf\x01\n\"getObjectsMetaDataInfoOfClassForNM\x12R.dataclay.communication.grpc.logicmodule.GetObjectsMetaDataInfoOfClassForNMRequest\x1aS.dataclay.communication.grpc.logicmodule.GetObjectsMetaDataInfoOfClassForNMResponse\"\x00\x12y\n\x08\x61\x64\x64\x41lias\x12\x38.dataclay.communication.grpc.logicmodule.AddAliasRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x90\x01\n\x14registerObjectFromGC\x12\x43.dataclay.communication.grpc.logicmodule.RegisterObjectForGCRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x8b\x01\n\x11unregisterObjects\x12\x41.dataclay.communication.grpc.logicmodule.UnregisterObjectsRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x96\x01\n\x0fregisterObjects\x12?.dataclay.communication.grpc.logicmodule.RegisterObjectsRequest\x1a@.dataclay.communication.grpc.logicmodule.RegisterObjectsResponse\"\x00\x12\xa9\x01\n setDataSetIDFromGarbageCollector\x12P.dataclay.communication.grpc.logicmodule.SetDataSetIDFromGarbageCollectorRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x99\x01\n\x10getMetadataByOID\x12@.dataclay.communication.grpc.logicmodule.GetMetadataByOIDRequest\x1a\x41.dataclay.communication.grpc.logicmodule.GetMetadataByOIDResponse\"\x00\x12\x81\x01\n\x0csetDataSetID\x12<.dataclay.communication.grpc.logicmodule.SetDataSetIDRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\nmoveObject\x12:.dataclay.communication.grpc.logicmodule.MoveObjectRequest\x1a;.dataclay.communication.grpc.logicmodule.MoveObjectResponse\"\x00\x12\x8b\x01\n\x11setObjectReadOnly\x12\x41.dataclay.communication.grpc.logicmodule.SetObjectReadOnlyRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x8d\x01\n\x12setObjectReadWrite\x12\x42.dataclay.communication.grpc.logicmodule.SetObjectReadWriteRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xa8\x01\n\x15\x65xecuteImplementation\x12\x45.dataclay.communication.grpc.logicmodule.ExecuteImplementationRequest\x1a\x46.dataclay.communication.grpc.logicmodule.ExecuteImplementationResponse\"\x00\x12\xa8\x01\n\x15\x65xecuteMethodOnTarget\x12\x45.dataclay.communication.grpc.logicmodule.ExecuteMethodOnTargetRequest\x1a\x46.dataclay.communication.grpc.logicmodule.ExecuteMethodOnTargetResponse\"\x00\x12\x83\x01\n\rgetDataClayID\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a>.dataclay.communication.grpc.logicmodule.GetDataClayIDResponse\"\x00\x12\xb1\x01\n\x18registerExternalDataClay\x12H.dataclay.communication.grpc.logicmodule.RegisterExternalDataClayRequest\x1aI.dataclay.communication.grpc.logicmodule.RegisterExternalDataClayResponse\"\x00\x12\xd3\x01\n)registerExternalDataClayOverrideAuthority\x12Y.dataclay.communication.grpc.logicmodule.RegisterExternalDataClayOverrideAuthorityRequest\x1aI.dataclay.communication.grpc.logicmodule.RegisterExternalDataClayResponse\"\x00\x12\xd5\x01\n$notifyRegistrationOfExternalDataClay\x12T.dataclay.communication.grpc.logicmodule.NotifyRegistrationOfExternalDataClayRequest\x1aU.dataclay.communication.grpc.logicmodule.NotifyRegistrationOfExternalDataClayResponse\"\x00\x12\xa4\x01\n\x17getExternalDataClayInfo\x12\x42.dataclay.communication.grpc.logicmodule.GetExtDataClayInfoRequest\x1a\x43.dataclay.communication.grpc.logicmodule.GetExtDataClayInfoResponse\"\x00\x12\xa8\x01\n\x15getExternalDataclayId\x12\x45.dataclay.communication.grpc.logicmodule.GetExternalDataclayIDRequest\x1a\x46.dataclay.communication.grpc.logicmodule.GetExternalDataclayIDResponse\"\x00\x12\xa8\x01\n\x15getClassesInNamespace\x12\x45.dataclay.communication.grpc.logicmodule.GetClassesInNamespaceRequest\x1a\x46.dataclay.communication.grpc.logicmodule.GetClassesInNamespaceResponse\"\x00\x12\xa9\x01\n importModelsFromExternalDataClay\x12P.dataclay.communication.grpc.logicmodule.ImportModelsFromExternalDataClayRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x81\x01\n\x08getStubs\x12\x38.dataclay.communication.grpc.logicmodule.GetStubsRequest\x1a\x39.dataclay.communication.grpc.logicmodule.GetStubsResponse\"\x00\x12\x90\x01\n\rgetBabelStubs\x12=.dataclay.communication.grpc.logicmodule.GetBabelStubsRequest\x1a>.dataclay.communication.grpc.logicmodule.GetBabelStubsResponse\"\x00\x12\x7f\n\x0bregisterECA\x12;.dataclay.communication.grpc.logicmodule.RegisterECARequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x7f\n\x0b\x61\x64viseEvent\x12;.dataclay.communication.grpc.logicmodule.AdviseEventRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x91\x01\n\x14isPrefetchingEnabled\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x45.dataclay.communication.grpc.logicmodule.IsPrefetchingEnabledResponse\"\x00\x12\x9c\x01\n\x11getClassNameForDS\x12\x41.dataclay.communication.grpc.logicmodule.GetClassNameForDSRequest\x1a\x42.dataclay.communication.grpc.logicmodule.GetClassNameForDSResponse\"\x00\x12\xc0\x01\n\x1dgetClassNameAndNamespaceForDS\x12M.dataclay.communication.grpc.logicmodule.GetClassNameAndNamespaceForDSRequest\x1aN.dataclay.communication.grpc.logicmodule.GetClassNameAndNamespaceForDSResponse\"\x00\x12\xc6\x01\n\x1fgetContractIDOfDataClayProvider\x12O.dataclay.communication.grpc.logicmodule.GetContractIDOfDataClayProviderRequest\x1aP.dataclay.communication.grpc.logicmodule.GetContractIDOfDataClayProviderResponse\"\x00\x12\xab\x01\n\x16objectExistsInDataClay\x12\x46.dataclay.communication.grpc.logicmodule.ObjectExistsInDataClayRequest\x1aG.dataclay.communication.grpc.logicmodule.ObjectExistsInDataClayResponse\"\x00\x12\x81\x01\n\x0c\x63loseSession\x12<.dataclay.communication.grpc.logicmodule.CloseSessionRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xa8\x01\n\x15getMetadataByOIDForDS\x12\x45.dataclay.communication.grpc.logicmodule.GetMetadataByOIDForDSRequest\x1a\x46.dataclay.communication.grpc.logicmodule.GetMetadataByOIDForDSResponse\"\x00\x12\x87\x01\n\x0f\x61\x63tivateTracing\x12?.dataclay.communication.grpc.logicmodule.ActivateTracingRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12z\n\x11\x64\x65\x61\x63tivateTracing\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12v\n\tgetTraces\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x35.dataclay.communication.grpc.common.GetTracesResponse\"\x00\x12|\n\x13\x63leanMetaDataCaches\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12w\n\x0e\x63loseManagerDb\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12p\n\x07\x63loseDb\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x42R\n8es.bsc.dataclay.communication.grpc.generated.logicmoduleB\x16LogicModuleGrpcServiceb\x06proto3')
+  serialized_pb=_b('\nCdataclay/communication/grpc/generated/logicmodule/logicmodule.proto\x12\'dataclay.communication.grpc.logicmodule\x1aKdataclay/communication/grpc/messages/logicmodule/logicmodule_messages.proto\x1a\x41\x64\x61taclay/communication/grpc/messages/common/common_messages.proto2\xb7}\n\x0bLogicModule\x12\x85\x01\n\x0e\x61utoregisterSL\x12>.dataclay.communication.grpc.logicmodule.AutoRegisterSLRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x93\x01\n\x0e\x61utoregisterEE\x12>.dataclay.communication.grpc.logicmodule.AutoRegisterEERequest\x1a?.dataclay.communication.grpc.logicmodule.AutoRegisterEEResponse\"\x00\x12\x9b\x01\n\x19unregisterStorageLocation\x12I.dataclay.communication.grpc.logicmodule.UnregisterStorageLocationRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xa5\x01\n\x1eunregisterExecutionEnvironment\x12N.dataclay.communication.grpc.logicmodule.UnregisterExecutionEnvironmentRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12s\n\ncheckAlive\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xad\x01\n\"notifyExecutionEnvironmentShutdown\x12R.dataclay.communication.grpc.logicmodule.NotifyExecutionEnvironmentShutdownRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xa3\x01\n\x1dnotifyStorageLocationShutdown\x12M.dataclay.communication.grpc.logicmodule.NotifyStorageLocationShutdownRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xc0\x01\n\x1d\x65xistsActiveEnvironmentsForSL\x12M.dataclay.communication.grpc.logicmodule.ExistsActiveEnvironmentsForSLRequest\x1aN.dataclay.communication.grpc.logicmodule.ExistsActiveEnvironmentsForSLResponse\"\x00\x12\xa4\x01\n\x17performSetOfNewAccounts\x12\x42.dataclay.communication.grpc.logicmodule.PerformSetAccountsRequest\x1a\x43.dataclay.communication.grpc.logicmodule.PerformSetAccountsResponse\"\x00\x12\xa7\x01\n\x16performSetOfOperations\x12\x44.dataclay.communication.grpc.logicmodule.PerformSetOperationsRequest\x1a\x45.dataclay.communication.grpc.logicmodule.PerformSetOperationsResponse\"\x00\x12\x85\x01\n\x0epublishAddress\x12>.dataclay.communication.grpc.logicmodule.PublishAddressRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x95\x01\n\x11newAccountNoAdmin\x12\x41.dataclay.communication.grpc.logicmodule.NewAccountNoAdminRequest\x1a;.dataclay.communication.grpc.logicmodule.NewAccountResponse\"\x00\x12\x87\x01\n\nnewAccount\x12:.dataclay.communication.grpc.logicmodule.NewAccountRequest\x1a;.dataclay.communication.grpc.logicmodule.NewAccountResponse\"\x00\x12\x8d\x01\n\x0cgetAccountID\x12<.dataclay.communication.grpc.logicmodule.GetAccountIDRequest\x1a=.dataclay.communication.grpc.logicmodule.GetAccountIDResponse\"\x00\x12\x93\x01\n\x0egetAccountList\x12>.dataclay.communication.grpc.logicmodule.GetAccountListRequest\x1a?.dataclay.communication.grpc.logicmodule.GetAccountListResponse\"\x00\x12\x87\x01\n\nnewSession\x12:.dataclay.communication.grpc.logicmodule.NewSessionRequest\x1a;.dataclay.communication.grpc.logicmodule.NewSessionResponse\"\x00\x12\xa8\x01\n\x15getInfoOfSessionForDS\x12\x45.dataclay.communication.grpc.logicmodule.GetInfoOfSessionForDSRequest\x1a\x46.dataclay.communication.grpc.logicmodule.GetInfoOfSessionForDSResponse\"\x00\x12\x8d\x01\n\x0cnewNamespace\x12<.dataclay.communication.grpc.logicmodule.NewNamespaceRequest\x1a=.dataclay.communication.grpc.logicmodule.NewNamespaceResponse\"\x00\x12\x87\x01\n\x0fremoveNamespace\x12?.dataclay.communication.grpc.logicmodule.RemoveNamespaceRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x93\x01\n\x0egetNamespaceID\x12>.dataclay.communication.grpc.logicmodule.GetNamespaceIDRequest\x1a?.dataclay.communication.grpc.logicmodule.GetNamespaceIDResponse\"\x00\x12\x99\x01\n\x10getNamespaceLang\x12@.dataclay.communication.grpc.logicmodule.GetNamespaceLangRequest\x1a\x41.dataclay.communication.grpc.logicmodule.GetNamespaceLangResponse\"\x00\x12\x9f\x01\n\x12getObjectDataSetID\x12\x42.dataclay.communication.grpc.logicmodule.GetObjectDataSetIDRequest\x1a\x43.dataclay.communication.grpc.logicmodule.GetObjectDataSetIDResponse\"\x00\x12\x87\x01\n\x0fimportInterface\x12?.dataclay.communication.grpc.logicmodule.ImportInterfaceRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x85\x01\n\x0eimportContract\x12>.dataclay.communication.grpc.logicmodule.ImportContractRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xba\x01\n\x1bgetInfoOfClassesInNamespace\x12K.dataclay.communication.grpc.logicmodule.GetInfoOfClassesInNamespaceRequest\x1aL.dataclay.communication.grpc.logicmodule.GetInfoOfClassesInNamespaceResponse\"\x00\x12\xcc\x01\n!getImportedClassesInfoInNamespace\x12Q.dataclay.communication.grpc.logicmodule.GetImportedClassesInfoInNamespaceRequest\x1aR.dataclay.communication.grpc.logicmodule.GetImportedClassesInfoInNamespaceResponse\"\x00\x12\xa5\x01\n\x14getClassIDfromImport\x12\x44.dataclay.communication.grpc.logicmodule.GetClassIDFromImportRequest\x1a\x45.dataclay.communication.grpc.logicmodule.GetClassIDFromImportResponse\"\x00\x12\x90\x01\n\rgetNamespaces\x12=.dataclay.communication.grpc.logicmodule.GetNamespacesRequest\x1a>.dataclay.communication.grpc.logicmodule.GetNamespacesResponse\"\x00\x12\x87\x01\n\nnewDataSet\x12:.dataclay.communication.grpc.logicmodule.NewDataSetRequest\x1a;.dataclay.communication.grpc.logicmodule.NewDataSetResponse\"\x00\x12\x83\x01\n\rremoveDataSet\x12=.dataclay.communication.grpc.logicmodule.RemoveDataSetRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x8d\x01\n\x0cgetDataSetID\x12<.dataclay.communication.grpc.logicmodule.GetDataSetIDRequest\x1a=.dataclay.communication.grpc.logicmodule.GetDataSetIDResponse\"\x00\x12\xa5\x01\n\x14\x63heckDataSetIsPublic\x12\x44.dataclay.communication.grpc.logicmodule.CheckDataSetIsPublicRequest\x1a\x45.dataclay.communication.grpc.logicmodule.CheckDataSetIsPublicResponse\"\x00\x12\x9c\x01\n\x11getPublicDataSets\x12\x41.dataclay.communication.grpc.logicmodule.GetPublicDataSetsRequest\x1a\x42.dataclay.communication.grpc.logicmodule.GetPublicDataSetsResponse\"\x00\x12\x9f\x01\n\x12getAccountDataSets\x12\x42.dataclay.communication.grpc.logicmodule.GetAccountDataSetsRequest\x1a\x43.dataclay.communication.grpc.logicmodule.GetAccountDataSetsResponse\"\x00\x12\x81\x01\n\x08newClass\x12\x38.dataclay.communication.grpc.logicmodule.NewClassRequest\x1a\x39.dataclay.communication.grpc.logicmodule.NewClassResponse\"\x00\x12\x7f\n\x0bremoveClass\x12;.dataclay.communication.grpc.logicmodule.RemoveClassRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\x0fremoveOperation\x12?.dataclay.communication.grpc.logicmodule.RemoveOperationRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x91\x01\n\x14removeImplementation\x12\x44.dataclay.communication.grpc.logicmodule.RemoveImplementationRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x93\x01\n\x0egetOperationID\x12>.dataclay.communication.grpc.logicmodule.GetOperationIDRequest\x1a?.dataclay.communication.grpc.logicmodule.GetOperationIDResponse\"\x00\x12\x90\x01\n\rgetPropertyID\x12=.dataclay.communication.grpc.logicmodule.GetPropertyIDRequest\x1a>.dataclay.communication.grpc.logicmodule.GetPropertyIDResponse\"\x00\x12\x87\x01\n\ngetClassID\x12:.dataclay.communication.grpc.logicmodule.GetClassIDRequest\x1a;.dataclay.communication.grpc.logicmodule.GetClassIDResponse\"\x00\x12\x8d\x01\n\x0cgetClassInfo\x12<.dataclay.communication.grpc.logicmodule.GetClassInfoRequest\x1a=.dataclay.communication.grpc.logicmodule.GetClassInfoResponse\"\x00\x12\x8a\x01\n\x0bnewContract\x12;.dataclay.communication.grpc.logicmodule.NewContractRequest\x1a<.dataclay.communication.grpc.logicmodule.NewContractResponse\"\x00\x12\x99\x01\n\x18registerToPublicContract\x12H.dataclay.communication.grpc.logicmodule.RegisterToPublicContractRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xd2\x01\n#registerToPublicContractOfNamespace\x12S.dataclay.communication.grpc.logicmodule.RegisterToPublicContractOfNamespaceRequest\x1aT.dataclay.communication.grpc.logicmodule.RegisterToPublicContractOfNamespaceResponse\"\x00\x12\xb4\x01\n\x19getContractIDsOfApplicant\x12I.dataclay.communication.grpc.logicmodule.GetContractIDsOfApplicantRequest\x1aJ.dataclay.communication.grpc.logicmodule.GetContractIDsOfApplicantResponse\"\x00\x12\xb1\x01\n\x18getContractIDsOfProvider\x12H.dataclay.communication.grpc.logicmodule.GetContractIDsOfProviderRequest\x1aI.dataclay.communication.grpc.logicmodule.GetContractIDsOfProviderResponse\"\x00\x12\xcc\x01\n%getContractIDsOfApplicantWithProvider\x12O.dataclay.communication.grpc.logicmodule.GetContractsOfApplicantWithProvRequest\x1aP.dataclay.communication.grpc.logicmodule.GetContractsOfApplicantWithProvResponse\"\x00\x12\x96\x01\n\x0fnewDataContract\x12?.dataclay.communication.grpc.logicmodule.NewDataContractRequest\x1a@.dataclay.communication.grpc.logicmodule.NewDataContractResponse\"\x00\x12\xa1\x01\n\x1cregisterToPublicDataContract\x12L.dataclay.communication.grpc.logicmodule.RegisterToPublicDataContractRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xc0\x01\n\x1dgetDataContractIDsOfApplicant\x12M.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfApplicantRequest\x1aN.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfApplicantResponse\"\x00\x12\xbd\x01\n\x1cgetDataContractIDsOfProvider\x12L.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfProviderRequest\x1aM.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfProviderResponse\"\x00\x12\xdf\x01\n*getDataContractInfoOfApplicantWithProvider\x12V.dataclay.communication.grpc.logicmodule.GetDataContractInfoOfApplicantWithProvRequest\x1aW.dataclay.communication.grpc.logicmodule.GetDataContractInfoOfApplicantWithProvResponse\"\x00\x12\x8d\x01\n\x0cnewInterface\x12<.dataclay.communication.grpc.logicmodule.NewInterfaceRequest\x1a=.dataclay.communication.grpc.logicmodule.NewInterfaceResponse\"\x00\x12\x99\x01\n\x10getInterfaceInfo\x12@.dataclay.communication.grpc.logicmodule.GetInterfaceInfoRequest\x1a\x41.dataclay.communication.grpc.logicmodule.GetInterfaceInfoResponse\"\x00\x12\x87\x01\n\x0fremoveInterface\x12?.dataclay.communication.grpc.logicmodule.RemoveInterfaceRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xc6\x01\n\x1fgetAllExecutionEnvironmentsInfo\x12O.dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoRequest\x1aP.dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse\"\x00\x12\xa5\x01\n\x14getStorageLocationID\x12\x44.dataclay.communication.grpc.logicmodule.GetStorageLocationIDRequest\x1a\x45.dataclay.communication.grpc.logicmodule.GetStorageLocationIDResponse\"\x00\x12\xab\x01\n\x16getStorageLocationInfo\x12\x46.dataclay.communication.grpc.logicmodule.GetStorageLocationInfoRequest\x1aG.dataclay.communication.grpc.logicmodule.GetStorageLocationInfoResponse\"\x00\x12\xba\x01\n\x1bgetExecutionEnvironmentInfo\x12K.dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentInfoRequest\x1aL.dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentInfoResponse\"\x00\x12\x90\x01\n\rgetObjectInfo\x12=.dataclay.communication.grpc.logicmodule.GetObjectInfoRequest\x1a>.dataclay.communication.grpc.logicmodule.GetObjectInfoResponse\"\x00\x12\x9f\x01\n\x12getObjectFromAlias\x12\x42.dataclay.communication.grpc.logicmodule.GetObjectFromAliasRequest\x1a\x43.dataclay.communication.grpc.logicmodule.GetObjectFromAliasResponse\"\x00\x12\x8a\x01\n\x0b\x64\x65leteAlias\x12;.dataclay.communication.grpc.logicmodule.DeleteAliasRequest\x1a<.dataclay.communication.grpc.logicmodule.DeleteAliasResponse\"\x00\x12\xcf\x01\n\"getObjectsMetaDataInfoOfClassForNM\x12R.dataclay.communication.grpc.logicmodule.GetObjectsMetaDataInfoOfClassForNMRequest\x1aS.dataclay.communication.grpc.logicmodule.GetObjectsMetaDataInfoOfClassForNMResponse\"\x00\x12y\n\x08\x61\x64\x64\x41lias\x12\x38.dataclay.communication.grpc.logicmodule.AddAliasRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x90\x01\n\x14registerObjectFromGC\x12\x43.dataclay.communication.grpc.logicmodule.RegisterObjectForGCRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x8b\x01\n\x11unregisterObjects\x12\x41.dataclay.communication.grpc.logicmodule.UnregisterObjectsRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x96\x01\n\x0fregisterObjects\x12?.dataclay.communication.grpc.logicmodule.RegisterObjectsRequest\x1a@.dataclay.communication.grpc.logicmodule.RegisterObjectsResponse\"\x00\x12\xa9\x01\n setDataSetIDFromGarbageCollector\x12P.dataclay.communication.grpc.logicmodule.SetDataSetIDFromGarbageCollectorRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x99\x01\n\x10getMetadataByOID\x12@.dataclay.communication.grpc.logicmodule.GetMetadataByOIDRequest\x1a\x41.dataclay.communication.grpc.logicmodule.GetMetadataByOIDResponse\"\x00\x12~\n\rgetNumObjects\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x39.dataclay.communication.grpc.common.GetNumObjectsResponse\"\x00\x12\x81\x01\n\x0csetDataSetID\x12<.dataclay.communication.grpc.logicmodule.SetDataSetIDRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\nmoveObject\x12:.dataclay.communication.grpc.logicmodule.MoveObjectRequest\x1a;.dataclay.communication.grpc.logicmodule.MoveObjectResponse\"\x00\x12\x8b\x01\n\x11setObjectReadOnly\x12\x41.dataclay.communication.grpc.logicmodule.SetObjectReadOnlyRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x8d\x01\n\x12setObjectReadWrite\x12\x42.dataclay.communication.grpc.logicmodule.SetObjectReadWriteRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xa8\x01\n\x15\x65xecuteImplementation\x12\x45.dataclay.communication.grpc.logicmodule.ExecuteImplementationRequest\x1a\x46.dataclay.communication.grpc.logicmodule.ExecuteImplementationResponse\"\x00\x12\xa8\x01\n\x15\x65xecuteMethodOnTarget\x12\x45.dataclay.communication.grpc.logicmodule.ExecuteMethodOnTargetRequest\x1a\x46.dataclay.communication.grpc.logicmodule.ExecuteMethodOnTargetResponse\"\x00\x12\x83\x01\n\rgetDataClayID\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a>.dataclay.communication.grpc.logicmodule.GetDataClayIDResponse\"\x00\x12\xb1\x01\n\x18registerExternalDataClay\x12H.dataclay.communication.grpc.logicmodule.RegisterExternalDataClayRequest\x1aI.dataclay.communication.grpc.logicmodule.RegisterExternalDataClayResponse\"\x00\x12\xd3\x01\n)registerExternalDataClayOverrideAuthority\x12Y.dataclay.communication.grpc.logicmodule.RegisterExternalDataClayOverrideAuthorityRequest\x1aI.dataclay.communication.grpc.logicmodule.RegisterExternalDataClayResponse\"\x00\x12\xd5\x01\n$notifyRegistrationOfExternalDataClay\x12T.dataclay.communication.grpc.logicmodule.NotifyRegistrationOfExternalDataClayRequest\x1aU.dataclay.communication.grpc.logicmodule.NotifyRegistrationOfExternalDataClayResponse\"\x00\x12\xa4\x01\n\x17getExternalDataClayInfo\x12\x42.dataclay.communication.grpc.logicmodule.GetExtDataClayInfoRequest\x1a\x43.dataclay.communication.grpc.logicmodule.GetExtDataClayInfoResponse\"\x00\x12\xa8\x01\n\x15getExternalDataclayId\x12\x45.dataclay.communication.grpc.logicmodule.GetExternalDataclayIDRequest\x1a\x46.dataclay.communication.grpc.logicmodule.GetExternalDataclayIDResponse\"\x00\x12\xa8\x01\n\x15getClassesInNamespace\x12\x45.dataclay.communication.grpc.logicmodule.GetClassesInNamespaceRequest\x1a\x46.dataclay.communication.grpc.logicmodule.GetClassesInNamespaceResponse\"\x00\x12\xa9\x01\n importModelsFromExternalDataClay\x12P.dataclay.communication.grpc.logicmodule.ImportModelsFromExternalDataClayRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x81\x01\n\x08getStubs\x12\x38.dataclay.communication.grpc.logicmodule.GetStubsRequest\x1a\x39.dataclay.communication.grpc.logicmodule.GetStubsResponse\"\x00\x12\x90\x01\n\rgetBabelStubs\x12=.dataclay.communication.grpc.logicmodule.GetBabelStubsRequest\x1a>.dataclay.communication.grpc.logicmodule.GetBabelStubsResponse\"\x00\x12\x7f\n\x0bregisterECA\x12;.dataclay.communication.grpc.logicmodule.RegisterECARequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x7f\n\x0b\x61\x64viseEvent\x12;.dataclay.communication.grpc.logicmodule.AdviseEventRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x91\x01\n\x14isPrefetchingEnabled\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x45.dataclay.communication.grpc.logicmodule.IsPrefetchingEnabledResponse\"\x00\x12\x9c\x01\n\x11getClassNameForDS\x12\x41.dataclay.communication.grpc.logicmodule.GetClassNameForDSRequest\x1a\x42.dataclay.communication.grpc.logicmodule.GetClassNameForDSResponse\"\x00\x12\xc0\x01\n\x1dgetClassNameAndNamespaceForDS\x12M.dataclay.communication.grpc.logicmodule.GetClassNameAndNamespaceForDSRequest\x1aN.dataclay.communication.grpc.logicmodule.GetClassNameAndNamespaceForDSResponse\"\x00\x12\xc6\x01\n\x1fgetContractIDOfDataClayProvider\x12O.dataclay.communication.grpc.logicmodule.GetContractIDOfDataClayProviderRequest\x1aP.dataclay.communication.grpc.logicmodule.GetContractIDOfDataClayProviderResponse\"\x00\x12\xab\x01\n\x16objectExistsInDataClay\x12\x46.dataclay.communication.grpc.logicmodule.ObjectExistsInDataClayRequest\x1aG.dataclay.communication.grpc.logicmodule.ObjectExistsInDataClayResponse\"\x00\x12\x81\x01\n\x0c\x63loseSession\x12<.dataclay.communication.grpc.logicmodule.CloseSessionRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xa8\x01\n\x15getMetadataByOIDForDS\x12\x45.dataclay.communication.grpc.logicmodule.GetMetadataByOIDForDSRequest\x1a\x46.dataclay.communication.grpc.logicmodule.GetMetadataByOIDForDSResponse\"\x00\x12\x87\x01\n\x0f\x61\x63tivateTracing\x12?.dataclay.communication.grpc.logicmodule.ActivateTracingRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12z\n\x11\x64\x65\x61\x63tivateTracing\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12v\n\tgetTraces\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x35.dataclay.communication.grpc.common.GetTracesResponse\"\x00\x12|\n\x13\x63leanMetaDataCaches\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12w\n\x0e\x63loseManagerDb\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12p\n\x07\x63loseDb\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x42R\n8es.bsc.dataclay.communication.grpc.generated.logicmoduleB\x16LogicModuleGrpcServiceb\x06proto3')
   ,
   dependencies=[dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.DESCRIPTOR,dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.DESCRIPTOR,])
 
@@ -40,7 +40,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=257,
-  serialized_end=16172,
+  serialized_end=16312,
   methods=[
   _descriptor.MethodDescriptor(
     name='autoregisterSL',
@@ -606,7 +606,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
     index=62,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._DELETEALIASREQUEST,
-    output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
+    output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._DELETEALIASRESPONSE,
     serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
@@ -673,9 +673,18 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
     serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
+    name='getNumObjects',
+    full_name='dataclay.communication.grpc.logicmodule.LogicModule.getNumObjects',
+    index=70,
+    containing_service=None,
+    input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
+    output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._GETNUMOBJECTSRESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
     name='setDataSetID',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.setDataSetID',
-    index=70,
+    index=71,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._SETDATASETIDREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -684,7 +693,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='moveObject',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.moveObject',
-    index=71,
+    index=72,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._MOVEOBJECTREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._MOVEOBJECTRESPONSE,
@@ -693,7 +702,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='setObjectReadOnly',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.setObjectReadOnly',
-    index=72,
+    index=73,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._SETOBJECTREADONLYREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -702,7 +711,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='setObjectReadWrite',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.setObjectReadWrite',
-    index=73,
+    index=74,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._SETOBJECTREADWRITEREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -711,7 +720,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='executeImplementation',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.executeImplementation',
-    index=74,
+    index=75,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._EXECUTEIMPLEMENTATIONREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._EXECUTEIMPLEMENTATIONRESPONSE,
@@ -720,7 +729,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='executeMethodOnTarget',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.executeMethodOnTarget',
-    index=75,
+    index=76,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._EXECUTEMETHODONTARGETREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._EXECUTEMETHODONTARGETRESPONSE,
@@ -729,7 +738,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getDataClayID',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.getDataClayID',
-    index=76,
+    index=77,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETDATACLAYIDRESPONSE,
@@ -738,7 +747,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='registerExternalDataClay',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.registerExternalDataClay',
-    index=77,
+    index=78,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._REGISTEREXTERNALDATACLAYREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._REGISTEREXTERNALDATACLAYRESPONSE,
@@ -747,7 +756,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='registerExternalDataClayOverrideAuthority',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.registerExternalDataClayOverrideAuthority',
-    index=78,
+    index=79,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._REGISTEREXTERNALDATACLAYOVERRIDEAUTHORITYREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._REGISTEREXTERNALDATACLAYRESPONSE,
@@ -756,7 +765,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='notifyRegistrationOfExternalDataClay',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.notifyRegistrationOfExternalDataClay',
-    index=79,
+    index=80,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._NOTIFYREGISTRATIONOFEXTERNALDATACLAYREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._NOTIFYREGISTRATIONOFEXTERNALDATACLAYRESPONSE,
@@ -765,7 +774,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getExternalDataClayInfo',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.getExternalDataClayInfo',
-    index=80,
+    index=81,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETEXTDATACLAYINFOREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETEXTDATACLAYINFORESPONSE,
@@ -774,7 +783,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getExternalDataclayId',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.getExternalDataclayId',
-    index=81,
+    index=82,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETEXTERNALDATACLAYIDREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETEXTERNALDATACLAYIDRESPONSE,
@@ -783,7 +792,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getClassesInNamespace',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.getClassesInNamespace',
-    index=82,
+    index=83,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETCLASSESINNAMESPACEREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETCLASSESINNAMESPACERESPONSE,
@@ -792,7 +801,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='importModelsFromExternalDataClay',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.importModelsFromExternalDataClay',
-    index=83,
+    index=84,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._IMPORTMODELSFROMEXTERNALDATACLAYREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -801,7 +810,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getStubs',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.getStubs',
-    index=84,
+    index=85,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETSTUBSREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETSTUBSRESPONSE,
@@ -810,7 +819,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getBabelStubs',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.getBabelStubs',
-    index=85,
+    index=86,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETBABELSTUBSREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETBABELSTUBSRESPONSE,
@@ -819,7 +828,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='registerECA',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.registerECA',
-    index=86,
+    index=87,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._REGISTERECAREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -828,7 +837,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='adviseEvent',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.adviseEvent',
-    index=87,
+    index=88,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._ADVISEEVENTREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -837,7 +846,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='isPrefetchingEnabled',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.isPrefetchingEnabled',
-    index=88,
+    index=89,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._ISPREFETCHINGENABLEDRESPONSE,
@@ -846,7 +855,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getClassNameForDS',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.getClassNameForDS',
-    index=89,
+    index=90,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETCLASSNAMEFORDSREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETCLASSNAMEFORDSRESPONSE,
@@ -855,7 +864,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getClassNameAndNamespaceForDS',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.getClassNameAndNamespaceForDS',
-    index=90,
+    index=91,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETCLASSNAMEANDNAMESPACEFORDSREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETCLASSNAMEANDNAMESPACEFORDSRESPONSE,
@@ -864,7 +873,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getContractIDOfDataClayProvider',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.getContractIDOfDataClayProvider',
-    index=91,
+    index=92,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETCONTRACTIDOFDATACLAYPROVIDERREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETCONTRACTIDOFDATACLAYPROVIDERRESPONSE,
@@ -873,7 +882,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='objectExistsInDataClay',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.objectExistsInDataClay',
-    index=92,
+    index=93,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._OBJECTEXISTSINDATACLAYREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._OBJECTEXISTSINDATACLAYRESPONSE,
@@ -882,7 +891,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='closeSession',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.closeSession',
-    index=93,
+    index=94,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._CLOSESESSIONREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -891,7 +900,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getMetadataByOIDForDS',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.getMetadataByOIDForDS',
-    index=94,
+    index=95,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETMETADATABYOIDFORDSREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._GETMETADATABYOIDFORDSRESPONSE,
@@ -900,7 +909,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='activateTracing',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.activateTracing',
-    index=95,
+    index=96,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2._ACTIVATETRACINGREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -909,7 +918,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='deactivateTracing',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.deactivateTracing',
-    index=96,
+    index=97,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -918,7 +927,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getTraces',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.getTraces',
-    index=97,
+    index=98,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._GETTRACESRESPONSE,
@@ -927,7 +936,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='cleanMetaDataCaches',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.cleanMetaDataCaches',
-    index=98,
+    index=99,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -936,7 +945,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='closeManagerDb',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.closeManagerDb',
-    index=99,
+    index=100,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -945,7 +954,7 @@ _LOGICMODULE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='closeDb',
     full_name='dataclay.communication.grpc.logicmodule.LogicModule.closeDb',
-    index=100,
+    index=101,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,

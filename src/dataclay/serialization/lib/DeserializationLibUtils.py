@@ -242,7 +242,7 @@ class DeserializationLibUtils(object):
             logger.verbose("Deserializing volatile with object ID %s" % str(object_id))
 
             if first_volatile:
-                runtime.add_volatiles_under_deserialization(serialized_param)
+                runtime.add_volatiles_under_deserialization(serialized_params_or_return.vol_objs.values())
                 first_volatile = False
 
             deserialized_param = runtime.get_or_new_volatile_instance_and_load(object_id, class_id, runtime.get_hint(),
@@ -338,12 +338,15 @@ class DeserializationLibUtils(object):
         return ptw.read(io_file)
 
 
-    def extract_reference_counting(self, io_file):
+    def extract_reference_counting(self, io_bytes):
+        io_file = BytesIO(io_bytes)
         io_file.seek(0)
         ref_counting_pos = IntegerWrapper().read(io_file)
         io_file.seek(ref_counting_pos)
         # read up to last byte
-        return io_file.read()
+        ref_bytes = io_file.read()
+        io_file.close()
+        return ref_bytes
 
 DeserializationLibUtilsSingleton = DeserializationLibUtils()
 

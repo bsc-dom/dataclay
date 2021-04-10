@@ -22,13 +22,13 @@ class Configuration(object):
     ########################
 
     # Percentage to start flushing objects
-    MEMMGMT_PRESSURE_FRACTION = 0.75
+    MEMMGMT_PRESSURE_FRACTION = float(os.getenv("MEMMGMT_PRESSURE_FRACTION", default=0.75))
 
     # Percentage to stop flushing objects
-    MEMMGMT_EASE_FRACTION = 0.50
+    MEMMGMT_EASE_FRACTION = float(os.getenv("MEMMGMT_PRESSURE_FRACTION", default=0.50))
 
     # Number of milliseconds to check if Heap needs to be cleaned.
-    MEMMGMT_CHECK_TIME_INTERVAL = 5000
+    MEMMGMT_CHECK_TIME_INTERVAL = int(os.getenv("MEMMGMT_CHECK_TIME_INTERVAL", default=5000))
 
     # Global GC collection interval
     NOCHECK_SESSION_EXPIRATION = datetime.strptime('2120-09-10T20:00:04', DATE_FORMAT)

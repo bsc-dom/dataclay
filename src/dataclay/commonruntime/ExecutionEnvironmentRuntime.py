@@ -54,14 +54,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         Must be thread-safe.
         """
         self.session_expires_dates = dict()
-    
-        """
-        Alias references found. TODO: this set is not cleaned. Important: modify this when design of removeAlias: we need to add
-        'alias' as DataClayObject field since alias can be added dynamically to a volatile. Or check updateAliases function. Also,
-        ensure removeAlias in LM notifies EE and avoid race condition remove alias but continue using object and GlobalGC clean it.
-        Should be thread-safe.
-        """
-        self.alias_references = set()
 
     def initialize_runtime_aux(self):
         self.dataclay_heap_manager = ExecutionEnvironmentHeapManager(self)
@@ -317,13 +309,18 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         :type ifacebitmaps: dict 
         :rtype: boolean
         """
-        
+
         object_id = volatile_obj.get_object_id()
-        if hasattr(self.thread_local_info, "volatiles_under_deserialitzation"): 
+        if hasattr(self.thread_local_info, "volatiles_under_deserialitzation"):
             if self.thread_local_info.volatiles_under_deserialitzation is not None: 
-                for obj_with_data in  self.thread_local_info.volatiles_under_deserialitzation:
+                for obj_with_data in self.thread_local_info.volatiles_under_deserialitzation:
                     curr_obj_id = obj_with_data.object_id
                     if object_id == curr_obj_id:
+                        if hasattr(volatile_obj, "__setstate__"):
+                            # Return true like the object is already deserialized, this will allow
+                            # any volatile under deserialization with __setstate__ to be actually deserialized
+                            # TODO: check race conditions
+                            return True
                         # deserialize it 
                         metaclass_id = volatile_obj.get_class_extradata().class_id
                         hint = volatile_obj.get_hint()
@@ -332,12 +329,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                         return True
         return False
 
-    def add_alias_reference(self, object_id):
-        """
-        @summary Add +1 reference due to a new alias.
-        @param object_id ID of object with alias
-        """
-        self.alias_references.add(object_id)
         
     def add_session_reference(self, object_id):
         """
@@ -385,7 +376,15 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                 self.session_expires_dates[session_id] = expiration_date
             finally: 
                 self.unlock(session_id)
-        
+
+    def delete_alias(self, object_id, hint):
+        instance = self.get_or_new_instance_from_db(object_id, True)
+        alias = instance.get_alias()
+        instance.set_alias(None)
+        if alias is not None:
+            if alias in self.alias_cache:
+                del self.alias_cache[alias]
+
     def close_session_in_ee(self, session_id):
         """
         @summary Close session in EE. Subtract session references for GC.
@@ -402,12 +401,12 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         @summary Get retained refs by this EE
         @return Retained refs (alias, sessions, ...)
         """
-        logger.debug("Getting retained references")
-        retained_refs = list() 
+        retained_refs = list()
         
         """ memory references """
         retained_refs.extend(self.dataclay_heap_manager.get_object_ids_retained())
-        logger.debug("Obtained retained references in memory: %s " % str(len(retained_refs)))
+        if len(retained_refs) > 0:
+            logger.debug("Obtained retained references in memory: %s " % str(len(retained_refs)))
 
         """ session references """ 
         now = datetime.datetime.now()
@@ -490,7 +489,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             if not obj_using_session:
                 del self.session_expires_dates[session_to_close]
         
-        logger.debug("Retained references %s" % str(retained_refs))
         return retained_refs
 
     def get_from_sl(self, object_id):
@@ -530,3 +528,23 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             runtime=self)
         self.execution_environment.synchronize(session_id, object_id, implementation_id,
                                                serialized_params)
+
+    def detach_object_from_session(self, object_id, hint):
+        cur_session = self.get_session_id()
+        if object_id in self.references_hold_by_sessions:
+            sessions_of_obj = self.references_hold_by_sessions.get(object_id)
+            sessions_of_obj.remove(cur_session)
+            logger.debug("Session %s removed from object %s" % (str(cur_session), str(object_id)))
+
+    def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
+        object_id = dc_obj.get_object_id()
+        session_id = self.get_session_id()
+        self.logger.debug("[==FederateObject==] Starting federation of object by %s with dest dataClay %s, and session %s",
+                          object_id, external_execution_environment_id, session_id)
+        self.execution_environment.federate(session_id, object_id, external_execution_environment_id, recursive)
+
+    def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
+        object_id = dc_obj.get_object_id()
+        session_id = self.get_session_id()
+        self.logger.debug("[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s", object_id, external_execution_environment_id, session_id)
+        self.execution_environment.unfederate(session_id, object_id, external_execution_environment_id, recursive)

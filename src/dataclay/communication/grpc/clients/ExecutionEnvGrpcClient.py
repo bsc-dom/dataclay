@@ -220,17 +220,22 @@ class EEClient(object):
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    def ds_get_objects(self, session_id, object_ids, recursive, dest_backend_id):
+    def ds_get_objects(self, session_id, object_ids, already_obtained_obs, recursive, dest_backend_id, update_replica_locs):
 
         object_ids_list = []
         for oid in object_ids:
             object_ids_list.append(Utils.get_msg_id(oid))
+        already_obtained_objects = []
+        for oid in already_obtained_obs:
+            already_obtained_objects.append(Utils.get_msg_id(oid))
 
         request = dataservice_messages_pb2.GetObjectsRequest(
             sessionID=Utils.get_msg_id(session_id),
             objectIDS=object_ids_list,
+            alreadyObtainedObjects=already_obtained_objects,
             recursive=recursive,
-            destBackendID=Utils.get_msg_id(dest_backend_id)
+            destBackendID=Utils.get_msg_id(dest_backend_id),
+            updateReplicaLocs=update_replica_locs
         )
 
         try:
@@ -555,6 +560,30 @@ class EEClient(object):
         t = (result, non_migrated)
 
         return t
+
+    def delete_alias(self, session_id, object_id):
+        request = dataservice_messages_pb2.DeleteAliasRequest(
+            sessionID=Utils.get_msg_id(session_id),
+            objectID=Utils.get_msg_id(object_id)
+        )
+        try:
+            response = self.ds_stub.deleteAlias(request, metadata=self.metadata_call)
+        except RuntimeError as e:
+            raise e
+        if response.isException:
+            raise DataClayException(response.exceptionMessage)
+
+    def detach_object_from_session(self, object_id, session_id):
+        request = dataservice_messages_pb2.DetachObjectFromSessionRequest(
+            objectID=Utils.get_msg_id(object_id),
+            sessionID=Utils.get_msg_id(session_id)
+        )
+        try:
+            response = self.ds_stub.detachObjectFromSession(request, metadata=self.metadata_call)
+        except RuntimeError as e:
+            raise e
+        if response.isException:
+            raise DataClayException(response.exceptionMessage)
 
     def activate_tracing(self, task_id):
         request = dataservice_messages_pb2.ActivateTracingRequest(

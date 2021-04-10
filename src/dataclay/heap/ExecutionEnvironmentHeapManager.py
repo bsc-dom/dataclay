@@ -118,8 +118,10 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         like sharing, segmentation, preallocation or caching.
         """
         virtual_mem = psutil.virtual_memory()
+        mem_pressure_limit = Configuration.MEMMGMT_PRESSURE_FRACTION * 100
         self.logger.trace("[==GC==] Memory: %s", virtual_mem)
-        return float(virtual_mem.percent) > (Configuration.MEMMGMT_PRESSURE_FRACTION * 100)
+        self.logger.trace(f"[==GC==] Checking if Memory: {float(virtual_mem.percent)} > {mem_pressure_limit}")
+        return float(virtual_mem.percent) > mem_pressure_limit
 
     def __check_memory_ease(self):
         """
@@ -139,7 +141,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         """ 
         
         metaclass = dc_object.get_class_extradata()
-        self.logger.debug("[==GC==] Going to clean object %r", dc_object)
+        self.logger.debug("[==GC==] Going to clean object %s", dc_object.get_object_id())
 
         # Put here because it is critical path and I prefer to have a single isEnabledFor
         # instead of checking it for each element
@@ -149,8 +151,8 @@ class ExecutionEnvironmentHeapManager(HeapManager):
             o = None
             prop_name_list = metaclass.properties.keys()
 
-            self.logger.debug("The following attributes will be nullified from object %r: %s",
-                              dc_object, ", ".join(prop_name_list))
+            self.logger.debug("The following attributes will be nullified from object %s: %s",
+                              dc_object.get_object_id(), ", ".join(prop_name_list))
 
             for prop_name in prop_name_list:
                 real_prop_name = "%s%s" % (DCLAY_PROPERTY_PREFIX, prop_name)
@@ -176,11 +178,11 @@ class ExecutionEnvironmentHeapManager(HeapManager):
             held_attr_names = held_objects.keys()
 
             if held_attr_names:
-                self.logger.debug("The following attributes of object %r still have a backref active: %s",
-                                  dc_object, ", ".join(held_attr_names))
+                self.logger.debug("The following attributes of object %s still have a backref active: %s",
+                                  dc_object.get_object_id(), ", ".join(held_attr_names))
             else:
-                self.logger.debug("The garbage collector seems to have cleaned all the nullified attributes on %r",
-                                  dc_object)
+                self.logger.debug("The garbage collector seems to have cleaned all the nullified attributes on %s",
+                                  dc_object.get_object_id())
 
     def __clean_object(self, dc_object):
         """
@@ -200,6 +202,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
             is_loaded = dc_object.is_loaded()
             if not is_loaded: 
                 self.logger.trace("[==GC==] Not collecting since not loaded.")
+                self.release_from_heap(dc_object)
                 return
             
             """ Set loaded flag to false, any current execution that wants to get/set a field must try to load
@@ -208,11 +211,10 @@ class ExecutionEnvironmentHeapManager(HeapManager):
 
             dc_object.set_loaded(False) 
             
-            if dc_object.is_dirty() or dc_object.is_pending_to_register(): 
-                # Update it 
-                self.logger.debug("[==GC==] Updating object %s ", dc_object.get_object_id())
-                self.gc_collect_internal(dc_object)
-            
+            # Update it
+            self.logger.debug("[==GC==] Updating object %s ", dc_object.get_object_id())
+            self.gc_collect_internal(dc_object)
+
             self.logger.debug("[==GC==] Cleaning object %s", dc_object.get_object_id())
             
             self.__nullify_object(dc_object)
@@ -247,19 +249,22 @@ class ExecutionEnvironmentHeapManager(HeapManager):
             self.logger.debug("[==GCUpdate==] Updating object %s", object_to_update.get_object_id())
             """ Call EE update """ 
             if object_to_update.is_pending_to_register():
+                self.logger.debug(f"[==GCUpdate==] Storing and registering object {object_to_update.get_object_id()}")
                 obj_bytes = SerializationLibUtilsSingleton.serialize_for_db_gc(object_to_update, False, None)
-                self.logger.debug("[==GCUpdate==] Pending to register in LM ")
                 self.exec_env.register_and_store_pending(object_to_update, obj_bytes, True)
             elif object_to_update.is_dirty():
+                self.logger.debug("[==GCUpdate==] Updating dirty object %s ", object_to_update.get_object_id())
                 obj_bytes = SerializationLibUtilsSingleton.serialize_for_db_gc(object_to_update, False, None)
-                self.logger.debug("[==GCUpdate==] Updated dirty object %s ", object_to_update.get_object_id())
                 self.runtime.update_to_sl(object_to_update.get_object_id(), obj_bytes, True)
             else: 
-                # TODO: how to check if GlobalGC is enabled? 
-                obj_bytes = SerializationLibUtilsSingleton.serialize_for_db_gc_not_dirty(object_to_update, False, None)
+                # TODO: how to check if GlobalGC is enabled?
+                self.logger.debug("[==GCUpdate==] Going to update dirty object in database object with ID %s ", object_to_update.get_object_id())
+                obj_bytes = SerializationLibUtilsSingleton.serialize_for_db_gc_not_dirty(object_to_update, False, None, False)
                 if obj_bytes is not None:
                     ref_counting_bytes = DeserializationLibUtilsSingleton.extract_reference_counting(obj_bytes)
                     self.runtime.update_to_sl(object_to_update.get_object_id(), ref_counting_bytes, False)
+                else:
+                    self.logger.debug("[==GCUpdate==] %s object is not dirty and have no references. Not going to SL", object_to_update.get_object_id())
 
         except: 
             # do nothing
@@ -315,7 +320,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
                     dc_obj = retained_objects_copy.pop()
 
                     if dc_obj.get_memory_pinned():
-                        self.logger.trace("Object %r is memory pinned, ignoring it", dc_obj)
+                        self.logger.trace("Object %s is memory pinned, ignoring it", dc_obj.get_object_id())
                         continue
 
                     """ 
@@ -359,11 +364,11 @@ class ExecutionEnvironmentHeapManager(HeapManager):
                             self.logger.debug("[==GC==] ID REFERRER FOR %s is: %s ", (dc_obj.get_object_id(), str(id(r))))
                             self.logger.debug("[==GC==] REFERRER FOR %s are: %s ", (dc_obj.get_object_id(), pprint.pformat(r)))
                     """
-                    del dc_obj  # Remove reference from Frame
+                    del dc_obj # Remove reference from Frame
 
                     # Big heaps
                     n = gc.collect()
-                    if self.logger.isEnabledFor(logging.DEBUG):
+                    if self.logger.isEnabledFor(logging.DEBUG) or self.logger.isEnabledFor(logging.TRACE):
                         if n > 0:
                             self.logger.debug("[==GC==] Collected %d", n)
                         else:
@@ -393,11 +398,10 @@ class ExecutionEnvironmentHeapManager(HeapManager):
                 # For cyclic references
                 n = gc.collect()
 
-                if self.logger.isEnabledFor(logging.DEBUG):
+                if self.logger.isEnabledFor(logging.DEBUG) or self.logger.isEnabledFor(logging.TRACE):
                     if retained_objects_copy:
                         self.logger.debug("There are #%d remaining objects after Garbage Collection",
                                           len(retained_objects_copy))
-
                     if n > 0:
                         self.logger.debug("[==GC==] Finally Collected %d", n)
                     else:

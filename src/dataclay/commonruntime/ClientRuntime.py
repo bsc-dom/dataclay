@@ -16,7 +16,7 @@ from dataclay.loader.ClientObjectLoader import ClientObjectLoader
 # Sentinel-like object to catch some typical mistakes
 from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
 from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
-
+import traceback
 UNDEFINED_LOCAL = object()
 
 
@@ -126,6 +126,7 @@ class ClientRuntime(DataClayRuntime):
             
             # Avoid some race-conditions in communication (make persistent + execute where
             # execute arrives before).
+            # TODO: fix volatiles under deserialization support for __setstate__ and __getstate__
             self.add_volatiles_under_deserialization(serialized_objs.vol_objs)
             
             # Get EE
@@ -169,8 +170,8 @@ class ClientRuntime(DataClayRuntime):
         object_id = instance.get_object_id()
         
         self.logger.verbose("Calling operation '%s' in object with ID %s", operation_name, object_id)
-        self.logger.debug("Call is being done into %r with #%d parameters",
-                          instance, len(parameters))
+        self.logger.debug("Call is being done into object with ID %s with #%d parameters",
+                          object_id, len(parameters))
         
         using_hint = False
         if instance.get_hint() is not None:
@@ -192,9 +193,23 @@ class ClientRuntime(DataClayRuntime):
     def get_implementation_id(self, object_id, operation_name, implementation_idx=0):
         operation = self.get_operation_info(object_id, operation_name)
         return operation.remoteImplID
-    
+
+    def delete_alias(self, object_id, hint):
+        session_id = self.get_session_id()
+        exec_location_id = hint
+        if exec_location_id is None:
+            exec_location_id = self.get_location(object_id)
+        try:
+            execution_client = self.ready_clients[exec_location_id]
+        except KeyError:
+            backend_to_call = self.get_execution_environment_info(exec_location_id)
+            execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
+            self.ready_clients[exec_location_id] = execution_client
+        execution_client.delete_alias(session_id, object_id)
+
     def close_session(self):
-         self.ready_clients["@LM"].close_session(settings.current_session_id)
+        self.logger.debug("** Closing session **")
+        self.ready_clients["@LM"].close_session(settings.current_session_id)
 
     def get_hint(self):
         return None
@@ -224,4 +239,53 @@ class ClientRuntime(DataClayRuntime):
             self.ready_clients[dest_backend_id] = execution_client
         execution_client.synchronize(session_id, object_id, implementation_id, serialized_params)
 
-    
+    def detach_object_from_session(self, object_id, hint):
+        try:
+            cur_session = self.get_session_id()
+            exec_location_id = hint
+            if exec_location_id is None:
+                exec_location_id = self.get_location(object_id)
+            try:
+                execution_client = self.ready_clients[exec_location_id]
+            except KeyError:
+                backend_to_call = self.get_execution_environment_info(exec_location_id)
+                execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
+                self.ready_clients[exec_location_id] = execution_client
+            execution_client.detach_object_from_session(object_id, cur_session)
+        except:
+            traceback.print_exc()
+
+    def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
+        object_id = dc_obj.get_object_id()
+        hint = dc_obj.get_hint()
+        session_id = self.get_session_id()
+        exec_location_id = hint
+        if exec_location_id is None:
+            exec_location_id = self.get_location(object_id)
+        try:
+            execution_client = self.ready_clients[exec_location_id]
+        except KeyError:
+            exeenv = self.get_execution_environment_info(exec_location_id)
+            execution_client = EEClient(exeenv.hostname, exeenv.port)
+            self.ready_clients[exec_location_id] = execution_client
+
+        self.logger.debug("[==FederateObject==] Starting federation of object by %s calling EE %s with dest dataClay %s, and session %s",
+                          object_id, exec_location_id, external_execution_environment_id, session_id)
+        execution_client.federate(session_id, object_id, external_execution_environment_id, recursive)
+
+    def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
+        object_id = dc_obj.get_object_id()
+        hint = dc_obj.get_hint()
+        session_id = self.get_session_id()
+        self.logger.debug("[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s", object_id, external_execution_environment_id, session_id)
+        exec_location_id = hint
+        if exec_location_id is None:
+            exec_location_id = self.get_location(object_id)
+        try:
+            execution_client = self.ready_clients[exec_location_id]
+        except KeyError:
+            exeenv = self.get_execution_environment_info(exec_location_id)
+            execution_client = EEClient(exeenv.hostname, exeenv.port)
+            self.ready_clients[exec_location_id] = execution_client
+
+        execution_client.unfederate(session_id, object_id, external_execution_environment_id, recursive)

@@ -215,6 +215,16 @@ class DataServiceStub(object):
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.EmptyMessage.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.GetTracesResponse.FromString,
         )
+    self.deleteAlias = channel.unary_unary(
+        '/dataclay.communication.grpc.dataservice.DataService/deleteAlias',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.DeleteAliasRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
+        )
+    self.detachObjectFromSession = channel.unary_unary(
+        '/dataclay.communication.grpc.dataservice.DataService/detachObjectFromSession',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.DetachObjectFromSessionRequest.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
+        )
     self.closeSessionInDS = channel.unary_unary(
         '/dataclay.communication.grpc.dataservice.DataService/closeSessionInDS',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.CloseSessionInDSRequest.SerializeToString,
@@ -229,6 +239,16 @@ class DataServiceStub(object):
         '/dataclay.communication.grpc.dataservice.DataService/getRetainedReferences',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.EmptyMessage.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetRetainedReferencesResponse.FromString,
+        )
+    self.getNumObjects = channel.unary_unary(
+        '/dataclay.communication.grpc.dataservice.DataService/getNumObjects',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.EmptyMessage.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.GetNumObjectsResponse.FromString,
+        )
+    self.getNumObjectsInEE = channel.unary_unary(
+        '/dataclay.communication.grpc.dataservice.DataService/getNumObjectsInEE',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.EmptyMessage.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.GetNumObjectsResponse.FromString,
         )
 
 
@@ -516,9 +536,23 @@ class DataServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def closeSessionInDS(self, request, context):
+  def deleteAlias(self, request, context):
     """Garbage collection
     """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def detachObjectFromSession(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def closeSessionInDS(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -531,6 +565,20 @@ class DataServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def getRetainedReferences(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getNumObjects(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getNumObjectsInEE(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -740,6 +788,16 @@ def add_DataServiceServicer_to_server(servicer, server):
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.EmptyMessage.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.GetTracesResponse.SerializeToString,
       ),
+      'deleteAlias': grpc.unary_unary_rpc_method_handler(
+          servicer.deleteAlias,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.DeleteAliasRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
+      ),
+      'detachObjectFromSession': grpc.unary_unary_rpc_method_handler(
+          servicer.detachObjectFromSession,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.DetachObjectFromSessionRequest.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
+      ),
       'closeSessionInDS': grpc.unary_unary_rpc_method_handler(
           servicer.closeSessionInDS,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.CloseSessionInDSRequest.FromString,
@@ -754,6 +812,16 @@ def add_DataServiceServicer_to_server(servicer, server):
           servicer.getRetainedReferences,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.EmptyMessage.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.GetRetainedReferencesResponse.SerializeToString,
+      ),
+      'getNumObjects': grpc.unary_unary_rpc_method_handler(
+          servicer.getNumObjects,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.EmptyMessage.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.GetNumObjectsResponse.SerializeToString,
+      ),
+      'getNumObjectsInEE': grpc.unary_unary_rpc_method_handler(
+          servicer.getNumObjectsInEE,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.EmptyMessage.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.GetNumObjectsResponse.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

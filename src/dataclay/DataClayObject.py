@@ -473,6 +473,16 @@ class DataClayObject(object):
             self.__dclay_instance_extradata.replica_locations = replica_locations
         replica_locations.append(new_replica_location)
 
+
+
+    def remove_replica_location(self, new_replica_location):
+        replica_locations = self.__dclay_instance_extradata.replica_locations
+        replica_locations.remove(new_replica_location)
+
+    def clear_replica_locations(self):
+        replica_locations = self.__dclay_instance_extradata.replica_locations
+        replica_locations.clear()
+
     def get_memory_pinned(self):
         """
         @postcondition: Return the memory pinned flag of the object
@@ -535,7 +545,11 @@ class DataClayObject(object):
 
     @classmethod
     def delete_alias(cls, alias):
-        return getRuntime().delete_alias(alias)
+        return getRuntime().delete_alias_in_dataclay(alias)
+
+    def delete_alias(self):
+        getRuntime().delete_alias(self.get_object_id(), self.get_hint())
+        self.set_alias(None)
 
     def set_persistent(self, ispersistent):
         """
@@ -626,18 +640,17 @@ class DataClayObject(object):
         self.__dclay_instance_extradata.execenv_id = new_hint
 
     def federate_to_backend(self, ext_execution_env_id, recursive=True):
-        getRuntime().federate_to_backend(self.get_object_id(), self.get_hint(), ext_execution_env_id, recursive)
+        getRuntime().federate_to_backend(self, ext_execution_env_id, recursive)
 
     def federate(self, ext_dataclay_id, recursive=True):
-        getRuntime().federate_object(self.get_object_id(), self.get_hint(), ext_dataclay_id, recursive)
+        getRuntime().federate_object(self, ext_dataclay_id, recursive)
 
     def unfederate_from_backend(self, ext_execution_env_id, recursive=True):
-        getRuntime().unfederate_from_backend(self.get_object_id(), self.get_hint(), ext_execution_env_id, recursive)
-
+        getRuntime().unfederate_from_backend(self, ext_execution_env_id, recursive)
 
     def unfederate(self, ext_dataclay_id=None, recursive=True):
-        getRuntime().unfederate_object(self.get_object_id(), self.get_hint(), ext_dataclay_id, recursive)
-
+        # FIXME: unfederate only from specific ext dataClay
+        getRuntime().unfederate_object(self, ext_dataclay_id, recursive)
 
     def get_external_dataclay_id(self, dcHost, dcPort):
         return getRuntime().ready_clients["@LM"].get_external_dataclay_id(dcHost, dcPort)
@@ -645,6 +658,13 @@ class DataClayObject(object):
     def synchronize(self, field_name, value):
         from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
         return getRuntime().synchronize(self, DCLAY_SETTER_PREFIX + field_name, value)
+
+    def session_detach(self):
+        """
+        Detach object from session, i.e. remove reference from current session provided to current object,
+	    'dear garbage-collector, the current session is not using this object anymore'
+        """
+        getRuntime().detach_object_from_session(self.get_object_id(), self.get_hint())
 
     def get_external_dataclay_info(self, dataclay_id):
         """ Get external dataClay information
@@ -711,7 +731,7 @@ class DataClayObject(object):
                 except AttributeError:
                     value = None
                 
-                logger.verbose("Serializing property %s with value %s ", p.name, value)
+                logger.verbose("Serializing property %s", p.name)
 
                 if value is None:
                     BooleanWrapper().write(io_file, False)
@@ -736,7 +756,7 @@ class DataClayObject(object):
         io_file.seek(0)
         IntegerWrapper().write(io_file, cur_stream_pos)
         io_file.seek(cur_stream_pos)        
-        reference_counting.serialize_reference_counting(self.get_object_id(), io_file)
+        reference_counting.serialize_reference_counting(self, io_file)
 
     def deserialize(self, io_file, iface_bitmaps,
                     metadata,
@@ -843,7 +863,7 @@ class DataClayObject(object):
         dco_extradata = self.__dclay_instance_extradata
 
         if not dco_extradata.persistent_flag:
-            logger.verbose("Pickling of object %r is causing a make_persistent", self)
+            logger.verbose("Pickling of object is causing a make_persistent")
             self.make_persistent()
 
         return _get_object_by_id_helper, (self.get_object_id(),

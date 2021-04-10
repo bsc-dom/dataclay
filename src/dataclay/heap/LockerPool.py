@@ -12,7 +12,7 @@ __author__ = "dgasull"
 
 
 class LockerPool(object):
-    logger = logging.getLogger('dataclay.LockerPool')
+    logger = logging.getLogger('LockerPool')
 
     def __init__(self):
         # Lockers
@@ -121,8 +121,9 @@ class LockerPool(object):
         locker_ids = list(self.lockers.keys())
         for object_id in locker_ids:
             with self.locker:  # ensure we are not cleaning lockers during lockers creation.
-                pass
-                # locker = self.lockers.get(object_id)
-                # if not locker._
-                #    self.lockers.pop(object_id)
-                #    cleaned_lockers = cleaned_lockers + 1
+                locker = self.lockers.get(object_id)
+                if locker.acquire(False):
+                    self.logger.trace(f"Cleaning locker {object_id}")
+                    del self.lockers[object_id]
+                    cleaned_lockers = cleaned_lockers + 1
+                    locker.release()

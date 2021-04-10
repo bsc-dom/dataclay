@@ -127,7 +127,7 @@ class LMClient(object):
                     response = future.result()
                     break
                 except Exception as e:
-                    i = i + 1 
+                    i = i + 1
                     if i > Configuration.MAX_RETRIES_LOGICMODULE: 
                         logger.warning("Max retries reached", exc_info=True)
                         raise e 
@@ -695,8 +695,10 @@ class LMClient(object):
         )
         lm_function = lambda request: self.lm_stub.deleteAlias.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
+        if response.excInfo.isException:
+            raise DataClayException(response.excInfo.exceptionMessage)
+
+        return Utils.get_id(response.objectID)
 
     # Methods for Storage Location
 
@@ -852,9 +854,17 @@ class LMClient(object):
         )
         lm_function = lambda request: self.lm_stub.objectExistsInDataClay.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
+
+        if response.excInfo.isException:
+            raise DataClayException(response.excInfo.exceptionMessage)
         return response.exists
+
+    def get_num_objects(self):
+        lm_function = lambda request: self.lm_stub.getNumObjects.future(request=request, metadata=self.metadata_call)
+        response = self._call_logicmodule(CommonMessages.EmptyMessage(), lm_function)
+        if response.excInfo.isException:
+            raise DataClayException(response.excInfo.exceptionMessage)
+        return response.numObjs
 
     # Methods for Stubs
 

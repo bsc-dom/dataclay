@@ -307,10 +307,6 @@ class ExecutionEnvironment(object):
                          "in a federated dataclay ==> Provided dataclayID instead of sessionID")
             pass
 
-        if ids_with_alias is not None:
-            for oid in ids_with_alias:
-                self.runtime.add_alias_reference(oid)
-
         self.update_hints_to_current_ee(objects_data_to_store)
         # store in memory
         self.store_in_memory(session_id, objects_data_to_store)
@@ -422,7 +418,7 @@ class ExecutionEnvironment(object):
         object_ids = set()
         object_ids.add(object_id)
         # TODO: check that current dataClay/EE has permission to federate the object (refederation use-case)
-        serialized_objs = self.get_objects(session_id, object_ids, recursive, external_execution_env_id)
+        serialized_objs = self.get_objects(session_id, object_ids, set(), recursive, external_execution_env_id, 1)
         client_backend = self.get_dest_ee_api(external_execution_env_id)
         client_backend.notify_federation(session_id, serialized_objs)
         # TODO: add federation reference to object send ?? how is it working with replicas?
@@ -482,13 +478,14 @@ class ExecutionEnvironment(object):
         :param external_execution_env_id: external ee
         :param recursive: also unfederates sub-objects
         """
+        # TODO: redirect unfederation to owner if current dataClay is not the owner, check origLoc belongs to current dataClay
+
         try:
             logger.debug("----> Starting unfederation of %s", object_id)
             self.prepareThread()
-            # TODO: check that this dataClay is owner of object to unfederate
             object_ids = set()
             object_ids.add(object_id)
-            serialized_objs = self.get_objects(session_id, object_ids, recursive, None)
+            serialized_objs = self.get_objects(session_id, object_ids, set(), recursive, external_execution_env_id, 2)
 
             unfederate_per_backend = dict()
 
@@ -532,17 +529,20 @@ class ExecutionEnvironment(object):
                 instance = self.get_local_instance(object_id, True)
 
                 try:
+                    instance.when_unfederated()
+                except:
+                    # ignore if method is not implemented
+                    pass
+
+                try:
                     if instance.get_alias() is not None:
                         instance.set_alias(None)
                         self.get_runtime().delete_alias(instance.get_alias())
 
+                    instance.set_origin_location(None)
+
                 except:
                     # ignore if object was not registered yet
-                    pass
-                try:
-                    instance.when_unfederated()
-                except:
-                    # ignore if method is not implemented
                     pass
         except Exception as e:
             # TODO: better algorithm to avoid unfederation in wrong backend
@@ -629,7 +629,7 @@ class ExecutionEnvironment(object):
 
         object_ids = set()
         object_ids.add(object_id)
-        serialized_objs = self.get_objects(session_id, object_ids, recursive, dest_backend_id)
+        serialized_objs = self.get_objects(session_id, object_ids, set(), recursive, dest_backend_id, 1)
         client_backend = self.get_dest_ee_api(dest_backend_id)
         client_backend.ds_store_objects(session_id, serialized_objs, False, None)
         replicated_ids = set()
@@ -682,7 +682,7 @@ class ExecutionEnvironment(object):
         object_ids = set()
         object_ids.add(object_id)
 
-        serialized_objs = self.get_objects(session_id, object_ids, recursive, None)
+        serialized_objs = self.get_objects(session_id, object_ids, set(), recursive, None, 0)
 
         # Prepare OIDs
         logger.debug("[==Get==] Serialized objects obtained to create a copy of %s are %s", object_id, serialized_objs)
@@ -733,12 +733,15 @@ class ExecutionEnvironment(object):
         object_into.set_all(object_from)
         logger.debug("[==PutObject==] Updated object %s from object %s", into_object_id, object_from.get_object_id())
 
-    def get_objects(self, session_id, object_ids, recursive, dest_replica_backend_id=None):
+    def get_objects(self, session_id, object_ids, already_obtained_objs, recursive, dest_replica_backend_id=None, update_replica_locs=0):
         """Get the serialized objects with id provided
         :param session_id: ID of session
     	:param object_ids: IDs of the objects to get
     	:param recursive: Indicates if, per each object to get, also obtain its associated objects.
     	:param dest_replica_backend_id: Destination backend of objects being obtained for replica or NULL if going to client
+    	:param update_replica_locs: If 1, provided replica dest backend id must be added to replica locs of obtained objects
+                               If 2, provided replica dest backend id must be removed from replica locs
+                               If 0, replicaDestBackendID field is ignored
     	:return: List of serialized objects
         """
         logger.debug("[==Get==] Getting objects %s", object_ids)
@@ -747,7 +750,6 @@ class ExecutionEnvironment(object):
         result = list()
         self.thread_local_info.session_id = session_id
         pending_oids_and_hint = list()
-        obtained_objs = list()
         objects_in_other_backend = list()
 
         for oid in object_ids:
@@ -758,7 +760,7 @@ class ExecutionEnvironment(object):
                     current_oid_and_hint = pending_oids_and_hint.pop()
                     current_oid = current_oid_and_hint[0]
                     current_hint = current_oid_and_hint[1]
-                    if current_oid in obtained_objs:
+                    if current_oid in already_obtained_objs:
                         # Already Read
                         logger.verbose("[==Get==] Object %s already read", current_oid)
                         continue
@@ -770,16 +772,16 @@ class ExecutionEnvironment(object):
                     else:
                         try:
                             logger.verbose("[==Get==] Trying to get local instance for object %s", current_oid)
-                            obj_with_data = self.get_object_internal(current_oid, dest_replica_backend_id)
+                            obj_with_data = self.get_object_internal(current_oid, dest_replica_backend_id, update_replica_locs)
                             if obj_with_data is not None:
                                 result.append(obj_with_data)
-                                obtained_objs.append(current_oid)
+                                already_obtained_objs.add(current_oid)
                                 # Get associated objects and add them to pendings
                                 obj_metadata = obj_with_data.metadata
                                 for tag in obj_metadata.tags_to_oids:
                                     oid_found = obj_metadata.tags_to_oids[tag]
                                     hint_found = obj_metadata.tags_to_hints[tag]
-                                    if oid_found != current_oid and oid_found not in obtained_objs:
+                                    if oid_found != current_oid and oid_found not in already_obtained_objs:
                                         pending_oids_and_hint.append([oid_found, hint_found])
 
                         except:
@@ -789,7 +791,7 @@ class ExecutionEnvironment(object):
                             objects_in_other_backend.append([current_oid, None])
             else:
                 try:
-                    obj_with_data = self.get_object_internal(oid, dest_replica_backend_id)
+                    obj_with_data = self.get_object_internal(oid, dest_replica_backend_id, update_replica_locs)
                     if obj_with_data is not None:
                         result.append(obj_with_data)
                 except:
@@ -798,17 +800,21 @@ class ExecutionEnvironment(object):
                     objects_in_other_backend.append([oid, None])
 
         obj_with_data_in_other_backends = self.get_objects_in_other_backends(session_id, objects_in_other_backend,
-                                                                             recursive, dest_replica_backend_id)
+                                                                             already_obtained_objs, recursive, dest_replica_backend_id,
+                                                                             update_replica_locs)
 
         for obj_in_oth_back in obj_with_data_in_other_backends:
-            result.append(obj_in_oth_back.object_id)
+            result.append(obj_in_oth_back)
         logger.debug("[==Get==] Finished get objects len = %s", str(len(result)))
         return result
 
-    def get_object_internal(self, oid, dest_replica_backend_id):
+    def get_object_internal(self, oid, dest_replica_backend_id, update_replica_locs):
         """Get object internal function
     	:param oid: ID of the object ot get
     	:param dest_replica_backend_id: Destination backend of objects being obtained for replica or NULL if going to client
+        :param update_replica_locs: If 1, provided replica dest backend id must be added to replica locs of obtained objects
+                               If 2, provided replica dest backend id must be removed from replica locs
+                               If 0, replicaDestBackendID field is ignored
     	:return: Object with data
     	:type oid: ObjectID
     	:rtype: Object with data
@@ -818,37 +824,52 @@ class ExecutionEnvironment(object):
         self.prepareThread()
 
         # ToDo: Manage better this try/catch
-        # getRuntime().lock(oid)  # Race condition with gc: make sure GC does not CLEAN the object while retrieving/serializing it!
+        getRuntime().lock(oid)  # Race condition with gc: make sure GC does not CLEAN the object while retrieving/serializing it!
+        try:
+            current_obj = self.get_local_instance(oid, False)
+            pending_objs = list()
 
-        current_obj = self.get_local_instance(oid, False)
-        pending_objs = list()
-
-        if dest_replica_backend_id is not None:
-            if current_obj.get_replica_locations() is not None:
-                if dest_replica_backend_id in current_obj.get_replica_locations():
-                    # already replicated
-                    logger.debug(f"WARNING: Found already replicated object {oid}. Skipping")
-                    return None
+            # update_replica_locs = 1 means new replica/federation
+            if dest_replica_backend_id is not None and update_replica_locs == 1:
+                if current_obj.get_replica_locations() is not None:
+                    if dest_replica_backend_id in current_obj.get_replica_locations():
+                        # already replicated
+                        logger.debug(f"WARNING: Found already replicated object {oid}. Skipping")
+                        return None
 
 
-        # Add object to result and obtained_objs for return and recursive
-        obj_with_data = SerializationLibUtilsSingleton.serialize_dcobj_with_data(current_obj, pending_objs,
-                                                                            False, current_obj.get_hint(), getRuntime(), False)
-        # finally:
-        #    getRuntime().unlock(oid)
-        if dest_replica_backend_id is not None:
-            current_obj.add_replica_location(dest_replica_backend_id)
-            obj_with_data.metadata.origin_location = self.execution_environment_id
+            # Add object to result and obtained_objs for return and recursive
+            obj_with_data = SerializationLibUtilsSingleton.serialize_dcobj_with_data(current_obj, pending_objs,
+                                                                                False, current_obj.get_hint(), getRuntime(), False)
+
+            if dest_replica_backend_id is not None and update_replica_locs == 1:
+                current_obj.add_replica_location(dest_replica_backend_id)
+                current_obj.set_dirty(True)
+                obj_with_data.metadata.origin_location = self.execution_environment_id
+            elif update_replica_locs == 2:
+                if dest_replica_backend_id is not None:
+                    current_obj.remove_replica_location(dest_replica_backend_id)
+                else:
+                    current_obj.clear_replica_locations()
+                current_obj.set_dirty(True)
+
+
+        finally:
+            getRuntime().unlock(oid)
         return obj_with_data
 
 
-    def get_objects_in_other_backends(self, session_id, objects_in_other_backend, recursive, dest_replica_backend_id):
+    def get_objects_in_other_backends(self, session_id, objects_in_other_backend, already_obtained_objs, recursive, dest_replica_backend_id,
+                                      update_replica_locs):
         """Get object in another backend. This function is called from DbHandler in a recursive get.
     
     	:param session_id: ID of session
     	:param objects_in_other_backend: List of metadata of objects to read. It is useful to avoid multiple trips.
     	:param recursive: Indicates is recursive
     	:param dest_replica_backend_id: Destination backend of objects being obtained for replica or NULL if going to client
+    	:param update_replica_locs: If 1, provided replica dest backend id must be added to replica locs of obtained objects
+                               If 2, provided replica dest backend id must be removed from replica locs
+                               If 0, replicaDestBackendID field is ignored
     	:return: List of serialized objects
         """
         self.prepareThread()
@@ -900,7 +921,8 @@ class ExecutionEnvironment(object):
                     client_backend = EEClient(backend.hostname, backend.port)
                     getRuntime().ready_clients[backend_id] = client_backend
 
-                cur_result = client_backend.ds_get_objects(session_id, objects_to_get, recursive, dest_replica_backend_id)
+                cur_result = client_backend.ds_get_objects(session_id, objects_to_get, already_obtained_objs, recursive, dest_replica_backend_id,
+                                                           update_replica_locs)
                 logger.verbose("[==GetObjectsInOtherBackend==] call return length: %d", len(cur_result))
                 logger.trace("[==GetObjectsInOtherBackend==] call return content: %s", cur_result)
                 for res in cur_result:
@@ -921,7 +943,7 @@ class ExecutionEnvironment(object):
         # Get the data service of one of the backends that contains the original object.
         object_ids = set()
         object_ids.add(object_id)
-        serialized_objs = self.get_objects(session_id, object_ids, None)
+        serialized_objs = self.get_objects(session_id, object_ids, set(), True, None, 1)
 
         # Prepare OIDs
         logger.debug("[==Version==] Serialized objects obtained to create version for %s are %s", object_id,
@@ -967,7 +989,7 @@ class ExecutionEnvironment(object):
         # Consolidate in this backend - the complete version is here
         object_ids = set()
         object_ids.add(final_version_id)
-        serialized_objs = self.get_objects(session_id, object_ids, None)
+        serialized_objs = self.get_objects(session_id, object_ids, set(), True, None, 0)
 
         root_location = None
 
@@ -1115,7 +1137,7 @@ class ExecutionEnvironment(object):
 
             # TODO: Object being used by session (any oid in the method header) G.C.
 
-            serialized_objs = self.get_objects(session_id, object_ids, None)
+            serialized_objs = self.get_objects(session_id, object_ids, set(), True, None, 0)
             objects_to_remove = set()
             objects_to_move = list()
 
@@ -1192,20 +1214,37 @@ class ExecutionEnvironment(object):
     def close_session_in_ee(self, session_id):
         self.runtime.close_session_in_ee(session_id)
 
-    def exists(self, object_id):
+    def detach_object_from_session(self, object_id, session_id):
+        logger.debug(f"--> Detaching object {object_id} from session {session_id}")
+        self.prepareThread()
+        self.set_local_session(session_id)
+        self.runtime.detach_object_from_session(object_id, None)
+        logger.debug(f"<-- Detached object {object_id} from session {session_id}")
 
+    def delete_alias(self, session_id, object_id):
+        self.prepareThread()
+        self.set_local_session(session_id)
+        self.runtime.delete_alias(object_id, None)
+
+    def exists(self, object_id):
+        self.runtime.lock(object_id) #RACE CONDITION: object is being unloaded but still not in SL
         # object might be in heap but as a "proxy" 
         # since this function is used from SL after checking if the object is in database, 
         # we return false if the object is not loaded so the combination of SL exists and EE exists
         # can tell if the object actually exists
         # summary: the object only exist in EE if it is loaded. 
+        try:
+            in_heap = self.runtime.exists(object_id)
+            if in_heap:
+                obj = self.runtime.get_from_heap(object_id)
+                return obj.is_loaded()
+            else:
+                return False
+        finally:
+            self.runtime.unlock(object_id)
 
-        in_heap = self.runtime.exists(object_id)
-        if in_heap:
-            obj = self.runtime.get_from_heap(object_id)
-            return obj.is_loaded()
-        else:
-            return False
+    def get_num_objects(self):
+        return self.runtime.count_loaded_objs()
 
     def get_traces(self):
         logger.debug("Merging...")

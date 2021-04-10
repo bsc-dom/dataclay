@@ -109,7 +109,18 @@ class DataClayRuntime(object):
         :rtype: uuid
         """
         pass
-    
+
+    @abstractmethod
+    def detach_object_from_session(self, object_id, hint):
+        """ Detach object from current session in use, i.e. remove reference from current session provided to object,
+        "dear garbage-collector, current session is not using the object anymore"
+        :param object_id: id of the object
+        :param hint: hint of the object
+        :type object_id: uuid
+        :type hint: uuid
+        """
+        pass
+
     def get_lm_api(self, host, port):
         """ Get logic module connection.
         :param host: logic module host
@@ -463,42 +474,20 @@ class DataClayRuntime(object):
             self.logger.debug(f"Deserialization of result of operation named {operation_name} successfully finished.")
         return result
 
-    def federate_object(self, object_id, hint, ext_dataclay_id, recursive):
+    def federate_object(self, dc_obj, ext_dataclay_id, recursive):
         external_execution_environment_id = next(iter(self.get_all_execution_environments_at_dataclay(ext_dataclay_id)))
-        self.federate_to_backend(object_id, hint, external_execution_environment_id, recursive)
+        self.federate_to_backend(dc_obj, external_execution_environment_id, recursive)
 
-    def federate_to_backend(self, object_id, hint, external_execution_environment_id, recursive):
-        session_id = self.get_session_id()
-        exec_location_id = hint
-        if exec_location_id is None:
-            exec_location_id = self.get_location(object_id)
-        try:
-            execution_client = self.ready_clients[exec_location_id]
-        except KeyError:
-            exeenv = self.get_execution_environment_info(exec_location_id)
-            execution_client = EEClient(exeenv.hostname, exeenv.port)
-            self.ready_clients[exec_location_id] = execution_client
+    @abstractmethod
+    def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
+        pass
 
-        self.logger.debug("[==FederateObject==] Starting federation of object by %s calling EE %s with dest dataClay %s, and session %s",
-                        object_id, exec_location_id, external_execution_environment_id, session_id)
-        execution_client.federate(session_id, object_id, external_execution_environment_id, recursive)
+    def unfederate_object(self, dc_obj, ext_dataclay_id, recursive):
+        self.unfederate_from_backend(dc_obj, None, recursive)
 
-    def unfederate_object(self, object_id, hint, ext_dataclay_id, recursive):
-        self.unfederate_from_backend(object_id, hint, None, recursive)
-
-    def unfederate_from_backend(self, object_id, hint, external_execution_environment_id, recursive):
-        session_id = self.get_session_id()
-        self.logger.debug("[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s", object_id, external_execution_environment_id, session_id)
-        exec_location_id = hint
-        if exec_location_id is None:
-            exec_location_id = self.get_location(object_id)
-        try:
-            execution_client = self.ready_clients[exec_location_id]
-        except KeyError:
-            exeenv = self.get_execution_environment_info(exec_location_id)
-            execution_client = EEClient(exeenv.hostname, exeenv.port)
-            self.ready_clients[exec_location_id] = execution_client
-        execution_client.unfederate(session_id, object_id, external_execution_environment_id, recursive)
+    @abstractmethod
+    def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
+        pass
 
     def unfederate_all_objects(self, ext_dataclay_id):
         raise NotImplementedError()
@@ -506,7 +495,7 @@ class DataClayRuntime(object):
     def unfederate_all_objects_with_all_dcs(self):
         raise NotImplementedError()
         
-    def unfederate_object_with_all_dcs(self, object_id, recursive):
+    def unfederate_object_with_all_dcs(self, dc_obj, recursive):
         raise NotImplementedError()
     
     def migrate_federated_objects(self, origin_dataclay_id, dest_dataclay_id):
@@ -553,12 +542,14 @@ class DataClayRuntime(object):
     def get_object_location_by_alias(self, alias):
         return self.get_object_location_by_id(self.get_object_id_by_alias(alias))
     
-    def delete_alias(self, alias):
+    def delete_alias_in_dataclay(self, alias):
         self.ready_clients["@LM"].delete_alias(self.get_session_id(), alias)
         self.logger.debug("Removing from cache alias %s", alias)     
         if alias in self.alias_cache :   
             del self.alias_cache[alias]
 
+    @abstractmethod
+    def delete_alias(self, object_id, hint): pass
 
     def prepare_for_new_replica_version_consolidate(self, object_id, object_hint,
                                                     backend_id, backend_hostname,
@@ -671,7 +662,13 @@ class DataClayRuntime(object):
         for oid in moved_objs:
             if oid in self.metadata_cache :   
                 del self.metadata_cache[oid]
-    
+
+    def exists_in_dataclay(self, object_id):
+        return self.ready_clients["@LM"].object_exists_in_dataclay(object_id)
+
+    def get_num_objects(self):
+        return self.ready_clients["@LM"].get_num_objects()
+
     def exists(self, object_id):
         return self.dataclay_heap_manager.exists_in_heap(object_id)
     
@@ -855,7 +852,6 @@ class DataClayRuntime(object):
         exec_envs_with_name = dict()
         exec_envs = self.get_all_execution_environments_info(force_update=False)
         for exec_env_id, exec_env in exec_envs.items():
-            self.get_dataclay_id()
             if exec_env.name == dsname and exec_env.dataclay_instance_id == self.get_dataclay_id():
                 exec_envs_with_name[exec_env_id] = exec_env
         if not bool(exec_envs_with_name):
@@ -933,6 +929,12 @@ class DataClayRuntime(object):
                 trace_file.flush()
                 trace_file.close()
 
+    def heap_size(self):
+        return self.dataclay_heap_manager.heap_size()
+
+    def count_loaded_objs(self):
+        return self.dataclay_heap_manager.count_loaded_objs()
+
     def stop_gc(self):
         """
         @postcondition: stop GC. useful for shutdown. 
@@ -947,7 +949,8 @@ class DataClayRuntime(object):
     def stop_runtime(self):
         """ 
         @postcondition: Stop connections and daemon threads. 
-        """ 
+        """
+
         self.logger.verbose("** Stopping runtime **")
 
         for name, client in self.ready_clients.items():

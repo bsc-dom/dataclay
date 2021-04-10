@@ -125,7 +125,7 @@ def get_backends_info():
 
 def get_backend_id_by_name(name):
     """Return dataClay backend present in the system with name provided."""
-    all_backends = getRuntime().get_all_execution_environments_info(force_update=True)
+    all_backends = getRuntime().get_all_execution_environments_with_name(name)
     for backend in all_backends.values():
         if backend.name == name:
             return backend.id
@@ -215,6 +215,12 @@ def federate_all_objects(dest_dataclay_id):
     """
     return getRuntime().federate_all_objects(dest_dataclay_id)
 
+def get_num_objects():
+    """ Get number of objects in dataClay
+    :return: number of objects in dataClay
+    :rtype: int32
+    """
+    return getRuntime().get_num_objects()
 
 def pre_network_init(config_file):
     """Perform a partial initialization, with no network."""
@@ -375,6 +381,7 @@ def finish():
     global _connection_initialized
     logger.info("Finishing dataClay API")
     finish_tracing()
+    getRuntime().close_session()
     getRuntime().stop_runtime()
     # Unload stubs
     clean_babel_data()

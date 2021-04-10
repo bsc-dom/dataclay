@@ -114,7 +114,14 @@ class HeapManager(threading.Thread):
         @return Heap size
         """
         return len(self.inmemory_objects)
-        
+
+    def count_loaded_objs(self):
+        num_loaded_objs = 0
+        for obj in self.inmemory_objects.values():
+            if obj.is_loaded():
+                num_loaded_objs = num_loaded_objs + 1
+        return num_loaded_objs
+
     @abstractmethod
     def flush_all(self): pass
     

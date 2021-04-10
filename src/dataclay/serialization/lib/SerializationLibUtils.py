@@ -261,8 +261,8 @@ class SerializationLibUtils(object):
 
                 tags_to_oids[tag] = object_id
                 tags_to_class_id[tag] = class_id
-                logger.debug("[==Object Metadata==] Adding metadata tag %s -> oid %s", tag, object_id)
-                logger.debug("[==Object Metadata==] Adding metadata tag %s -> class id %s", tag, class_id)
+                logger.trace("[==Object Metadata==] Adding metadata tag %s -> oid %s", tag, object_id)
+                logger.trace("[==Object Metadata==] Adding metadata tag %s -> class id %s", tag, class_id)
 
                 if hint is not None:
                     logger.debug("[==Hint==] Setting hint %s association for tag %s", hint, tag)
@@ -356,12 +356,9 @@ class PersistentIdPicklerHelper(object):
 
     def __call__(self, obj):
         if isinstance(obj, dataclay.DataClayObject):
-            logger.verbose("Found association during Pickle process: %r", obj)
             try:
                 tag = self._cur_serialized_objs[obj]
             except KeyError:
-                logger.debug("Adding object %r to pending_objects", obj)
-
                 self._pending_objs.append(obj)
                 tag = len(self._cur_serialized_objs)
                 self._cur_serialized_objs[obj] = tag

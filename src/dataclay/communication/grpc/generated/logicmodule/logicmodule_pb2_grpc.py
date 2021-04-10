@@ -328,7 +328,7 @@ class LogicModuleStub(object):
     self.deleteAlias = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/deleteAlias',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.DeleteAliasRequest.SerializeToString,
-        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.FromString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.DeleteAliasResponse.FromString,
         )
     self.getObjectsMetaDataInfoOfClassForNM = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/getObjectsMetaDataInfoOfClassForNM',
@@ -364,6 +364,11 @@ class LogicModuleStub(object):
         '/dataclay.communication.grpc.logicmodule.LogicModule/getMetadataByOID',
         request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetMetadataByOIDRequest.SerializeToString,
         response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetMetadataByOIDResponse.FromString,
+        )
+    self.getNumObjects = channel.unary_unary(
+        '/dataclay.communication.grpc.logicmodule.LogicModule/getNumObjects',
+        request_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.EmptyMessage.SerializeToString,
+        response_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.GetNumObjectsResponse.FromString,
         )
     self.setDataSetID = channel.unary_unary(
         '/dataclay.communication.grpc.logicmodule.LogicModule/setDataSetID',
@@ -1016,6 +1021,13 @@ class LogicModuleServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def getNumObjects(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def setDataSetID(self, request, context):
     """Storage Location
     """
@@ -1549,7 +1561,7 @@ def add_LogicModuleServicer_to_server(servicer, server):
       'deleteAlias': grpc.unary_unary_rpc_method_handler(
           servicer.deleteAlias,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.DeleteAliasRequest.FromString,
-          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.DeleteAliasResponse.SerializeToString,
       ),
       'getObjectsMetaDataInfoOfClassForNM': grpc.unary_unary_rpc_method_handler(
           servicer.getObjectsMetaDataInfoOfClassForNM,
@@ -1585,6 +1597,11 @@ def add_LogicModuleServicer_to_server(servicer, server):
           servicer.getMetadataByOID,
           request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetMetadataByOIDRequest.FromString,
           response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_logicmodule_dot_logicmodule__messages__pb2.GetMetadataByOIDResponse.SerializeToString,
+      ),
+      'getNumObjects': grpc.unary_unary_rpc_method_handler(
+          servicer.getNumObjects,
+          request_deserializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.EmptyMessage.FromString,
+          response_serializer=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.GetNumObjectsResponse.SerializeToString,
       ),
       'setDataSetID': grpc.unary_unary_rpc_method_handler(
           servicer.setDataSetID,

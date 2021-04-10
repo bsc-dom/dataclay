@@ -256,11 +256,14 @@ class DataServiceEE(ds.DataServiceServicer):
             object_ids = set()
             for oid in request.objectIDS:
                 object_ids.add(Utils.get_id(oid))
-
+            already_obtained_objects = set()
+            for oid in request.alreadyObtainedObjects:
+                already_obtained_objects.add(Utils.get_id(oid))
             result = self.execution_environment.get_objects(Utils.get_id(request.sessionID),
-                                            object_ids,
+                                            object_ids, already_obtained_objects,
                                             request.recursive,
-                                            Utils.get_id(request.destBackendID))
+                                            Utils.get_id(request.destBackendID),
+                                            request.updateReplicaLocs)
 
             obj_list = []
             for entry in result:
@@ -269,6 +272,7 @@ class DataServiceEE(ds.DataServiceServicer):
             return dataservice_messages_pb2.GetObjectsResponse(objects=obj_list)
 
         except Exception as ex:
+            traceback.print_exc()
             return dataservice_messages_pb2.GetObjectsResponse(
                 excInfo=self.get_exception_info(ex)
             )
@@ -398,7 +402,18 @@ class DataServiceEE(ds.DataServiceServicer):
             return dataservice_messages_pb2.ExistsResponse(
                 excInfo=self.get_exception_info(ex)
             )
-    
+
+    def getNumObjectsInEE(self, request, context):
+        try:
+            num_objs = self.execution_environment.get_num_objects()
+            return common_messages_pb2.GetNumObjectsResponse(
+                numObjs=num_objs
+            )
+        except Exception as ex:
+            return common_messages_pb2.GetNumObjectsResponse(
+                excInfo=self.get_exception_info(ex)
+            )
+
     def updateRefs(self, request, context):
         try: 
 
@@ -430,6 +445,24 @@ class DataServiceEE(ds.DataServiceServicer):
     def closeSessionInDS(self, request, context):
         try: 
             self.execution_environment.close_session_in_ee(Utils.get_id(request.sessionID))
+            return common_messages_pb2.ExceptionInfo()
+
+        except Exception as ex:
+            return self.get_exception_info(ex)
+
+    def detachObjectFromSession(self, request, context):
+        try:
+            self.execution_environment.detach_object_from_session(Utils.get_id(request.objectID),
+                                                                  Utils.get_id(request.sessionID))
+            return common_messages_pb2.ExceptionInfo()
+
+        except Exception as ex:
+            return self.get_exception_info(ex)
+
+    def deleteAlias(self, request, context):
+        try:
+            self.execution_environment.delete_alias(Utils.get_id(request.sessionID),
+                                                    Utils.get_id(request.objectID))
             return common_messages_pb2.ExceptionInfo()
 
         except Exception as ex:

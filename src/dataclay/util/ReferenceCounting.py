@@ -12,7 +12,7 @@ from dataclay.serialization.python.lang.StringWrapper import StringWrapper
 import logging 
 
 logger = logging.getLogger("ReferenceCounting")
-
+from dataclay.commonruntime.Runtime import getRuntime
 
 class ReferenceCounting(object):
     '''
@@ -24,6 +24,7 @@ class ReferenceCounting(object):
         Constructor
         '''
         self.reference_counting = dict()
+        self.external_references = 0
 
     def increment_reference_counting(self, oid, hint):
         
@@ -39,16 +40,30 @@ class ReferenceCounting(object):
             num_refs = 1
         references_per_hint[oid] = num_refs  
         
-    def serialize_reference_counting(self, referrer_oid, io_file):
+    def serialize_reference_counting(self, dc_obj, io_file):
         """ TODO: IMPORTANT: this should be removed in new serialization by using paddings to directly access reference counters inside
          metadata. """
         """
         @postcondition: Serialize reference counting (garbage collector information)
-        @param referrer_oid: ID of referrer object
+        @param dc_obj: dc object with ref counting
         @param io_file: Buffer in which to serialize
         @param reference_counting: Reference counting to serialize
         """
-                
+        self.external_references = 0
+        if dc_obj.get_alias() is not None and dc_obj.get_alias() != "":
+            logger.trace("Found alias reference")
+            self.external_references = self.external_references + 1
+
+        cur_dataclay_id = getRuntime().get_dataclay_id()
+        if dc_obj.get_replica_locations() is not None and len(dc_obj.get_replica_locations()) != 0:
+            for replica_loc in dc_obj.get_replica_locations():
+                replica_dataclay_id = getRuntime().get_execution_environment_info(replica_loc).dataclay_instance_id
+                if replica_dataclay_id != cur_dataclay_id:
+                    logger.trace("Found federation reference")
+                    self.external_references = self.external_references + 1
+                    break
+        logger.trace(f"Serializing reference counting external references = {self.external_references}")
+        IntegerWrapper().write(io_file, self.external_references)
         IntegerWrapper().write(io_file, len(self.reference_counting))
         for location, ref_counting_in_loc in self.reference_counting.items():
             if location is None:
@@ -63,4 +78,4 @@ class ReferenceCounting(object):
                 IntegerWrapper().write(io_file, counter)
                 
     def has_no_references(self):
-        return len(self.reference_counting) == 0
+        return len(self.reference_counting) == 0 and self.external_references == 0
