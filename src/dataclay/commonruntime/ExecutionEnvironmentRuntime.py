@@ -382,6 +382,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         if alias is not None:
             self.delete_alias_in_dataclay(alias)
         dc_obj.set_alias(None)
+        dc_obj.set_dirty(True)
 
     def close_session_in_ee(self, session_id):
         """
