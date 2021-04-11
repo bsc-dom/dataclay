@@ -335,33 +335,6 @@ class ExecutionEnvironment(object):
 
         instance.set_pending_to_register(False)
 
-        """
-        // Inform MDS about new object !
-            final Map<ObjectID, MetaClassID> storedObjs = new ConcurrentHashMap<>();
-            storedObjs.put(instance.getObjectID(), instance.getMetaClassID());
-    
-            final Map<ObjectID, SessionID> objsSessions = new ConcurrentHashMap<>();
-            objsSessions.put(instance.getObjectID(), instance.getOwnerSessionIDforVolatiles());
-            final RegistrationInfo regInfo = new RegistrationInfo(instance.getObjectID(),
-                    instance.getMetaClassID(), instance.getOwnerSessionIDforVolatiles(),
-                    instance.getDataSetID());
-    
-            if (DEBUG_ENABLED) {
-                logger.debug("[==RegisterPending==] Going to register " + regInfo + " for instance " + System.identityHashCode(instance));
-            }
-    
-            if (sync) {
-                final List<RegistrationInfo> regInfos = new ArrayList<>();
-                regInfos.add(regInfo);
-                this.runtime.getLogicModuleAPI().registerObjects(regInfos,
-                        executionEnvironmentID, null, null, Langs.LANG_JAVA);
-            } else {
-                this.runtime.getLogicModuleAPI().registerObjectsFromDSGarbageCollector(regInfo,
-                        executionEnvironmentID,
-                        this.runtime);
-            }
-        """
-
     def store_in_memory(self, session_id, objects_to_store):
         """ This function will deserialize objects into dataClay memory heap using the same design as for
         volatile parameters. Eventually, dataClay GC will collect them, and then they will be
@@ -533,15 +506,15 @@ class ExecutionEnvironment(object):
                 except:
                     # ignore if method is not implemented
                     pass
-
+                instance.set_origin_location(None)
                 try:
+
                     if instance.get_alias() is not None:
-                        instance.set_alias(None)
-                        self.get_runtime().delete_alias(instance.get_alias())
+                        logger.debug(f"Removing alias {instance.get_alias()}")
+                        self.get_runtime().delete_alias(instance)
 
-                    instance.set_origin_location(None)
-
-                except:
+                except Exception as ex:
+                    logger.debug(f"Caught exception {type(ex).__name__}, Ignoring if object was not registered yet")
                     # ignore if object was not registered yet
                     pass
         except Exception as e:
@@ -1224,7 +1197,8 @@ class ExecutionEnvironment(object):
     def delete_alias(self, session_id, object_id):
         self.prepareThread()
         self.set_local_session(session_id)
-        self.runtime.delete_alias(object_id, None)
+        instance = self.get_local_instance(object_id, True)
+        self.runtime.delete_alias(instance)
 
     def exists(self, object_id):
         self.runtime.lock(object_id) #RACE CONDITION: object is being unloaded but still not in SL

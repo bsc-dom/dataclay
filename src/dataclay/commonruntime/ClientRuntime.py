@@ -194,8 +194,10 @@ class ClientRuntime(DataClayRuntime):
         operation = self.get_operation_info(object_id, operation_name)
         return operation.remoteImplID
 
-    def delete_alias(self, object_id, hint):
+    def delete_alias(self, dc_obj):
         session_id = self.get_session_id()
+        hint = dc_obj.get_hint()
+        object_id = dc_obj.get_object_id()
         exec_location_id = hint
         if exec_location_id is None:
             exec_location_id = self.get_location(object_id)
@@ -206,6 +208,11 @@ class ClientRuntime(DataClayRuntime):
             execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
             self.ready_clients[exec_location_id] = execution_client
         execution_client.delete_alias(session_id, object_id)
+        alias = dc_obj.get_alias()
+        if alias is not None:
+            if alias in self.alias_cache:
+                del self.alias_cache[alias]
+        dc_obj.set_alias(None)
 
     def close_session(self):
         self.logger.debug("** Closing session **")

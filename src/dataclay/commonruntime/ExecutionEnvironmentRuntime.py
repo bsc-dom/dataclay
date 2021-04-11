@@ -377,13 +377,11 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             finally: 
                 self.unlock(session_id)
 
-    def delete_alias(self, object_id, hint):
-        instance = self.get_or_new_instance_from_db(object_id, True)
-        alias = instance.get_alias()
-        instance.set_alias(None)
+    def delete_alias(self, dc_obj):
+        alias = dc_obj.get_alias()
         if alias is not None:
-            if alias in self.alias_cache:
-                del self.alias_cache[alias]
+            self.delete_alias_in_dataclay(alias)
+        dc_obj.set_alias(None)
 
     def close_session_in_ee(self, session_id):
         """

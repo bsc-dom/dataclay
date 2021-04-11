@@ -545,11 +545,11 @@ class DataClayRuntime(object):
     def delete_alias_in_dataclay(self, alias):
         self.ready_clients["@LM"].delete_alias(self.get_session_id(), alias)
         self.logger.debug("Removing from cache alias %s", alias)     
-        if alias in self.alias_cache :   
+        if alias in self.alias_cache:
             del self.alias_cache[alias]
 
     @abstractmethod
-    def delete_alias(self, object_id, hint): pass
+    def delete_alias(self, dc_obj): pass
 
     def prepare_for_new_replica_version_consolidate(self, object_id, object_hint,
                                                     backend_id, backend_hostname,

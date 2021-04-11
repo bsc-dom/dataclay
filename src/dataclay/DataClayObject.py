@@ -548,8 +548,7 @@ class DataClayObject(object):
         return getRuntime().delete_alias_in_dataclay(alias)
 
     def delete_alias(self):
-        getRuntime().delete_alias(self.get_object_id(), self.get_hint())
-        self.set_alias(None)
+        getRuntime().delete_alias(self)
 
     def set_persistent(self, ispersistent):
         """
