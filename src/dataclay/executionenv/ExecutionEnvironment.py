@@ -597,7 +597,7 @@ class ExecutionEnvironment(object):
 
     	:return: None
     	"""
-        logger.debug("----> Starting new replica of %s", object_id)
+        logger.debug("----> Starting new replica of %s to backend %s", object_id, dest_backend_id)
         self.prepareThread()
 
         object_ids = set()

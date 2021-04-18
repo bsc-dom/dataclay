@@ -582,10 +582,22 @@ class DataClayRuntime(object):
                     obj_locations = self.get_all_locations(object_id)
                     all_exec_envs = self.get_all_execution_environments_at_dataclay(self.get_dataclay_id())
                     for exec_env_id, exec_env in all_exec_envs.items():
-                        if exec_env_id not in obj_locations:
-                            dest_backend_id = exec_env_id
-                            dest_backend = exec_env
-                            break
+                        self.logger.debug(f"Checking if {exec_env_id} is in {obj_locations}")
+                        for obj_location in obj_locations:
+                            if str(exec_env_id) != str(obj_location):
+                                dest_backend_id = exec_env_id
+                                dest_backend = exec_env
+                                break
+                    if dest_backend is None:
+                        self.logger.debug("Could not find any different location for replica, updating available exec envs")
+                        # retry updating locations
+                        all_exec_envs = self.get_all_execution_environments_at_dataclay(self.get_dataclay_id(), force_update=True)
+                        for exec_env_id, exec_env in all_exec_envs.items():
+                            for obj_location in obj_locations:
+                                if str(exec_env_id) != str(obj_location):
+                                    dest_backend_id = exec_env_id
+                                    dest_backend = exec_env
+                                    break
                 if dest_backend is None:
                     dest_backend_id = object_hint
                     dest_backend = self.get_execution_environment_info(dest_backend_id)
@@ -832,13 +844,14 @@ class DataClayRuntime(object):
                     exec_envs_at_host[exec_env_id] = exec_env
         return exec_envs_at_host
 
-    def get_all_execution_environments_at_dataclay(self, dataclay_instance_id):
+    def get_all_execution_environments_at_dataclay(self, dataclay_instance_id, force_update=False):
         exec_envs_at_dataclay_instance_id = dict()
-        exec_envs = self.get_all_execution_environments_info(force_update=False)
-        for exec_env_id, exec_env in exec_envs.items():
-            self.logger.debug(f"Checking if {exec_env} belongs to dataclay with id {dataclay_instance_id}")
-            if exec_env.dataclay_instance_id == dataclay_instance_id:
-                exec_envs_at_dataclay_instance_id[exec_env_id] = exec_env
+        if not force_update:
+            exec_envs = self.get_all_execution_environments_info(force_update=False)
+            for exec_env_id, exec_env in exec_envs.items():
+                self.logger.debug(f"Checking if {exec_env} belongs to dataclay with id {dataclay_instance_id}")
+                if exec_env.dataclay_instance_id == dataclay_instance_id:
+                    exec_envs_at_dataclay_instance_id[exec_env_id] = exec_env
         if not bool(exec_envs_at_dataclay_instance_id):
             exec_envs = self.get_all_execution_environments_info(force_update=True)
             for exec_env_id, exec_env in exec_envs.items():
