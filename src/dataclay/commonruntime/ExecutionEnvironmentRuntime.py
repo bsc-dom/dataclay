@@ -226,7 +226,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         The return dictionary is the same in both cases, but note that the update
         should not use the provided instance for updating metadata to the LM.
         """
-        logger.debug("Store procedure for instance %r", instance)
         client = self.ready_clients["@STORAGE"]
         
         pending_objs = [instance]
@@ -432,7 +431,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                 """
                 session_expired = False
                 expired_date = self.session_expires_dates.get(cur_session)
-                print(expired_date)
                 if expired_date is not None and now > expired_date:
                     if cur_session in self.quarantine_sessions:
                         # Session is actually removed 
@@ -532,8 +530,9 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         cur_session = self.get_session_id()
         if object_id in self.references_hold_by_sessions:
             sessions_of_obj = self.references_hold_by_sessions.get(object_id)
-            sessions_of_obj.remove(cur_session)
-            logger.debug("Session %s removed from object %s" % (str(cur_session), str(object_id)))
+            if cur_session in sessions_of_obj:
+                sessions_of_obj.remove(cur_session)
+                logger.debug("Session %s removed from object %s" % (str(cur_session), str(object_id)))
 
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
         object_id = dc_obj.get_object_id()

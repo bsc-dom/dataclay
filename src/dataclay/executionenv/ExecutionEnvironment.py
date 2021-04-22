@@ -245,7 +245,7 @@ class ExecutionEnvironment(object):
             instance.set_dirty(True)
 
         else:
-            logger.debug("Call: %s(*args=%s)", implementation_name, params)
+            logger.debug("Call: %s", implementation_name)
             dataclay_decorated_func = getattr(instance, implementation_name)
             ret_value = dataclay_decorated_func._dclay_entrypoint(instance, *params)
 
@@ -416,7 +416,7 @@ class ExecutionEnvironment(object):
             for serialized_obj in objects_to_persist:
                 object_id = serialized_obj.object_id
                 metadata = serialized_obj.metadata
-                if metadata.alias is not None:
+                if metadata.alias is not None and metadata.alias != "":
                     class_id = serialized_obj.class_id
                     # TODO objectID must not be replaced here by new one created by alias?
                     # FIXME: Session notifying federation does not exist, sending none
@@ -429,7 +429,7 @@ class ExecutionEnvironment(object):
                                                                    LANG_PYTHON)
 
             # No need to provide params specs or param order since objects are not language types
-            federated_objs = self.store_in_memory(session_id, objects_to_persist)
+            federated_objs = self.store_in_memory(None, objects_to_persist)
             for federated_obj in federated_objs:
                 try:
                     federated_obj.when_federated()
@@ -495,8 +495,8 @@ class ExecutionEnvironment(object):
         :type objects_to_persist: Object ID
         """
         self.prepareThread()
-        self.set_local_session(session_id)
-        logger.debug("Starting unfederation: running when_unfederated")
+        #self.set_local_session(session_id)
+        logger.debug("---> Notified unfederation: running when_unfederated")
         try:
             for object_id in object_ids:
                 instance = self.get_local_instance(object_id, True)
@@ -509,7 +509,7 @@ class ExecutionEnvironment(object):
                 instance.set_origin_location(None)
                 try:
 
-                    if instance.get_alias() is not None:
+                    if instance.get_alias() is not None and instance.get_alias() != "":
                         logger.debug(f"Removing alias {instance.get_alias()}")
                         self.get_runtime().delete_alias(instance)
 
@@ -521,7 +521,7 @@ class ExecutionEnvironment(object):
             # TODO: better algorithm to avoid unfederation in wrong backend
             logger.debug(f"Caught exception {type(e).__name__}, Ignoring if object is not in current backend")
             raise e
-        logger.debug("Finished unfederation")
+        logger.debug("<--- Finished notification of unfederation")
 
     def ds_exec_impl(self, object_id, implementation_id, serialized_params_grpc_msg, session_id):
         """Perform a Remote Execute Implementation.
@@ -658,7 +658,7 @@ class ExecutionEnvironment(object):
         serialized_objs = self.get_objects(session_id, object_ids, set(), recursive, None, 0)
 
         # Prepare OIDs
-        logger.debug("[==Get==] Serialized objects obtained to create a copy of %s are %s", object_id, serialized_objs)
+        logger.debug("[==Get==] Serialized objects obtained to create a copy of %s", object_id)
         original_to_version = dict()
 
         # Store version in this backend (if already stored, just skip it)
@@ -674,7 +674,6 @@ class ExecutionEnvironment(object):
             self._modify_metadata_oids(metadata, original_to_version)
             obj_with_param_or_return.object_id = version_obj_id
 
-        logger.debug("[==Get==] Serialized Objects after OIDs regeneration are %s", serialized_objs)
 
         i = 0
         imm_objs = dict()
@@ -911,7 +910,7 @@ class ExecutionEnvironment(object):
     	:param dest_backend_id: Destination in which version must be created
         """
         self.prepareThread()
-        logger.debug("----> Starting new replica of %s", object_id)
+        logger.debug("----> Starting new version of %s", object_id)
 
         # Get the data service of one of the backends that contains the original object.
         object_ids = set()
@@ -919,8 +918,6 @@ class ExecutionEnvironment(object):
         serialized_objs = self.get_objects(session_id, object_ids, set(), True, None, 1)
 
         # Prepare OIDs
-        logger.debug("[==Version==] Serialized objects obtained to create version for %s are %s", object_id,
-                     serialized_objs)
         original_to_version = dict()
 
         # Store version in this backend (if already stored, just skip it)

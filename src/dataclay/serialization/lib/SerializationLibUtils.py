@@ -65,7 +65,6 @@ class SerializationLibUtils(object):
             pending_objs,  # ListIterator<DataClayObject>
             reference_counting
 ):
-        logger.verbose("Found association %s", element)
         try:
             tag = cur_serialized_objs[element]
         except KeyError:

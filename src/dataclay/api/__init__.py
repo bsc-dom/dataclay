@@ -294,7 +294,7 @@ def post_network_init():
         LANG_PYTHON
     )
     settings.current_session_id = session_info.sessionID
-
+    logger.debug(f"Started session {settings.current_session_id}")
     name = settings.local_backend_name
     if name:
         exec_envs = getRuntime().get_all_execution_environments_info()
@@ -382,6 +382,7 @@ def finish():
     logger.info("Finishing dataClay API")
     finish_tracing()
     getRuntime().close_session()
+    logger.debug(f"Closed session {settings.current_session_id}")
     getRuntime().stop_runtime()
     # Unload stubs
     clean_babel_data()

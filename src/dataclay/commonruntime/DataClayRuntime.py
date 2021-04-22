@@ -306,7 +306,6 @@ class DataClayRuntime(object):
                         except KeyError: 
                             pass
         
-        self.logger.debug("Sending updated metadata: %s", str(serialized_params))
 
         execution_client.ds_update_object(session_id, into_object.get_object_id(), serialized_params)
         
@@ -357,7 +356,6 @@ class DataClayRuntime(object):
             session_id, serialized_params)
 
         if ret is not None:
-            self.logger.trace("Execution return %s of type %s", ret, operation.returnType)
             return DeserializationLibUtilsSingleton.deserialize_return(ret, None, operation.returnType, self)
         
     def call_execute_to_ds(self, instance, parameters, operation_name, exeenv_id, using_hint):
@@ -666,8 +664,7 @@ class DataClayRuntime(object):
 
 
     def move_object(self, instance, source_backend_id, dest_backend_id, recursive):
-        self.logger.debug("Moving object %r from %s to %s",
-                     instance, source_backend_id, dest_backend_id)
+
         object_id = instance.get_object_id()
         moved_objs = self.ready_clients["@LM"].move_object(self.get_session_id(), object_id,
                             source_backend_id, dest_backend_id, recursive)
