@@ -468,7 +468,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                         logger.debug("Removing session reference for oid %s" % str(oid))
                         for oid, oid_ref in self.references_hold_by_sessions.items():
                             oid_ref.discard(cur_session)  # do not raise key error if not found
-                        print(self.references_hold_by_sessions)
 
                 else:
                     retained_refs.append(oid)

@@ -481,7 +481,8 @@ class DataClayObject(object):
 
     def clear_replica_locations(self):
         replica_locations = self.__dclay_instance_extradata.replica_locations
-        replica_locations.clear()
+        if replica_locations is not None:
+            replica_locations.clear()
 
     def get_memory_pinned(self):
         """
