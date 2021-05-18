@@ -60,7 +60,6 @@ class ExecutionEnvironmentSrv(object):
         logger.info("Flushing all objects to disk")
         self.execution_environment.get_runtime().flush_all()
         logger.info("Stopping runtime")
-        self.execution_environment.store_ee_info()
         logger.info("Notifying LM, current EE left")
         self.execution_environment.notify_execution_environment_shutdown()
 
@@ -152,12 +151,28 @@ class ExecutionEnvironmentSrv(object):
                      storage_location.name,
                      storage_location.hostname,
                      storage_location.port)
-    
+
+
         logger.info("Starting client to StorageLocation {%s} at %s:%d",
                     storage_location_id, storage_location.hostname, storage_location.port)
-    
-        storage_client = SLClient(storage_location.hostname, storage_location.port)
-    
+        sl_connected = False
+        retries = 0
+        while not sl_connected:
+            try:
+                storage_client = SLClient(storage_location.hostname, storage_location.port)
+            except:
+                if retries > max_retries:
+                    logger.warn(f"Could not connect to storage location at {storage_location.hostname} and {storage_location.port}, aborting")
+                    raise
+                else:
+                    logger.info(f"Storage location (usually dsjava) {sl_name} not ready, retry #%d of %i in %i seconds", retries, max_retries, sleep_time)
+                    time.sleep(sleep_time)
+                    retries += 1
+            else:
+                sl_connected = True
+
+        logger.info(f"Connected to StorageLocation {sl_name}!")
+
         # Leave the ready client to the Storage Location globally available
         self.execution_environment.get_runtime().ready_clients["@STORAGE"] = storage_client
         storage_client.associate_execution_environment(execution_environment_id)

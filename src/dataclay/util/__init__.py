@@ -34,12 +34,8 @@ class Configuration(object):
     NOCHECK_SESSION_EXPIRATION = datetime.strptime('2120-09-10T20:00:04', DATE_FORMAT)
 
     # ====================== TIME OUTS AND RETRIES ========================== #
-
-    # NEW DATA-SERVICE OR EXECUTION ENVIRONMENT: WARNING: for each retry there is max_retries_logicmodule
-    # Maximum autoregistration retries of a node. 
-    MAX_RETRY_AUTOREGISTER = 80
-    # Seconds to wait to retry autoregistration of a node. 
-    RETRY_AUTOREGISTER_TIME = 5000
+    MAX_RETRY_AUTOREGISTER = int(os.getenv("MAX_RETRY_AUTOREGISTER", default=80))
+    RETRY_AUTOREGISTER_TIME = int(os.getenv("RETRY_AUTOREGISTER_TIME", default=5000))
         
     # ANY CALL TO LOGICMODULE: clients can wait at init waitForBackends
     # Default value for number of retries in connection to LogicModule. 
@@ -58,10 +54,13 @@ class Configuration(object):
     SLEEP_WAIT_REGISTERED = 50
     
     # CHECK ALIVE TIME OUT IN GRPC in seconds
-    GRPC_CHECK_ALIVE_TIMEOUT = int(os.getenv("GRPC_CHECK_ALIVE_TIMEOUT", default=600))
+    GRPC_CHECK_ALIVE_TIMEOUT = int(os.getenv("GRPC_CHECK_ALIVE_TIMEOUT", default=60))
     
     # Indicates storage path for persistent data
     STORAGE_PATH = os.getenv("STORAGE_PATH", default="/dataclay/storage/")
+
+    # Indicates path for meta data
+    STORAGE_METADATA_PATH = os.getenv("STORAGE_METADATA_PATH", default="/dataclay/metadata/")
 
     # Destination path for traces
     TRACES_DEST_PATH = os.getcwd()

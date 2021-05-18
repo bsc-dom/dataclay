@@ -14,6 +14,7 @@ from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
+from dataclay.exceptions.exceptions import DataClayException
 from dataclay.paraver import set_current_available_task_id, initialize_extrae, finish_tracing, \
     get_traces, extrae_tracing_is_enabled
 from dataclay.DataClayObjProperties import DCLAY_GETTER_PREFIX
@@ -55,12 +56,14 @@ class ExecutionEnvironment(object):
         #                             and used for makePersistent of instances.
         self.thread_local_info = threadLocal
         self.init_ee_info()
+        # store ee info
+        self.store_ee_info()
 
     def init_ee_info(self):
         """
         Initialize EE information (ID). Try to find information in stored files first, otherwise create EE ID. 
         """
-        info_file = Configuration.STORAGE_PATH + "/python_ee_" + self.ee_name + ".info"
+        info_file = Configuration.STORAGE_METADATA_PATH + "/python_ee_" + self.ee_name + ".info"
         exists = os.path.isfile(info_file)
         self.logger.info("Reading EE info from %s" % str(info_file))
         if exists:
@@ -79,7 +82,7 @@ class ExecutionEnvironment(object):
         """
         Store EE information in file 
         """
-        info_file = Configuration.STORAGE_PATH + "/python_ee_" + self.ee_name + ".info"
+        info_file = Configuration.STORAGE_METADATA_PATH + "/python_ee_" + self.ee_name + ".info"
         self.logger.info("Storing EE info to %s" % str(info_file))
         exists = os.path.isfile(info_file)
         if not exists:
@@ -482,6 +485,7 @@ class ExecutionEnvironment(object):
                 client_backend.notify_unfederation(session_id, objs_in_backend)
 
             logger.debug("<---- Finished unfederation of %s", object_ids)
+
         except Exception as e:
             traceback.print_exc()
             raise e
@@ -495,7 +499,7 @@ class ExecutionEnvironment(object):
         :type objects_to_persist: Object ID
         """
         self.prepareThread()
-        #self.set_local_session(session_id)
+        self.set_local_session(session_id)
         logger.debug("---> Notified unfederation: running when_unfederated")
         try:
             for object_id in object_ids:
@@ -514,12 +518,15 @@ class ExecutionEnvironment(object):
                         self.get_runtime().delete_alias(instance)
 
                 except Exception as ex:
+                    traceback.print_exc()
                     logger.debug(f"Caught exception {type(ex).__name__}, Ignoring if object was not registered yet")
                     # ignore if object was not registered yet
                     pass
-        except Exception as e:
+        except DataClayException as e:
             # TODO: better algorithm to avoid unfederation in wrong backend
             logger.debug(f"Caught exception {type(e).__name__}, Ignoring if object is not in current backend")
+        except Exception as e:
+            logger.debug(f"Caught exception {type(e).__name__}")
             raise e
         logger.debug("<--- Finished notification of unfederation")
 

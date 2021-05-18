@@ -288,7 +288,7 @@ class DeserializationLibUtils(object):
                 # Set hint in metadata (ToDo: create general getOrNewInstance)
 
         if not first_volatile:
-            runtime.remove_volatiles_under_deserialization()
+            runtime.remove_volatiles_under_deserialization(serialized_params_or_return.vol_objs.values())
         return params
 
 

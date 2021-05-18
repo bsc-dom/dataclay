@@ -75,6 +75,9 @@ class DataClayRuntime(object):
         """ Current dataClay ID """
         self.dataclay_id = None
 
+        """ volatiles currently under deserialization """
+        self.volatiles_under_deserialitzation = dict()
+
         
     @abstractmethod
     def initialize_runtime_aux(self): pass
@@ -226,13 +229,15 @@ class DataClayRuntime(object):
         like hashcodes or other similar cases.
         @param volatiles: volatiles under deserialization
         """
-        self.thread_local_info.volatiles_under_deserialitzation = volatiles
+        for vol_obj in volatiles:
+            self.volatiles_under_deserialitzation[vol_obj.object_id] = vol_obj
    
-    def remove_volatiles_under_deserialization(self):
+    def remove_volatiles_under_deserialization(self, volatiles):
         """
         @postcondition: Remove volatiles under deserialization
         """
-        self.thread_local_info.volatiles_under_deserialitzation = None
+        for vol_obj in volatiles:
+            del self.volatiles_under_deserialitzation[vol_obj.object_id]
         
     def get_copy_of_object(self, from_object, recursive):
         session_id = self.get_session_id()
@@ -416,17 +421,20 @@ class DataClayRuntime(object):
                     num_misses = num_misses + 1
                     self.logger.debug("Exception dataclay during execution. Retrying...")
                     self.logger.debug(str(dce))
-                    try:
-                        metadata = self.get_metadata(object_id)
-                        new_location = False
-                    except DataClayException:
-                        metadata = None
+
+                    locations = self.get_from_heap(object_id).get_replica_locations()
+                    if locations is None or len(locations) == 0:
+                        try:
+                            locations = self.get_metadata(object_id).locations
+                            new_location = False
+                        except DataClayException:
+                            locations = None
     
-                    if metadata is None:
+                    if locations is None:
                         self.logger.warning("Execution failed and no metadata available. Cannot continue")
                         raise
     
-                    for loc in metadata.locations:
+                    for loc in locations:
                         self.logger.debug("Found location %s" % str(loc))
                         if loc != exeenv_id:
                             exeenv_id = loc
@@ -435,7 +443,7 @@ class DataClayRuntime(object):
                             break
                         
                     if not new_location: 
-                        exeenv_id = next(iter(metadata.locations))
+                        exeenv_id = next(iter(locations))
                     if using_hint:
                         instance.set_hint(exeenv_id)
                     self.logger.debug("[==Miss Jump==] MISS. The object %s was not in the exec.location %s. Retrying execution." 
@@ -624,7 +632,13 @@ class DataClayRuntime(object):
         self.logger.debug(f"Replicated: {replicated_objs} into {dest_backend_id}")
         # Update replicated objects metadata
         for replicated_obj_id in replicated_objs:
-            self.metadata_cache[replicated_obj_id].locations.add(dest_backend_id)
+            if replicated_obj_id in self.metadata_cache:
+                self.metadata_cache[replicated_obj_id].locations.add(dest_backend_id)
+            obj = self.get_from_heap(object_id)
+            obj.add_replica_location(dest_backend_id)
+            if obj.get_origin_location() is None:
+                # at client side there cannot be two replicas of same oid
+                obj.set_origin_location(hint)
         return dest_backend_id
 
     def new_version(self, object_id, hint, class_id, dataset_id, backend_id, backend_hostname, recursive):
@@ -779,13 +793,19 @@ class DataClayRuntime(object):
 
     def get_all_locations(self, object_id):
         self.logger.debug("Getting all locations of object %s", object_id)
+        locations = set()
+        obj = self.get_from_heap(object_id)
+        if obj is not None:
+            replica_locs = obj.get_replica_locations()
+            if replica_locs is not None:
+                locations.update(replica_locs)
+            if obj.get_origin_location() is not None:
+                locations.add(obj.get_origin_location())
         try:
             metadata = self.get_metadata(object_id)
-            locations = set()
             for loc in metadata.locations:
                 locations.add(loc)
             # add hint location
-            obj = self.get_from_heap(object_id)
             if obj is not None:
                 hint = obj.get_hint()
                 if hint is not None:
@@ -794,7 +814,6 @@ class DataClayRuntime(object):
             return locations
         except:
             self.logger.debug("Object %s has no metadata", object_id)
-            obj = self.get_from_heap(object_id)
             if obj is not None:
                 hint = obj.get_hint()
                 if hint is not None:

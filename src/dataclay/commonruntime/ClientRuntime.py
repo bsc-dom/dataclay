@@ -127,7 +127,7 @@ class ClientRuntime(DataClayRuntime):
             # Avoid some race-conditions in communication (make persistent + execute where
             # execute arrives before).
             # TODO: fix volatiles under deserialization support for __setstate__ and __getstate__
-            self.add_volatiles_under_deserialization(serialized_objs.vol_objs)
+            self.add_volatiles_under_deserialization(serialized_objs.vol_objs.values())
             
             # Get EE
             try:
@@ -147,7 +147,7 @@ class ClientRuntime(DataClayRuntime):
             instance.set_hint(location)
             
             # remove volatiles under deserialization
-            self.remove_volatiles_under_deserialization()
+            self.remove_volatiles_under_deserialization(serialized_objs.vol_objs.values())
 
         object_id = instance.get_object_id()
         locations = set()

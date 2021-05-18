@@ -96,7 +96,10 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         @postcondition: Get Session ID associated to current thread 
         @return: Session ID associated to current thread 
         """
-        return threadLocal.session_id
+        if hasattr(threadLocal, "session_id"):
+            return threadLocal.session_id
+        else:
+            return None
     
     def get_execution_environment(self):
         """

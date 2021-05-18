@@ -323,6 +323,11 @@ class ExecutionEnvironmentHeapManager(HeapManager):
                         self.logger.trace("Object %s is memory pinned, ignoring it", dc_obj.get_object_id())
                         continue
 
+                    if dc_obj.get_object_id() in self.runtime.volatiles_under_deserialitzation:
+                        self.logger.trace("[==GC==] Not collecting since it is under deserialization.")
+                        continue
+
+
                     """ 
                     self.logger.debug("[==GC==] Object address in memory: %s", str(id(dc_obj)))
                     self.logger.debug("[==GC==] Is tracked? %s", str(gc.is_tracked(dc_obj)))
