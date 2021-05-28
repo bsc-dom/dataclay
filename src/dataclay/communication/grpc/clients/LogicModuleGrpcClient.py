@@ -436,10 +436,11 @@ class LMClient(object):
 
 
     # Methods for MetaDataService for DS
-    def get_storage_location_info(self, st_loc_id):
+    def get_storage_location_info(self, st_loc_id, from_backend=False):
 
         request = logicmodule_messages_pb2.GetStorageLocationInfoRequest(
-            storageLocationID=Utils.get_msg_id(st_loc_id)
+            storageLocationID=Utils.get_msg_id(st_loc_id),
+            fromBackend=from_backend
         )
         lm_function = lambda request: self.lm_stub.getStorageLocationInfo.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -448,10 +449,11 @@ class LMClient(object):
 
         return Utils.get_storage_location(response.storageLocationInfo)
 
-    def get_executionenvironment_info(self, backend_id):
+    def get_executionenvironment_info(self, backend_id, from_backend=False):
 
         request = logicmodule_messages_pb2.GetExecutionEnvironmentInfoRequest(
-            execEnvID=Utils.get_msg_id(backend_id)
+            execEnvID=Utils.get_msg_id(backend_id),
+            fromBackend=from_backend
         )
         lm_function = lambda request: self.lm_stub.getExecutionEnvironmentInfo.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -624,11 +626,12 @@ class LMClient(object):
 
         return Utils.get_dataclay_instance(response.extDataClayInfo)
 
-    def get_all_execution_environments_info(self, language, get_external=True):
+    def get_all_execution_environments_info(self, language, get_external=True, from_backend=False):
 
         request = logicmodule_messages_pb2.GetAllExecutionEnvironmentsInfoRequest(
             execEnvLang=language,
             getExternal=get_external,
+            fromBackend=from_backend
         )
         lm_function = lambda request: self.lm_stub.getAllExecutionEnvironmentsInfo.future(request=request, metadata=self.metadata_call)
         response = self._call_logicmodule(request, lm_function)
@@ -639,23 +642,6 @@ class LMClient(object):
 
         for k, v in response.execEnvs.items():
             result[Utils.get_id(k)] = Utils.get_execution_environment(v)
-
-        return result
-
-    def get_all_external_execution_environments_info(self, dataclay_instance_id, language):
-
-        request = logicmodule_messages_pb2.GetAllExternalExecutionEnvironmentsInfoRequest(
-            execEnvLang=language
-        )
-        lm_function = lambda request: self.lm_stub.getAllExternalExecutionEnvironmentsInfo.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        result = dict()
-
-        for k, v in response.execEnvs.items():
-            result[Utils.get_id(k)] = Utils.get_external_execution_environment(v)
 
         return result
 

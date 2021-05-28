@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='dataclay.communication.grpc.logicmodule',
   syntax='proto3',
   serialized_options=_b('\n7es.bsc.dataclay.communication.grpc.messages.logicmoduleP\000'),
-  serialized_pb=_b('\nKdataclay/communication/grpc/messages/logicmodule/logicmodule_messages.proto\x12\'dataclay.communication.grpc.logicmodule\x1a\x41\x64\x61taclay/communication/grpc/messages/common/common_messages.proto\"2\n\x18NewAccountNoAdminRequest\x12\x16\n\x0eyamlNewAccount\x18\x01 \x01(\t\"\x85\x01\n\x11NewAccountRequest\x12\x0f\n\x07\x61\x64minID\x18\x01 \x01(\t\x12G\n\x0f\x61\x64mincredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x16\n\x0eyamlNewAccount\x18\x03 \x01(\t\"n\n\x12NewAccountResponse\x12\x14\n\x0cnewAccountID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"7\n\x15PublishAddressRequest\x12\x10\n\x08hostname\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"*\n\x13GetAccountIDRequest\x12\x13\n\x0b\x61\x63\x63ountName\x18\x01 \x01(\t\"p\n\x14GetAccountIDResponse\x12\x14\n\x0cnewAccountID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"f\n\x15\x41utoRegisterSLRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\x12\x0e\n\x06\x64sName\x18\x02 \x01(\t\x12\x12\n\ndsHostname\x18\x03 \x01(\t\x12\x0e\n\x06\x64sPort\x18\x04 \x01(\x05\"\xa4\x01\n\x15\x41utoRegisterEERequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x0e\n\x06\x65\x65Name\x18\x02 \x01(\t\x12\x12\n\neeHostname\x18\x03 \x01(\t\x12\x0e\n\x06\x65\x65Port\x18\x04 \x01(\x05\x12\x37\n\x04lang\x18\x05 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"w\n\x16\x41utoRegisterEEResponse\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"=\n UnregisterStorageLocationRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\"G\n%UnregisterExecutionEnvironmentRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\"\x80\x01\n\x19PerformSetAccountsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x0c\n\x04yaml\x18\x03 \x01(\t\"t\n\x1aPerformSetAccountsResponse\x12\x12\n\nresultYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x82\x01\n\x1bPerformSetOperationsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x0c\n\x04yaml\x18\x03 \x01(\t\"v\n\x1cPerformSetOperationsResponse\x12\x12\n\nresultYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"q\n\x15GetAccountListRequest\x12\x0f\n\x07\x61\x64minID\x18\x01 \x01(\t\x12G\n\x0f\x61\x64mincredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"p\n\x16GetAccountListResponse\x12\x12\n\naccountIDs\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xe9\x01\n\x11NewSessionRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x63ontractIDs\x18\x03 \x03(\t\x12\x12\n\ndataSetIDs\x18\x04 \x03(\t\x12\x14\n\x0cstoreDataSet\x18\x05 \x01(\t\x12>\n\x0bsessionLang\x18\x06 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"m\n\x12NewSessionResponse\x12\x13\n\x0bsessionInfo\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"1\n\x1cGetInfoOfSessionForDSRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\"\x98\x01\n\x1dGetInfoOfSessionForDSResponse\x12\x11\n\tdataSetID\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61te\x18\x02 \x01(\x03\x12\x12\n\ndataSetIDs\x18\x03 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x04 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x86\x01\n\x13NewNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x18\n\x10newNamespaceYaml\x18\x03 \x01(\t\"o\n\x14NewNamespaceResponse\x12\x13\n\x0bnamespaceID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"m\n\x14GetNamespacesRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"o\n\x15GetNamespacesResponse\x12\x12\n\nnamespaces\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x86\x01\n\x16RemoveNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rnamespaceName\x18\x03 \x01(\t\"\x85\x01\n\x15GetNamespaceIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rnamespaceName\x18\x03 \x01(\t\"q\n\x16GetNamespaceIDResponse\x12\x13\n\x0bnamespaceID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x87\x01\n\x17GetNamespaceLangRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rnamespaceName\x18\x03 \x01(\t\"\x9b\x01\n\x18GetNamespaceLangResponse\x12;\n\x08language\x18\x01 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"@\n\x19GetObjectDataSetIDRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"s\n\x1aGetObjectDataSetIDResponse\x12\x11\n\tdataSetID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xad\x01\n\x16ImportInterfaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x12\n\ncontractID\x18\x04 \x01(\t\x12\x13\n\x0binterfaceID\x18\x05 \x01(\t\"\x97\x01\n\x15ImportContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x12\n\ncontractID\x18\x04 \x01(\t\"\x7f\n\x11NewDataSetRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x64\x61taSetYaml\x18\x03 \x01(\t\"k\n\x12NewDataSetResponse\x12\x11\n\tdataSetID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x82\x01\n\x14RemoveDataSetRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x64\x61taSetName\x18\x03 \x01(\t\"\x81\x01\n\x13GetDataSetIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x64\x61taSetName\x18\x03 \x01(\t\"m\n\x14GetDataSetIDResponse\x12\x11\n\tdataSetID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"q\n\x18GetPublicDataSetsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"q\n\x19GetPublicDataSetsResponse\x12\x10\n\x08\x64\x61taSets\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"r\n\x19GetAccountDataSetsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"r\n\x1aGetAccountDataSetsResponse\x12\x10\n\x08\x64\x61taSets\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"0\n\x1b\x43heckDataSetIsPublicRequest\x12\x11\n\tdataSetID\x18\x01 \x01(\t\"t\n\x1c\x43heckDataSetIsPublicResponse\x12\x10\n\x08isPublic\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xb6\x02\n\x0fNewClassRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12;\n\x08language\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\\\n\nnewClasses\x18\x04 \x03(\x0b\x32H.dataclay.communication.grpc.logicmodule.NewClassRequest.NewClassesEntry\x1a\x31\n\x0fNewClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xe8\x01\n\x10NewClassResponse\x12]\n\nnewClasses\x18\x01 \x03(\x0b\x32I.dataclay.communication.grpc.logicmodule.NewClassResponse.NewClassesEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x31\n\x0fNewClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x93\x01\n\x12RemoveClassRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\"\xba\x01\n\x16RemoveOperationRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\x12!\n\x19operationNameAndSignature\x18\x05 \x01(\t\"\xb6\x01\n\x1bRemoveImplementationRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\x12\x18\n\x10implementationID\x18\x05 \x01(\t\"\xb9\x01\n\x15GetOperationIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\x12!\n\x19operationNameAndSignature\x18\x05 \x01(\t\"q\n\x16GetOperationIDResponse\x12\x13\n\x0boperationID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xab\x01\n\x14GetPropertyIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\x12\x14\n\x0cpropertyName\x18\x05 \x01(\t\"o\n\x15GetPropertyIDResponse\x12\x12\n\npropertyID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x92\x01\n\x11GetClassIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\"i\n\x12GetClassIDResponse\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x94\x01\n\x13GetClassInfoRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\"q\n\x14GetClassInfoResponse\x12\x15\n\rmetaClassYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x90\x01\n\"GetInfoOfClassesInNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\"\x91\x02\n#GetInfoOfClassesInNamespaceResponse\x12r\n\x0b\x63lassesInfo\x18\x01 \x03(\x0b\x32].dataclay.communication.grpc.logicmodule.GetInfoOfClassesInNamespaceResponse.ClassesInfoEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x32\n\x10\x43lassesInfoEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x96\x01\n(GetImportedClassesInfoInNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\"\xaa\x02\n)GetImportedClassesInfoInNamespaceResponse\x12\x80\x01\n\x0fimportedClasses\x18\x01 \x03(\x0b\x32g.dataclay.communication.grpc.logicmodule.GetImportedClassesInfoInNamespaceResponse.ImportedClassesEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x36\n\x14ImportedClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x9c\x01\n\x1bGetClassIDFromImportRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\"s\n\x1cGetClassIDFromImportResponse\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x84\x01\n\x12NewContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x17\n\x0fnewContractYaml\x18\x03 \x01(\t\"m\n\x13NewContractResponse\x12\x12\n\ncontractID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x8c\x01\n\x1fRegisterToPublicContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x12\n\ncontractID\x18\x03 \x01(\t\"\x98\x01\n*RegisterToPublicContractOfNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\"\x85\x01\n+RegisterToPublicContractOfNamespaceResponse\x12\x12\n\ncontractID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"{\n GetContractIDsOfApplicantRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"\x87\x02\n!GetContractIDsOfApplicantResponse\x12l\n\tcontracts\x18\x01 \x03(\x0b\x32Y.dataclay.communication.grpc.logicmodule.GetContractIDsOfApplicantResponse.ContractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0e\x43ontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x98\x01\n\x1fGetContractIDsOfProviderRequest\x12\x12\n\nproviderID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x1d\n\x15namespaceIDOfProvider\x18\x03 \x01(\t\"\x85\x02\n GetContractIDsOfProviderResponse\x12k\n\tcontracts\x18\x01 \x03(\x0b\x32X.dataclay.communication.grpc.logicmodule.GetContractIDsOfProviderResponse.ContractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0e\x43ontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa0\x01\n&GetContractsOfApplicantWithProvRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x1d\n\x15namespaceIDOfProvider\x18\x03 \x01(\t\"\x93\x02\n\'GetContractsOfApplicantWithProvResponse\x12r\n\tcontracts\x18\x01 \x03(\x0b\x32_.dataclay.communication.grpc.logicmodule.GetContractsOfApplicantWithProvResponse.ContractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0e\x43ontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x89\x01\n\x16NewDataContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x18\n\x10\x64\x61taContractYaml\x18\x03 \x01(\t\"u\n\x17NewDataContractResponse\x12\x16\n\x0e\x64\x61taContractID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x94\x01\n#RegisterToPublicDataContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x16\n\x0e\x64\x61taContractID\x18\x03 \x01(\t\"\x7f\n$GetDataContractIDsOfApplicantRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"\x9b\x02\n%GetDataContractIDsOfApplicantResponse\x12x\n\rdatacontracts\x18\x01 \x03(\x0b\x32\x61.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfApplicantResponse.DatacontractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x34\n\x12\x44\x61tacontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x9a\x01\n#GetDataContractIDsOfProviderRequest\x12\x12\n\nproviderID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x1b\n\x13\x64\x61taSetIDOfProvider\x18\x03 \x01(\t\"\x99\x02\n$GetDataContractIDsOfProviderResponse\x12w\n\rdatacontracts\x18\x01 \x03(\x0b\x32`.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfProviderResponse.DatacontractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x34\n\x12\x44\x61tacontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa5\x01\n-GetDataContractInfoOfApplicantWithProvRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x1b\n\x13\x64\x61taSetIDOfProvider\x18\x03 \x01(\t\"\x8e\x01\n.GetDataContractInfoOfApplicantWithProvResponse\x12\x18\n\x10\x64\x61taContractInfo\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x85\x01\n\x13NewInterfaceRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rinterfaceYaml\x18\x03 \x01(\t\"o\n\x14NewInterfaceResponse\x12\x13\n\x0binterfaceID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x87\x01\n\x17GetInterfaceInfoRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0binterfaceID\x18\x03 \x01(\t\"u\n\x18GetInterfaceInfoResponse\x12\x15\n\rinterfaceYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x9b\x01\n\x16RemoveInterfaceRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x13\n\x0binterfaceID\x18\x04 \x01(\t\":\n\x1dGetStorageLocationInfoRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\"\xba\x01\n\x1eGetStorageLocationInfoResponse\x12T\n\x13storageLocationInfo\x18\x01 \x01(\x0b\x32\x37.dataclay.communication.grpc.common.StorageLocationInfo\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"7\n\"GetExecutionEnvironmentInfoRequest\x12\x11\n\texecEnvID\x18\x01 \x01(\t\"\xc9\x01\n#GetExecutionEnvironmentInfoResponse\x12^\n\x18\x65xecutionEnvironmentInfo\x18\x01 \x01(\x0b\x32<.dataclay.communication.grpc.common.ExecutionEnvironmentInfo\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"o\n\x15GetDataClayIDResponse\x12\x12\n\ndataClayID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"A\n\x1fRegisterExternalDataClayRequest\x12\x10\n\x08hostname\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\xc6\x01\n0RegisterExternalDataClayOverrideAuthorityRequest\x12\x16\n\x0e\x61\x64minAccountID\x18\x01 \x01(\t\x12G\n\x0f\x61\x64minCredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x10\n\x08hostname\x18\x03 \x01(\t\x12\x0c\n\x04port\x18\x04 \x01(\x05\x12\x11\n\tauthority\x18\x05 \x01(\t\"}\n RegisterExternalDataClayResponse\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"d\n+NotifyRegistrationOfExternalDataClayRequest\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x10\n\x08hostname\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\x05\"\x89\x01\n,NotifyRegistrationOfExternalDataClayResponse\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\":\n\x1cGetExternalDataclayIDRequest\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"z\n\x1dGetExternalDataclayIDResponse\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"2\n\x19GetExtDataClayInfoRequest\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\"\xaf\x01\n\x1aGetExtDataClayInfoResponse\x12M\n\x0f\x65xtDataClayInfo\x18\x01 \x01(\x0b\x32\x34.dataclay.communication.grpc.common.DataClayInstance\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"v\n\x1aRegisterObjectForGCRequest\x12\x45\n\x07regInfo\x18\x01 \x01(\x0b\x32\x34.dataclay.communication.grpc.common.RegistrationInfo\x12\x11\n\tbackendID\x18\x02 \x01(\t\"\xac\x01\n\x16RegisterObjectsRequest\x12\x46\n\x08regInfos\x18\x01 \x03(\x0b\x32\x34.dataclay.communication.grpc.common.RegistrationInfo\x12\x11\n\tbackendID\x18\x02 \x01(\t\x12\x37\n\x04lang\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"p\n\x17RegisterObjectsResponse\x12\x11\n\tobjectIDs\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"}\n&GetAllExecutionEnvironmentsInfoRequest\x12>\n\x0b\x65xecEnvLang\x18\x01 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x13\n\x0bgetExternal\x18\x02 \x01(\x08\"\xce\x02\n\'GetAllExecutionEnvironmentsInfoResponse\x12p\n\x08\x65xecEnvs\x18\x01 \x03(\x0b\x32^.dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse.ExecEnvsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1am\n\rExecEnvsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12K\n\x05value\x18\x02 \x01(\x0b\x32<.dataclay.communication.grpc.common.ExecutionEnvironmentInfo:\x02\x38\x01\";\n\x14GetObjectInfoRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"\x81\x01\n\x15GetObjectInfoResponse\x12\x11\n\tclassname\x18\x01 \x01(\t\x12\x11\n\tnamespace\x18\x02 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"=\n\x19GetObjectFromAliasRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\r\n\x05\x61lias\x18\x02 \x01(\t\"\x91\x01\n\x1aGetObjectFromAliasResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x0f\n\x07\x63lassID\x18\x02 \x01(\t\x12\x0c\n\x04hint\x18\x03 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x04 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"=\n\x0f\x41\x64\x64\x41liasRequest\x12\x1b\n\x13objectIDToHaveAlias\x18\x01 \x01(\t\x12\r\n\x05\x61lias\x18\x02 \x01(\t\"6\n\x12\x44\x65leteAliasRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\r\n\x05\x61lias\x18\x02 \x01(\t\"k\n\x13\x44\x65leteAliasResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"<\n)GetObjectsMetaDataInfoOfClassForNMRequest\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\"\xcb\x02\n*GetObjectsMetaDataInfoOfClassForNMResponse\x12u\n\tmdataInfo\x18\x01 \x03(\x0b\x32\x62.dataclay.communication.grpc.logicmodule.GetObjectsMetaDataInfoOfClassForNMResponse.MdataInfoEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x62\n\x0eMdataInfoEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12?\n\x05value\x18\x02 \x01(\x0b\x32\x30.dataclay.communication.grpc.common.MetaDataInfo:\x02\x38\x01\"M\n\x13SetDataSetIDRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x11\n\tdatasetID\x18\x03 \x01(\t\"N\n\'SetDataSetIDFromGarbageCollectorRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x11\n\tdatasetID\x18\x02 \x01(\t\"x\n\x11MoveObjectRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x14\n\x0csrcBackendID\x18\x03 \x01(\t\x12\x15\n\rdestBackendID\x18\x04 \x01(\t\x12\x11\n\trecursive\x18\x05 \x01(\x08\"k\n\x12MoveObjectResponse\x12\x11\n\tobjectIDs\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"?\n\x18SetObjectReadOnlyRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"@\n\x19SetObjectReadWriteRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\">\n\x17GetMetadataByOIDRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"\xa0\x01\n\x18GetMetadataByOIDResponse\x12@\n\x06mdInfo\x18\x01 \x01(\x0b\x32\x30.dataclay.communication.grpc.common.MetaDataInfo\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"0\n\x1cGetMetadataByOIDForDSRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"\xa5\x01\n\x1dGetMetadataByOIDForDSResponse\x12@\n\x06mdInfo\x18\x01 \x01(\x0b\x32\x30.dataclay.communication.grpc.common.MetaDataInfo\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xed\x01\n\x1c\x45xecuteImplementationRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x13\n\x0boperationID\x18\x02 \x01(\t\x12\x18\n\x10implementationID\x18\x03 \x01(\t\x12\x12\n\ncontractID\x18\x04 \x01(\t\x12\x13\n\x0binterfaceID\x18\x05 \x01(\t\x12\x10\n\x08objectID\x18\x06 \x01(\t\x12P\n\x06params\x18\x07 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\"\xb2\x01\n\x1d\x45xecuteImplementationResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xd1\x01\n\x1c\x45xecuteMethodOnTargetRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12!\n\x19operationNameAndSignature\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x17\n\x0ftargetBackendID\x18\x05 \x01(\t\"\xb2\x01\n\x1d\x45xecuteMethodOnTargetResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xcd\x01\n!SynchronizeFederatedObjectRequest\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x18\n\x10implementationID\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x13\n\x0b\x61llBackends\x18\x05 \x01(\x08\"\xc4\x01\n\x0fGetStubsRequest\x12\x1a\n\x12\x61pplicantAccountID\x18\x01 \x01(\t\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12;\n\x08language\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x13\n\x0b\x63ontractIDs\x18\x04 \x03(\t\"\xd9\x01\n\x10GetStubsResponse\x12S\n\x05stubs\x18\x01 \x03(\x0b\x32\x44.dataclay.communication.grpc.logicmodule.GetStubsResponse.StubsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a,\n\nStubsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"\x83\x01\n\x14GetBabelStubsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x63ontractIDs\x18\x04 \x03(\t\"m\n\x15GetBabelStubsResponse\x12\x10\n\x08yamlStub\x18\x01 \x01(\x0c\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"+\n\x18GetClassNameForDSRequest\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\"r\n\x19GetClassNameForDSResponse\x12\x11\n\tclassName\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"7\n$GetClassNameAndNamespaceForDSRequest\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\"\x91\x01\n%GetClassNameAndNamespaceForDSResponse\x12\x11\n\tclassName\x18\x01 \x01(\t\x12\x11\n\tnamespace\x18\x02 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x82\x01\n\x12RegisterECARequest\x12\x1a\n\x12\x61pplicantAccountID\x18\x01 \x01(\t\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x0b\n\x03\x65\x63\x61\x18\x03 \x01(\t\"\'\n\x12\x41\x64viseEventRequest\x12\x11\n\teventYaml\x18\x01 \x01(\t\"\x89\x01\n&GetContractIDOfDataClayProviderRequest\x12\x1a\n\x12\x61pplicantAccountID\x18\x01 \x01(\t\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"\x81\x01\n\'GetContractIDOfDataClayProviderResponse\x12\x12\n\ncontractID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"(\n\x16\x41\x63tivateTracingRequest\x12\x0e\n\x06taskid\x18\x01 \x01(\x05\"(\n\x13\x43loseSessionRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\"7\n\x18UnregisterObjectsRequest\x12\x1b\n\x13objectsToUnregister\x18\x01 \x03(\t\"s\n\x1cIsPrefetchingEnabledResponse\x12\x0f\n\x07\x65nabled\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"1\n\x1dObjectExistsInDataClayRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"t\n\x1eObjectExistsInDataClayResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"5\n\x1cGetClassesInNamespaceRequest\x12\x15\n\rnamespaceName\x18\x01 \x01(\t\"\x91\x01\n\x1dGetClassesInNamespaceResponse\x12\x15\n\rnamespaceYaml\x18\x01 \x01(\t\x12\x15\n\rmetaClassYaml\x18\x02 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"T\n\'ImportModelsFromExternalDataClayRequest\x12\x15\n\rnamespaceName\x18\x01 \x01(\t\x12\x12\n\ndataClayID\x18\x02 \x01(\t\"-\n\x1bGetStorageLocationIDRequest\x12\x0e\n\x06slName\x18\x01 \x01(\t\"}\n\x1cGetStorageLocationIDResponse\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"K\n)NotifyExecutionEnvironmentShutdownRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\"A\n$NotifyStorageLocationShutdownRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\"A\n$ExistsActiveEnvironmentsForSLRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\"{\n%ExistsActiveEnvironmentsForSLResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x91\x01\n\x0cMetadataInfo\x12\x12\n\ndataClayID\x18\x01 \x01(\t\x12\x12\n\nisReadOnly\x18\x02 \x01(\x08\x12\x11\n\tdatasetID\x18\x03 \x01(\t\x12\x13\n\x0bmetaclassID\x18\x04 \x01(\t\x12\x11\n\tlocations\x18\x05 \x03(\t\x12\r\n\x05\x61lias\x18\x06 \x01(\t\x12\x0f\n\x07ownerID\x18\x07 \x01(\tB;\n7es.bsc.dataclay.communication.grpc.messages.logicmoduleP\x00\x62\x06proto3')
+  serialized_pb=_b('\nKdataclay/communication/grpc/messages/logicmodule/logicmodule_messages.proto\x12\'dataclay.communication.grpc.logicmodule\x1a\x41\x64\x61taclay/communication/grpc/messages/common/common_messages.proto\"2\n\x18NewAccountNoAdminRequest\x12\x16\n\x0eyamlNewAccount\x18\x01 \x01(\t\"\x85\x01\n\x11NewAccountRequest\x12\x0f\n\x07\x61\x64minID\x18\x01 \x01(\t\x12G\n\x0f\x61\x64mincredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x16\n\x0eyamlNewAccount\x18\x03 \x01(\t\"n\n\x12NewAccountResponse\x12\x14\n\x0cnewAccountID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"7\n\x15PublishAddressRequest\x12\x10\n\x08hostname\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"*\n\x13GetAccountIDRequest\x12\x13\n\x0b\x61\x63\x63ountName\x18\x01 \x01(\t\"p\n\x14GetAccountIDResponse\x12\x14\n\x0cnewAccountID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"f\n\x15\x41utoRegisterSLRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\x12\x0e\n\x06\x64sName\x18\x02 \x01(\t\x12\x12\n\ndsHostname\x18\x03 \x01(\t\x12\x0e\n\x06\x64sPort\x18\x04 \x01(\x05\"\xa4\x01\n\x15\x41utoRegisterEERequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x0e\n\x06\x65\x65Name\x18\x02 \x01(\t\x12\x12\n\neeHostname\x18\x03 \x01(\t\x12\x0e\n\x06\x65\x65Port\x18\x04 \x01(\x05\x12\x37\n\x04lang\x18\x05 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"w\n\x16\x41utoRegisterEEResponse\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"=\n UnregisterStorageLocationRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\"G\n%UnregisterExecutionEnvironmentRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\"\x80\x01\n\x19PerformSetAccountsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x0c\n\x04yaml\x18\x03 \x01(\t\"t\n\x1aPerformSetAccountsResponse\x12\x12\n\nresultYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x82\x01\n\x1bPerformSetOperationsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x0c\n\x04yaml\x18\x03 \x01(\t\"v\n\x1cPerformSetOperationsResponse\x12\x12\n\nresultYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"q\n\x15GetAccountListRequest\x12\x0f\n\x07\x61\x64minID\x18\x01 \x01(\t\x12G\n\x0f\x61\x64mincredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"p\n\x16GetAccountListResponse\x12\x12\n\naccountIDs\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xe9\x01\n\x11NewSessionRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x63ontractIDs\x18\x03 \x03(\t\x12\x12\n\ndataSetIDs\x18\x04 \x03(\t\x12\x14\n\x0cstoreDataSet\x18\x05 \x01(\t\x12>\n\x0bsessionLang\x18\x06 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"m\n\x12NewSessionResponse\x12\x13\n\x0bsessionInfo\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"1\n\x1cGetInfoOfSessionForDSRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\"\x98\x01\n\x1dGetInfoOfSessionForDSResponse\x12\x11\n\tdataSetID\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61te\x18\x02 \x01(\x03\x12\x12\n\ndataSetIDs\x18\x03 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x04 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x86\x01\n\x13NewNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x18\n\x10newNamespaceYaml\x18\x03 \x01(\t\"o\n\x14NewNamespaceResponse\x12\x13\n\x0bnamespaceID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"m\n\x14GetNamespacesRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"o\n\x15GetNamespacesResponse\x12\x12\n\nnamespaces\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x86\x01\n\x16RemoveNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rnamespaceName\x18\x03 \x01(\t\"\x85\x01\n\x15GetNamespaceIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rnamespaceName\x18\x03 \x01(\t\"q\n\x16GetNamespaceIDResponse\x12\x13\n\x0bnamespaceID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x87\x01\n\x17GetNamespaceLangRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rnamespaceName\x18\x03 \x01(\t\"\x9b\x01\n\x18GetNamespaceLangResponse\x12;\n\x08language\x18\x01 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"@\n\x19GetObjectDataSetIDRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"s\n\x1aGetObjectDataSetIDResponse\x12\x11\n\tdataSetID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xad\x01\n\x16ImportInterfaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x12\n\ncontractID\x18\x04 \x01(\t\x12\x13\n\x0binterfaceID\x18\x05 \x01(\t\"\x97\x01\n\x15ImportContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x12\n\ncontractID\x18\x04 \x01(\t\"\x7f\n\x11NewDataSetRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x64\x61taSetYaml\x18\x03 \x01(\t\"k\n\x12NewDataSetResponse\x12\x11\n\tdataSetID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x82\x01\n\x14RemoveDataSetRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x64\x61taSetName\x18\x03 \x01(\t\"\x81\x01\n\x13GetDataSetIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x64\x61taSetName\x18\x03 \x01(\t\"m\n\x14GetDataSetIDResponse\x12\x11\n\tdataSetID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"q\n\x18GetPublicDataSetsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"q\n\x19GetPublicDataSetsResponse\x12\x10\n\x08\x64\x61taSets\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"r\n\x19GetAccountDataSetsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"r\n\x1aGetAccountDataSetsResponse\x12\x10\n\x08\x64\x61taSets\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"0\n\x1b\x43heckDataSetIsPublicRequest\x12\x11\n\tdataSetID\x18\x01 \x01(\t\"t\n\x1c\x43heckDataSetIsPublicResponse\x12\x10\n\x08isPublic\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xb6\x02\n\x0fNewClassRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12;\n\x08language\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\\\n\nnewClasses\x18\x04 \x03(\x0b\x32H.dataclay.communication.grpc.logicmodule.NewClassRequest.NewClassesEntry\x1a\x31\n\x0fNewClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xe8\x01\n\x10NewClassResponse\x12]\n\nnewClasses\x18\x01 \x03(\x0b\x32I.dataclay.communication.grpc.logicmodule.NewClassResponse.NewClassesEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x31\n\x0fNewClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x93\x01\n\x12RemoveClassRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\"\xba\x01\n\x16RemoveOperationRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\x12!\n\x19operationNameAndSignature\x18\x05 \x01(\t\"\xb6\x01\n\x1bRemoveImplementationRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\x12\x18\n\x10implementationID\x18\x05 \x01(\t\"\xb9\x01\n\x15GetOperationIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\x12!\n\x19operationNameAndSignature\x18\x05 \x01(\t\"q\n\x16GetOperationIDResponse\x12\x13\n\x0boperationID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xab\x01\n\x14GetPropertyIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\x12\x14\n\x0cpropertyName\x18\x05 \x01(\t\"o\n\x15GetPropertyIDResponse\x12\x12\n\npropertyID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x92\x01\n\x11GetClassIDRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\"i\n\x12GetClassIDResponse\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x94\x01\n\x13GetClassInfoRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\"q\n\x14GetClassInfoResponse\x12\x15\n\rmetaClassYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x90\x01\n\"GetInfoOfClassesInNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\"\x91\x02\n#GetInfoOfClassesInNamespaceResponse\x12r\n\x0b\x63lassesInfo\x18\x01 \x03(\x0b\x32].dataclay.communication.grpc.logicmodule.GetInfoOfClassesInNamespaceResponse.ClassesInfoEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x32\n\x10\x43lassesInfoEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x96\x01\n(GetImportedClassesInfoInNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\"\xaa\x02\n)GetImportedClassesInfoInNamespaceResponse\x12\x80\x01\n\x0fimportedClasses\x18\x01 \x03(\x0b\x32g.dataclay.communication.grpc.logicmodule.GetImportedClassesInfoInNamespaceResponse.ImportedClassesEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x36\n\x14ImportedClassesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x9c\x01\n\x1bGetClassIDFromImportRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x11\n\tclassName\x18\x04 \x01(\t\"s\n\x1cGetClassIDFromImportResponse\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x84\x01\n\x12NewContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x17\n\x0fnewContractYaml\x18\x03 \x01(\t\"m\n\x13NewContractResponse\x12\x12\n\ncontractID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x8c\x01\n\x1fRegisterToPublicContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x12\n\ncontractID\x18\x03 \x01(\t\"\x98\x01\n*RegisterToPublicContractOfNamespaceRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\"\x85\x01\n+RegisterToPublicContractOfNamespaceResponse\x12\x12\n\ncontractID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"{\n GetContractIDsOfApplicantRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"\x87\x02\n!GetContractIDsOfApplicantResponse\x12l\n\tcontracts\x18\x01 \x03(\x0b\x32Y.dataclay.communication.grpc.logicmodule.GetContractIDsOfApplicantResponse.ContractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0e\x43ontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x98\x01\n\x1fGetContractIDsOfProviderRequest\x12\x12\n\nproviderID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x1d\n\x15namespaceIDOfProvider\x18\x03 \x01(\t\"\x85\x02\n GetContractIDsOfProviderResponse\x12k\n\tcontracts\x18\x01 \x03(\x0b\x32X.dataclay.communication.grpc.logicmodule.GetContractIDsOfProviderResponse.ContractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0e\x43ontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa0\x01\n&GetContractsOfApplicantWithProvRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x1d\n\x15namespaceIDOfProvider\x18\x03 \x01(\t\"\x93\x02\n\'GetContractsOfApplicantWithProvResponse\x12r\n\tcontracts\x18\x01 \x03(\x0b\x32_.dataclay.communication.grpc.logicmodule.GetContractsOfApplicantWithProvResponse.ContractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x30\n\x0e\x43ontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x89\x01\n\x16NewDataContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x18\n\x10\x64\x61taContractYaml\x18\x03 \x01(\t\"u\n\x17NewDataContractResponse\x12\x16\n\x0e\x64\x61taContractID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x94\x01\n#RegisterToPublicDataContractRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x16\n\x0e\x64\x61taContractID\x18\x03 \x01(\t\"\x7f\n$GetDataContractIDsOfApplicantRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"\x9b\x02\n%GetDataContractIDsOfApplicantResponse\x12x\n\rdatacontracts\x18\x01 \x03(\x0b\x32\x61.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfApplicantResponse.DatacontractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x34\n\x12\x44\x61tacontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x9a\x01\n#GetDataContractIDsOfProviderRequest\x12\x12\n\nproviderID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x1b\n\x13\x64\x61taSetIDOfProvider\x18\x03 \x01(\t\"\x99\x02\n$GetDataContractIDsOfProviderResponse\x12w\n\rdatacontracts\x18\x01 \x03(\x0b\x32`.dataclay.communication.grpc.logicmodule.GetDataContractIDsOfProviderResponse.DatacontractsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x34\n\x12\x44\x61tacontractsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa5\x01\n-GetDataContractInfoOfApplicantWithProvRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x1b\n\x13\x64\x61taSetIDOfProvider\x18\x03 \x01(\t\"\x8e\x01\n.GetDataContractInfoOfApplicantWithProvResponse\x12\x18\n\x10\x64\x61taContractInfo\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x85\x01\n\x13NewInterfaceRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x15\n\rinterfaceYaml\x18\x03 \x01(\t\"o\n\x14NewInterfaceResponse\x12\x13\n\x0binterfaceID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x87\x01\n\x17GetInterfaceInfoRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0binterfaceID\x18\x03 \x01(\t\"u\n\x18GetInterfaceInfoResponse\x12\x15\n\rinterfaceYaml\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x9b\x01\n\x16RemoveInterfaceRequest\x12\x13\n\x0b\x61pplicantID\x18\x01 \x01(\t\x12\x42\n\ncredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0bnamespaceID\x18\x03 \x01(\t\x12\x13\n\x0binterfaceID\x18\x04 \x01(\t\"O\n\x1dGetStorageLocationInfoRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\x12\x13\n\x0b\x66romBackend\x18\x02 \x01(\x08\"\xba\x01\n\x1eGetStorageLocationInfoResponse\x12T\n\x13storageLocationInfo\x18\x01 \x01(\x0b\x32\x37.dataclay.communication.grpc.common.StorageLocationInfo\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"L\n\"GetExecutionEnvironmentInfoRequest\x12\x11\n\texecEnvID\x18\x01 \x01(\t\x12\x13\n\x0b\x66romBackend\x18\x02 \x01(\x08\"\xc9\x01\n#GetExecutionEnvironmentInfoResponse\x12^\n\x18\x65xecutionEnvironmentInfo\x18\x01 \x01(\x0b\x32<.dataclay.communication.grpc.common.ExecutionEnvironmentInfo\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"o\n\x15GetDataClayIDResponse\x12\x12\n\ndataClayID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"A\n\x1fRegisterExternalDataClayRequest\x12\x10\n\x08hostname\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\xc6\x01\n0RegisterExternalDataClayOverrideAuthorityRequest\x12\x16\n\x0e\x61\x64minAccountID\x18\x01 \x01(\t\x12G\n\x0f\x61\x64minCredential\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x10\n\x08hostname\x18\x03 \x01(\t\x12\x0c\n\x04port\x18\x04 \x01(\x05\x12\x11\n\tauthority\x18\x05 \x01(\t\"}\n RegisterExternalDataClayResponse\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"d\n+NotifyRegistrationOfExternalDataClayRequest\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x10\n\x08hostname\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\x05\"\x89\x01\n,NotifyRegistrationOfExternalDataClayResponse\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\":\n\x1cGetExternalDataclayIDRequest\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"z\n\x1dGetExternalDataclayIDResponse\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"2\n\x19GetExtDataClayInfoRequest\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\"\xaf\x01\n\x1aGetExtDataClayInfoResponse\x12M\n\x0f\x65xtDataClayInfo\x18\x01 \x01(\x0b\x32\x34.dataclay.communication.grpc.common.DataClayInstance\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"v\n\x1aRegisterObjectForGCRequest\x12\x45\n\x07regInfo\x18\x01 \x01(\x0b\x32\x34.dataclay.communication.grpc.common.RegistrationInfo\x12\x11\n\tbackendID\x18\x02 \x01(\t\"\xac\x01\n\x16RegisterObjectsRequest\x12\x46\n\x08regInfos\x18\x01 \x03(\x0b\x32\x34.dataclay.communication.grpc.common.RegistrationInfo\x12\x11\n\tbackendID\x18\x02 \x01(\t\x12\x37\n\x04lang\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\"p\n\x17RegisterObjectsResponse\x12\x11\n\tobjectIDs\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x92\x01\n&GetAllExecutionEnvironmentsInfoRequest\x12>\n\x0b\x65xecEnvLang\x18\x01 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x13\n\x0bgetExternal\x18\x02 \x01(\x08\x12\x13\n\x0b\x66romBackend\x18\x03 \x01(\x08\"\xce\x02\n\'GetAllExecutionEnvironmentsInfoResponse\x12p\n\x08\x65xecEnvs\x18\x01 \x03(\x0b\x32^.dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoResponse.ExecEnvsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1am\n\rExecEnvsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12K\n\x05value\x18\x02 \x01(\x0b\x32<.dataclay.communication.grpc.common.ExecutionEnvironmentInfo:\x02\x38\x01\";\n\x14GetObjectInfoRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"\x81\x01\n\x15GetObjectInfoResponse\x12\x11\n\tclassname\x18\x01 \x01(\t\x12\x11\n\tnamespace\x18\x02 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"=\n\x19GetObjectFromAliasRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\r\n\x05\x61lias\x18\x02 \x01(\t\"\x91\x01\n\x1aGetObjectFromAliasResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x0f\n\x07\x63lassID\x18\x02 \x01(\t\x12\x0c\n\x04hint\x18\x03 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x04 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"=\n\x0f\x41\x64\x64\x41liasRequest\x12\x1b\n\x13objectIDToHaveAlias\x18\x01 \x01(\t\x12\r\n\x05\x61lias\x18\x02 \x01(\t\"6\n\x12\x44\x65leteAliasRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\r\n\x05\x61lias\x18\x02 \x01(\t\"k\n\x13\x44\x65leteAliasResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"<\n)GetObjectsMetaDataInfoOfClassForNMRequest\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\"\xcb\x02\n*GetObjectsMetaDataInfoOfClassForNMResponse\x12u\n\tmdataInfo\x18\x01 \x03(\x0b\x32\x62.dataclay.communication.grpc.logicmodule.GetObjectsMetaDataInfoOfClassForNMResponse.MdataInfoEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x62\n\x0eMdataInfoEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12?\n\x05value\x18\x02 \x01(\x0b\x32\x30.dataclay.communication.grpc.common.MetaDataInfo:\x02\x38\x01\"M\n\x13SetDataSetIDRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x11\n\tdatasetID\x18\x03 \x01(\t\"N\n\'SetDataSetIDFromGarbageCollectorRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x11\n\tdatasetID\x18\x02 \x01(\t\"x\n\x11MoveObjectRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x14\n\x0csrcBackendID\x18\x03 \x01(\t\x12\x15\n\rdestBackendID\x18\x04 \x01(\t\x12\x11\n\trecursive\x18\x05 \x01(\x08\"k\n\x12MoveObjectResponse\x12\x11\n\tobjectIDs\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"?\n\x18SetObjectReadOnlyRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"@\n\x19SetObjectReadWriteRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\">\n\x17GetMetadataByOIDRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"\xa0\x01\n\x18GetMetadataByOIDResponse\x12@\n\x06mdInfo\x18\x01 \x01(\x0b\x32\x30.dataclay.communication.grpc.common.MetaDataInfo\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"0\n\x1cGetMetadataByOIDForDSRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"\xa5\x01\n\x1dGetMetadataByOIDForDSResponse\x12@\n\x06mdInfo\x18\x01 \x01(\x0b\x32\x30.dataclay.communication.grpc.common.MetaDataInfo\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xed\x01\n\x1c\x45xecuteImplementationRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x13\n\x0boperationID\x18\x02 \x01(\t\x12\x18\n\x10implementationID\x18\x03 \x01(\t\x12\x12\n\ncontractID\x18\x04 \x01(\t\x12\x13\n\x0binterfaceID\x18\x05 \x01(\t\x12\x10\n\x08objectID\x18\x06 \x01(\t\x12P\n\x06params\x18\x07 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\"\xb2\x01\n\x1d\x45xecuteImplementationResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xd1\x01\n\x1c\x45xecuteMethodOnTargetRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12!\n\x19operationNameAndSignature\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x17\n\x0ftargetBackendID\x18\x05 \x01(\t\"\xb2\x01\n\x1d\x45xecuteMethodOnTargetResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xcd\x01\n!SynchronizeFederatedObjectRequest\x12\x15\n\rextDataClayID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x18\n\x10implementationID\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x13\n\x0b\x61llBackends\x18\x05 \x01(\x08\"\xc4\x01\n\x0fGetStubsRequest\x12\x1a\n\x12\x61pplicantAccountID\x18\x01 \x01(\t\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12;\n\x08language\x18\x03 \x01(\x0e\x32).dataclay.communication.grpc.common.Langs\x12\x13\n\x0b\x63ontractIDs\x18\x04 \x03(\t\"\xd9\x01\n\x10GetStubsResponse\x12S\n\x05stubs\x18\x01 \x03(\x0b\x32\x44.dataclay.communication.grpc.logicmodule.GetStubsResponse.StubsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a,\n\nStubsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"\x83\x01\n\x14GetBabelStubsRequest\x12\x11\n\taccountID\x18\x01 \x01(\t\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x13\n\x0b\x63ontractIDs\x18\x04 \x03(\t\"m\n\x15GetBabelStubsResponse\x12\x10\n\x08yamlStub\x18\x01 \x01(\x0c\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"+\n\x18GetClassNameForDSRequest\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\"r\n\x19GetClassNameForDSResponse\x12\x11\n\tclassName\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"7\n$GetClassNameAndNamespaceForDSRequest\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\"\x91\x01\n%GetClassNameAndNamespaceForDSResponse\x12\x11\n\tclassName\x18\x01 \x01(\t\x12\x11\n\tnamespace\x18\x02 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x82\x01\n\x12RegisterECARequest\x12\x1a\n\x12\x61pplicantAccountID\x18\x01 \x01(\t\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\x12\x0b\n\x03\x65\x63\x61\x18\x03 \x01(\t\"\'\n\x12\x41\x64viseEventRequest\x12\x11\n\teventYaml\x18\x01 \x01(\t\"\x89\x01\n&GetContractIDOfDataClayProviderRequest\x12\x1a\n\x12\x61pplicantAccountID\x18\x01 \x01(\t\x12\x43\n\x0b\x63redentials\x18\x02 \x01(\x0b\x32..dataclay.communication.grpc.common.Credential\"\x81\x01\n\'GetContractIDOfDataClayProviderResponse\x12\x12\n\ncontractID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"(\n\x16\x41\x63tivateTracingRequest\x12\x0e\n\x06taskid\x18\x01 \x01(\x05\"(\n\x13\x43loseSessionRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\"7\n\x18UnregisterObjectsRequest\x12\x1b\n\x13objectsToUnregister\x18\x01 \x03(\t\"s\n\x1cIsPrefetchingEnabledResponse\x12\x0f\n\x07\x65nabled\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"1\n\x1dObjectExistsInDataClayRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"t\n\x1eObjectExistsInDataClayResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"5\n\x1cGetClassesInNamespaceRequest\x12\x15\n\rnamespaceName\x18\x01 \x01(\t\"\x91\x01\n\x1dGetClassesInNamespaceResponse\x12\x15\n\rnamespaceYaml\x18\x01 \x01(\t\x12\x15\n\rmetaClassYaml\x18\x02 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"T\n\'ImportModelsFromExternalDataClayRequest\x12\x15\n\rnamespaceName\x18\x01 \x01(\t\x12\x12\n\ndataClayID\x18\x02 \x01(\t\"-\n\x1bGetStorageLocationIDRequest\x12\x0e\n\x06slName\x18\x01 \x01(\t\"}\n\x1cGetStorageLocationIDResponse\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"K\n)NotifyExecutionEnvironmentShutdownRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\"A\n$NotifyStorageLocationShutdownRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\"A\n$ExistsActiveEnvironmentsForSLRequest\x12\x19\n\x11storageLocationID\x18\x01 \x01(\t\"{\n%ExistsActiveEnvironmentsForSLResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x91\x01\n\x0cMetadataInfo\x12\x12\n\ndataClayID\x18\x01 \x01(\t\x12\x12\n\nisReadOnly\x18\x02 \x01(\x08\x12\x11\n\tdatasetID\x18\x03 \x01(\t\x12\x13\n\x0bmetaclassID\x18\x04 \x01(\t\x12\x11\n\tlocations\x18\x05 \x03(\t\x12\r\n\x05\x61lias\x18\x06 \x01(\t\x12\x0f\n\x07ownerID\x18\x07 \x01(\tB;\n7es.bsc.dataclay.communication.grpc.messages.logicmoduleP\x00\x62\x06proto3')
   ,
   dependencies=[dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.DESCRIPTOR,])
 
@@ -4156,6 +4156,13 @@ _GETSTORAGELOCATIONINFOREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='fromBackend', full_name='dataclay.communication.grpc.logicmodule.GetStorageLocationInfoRequest.fromBackend', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -4169,7 +4176,7 @@ _GETSTORAGELOCATIONINFOREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=12940,
-  serialized_end=12998,
+  serialized_end=13019,
 )
 
 
@@ -4206,8 +4213,8 @@ _GETSTORAGELOCATIONINFORESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13001,
-  serialized_end=13187,
+  serialized_start=13022,
+  serialized_end=13208,
 )
 
 
@@ -4225,6 +4232,13 @@ _GETEXECUTIONENVIRONMENTINFOREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='fromBackend', full_name='dataclay.communication.grpc.logicmodule.GetExecutionEnvironmentInfoRequest.fromBackend', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -4237,8 +4251,8 @@ _GETEXECUTIONENVIRONMENTINFOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13189,
-  serialized_end=13244,
+  serialized_start=13210,
+  serialized_end=13286,
 )
 
 
@@ -4275,8 +4289,8 @@ _GETEXECUTIONENVIRONMENTINFORESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13247,
-  serialized_end=13448,
+  serialized_start=13289,
+  serialized_end=13490,
 )
 
 
@@ -4313,8 +4327,8 @@ _GETDATACLAYIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13450,
-  serialized_end=13561,
+  serialized_start=13492,
+  serialized_end=13603,
 )
 
 
@@ -4351,8 +4365,8 @@ _REGISTEREXTERNALDATACLAYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13563,
-  serialized_end=13628,
+  serialized_start=13605,
+  serialized_end=13670,
 )
 
 
@@ -4410,8 +4424,8 @@ _REGISTEREXTERNALDATACLAYOVERRIDEAUTHORITYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13631,
-  serialized_end=13829,
+  serialized_start=13673,
+  serialized_end=13871,
 )
 
 
@@ -4448,8 +4462,8 @@ _REGISTEREXTERNALDATACLAYRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13831,
-  serialized_end=13956,
+  serialized_start=13873,
+  serialized_end=13998,
 )
 
 
@@ -4493,8 +4507,8 @@ _NOTIFYREGISTRATIONOFEXTERNALDATACLAYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=13958,
-  serialized_end=14058,
+  serialized_start=14000,
+  serialized_end=14100,
 )
 
 
@@ -4531,8 +4545,8 @@ _NOTIFYREGISTRATIONOFEXTERNALDATACLAYRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14061,
-  serialized_end=14198,
+  serialized_start=14103,
+  serialized_end=14240,
 )
 
 
@@ -4569,8 +4583,8 @@ _GETEXTERNALDATACLAYIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14200,
-  serialized_end=14258,
+  serialized_start=14242,
+  serialized_end=14300,
 )
 
 
@@ -4607,8 +4621,8 @@ _GETEXTERNALDATACLAYIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14260,
-  serialized_end=14382,
+  serialized_start=14302,
+  serialized_end=14424,
 )
 
 
@@ -4638,8 +4652,8 @@ _GETEXTDATACLAYINFOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14384,
-  serialized_end=14434,
+  serialized_start=14426,
+  serialized_end=14476,
 )
 
 
@@ -4676,8 +4690,8 @@ _GETEXTDATACLAYINFORESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14437,
-  serialized_end=14612,
+  serialized_start=14479,
+  serialized_end=14654,
 )
 
 
@@ -4714,8 +4728,8 @@ _REGISTEROBJECTFORGCREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14614,
-  serialized_end=14732,
+  serialized_start=14656,
+  serialized_end=14774,
 )
 
 
@@ -4759,8 +4773,8 @@ _REGISTEROBJECTSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14735,
-  serialized_end=14907,
+  serialized_start=14777,
+  serialized_end=14949,
 )
 
 
@@ -4797,8 +4811,8 @@ _REGISTEROBJECTSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=14909,
-  serialized_end=15021,
+  serialized_start=14951,
+  serialized_end=15063,
 )
 
 
@@ -4823,6 +4837,13 @@ _GETALLEXECUTIONENVIRONMENTSINFOREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='fromBackend', full_name='dataclay.communication.grpc.logicmodule.GetAllExecutionEnvironmentsInfoRequest.fromBackend', index=2,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -4835,8 +4856,8 @@ _GETALLEXECUTIONENVIRONMENTSINFOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15023,
-  serialized_end=15148,
+  serialized_start=15066,
+  serialized_end=15212,
 )
 
 
@@ -4873,8 +4894,8 @@ _GETALLEXECUTIONENVIRONMENTSINFORESPONSE_EXECENVSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15376,
-  serialized_end=15485,
+  serialized_start=15440,
+  serialized_end=15549,
 )
 
 _GETALLEXECUTIONENVIRONMENTSINFORESPONSE = _descriptor.Descriptor(
@@ -4910,8 +4931,8 @@ _GETALLEXECUTIONENVIRONMENTSINFORESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15151,
-  serialized_end=15485,
+  serialized_start=15215,
+  serialized_end=15549,
 )
 
 
@@ -4948,8 +4969,8 @@ _GETOBJECTINFOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15487,
-  serialized_end=15546,
+  serialized_start=15551,
+  serialized_end=15610,
 )
 
 
@@ -4993,8 +5014,8 @@ _GETOBJECTINFORESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15549,
-  serialized_end=15678,
+  serialized_start=15613,
+  serialized_end=15742,
 )
 
 
@@ -5031,8 +5052,8 @@ _GETOBJECTFROMALIASREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15680,
-  serialized_end=15741,
+  serialized_start=15744,
+  serialized_end=15805,
 )
 
 
@@ -5083,8 +5104,8 @@ _GETOBJECTFROMALIASRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15744,
-  serialized_end=15889,
+  serialized_start=15808,
+  serialized_end=15953,
 )
 
 
@@ -5121,8 +5142,8 @@ _ADDALIASREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15891,
-  serialized_end=15952,
+  serialized_start=15955,
+  serialized_end=16016,
 )
 
 
@@ -5159,8 +5180,8 @@ _DELETEALIASREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=15954,
-  serialized_end=16008,
+  serialized_start=16018,
+  serialized_end=16072,
 )
 
 
@@ -5197,8 +5218,8 @@ _DELETEALIASRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16010,
-  serialized_end=16117,
+  serialized_start=16074,
+  serialized_end=16181,
 )
 
 
@@ -5228,8 +5249,8 @@ _GETOBJECTSMETADATAINFOOFCLASSFORNMREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16119,
-  serialized_end=16179,
+  serialized_start=16183,
+  serialized_end=16243,
 )
 
 
@@ -5266,8 +5287,8 @@ _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE_MDATAINFOENTRY = _descriptor.Descrip
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16415,
-  serialized_end=16513,
+  serialized_start=16479,
+  serialized_end=16577,
 )
 
 _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE = _descriptor.Descriptor(
@@ -5303,8 +5324,8 @@ _GETOBJECTSMETADATAINFOOFCLASSFORNMRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16182,
-  serialized_end=16513,
+  serialized_start=16246,
+  serialized_end=16577,
 )
 
 
@@ -5348,8 +5369,8 @@ _SETDATASETIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16515,
-  serialized_end=16592,
+  serialized_start=16579,
+  serialized_end=16656,
 )
 
 
@@ -5386,8 +5407,8 @@ _SETDATASETIDFROMGARBAGECOLLECTORREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16594,
-  serialized_end=16672,
+  serialized_start=16658,
+  serialized_end=16736,
 )
 
 
@@ -5445,8 +5466,8 @@ _MOVEOBJECTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16674,
-  serialized_end=16794,
+  serialized_start=16738,
+  serialized_end=16858,
 )
 
 
@@ -5483,8 +5504,8 @@ _MOVEOBJECTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16796,
-  serialized_end=16903,
+  serialized_start=16860,
+  serialized_end=16967,
 )
 
 
@@ -5521,8 +5542,8 @@ _SETOBJECTREADONLYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16905,
-  serialized_end=16968,
+  serialized_start=16969,
+  serialized_end=17032,
 )
 
 
@@ -5559,8 +5580,8 @@ _SETOBJECTREADWRITEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16970,
-  serialized_end=17034,
+  serialized_start=17034,
+  serialized_end=17098,
 )
 
 
@@ -5597,8 +5618,8 @@ _GETMETADATABYOIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17036,
-  serialized_end=17098,
+  serialized_start=17100,
+  serialized_end=17162,
 )
 
 
@@ -5635,8 +5656,8 @@ _GETMETADATABYOIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17101,
-  serialized_end=17261,
+  serialized_start=17165,
+  serialized_end=17325,
 )
 
 
@@ -5666,8 +5687,8 @@ _GETMETADATABYOIDFORDSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17263,
-  serialized_end=17311,
+  serialized_start=17327,
+  serialized_end=17375,
 )
 
 
@@ -5704,8 +5725,8 @@ _GETMETADATABYOIDFORDSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17314,
-  serialized_end=17479,
+  serialized_start=17378,
+  serialized_end=17543,
 )
 
 
@@ -5777,8 +5798,8 @@ _EXECUTEIMPLEMENTATIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17482,
-  serialized_end=17719,
+  serialized_start=17546,
+  serialized_end=17783,
 )
 
 
@@ -5815,8 +5836,8 @@ _EXECUTEIMPLEMENTATIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17722,
-  serialized_end=17900,
+  serialized_start=17786,
+  serialized_end=17964,
 )
 
 
@@ -5874,8 +5895,8 @@ _EXECUTEMETHODONTARGETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=17903,
-  serialized_end=18112,
+  serialized_start=17967,
+  serialized_end=18176,
 )
 
 
@@ -5912,8 +5933,8 @@ _EXECUTEMETHODONTARGETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18115,
-  serialized_end=18293,
+  serialized_start=18179,
+  serialized_end=18357,
 )
 
 
@@ -5971,8 +5992,8 @@ _SYNCHRONIZEFEDERATEDOBJECTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18296,
-  serialized_end=18501,
+  serialized_start=18360,
+  serialized_end=18565,
 )
 
 
@@ -6023,8 +6044,8 @@ _GETSTUBSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18504,
-  serialized_end=18700,
+  serialized_start=18568,
+  serialized_end=18764,
 )
 
 
@@ -6061,8 +6082,8 @@ _GETSTUBSRESPONSE_STUBSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18876,
-  serialized_end=18920,
+  serialized_start=18940,
+  serialized_end=18984,
 )
 
 _GETSTUBSRESPONSE = _descriptor.Descriptor(
@@ -6098,8 +6119,8 @@ _GETSTUBSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18703,
-  serialized_end=18920,
+  serialized_start=18767,
+  serialized_end=18984,
 )
 
 
@@ -6143,8 +6164,8 @@ _GETBABELSTUBSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18923,
-  serialized_end=19054,
+  serialized_start=18987,
+  serialized_end=19118,
 )
 
 
@@ -6181,8 +6202,8 @@ _GETBABELSTUBSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19056,
-  serialized_end=19165,
+  serialized_start=19120,
+  serialized_end=19229,
 )
 
 
@@ -6212,8 +6233,8 @@ _GETCLASSNAMEFORDSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19167,
-  serialized_end=19210,
+  serialized_start=19231,
+  serialized_end=19274,
 )
 
 
@@ -6250,8 +6271,8 @@ _GETCLASSNAMEFORDSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19212,
-  serialized_end=19326,
+  serialized_start=19276,
+  serialized_end=19390,
 )
 
 
@@ -6281,8 +6302,8 @@ _GETCLASSNAMEANDNAMESPACEFORDSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19328,
-  serialized_end=19383,
+  serialized_start=19392,
+  serialized_end=19447,
 )
 
 
@@ -6326,8 +6347,8 @@ _GETCLASSNAMEANDNAMESPACEFORDSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19386,
-  serialized_end=19531,
+  serialized_start=19450,
+  serialized_end=19595,
 )
 
 
@@ -6371,8 +6392,8 @@ _REGISTERECAREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19534,
-  serialized_end=19664,
+  serialized_start=19598,
+  serialized_end=19728,
 )
 
 
@@ -6402,8 +6423,8 @@ _ADVISEEVENTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19666,
-  serialized_end=19705,
+  serialized_start=19730,
+  serialized_end=19769,
 )
 
 
@@ -6440,8 +6461,8 @@ _GETCONTRACTIDOFDATACLAYPROVIDERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19708,
-  serialized_end=19845,
+  serialized_start=19772,
+  serialized_end=19909,
 )
 
 
@@ -6478,8 +6499,8 @@ _GETCONTRACTIDOFDATACLAYPROVIDERRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19848,
-  serialized_end=19977,
+  serialized_start=19912,
+  serialized_end=20041,
 )
 
 
@@ -6509,8 +6530,8 @@ _ACTIVATETRACINGREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19979,
-  serialized_end=20019,
+  serialized_start=20043,
+  serialized_end=20083,
 )
 
 
@@ -6540,8 +6561,8 @@ _CLOSESESSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20021,
-  serialized_end=20061,
+  serialized_start=20085,
+  serialized_end=20125,
 )
 
 
@@ -6571,8 +6592,8 @@ _UNREGISTEROBJECTSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20063,
-  serialized_end=20118,
+  serialized_start=20127,
+  serialized_end=20182,
 )
 
 
@@ -6609,8 +6630,8 @@ _ISPREFETCHINGENABLEDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20120,
-  serialized_end=20235,
+  serialized_start=20184,
+  serialized_end=20299,
 )
 
 
@@ -6640,8 +6661,8 @@ _OBJECTEXISTSINDATACLAYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20237,
-  serialized_end=20286,
+  serialized_start=20301,
+  serialized_end=20350,
 )
 
 
@@ -6678,8 +6699,8 @@ _OBJECTEXISTSINDATACLAYRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20288,
-  serialized_end=20404,
+  serialized_start=20352,
+  serialized_end=20468,
 )
 
 
@@ -6709,8 +6730,8 @@ _GETCLASSESINNAMESPACEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20406,
-  serialized_end=20459,
+  serialized_start=20470,
+  serialized_end=20523,
 )
 
 
@@ -6754,8 +6775,8 @@ _GETCLASSESINNAMESPACERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20462,
-  serialized_end=20607,
+  serialized_start=20526,
+  serialized_end=20671,
 )
 
 
@@ -6792,8 +6813,8 @@ _IMPORTMODELSFROMEXTERNALDATACLAYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20609,
-  serialized_end=20693,
+  serialized_start=20673,
+  serialized_end=20757,
 )
 
 
@@ -6823,8 +6844,8 @@ _GETSTORAGELOCATIONIDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20695,
-  serialized_end=20740,
+  serialized_start=20759,
+  serialized_end=20804,
 )
 
 
@@ -6861,8 +6882,8 @@ _GETSTORAGELOCATIONIDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20742,
-  serialized_end=20867,
+  serialized_start=20806,
+  serialized_end=20931,
 )
 
 
@@ -6892,8 +6913,8 @@ _NOTIFYEXECUTIONENVIRONMENTSHUTDOWNREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20869,
-  serialized_end=20944,
+  serialized_start=20933,
+  serialized_end=21008,
 )
 
 
@@ -6923,8 +6944,8 @@ _NOTIFYSTORAGELOCATIONSHUTDOWNREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=20946,
-  serialized_end=21011,
+  serialized_start=21010,
+  serialized_end=21075,
 )
 
 
@@ -6954,8 +6975,8 @@ _EXISTSACTIVEENVIRONMENTSFORSLREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=21013,
-  serialized_end=21078,
+  serialized_start=21077,
+  serialized_end=21142,
 )
 
 
@@ -6992,8 +7013,8 @@ _EXISTSACTIVEENVIRONMENTSFORSLRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=21080,
-  serialized_end=21203,
+  serialized_start=21144,
+  serialized_end=21267,
 )
 
 
@@ -7065,8 +7086,8 @@ _METADATAINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=21206,
-  serialized_end=21351,
+  serialized_start=21270,
+  serialized_end=21415,
 )
 
 _NEWACCOUNTREQUEST.fields_by_name['admincredential'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._CREDENTIAL

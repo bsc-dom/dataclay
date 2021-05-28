@@ -1082,7 +1082,7 @@ class ExecutionEnvironment(object):
         # Now Call
         for backend_id, objects_to_update in objects_per_backend.items():
 
-            backend = getRuntime().ready_clients["@LM"].get_executionenvironment_info(backend_id)
+            backend = getRuntime().ready_clients["@LM"].get_executionenvironment_info(backend_id, from_backend=True)
 
             try:
                 client_backend = getRuntime().ready_clients[backend_id]

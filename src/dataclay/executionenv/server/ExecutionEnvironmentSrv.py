@@ -145,7 +145,7 @@ class ExecutionEnvironmentSrv(object):
         settings.environment_id = execution_environment_id
     
         # Retrieve the storage_location connection data
-        storage_location = lm_client.get_storage_location_info(storage_location_id)
+        storage_location = lm_client.get_storage_location_info(storage_location_id, from_backend=True)
     
         logger.debug("StorageLocation data: {name: '%s', hostname: '%s', port: %d}",
                      storage_location.name,

@@ -828,7 +828,7 @@ class DataClayRuntime(object):
 
     def get_all_execution_environments_info(self, force_update=False):
         if self.ee_info_map is None or self.ee_info_map is not None and force_update:
-            self.ee_info_map = self.ready_clients["@LM"].get_all_execution_environments_info(LANG_PYTHON)
+            self.ee_info_map = self.ready_clients["@LM"].get_all_execution_environments_info(LANG_PYTHON, from_backend=self.is_exec_env())
             if self.logger.isEnabledFor(TRACE):
                 n = len(self.ee_info_map)
                 self.logger.trace("Response of ExecutionEnvironmentsInfo returned #%d ExecutionEnvironmentsInfo", n)
