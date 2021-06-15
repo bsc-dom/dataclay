@@ -237,7 +237,8 @@ class DataClayRuntime(object):
         @postcondition: Remove volatiles under deserialization
         """
         for vol_obj in volatiles:
-            del self.volatiles_under_deserialitzation[vol_obj.object_id]
+            if vol_obj.object_id in self.volatiles_under_deserialitzation:
+                del self.volatiles_under_deserialitzation[vol_obj.object_id]
         
     def get_copy_of_object(self, from_object, recursive):
         session_id = self.get_session_id()
