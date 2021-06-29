@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/g2q9140ejkt92b6m/branch/develop?retina=true)](https://ci.appveyor.com/project/support-dataclay/pyclay/branch/develop)
+[![Build status](https://ci.appveyor.com/api/projects/status/g2q9140ejkt92.7m/branch/develop?retina=true)](https://ci.appveyor.com/project/support-dataclay/pyclay/branch/develop)
 [![Build status](https://ci.appveyor.com/api/projects/status/cstwh34am85hsehq/branch/main?svg=true&passingText=Passing+functional+tests&pendingText=Building+functional+tests)](https://dataclay.bsc.es/testing-report/)
 
 [![Documentation Status](https://readthedocs.org/projects/pyclay/badge/?version=latest)](https://pyclay.readthedocs.io/en/latest/?badge=latest)
@@ -9,7 +9,7 @@
 [![Pypi Downloads](https://pepy.tech/badge/dataclay)](https://pepy.tech/project/dataclay)
 <br/>
 
-[![Test Pypi](https://img.shields.io/badge/testpypi-2.6.dev-green)](https://test.pypi.org/project/dataClay/)
+[![Test Pypi](https://img.shields.io/badge/testpypi-2.7.dev-green)](https://test.pypi.org/project/dataClay/)
 
 # dataClay Python codebase
 
