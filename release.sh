@@ -37,11 +37,6 @@ done
 
 VERSION=$(cat VERSION.txt)
 printMsg "Welcome to pyClay release script"
-GIT_BRANCH=$(git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$(git rev-parse HEAD)/ {print \$2}")
-if [[ "$GIT_BRANCH" != "$BRANCH_TO_CHECK" ]]; then
-  printError "Branch is not $BRANCH_TO_CHECK. Aborting script"
-fi
-
 if [ "$PROMPT" = true ]; then
 
   read -p "Version defined is $VERSION. Is this ok? (y/n) " -n 1 -r
