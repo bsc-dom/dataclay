@@ -1,4 +1,4 @@
-version: 2.6.build{build}
+version: pyclay.deploy.build{build}
 max_jobs: 1
 image: Ubuntu1804
 environment:
