@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='dataclay.communication.grpc.dataservice',
   syntax='proto3',
   serialized_options=_b('\n7es.bsc.dataclay.communication.grpc.messages.dataserviceP\000'),
-  serialized_pb=_b('\nKdataclay/communication/grpc/messages/dataservice/dataservice_messages.proto\x12\'dataclay.communication.grpc.dataservice\x1a\x41\x64\x61taclay/communication/grpc/messages/common/common_messages.proto\")\n\x14InitBackendIDRequest\x12\x11\n\tbackendID\x18\x01 \x01(\t\"F\n$AssociateExecutionEnvironmentRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\"\xd3\x01\n\x18\x44\x65ployMetaClassesRequest\x12\x11\n\tnamespace\x18\x01 \x01(\t\x12m\n\x0e\x64\x65ploymentPack\x18\x02 \x03(\x0b\x32U.dataclay.communication.grpc.dataservice.DeployMetaClassesRequest.DeploymentPackEntry\x1a\x35\n\x13\x44\x65ploymentPackEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xf2\x04\n\x14\x44\x65ployClassesRequest\x12\x11\n\tnamespace\x18\x01 \x01(\t\x12k\n\x0f\x63lassesToDeploy\x18\x02 \x03(\x0b\x32R.dataclay.communication.grpc.dataservice.DeployClassesRequest.ClassesToDeployEntry\x12]\n\x08\x63lassIds\x18\x03 \x03(\x0b\x32K.dataclay.communication.grpc.dataservice.DeployClassesRequest.ClassIdsEntry\x12[\n\x07\x61spects\x18\x04 \x03(\x0b\x32J.dataclay.communication.grpc.dataservice.DeployClassesRequest.AspectsEntry\x12W\n\x05yamls\x18\x05 \x03(\x0b\x32H.dataclay.communication.grpc.dataservice.DeployClassesRequest.YamlsEntry\x1a\x36\n\x14\x43lassesToDeployEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a/\n\rClassIdsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a.\n\x0c\x41spectsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a,\n\nYamlsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"o\n\x12\x45nrichClassRequest\x12\x11\n\tnamespace\x18\x01 \x01(\t\x12\x11\n\tclassname\x18\x02 \x01(\t\x12\x15\n\rclassToDeploy\x18\x03 \x01(\x0c\x12\x0e\n\x06\x61spect\x18\x04 \x01(\x0c\x12\x0c\n\x04yaml\x18\x05 \x01(\x0c\"\xd2\x02\n\x1cNewPersistentInstanceRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x0f\n\x07\x63lassID\x18\x02 \x01(\t\x12\x18\n\x10implementationID\x18\x03 \x01(\t\x12m\n\x0cifaceBitMaps\x18\x04 \x03(\x0b\x32W.dataclay.communication.grpc.dataservice.NewPersistentInstanceRequest.IfaceBitMapsEntry\x12P\n\x06params\x18\x05 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x1a\x33\n\x11IfaceBitMapsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"u\n\x1dNewPersistentInstanceResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xa0\x01\n\x13StoreObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12P\n\x07objects\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\x12\x0e\n\x06moving\x18\x03 \x01(\x08\x12\x14\n\x0cidsWithAlias\x18\x04 \x03(\t\"P\n\x16GetCopyOfObjectRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x11\n\trecursive\x18\x03 \x01(\x08\"\xac\x01\n\x17GetCopyOfObjectResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x94\x01\n\x13UpdateObjectRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x14\n\x0cintoObjectID\x18\x02 \x01(\t\x12T\n\nfromObject\x18\x03 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\"\x9e\x01\n\x11GetObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x11\n\tobjectIDS\x18\x02 \x03(\t\x12\x1e\n\x16\x61lreadyObtainedObjects\x18\x03 \x03(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\x12\x15\n\rdestBackendID\x18\x05 \x01(\t\x12\x19\n\x11updateReplicaLocs\x18\x06 \x01(\x05\"\xaa\x01\n\x12GetObjectsResponse\x12P\n\x07objects\x18\x01 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"|\n\x15MakePersistentRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12P\n\x07objects\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\"q\n\x0f\x46\x65\x64\x65rateRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12&\n\x1e\x65xternalExecutionEnvironmentID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"~\n\x17NotifyFederationRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12P\n\x07objects\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\"s\n\x11UnfederateRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12&\n\x1e\x65xternalExecutionEnvironmentID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"A\n\x19NotifyUnfederationRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x11\n\tobjectIDs\x18\x02 \x03(\t\"\xaf\x01\n\x1c\x45xecuteImplementationRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x18\n\x10implementationID\x18\x02 \x01(\t\x12\x11\n\tsessionID\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\"\xb2\x01\n\x1d\x45xecuteImplementationResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"O\n\x11NewVersionRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x15\n\rdestBackendID\x18\x03 \x01(\t\"j\n\x12NewVersionResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"G\n\x19\x43onsolidateVersionRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x17\n\x0fversionObjectID\x18\x02 \x01(\t\"\x7f\n\x14UpsertObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12T\n\x0b\x62ytesUpdate\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\"b\n\x11NewReplicaRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x15\n\rdestBackendID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"s\n\x12NewReplicaResponse\x12\x19\n\x11replicatedObjects\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"_\n\x12MoveObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x11\n\tdestLocID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"o\n\x13MoveObjectsResponse\x12\x14\n\x0cmovedObjects\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"p\n\x14RemoveObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x11\n\tobjectIDs\x18\x02 \x03(\t\x12\x11\n\trecursive\x18\x03 \x01(\x08\x12\x0e\n\x06moving\x18\x04 \x01(\x08\x12\x0f\n\x07newHint\x18\x05 \x01(\t\"\xfe\x01\n\x15RemoveObjectsResponse\x12j\n\x0eremovedObjects\x18\x01 \x03(\x0b\x32R.dataclay.communication.grpc.dataservice.RemoveObjectsResponse.RemovedObjectsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x35\n\x13RemovedObjectsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xf6\x01\n\x15MigrateObjectsRequest\x12l\n\x0f\x64\x65stStorageLocs\x18\x01 \x03(\x0b\x32S.dataclay.communication.grpc.dataservice.MigrateObjectsRequest.DestStorageLocsEntry\x1ao\n\x14\x44\x65stStorageLocsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x46\n\x05value\x18\x02 \x01(\x0b\x32\x37.dataclay.communication.grpc.common.StorageLocationInfo:\x02\x38\x01\"\x1f\n\x0fMigratedObjects\x12\x0c\n\x04objs\x18\x01 \x03(\t\"\x87\x03\n\x16MigrateObjectsResponse\x12g\n\x0cmigratedObjs\x18\x01 \x03(\x0b\x32Q.dataclay.communication.grpc.dataservice.MigrateObjectsResponse.MigratedObjsEntry\x12Q\n\x0fnonMigratedObjs\x18\x02 \x01(\x0b\x32\x38.dataclay.communication.grpc.dataservice.MigratedObjects\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1am\n\x11MigratedObjsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12G\n\x05value\x18\x02 \x01(\x0b\x32\x38.dataclay.communication.grpc.dataservice.MigratedObjects:\x02\x38\x01\"(\n\x16\x41\x63tivateTracingRequest\x12\x0e\n\x06taskid\x18\x01 \x01(\x05\",\n\x17\x43loseSessionInDSRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\"\xe9\x01\n\x12\x44iskCollectRequest\x12\x13\n\x0b\x65pochNodeID\x18\x01 \x01(\t\x12\x10\n\x08ringPath\x18\x02 \x03(\t\x12\x12\n\ncandidates\x18\x03 \x03(\t\x12\x63\n\x0crefsToUpdate\x18\x04 \x03(\x0b\x32M.dataclay.communication.grpc.dataservice.DiskCollectRequest.RefsToUpdateEntry\x1a\x33\n\x11RefsToUpdateEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"7\n#GetClassIDFromObjectInMemoryRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"{\n$GetClassIDFromObjectInMemoryResponse\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"V\n\x10StoreToDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x10\n\x08objBytes\x18\x03 \x01(\x0c\"D\n\x10GetFromDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"i\n\x11GetFromDBResponse\x12\x10\n\x08objBytes\x18\x01 \x01(\x0c\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"f\n\x11UpdateToDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x10\n\x08objBytes\x18\x03 \x01(\x0c\x12\r\n\x05\x64irty\x18\x04 \x01(\x08\"E\n\x11\x44\x65leteToDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"\xac\x01\n\x11UpdateRefsRequest\x12\x62\n\x0crefsToUpdate\x18\x01 \x03(\x0b\x32L.dataclay.communication.grpc.dataservice.UpdateRefsRequest.RefsToUpdateEntry\x1a\x33\n\x11RefsToUpdateEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\x7f\n\x1dGetRetainedReferencesResponse\x12\x1a\n\x12retainedReferences\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xbf\x01\n\x12SynchronizeRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x18\n\x10implementationID\x18\x02 \x01(\t\x12\x11\n\tsessionID\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x18\n\x10\x63\x61llingBackendID\x18\x05 \x01(\t\"!\n\rExistsRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"d\n\x0e\x45xistsResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"%\n\x11\x45xistsInDBRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"h\n\x12\x45xistsInDBResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"E\n\x1e\x44\x65tachObjectFromSessionRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x11\n\tsessionID\x18\x02 \x01(\t\"9\n\x12\x44\x65leteAliasRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x11\n\tsessionID\x18\x02 \x01(\tB;\n7es.bsc.dataclay.communication.grpc.messages.dataserviceP\x00\x62\x06proto3')
+  serialized_pb=_b('\nKdataclay/communication/grpc/messages/dataservice/dataservice_messages.proto\x12\'dataclay.communication.grpc.dataservice\x1a\x41\x64\x61taclay/communication/grpc/messages/common/common_messages.proto\")\n\x14InitBackendIDRequest\x12\x11\n\tbackendID\x18\x01 \x01(\t\"F\n$AssociateExecutionEnvironmentRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\"\xd3\x01\n\x18\x44\x65ployMetaClassesRequest\x12\x11\n\tnamespace\x18\x01 \x01(\t\x12m\n\x0e\x64\x65ploymentPack\x18\x02 \x03(\x0b\x32U.dataclay.communication.grpc.dataservice.DeployMetaClassesRequest.DeploymentPackEntry\x1a\x35\n\x13\x44\x65ploymentPackEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xf2\x04\n\x14\x44\x65ployClassesRequest\x12\x11\n\tnamespace\x18\x01 \x01(\t\x12k\n\x0f\x63lassesToDeploy\x18\x02 \x03(\x0b\x32R.dataclay.communication.grpc.dataservice.DeployClassesRequest.ClassesToDeployEntry\x12]\n\x08\x63lassIds\x18\x03 \x03(\x0b\x32K.dataclay.communication.grpc.dataservice.DeployClassesRequest.ClassIdsEntry\x12[\n\x07\x61spects\x18\x04 \x03(\x0b\x32J.dataclay.communication.grpc.dataservice.DeployClassesRequest.AspectsEntry\x12W\n\x05yamls\x18\x05 \x03(\x0b\x32H.dataclay.communication.grpc.dataservice.DeployClassesRequest.YamlsEntry\x1a\x36\n\x14\x43lassesToDeployEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a/\n\rClassIdsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a.\n\x0c\x41spectsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a,\n\nYamlsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"o\n\x12\x45nrichClassRequest\x12\x11\n\tnamespace\x18\x01 \x01(\t\x12\x11\n\tclassname\x18\x02 \x01(\t\x12\x15\n\rclassToDeploy\x18\x03 \x01(\x0c\x12\x0e\n\x06\x61spect\x18\x04 \x01(\x0c\x12\x0c\n\x04yaml\x18\x05 \x01(\x0c\"\xd2\x02\n\x1cNewPersistentInstanceRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x0f\n\x07\x63lassID\x18\x02 \x01(\t\x12\x18\n\x10implementationID\x18\x03 \x01(\t\x12m\n\x0cifaceBitMaps\x18\x04 \x03(\x0b\x32W.dataclay.communication.grpc.dataservice.NewPersistentInstanceRequest.IfaceBitMapsEntry\x12P\n\x06params\x18\x05 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x1a\x33\n\x11IfaceBitMapsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"u\n\x1dNewPersistentInstanceResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xa0\x01\n\x13StoreObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12P\n\x07objects\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\x12\x0e\n\x06moving\x18\x03 \x01(\x08\x12\x14\n\x0cidsWithAlias\x18\x04 \x03(\t\"P\n\x16GetCopyOfObjectRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x11\n\trecursive\x18\x03 \x01(\x08\"\xac\x01\n\x17GetCopyOfObjectResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x94\x01\n\x13UpdateObjectRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x14\n\x0cintoObjectID\x18\x02 \x01(\t\x12T\n\nfromObject\x18\x03 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\"\x9e\x01\n\x11GetObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x11\n\tobjectIDS\x18\x02 \x03(\t\x12\x1e\n\x16\x61lreadyObtainedObjects\x18\x03 \x03(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\x12\x15\n\rdestBackendID\x18\x05 \x01(\t\x12\x19\n\x11updateReplicaLocs\x18\x06 \x01(\x05\"\xaa\x01\n\x12GetObjectsResponse\x12P\n\x07objects\x18\x01 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"|\n\x15MakePersistentRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12P\n\x07objects\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\"q\n\x0f\x46\x65\x64\x65rateRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12&\n\x1e\x65xternalExecutionEnvironmentID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"~\n\x17NotifyFederationRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12P\n\x07objects\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\"s\n\x11UnfederateRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12&\n\x1e\x65xternalExecutionEnvironmentID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"A\n\x19NotifyUnfederationRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x11\n\tobjectIDs\x18\x02 \x03(\t\"\xaf\x01\n\x1c\x45xecuteImplementationRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x18\n\x10implementationID\x18\x02 \x01(\t\x12\x11\n\tsessionID\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\"\xb2\x01\n\x1d\x45xecuteImplementationResponse\x12M\n\x03ret\x18\x01 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"O\n\x11NewVersionRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x15\n\rdestBackendID\x18\x03 \x01(\t\"j\n\x12NewVersionResponse\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"G\n\x19\x43onsolidateVersionRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x17\n\x0fversionObjectID\x18\x02 \x01(\t\"\x7f\n\x14UpsertObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12T\n\x0b\x62ytesUpdate\x18\x02 \x03(\x0b\x32?.dataclay.communication.grpc.common.ObjectWithDataParamOrReturn\"b\n\x11NewReplicaRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x15\n\rdestBackendID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"s\n\x12NewReplicaResponse\x12\x19\n\x11replicatedObjects\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"_\n\x12MoveObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x11\n\tdestLocID\x18\x03 \x01(\t\x12\x11\n\trecursive\x18\x04 \x01(\x08\"o\n\x13MoveObjectsResponse\x12\x14\n\x0cmovedObjects\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"p\n\x14RemoveObjectsRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\x12\x11\n\tobjectIDs\x18\x02 \x03(\t\x12\x11\n\trecursive\x18\x03 \x01(\x08\x12\x0e\n\x06moving\x18\x04 \x01(\x08\x12\x0f\n\x07newHint\x18\x05 \x01(\t\"\xfe\x01\n\x15RemoveObjectsResponse\x12j\n\x0eremovedObjects\x18\x01 \x03(\x0b\x32R.dataclay.communication.grpc.dataservice.RemoveObjectsResponse.RemovedObjectsEntry\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1a\x35\n\x13RemovedObjectsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xf6\x01\n\x15MigrateObjectsRequest\x12l\n\x0f\x64\x65stStorageLocs\x18\x01 \x03(\x0b\x32S.dataclay.communication.grpc.dataservice.MigrateObjectsRequest.DestStorageLocsEntry\x1ao\n\x14\x44\x65stStorageLocsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x46\n\x05value\x18\x02 \x01(\x0b\x32\x37.dataclay.communication.grpc.common.StorageLocationInfo:\x02\x38\x01\"\x1f\n\x0fMigratedObjects\x12\x0c\n\x04objs\x18\x01 \x03(\t\"\x87\x03\n\x16MigrateObjectsResponse\x12g\n\x0cmigratedObjs\x18\x01 \x03(\x0b\x32Q.dataclay.communication.grpc.dataservice.MigrateObjectsResponse.MigratedObjsEntry\x12Q\n\x0fnonMigratedObjs\x18\x02 \x01(\x0b\x32\x38.dataclay.communication.grpc.dataservice.MigratedObjects\x12\x42\n\x07\x65xcInfo\x18\x03 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\x1am\n\x11MigratedObjsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12G\n\x05value\x18\x02 \x01(\x0b\x32\x38.dataclay.communication.grpc.dataservice.MigratedObjects:\x02\x38\x01\"(\n\x16\x41\x63tivateTracingRequest\x12\x0e\n\x06taskid\x18\x01 \x01(\x05\",\n\x17\x43loseSessionInDSRequest\x12\x11\n\tsessionID\x18\x01 \x01(\t\"\xe9\x01\n\x12\x44iskCollectRequest\x12\x13\n\x0b\x65pochNodeID\x18\x01 \x01(\t\x12\x10\n\x08ringPath\x18\x02 \x03(\t\x12\x12\n\ncandidates\x18\x03 \x03(\t\x12\x63\n\x0crefsToUpdate\x18\x04 \x03(\x0b\x32M.dataclay.communication.grpc.dataservice.DiskCollectRequest.RefsToUpdateEntry\x1a\x33\n\x11RefsToUpdateEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"7\n#GetClassIDFromObjectInMemoryRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"{\n$GetClassIDFromObjectInMemoryResponse\x12\x0f\n\x07\x63lassID\x18\x01 \x01(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"V\n\x10StoreToDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x10\n\x08objBytes\x18\x03 \x01(\x0c\"D\n\x10GetFromDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"i\n\x11GetFromDBResponse\x12\x10\n\x08objBytes\x18\x01 \x01(\x0c\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"f\n\x11UpdateToDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\x12\x10\n\x08objBytes\x18\x03 \x01(\x0c\x12\r\n\x05\x64irty\x18\x04 \x01(\x08\"E\n\x11\x44\x65leteToDBRequest\x12\x1e\n\x16\x65xecutionEnvironmentID\x18\x01 \x01(\t\x12\x10\n\x08objectID\x18\x02 \x01(\t\"o\n\x16\x44\x65leteSetFromDBRequest\x12\x11\n\tobjectIDs\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xac\x01\n\x11UpdateRefsRequest\x12\x62\n\x0crefsToUpdate\x18\x01 \x03(\x0b\x32L.dataclay.communication.grpc.dataservice.UpdateRefsRequest.RefsToUpdateEntry\x1a\x33\n\x11RefsToUpdateEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\x7f\n\x1dGetRetainedReferencesResponse\x12\x1a\n\x12retainedReferences\x18\x01 \x03(\t\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"\xbf\x01\n\x12SynchronizeRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x18\n\x10implementationID\x18\x02 \x01(\t\x12\x11\n\tsessionID\x18\x03 \x01(\t\x12P\n\x06params\x18\x04 \x01(\x0b\x32@.dataclay.communication.grpc.common.SerializedParametersOrReturn\x12\x18\n\x10\x63\x61llingBackendID\x18\x05 \x01(\t\"!\n\rExistsRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"d\n\x0e\x45xistsResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"%\n\x11\x45xistsInDBRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\"h\n\x12\x45xistsInDBResponse\x12\x0e\n\x06\x65xists\x18\x01 \x01(\x08\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfo\"E\n\x1e\x44\x65tachObjectFromSessionRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x11\n\tsessionID\x18\x02 \x01(\t\"9\n\x12\x44\x65leteAliasRequest\x12\x10\n\x08objectID\x18\x01 \x01(\t\x12\x11\n\tsessionID\x18\x02 \x01(\t\"u\n\x16GetObjectGraphResponse\x12\x17\n\x0fserializedGraph\x18\x01 \x01(\x0c\x12\x42\n\x07\x65xcInfo\x18\x02 \x01(\x0b\x32\x31.dataclay.communication.grpc.common.ExceptionInfoB;\n7es.bsc.dataclay.communication.grpc.messages.dataserviceP\x00\x62\x06proto3')
   ,
   dependencies=[dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.DESCRIPTOR,])
 
@@ -2242,6 +2242,44 @@ _DELETETODBREQUEST = _descriptor.Descriptor(
 )
 
 
+_DELETESETFROMDBREQUEST = _descriptor.Descriptor(
+  name='DeleteSetFromDBRequest',
+  full_name='dataclay.communication.grpc.dataservice.DeleteSetFromDBRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='objectIDs', full_name='dataclay.communication.grpc.dataservice.DeleteSetFromDBRequest.objectIDs', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='excInfo', full_name='dataclay.communication.grpc.dataservice.DeleteSetFromDBRequest.excInfo', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=6346,
+  serialized_end=6457,
+)
+
+
 _UPDATEREFSREQUEST_REFSTOUPDATEENTRY = _descriptor.Descriptor(
   name='RefsToUpdateEntry',
   full_name='dataclay.communication.grpc.dataservice.UpdateRefsRequest.RefsToUpdateEntry',
@@ -2305,8 +2343,8 @@ _UPDATEREFSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6347,
-  serialized_end=6519,
+  serialized_start=6460,
+  serialized_end=6632,
 )
 
 
@@ -2343,8 +2381,8 @@ _GETRETAINEDREFERENCESRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6521,
-  serialized_end=6648,
+  serialized_start=6634,
+  serialized_end=6761,
 )
 
 
@@ -2402,8 +2440,8 @@ _SYNCHRONIZEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6651,
-  serialized_end=6842,
+  serialized_start=6764,
+  serialized_end=6955,
 )
 
 
@@ -2433,8 +2471,8 @@ _EXISTSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6844,
-  serialized_end=6877,
+  serialized_start=6957,
+  serialized_end=6990,
 )
 
 
@@ -2471,8 +2509,8 @@ _EXISTSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6879,
-  serialized_end=6979,
+  serialized_start=6992,
+  serialized_end=7092,
 )
 
 
@@ -2502,8 +2540,8 @@ _EXISTSINDBREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6981,
-  serialized_end=7018,
+  serialized_start=7094,
+  serialized_end=7131,
 )
 
 
@@ -2540,8 +2578,8 @@ _EXISTSINDBRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7020,
-  serialized_end=7124,
+  serialized_start=7133,
+  serialized_end=7237,
 )
 
 
@@ -2578,8 +2616,8 @@ _DETACHOBJECTFROMSESSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7126,
-  serialized_end=7195,
+  serialized_start=7239,
+  serialized_end=7308,
 )
 
 
@@ -2616,8 +2654,46 @@ _DELETEALIASREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7197,
-  serialized_end=7254,
+  serialized_start=7310,
+  serialized_end=7367,
+)
+
+
+_GETOBJECTGRAPHRESPONSE = _descriptor.Descriptor(
+  name='GetObjectGraphResponse',
+  full_name='dataclay.communication.grpc.dataservice.GetObjectGraphResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='serializedGraph', full_name='dataclay.communication.grpc.dataservice.GetObjectGraphResponse.serializedGraph', index=0,
+      number=1, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b(""),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='excInfo', full_name='dataclay.communication.grpc.dataservice.GetObjectGraphResponse.excInfo', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=7369,
+  serialized_end=7486,
 )
 
 _DEPLOYMETACLASSESREQUEST_DEPLOYMENTPACKENTRY.containing_type = _DEPLOYMETACLASSESREQUEST
@@ -2664,12 +2740,14 @@ _DISKCOLLECTREQUEST_REFSTOUPDATEENTRY.containing_type = _DISKCOLLECTREQUEST
 _DISKCOLLECTREQUEST.fields_by_name['refsToUpdate'].message_type = _DISKCOLLECTREQUEST_REFSTOUPDATEENTRY
 _GETCLASSIDFROMOBJECTINMEMORYRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _GETFROMDBRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
+_DELETESETFROMDBREQUEST.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _UPDATEREFSREQUEST_REFSTOUPDATEENTRY.containing_type = _UPDATEREFSREQUEST
 _UPDATEREFSREQUEST.fields_by_name['refsToUpdate'].message_type = _UPDATEREFSREQUEST_REFSTOUPDATEENTRY
 _GETRETAINEDREFERENCESRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _SYNCHRONIZEREQUEST.fields_by_name['params'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._SERIALIZEDPARAMETERSORRETURN
 _EXISTSRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 _EXISTSINDBRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
+_GETOBJECTGRAPHRESPONSE.fields_by_name['excInfo'].message_type = dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO
 DESCRIPTOR.message_types_by_name['InitBackendIDRequest'] = _INITBACKENDIDREQUEST
 DESCRIPTOR.message_types_by_name['AssociateExecutionEnvironmentRequest'] = _ASSOCIATEEXECUTIONENVIRONMENTREQUEST
 DESCRIPTOR.message_types_by_name['DeployMetaClassesRequest'] = _DEPLOYMETACLASSESREQUEST
@@ -2713,6 +2791,7 @@ DESCRIPTOR.message_types_by_name['GetFromDBRequest'] = _GETFROMDBREQUEST
 DESCRIPTOR.message_types_by_name['GetFromDBResponse'] = _GETFROMDBRESPONSE
 DESCRIPTOR.message_types_by_name['UpdateToDBRequest'] = _UPDATETODBREQUEST
 DESCRIPTOR.message_types_by_name['DeleteToDBRequest'] = _DELETETODBREQUEST
+DESCRIPTOR.message_types_by_name['DeleteSetFromDBRequest'] = _DELETESETFROMDBREQUEST
 DESCRIPTOR.message_types_by_name['UpdateRefsRequest'] = _UPDATEREFSREQUEST
 DESCRIPTOR.message_types_by_name['GetRetainedReferencesResponse'] = _GETRETAINEDREFERENCESRESPONSE
 DESCRIPTOR.message_types_by_name['SynchronizeRequest'] = _SYNCHRONIZEREQUEST
@@ -2722,6 +2801,7 @@ DESCRIPTOR.message_types_by_name['ExistsInDBRequest'] = _EXISTSINDBREQUEST
 DESCRIPTOR.message_types_by_name['ExistsInDBResponse'] = _EXISTSINDBRESPONSE
 DESCRIPTOR.message_types_by_name['DetachObjectFromSessionRequest'] = _DETACHOBJECTFROMSESSIONREQUEST
 DESCRIPTOR.message_types_by_name['DeleteAliasRequest'] = _DELETEALIASREQUEST
+DESCRIPTOR.message_types_by_name['GetObjectGraphResponse'] = _GETOBJECTGRAPHRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 InitBackendIDRequest = _reflection.GeneratedProtocolMessageType('InitBackendIDRequest', (_message.Message,), {
@@ -3105,6 +3185,13 @@ DeleteToDBRequest = _reflection.GeneratedProtocolMessageType('DeleteToDBRequest'
   })
 _sym_db.RegisterMessage(DeleteToDBRequest)
 
+DeleteSetFromDBRequest = _reflection.GeneratedProtocolMessageType('DeleteSetFromDBRequest', (_message.Message,), {
+  'DESCRIPTOR' : _DELETESETFROMDBREQUEST,
+  '__module__' : 'dataclay.communication.grpc.messages.dataservice.dataservice_messages_pb2'
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.dataservice.DeleteSetFromDBRequest)
+  })
+_sym_db.RegisterMessage(DeleteSetFromDBRequest)
+
 UpdateRefsRequest = _reflection.GeneratedProtocolMessageType('UpdateRefsRequest', (_message.Message,), {
 
   'RefsToUpdateEntry' : _reflection.GeneratedProtocolMessageType('RefsToUpdateEntry', (_message.Message,), {
@@ -3175,6 +3262,13 @@ DeleteAliasRequest = _reflection.GeneratedProtocolMessageType('DeleteAliasReques
   # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.dataservice.DeleteAliasRequest)
   })
 _sym_db.RegisterMessage(DeleteAliasRequest)
+
+GetObjectGraphResponse = _reflection.GeneratedProtocolMessageType('GetObjectGraphResponse', (_message.Message,), {
+  'DESCRIPTOR' : _GETOBJECTGRAPHRESPONSE,
+  '__module__' : 'dataclay.communication.grpc.messages.dataservice.dataservice_messages_pb2'
+  # @@protoc_insertion_point(class_scope:dataclay.communication.grpc.dataservice.GetObjectGraphResponse)
+  })
+_sym_db.RegisterMessage(GetObjectGraphResponse)
 
 
 DESCRIPTOR._options = None

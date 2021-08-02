@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='dataclay.communication.grpc.dataservice',
   syntax='proto3',
   serialized_options=_b('\n8es.bsc.dataclay.communication.grpc.generated.dataserviceB\026DataServiceGrpcService'),
-  serialized_pb=_b('\nCdataclay/communication/grpc/generated/dataservice/dataservice.proto\x12\'dataclay.communication.grpc.dataservice\x1aKdataclay/communication/grpc/messages/dataservice/dataservice_messages.proto\x1a\x41\x64\x61taclay/communication/grpc/messages/common/common_messages.proto2\xca\x32\n\x0b\x44\x61taService\x12\x83\x01\n\rinitBackendID\x12=.dataclay.communication.grpc.dataservice.InitBackendIDRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xa3\x01\n\x1d\x61ssociateExecutionEnvironment\x12M.dataclay.communication.grpc.dataservice.AssociateExecutionEnvironmentRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x8b\x01\n\x11\x64\x65ployMetaClasses\x12\x41.dataclay.communication.grpc.dataservice.DeployMetaClassesRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x83\x01\n\rdeployClasses\x12=.dataclay.communication.grpc.dataservice.DeployClassesRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x7f\n\x0b\x65nrichClass\x12;.dataclay.communication.grpc.dataservice.EnrichClassRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xa8\x01\n\x15newPersistentInstance\x12\x45.dataclay.communication.grpc.dataservice.NewPersistentInstanceRequest\x1a\x46.dataclay.communication.grpc.dataservice.NewPersistentInstanceResponse\"\x00\x12\x81\x01\n\x0cstoreObjects\x12<.dataclay.communication.grpc.dataservice.StoreObjectsRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x96\x01\n\x0fgetCopyOfObject\x12?.dataclay.communication.grpc.dataservice.GetCopyOfObjectRequest\x1a@.dataclay.communication.grpc.dataservice.GetCopyOfObjectResponse\"\x00\x12\x81\x01\n\x0cupdateObject\x12<.dataclay.communication.grpc.dataservice.UpdateObjectRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\ngetObjects\x12:.dataclay.communication.grpc.dataservice.GetObjectsRequest\x1a;.dataclay.communication.grpc.dataservice.GetObjectsResponse\"\x00\x12\x87\x01\n\nnewVersion\x12:.dataclay.communication.grpc.dataservice.NewVersionRequest\x1a;.dataclay.communication.grpc.dataservice.NewVersionResponse\"\x00\x12\x8d\x01\n\x12\x63onsolidateVersion\x12\x42.dataclay.communication.grpc.dataservice.ConsolidateVersionRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x83\x01\n\rupsertObjects\x12=.dataclay.communication.grpc.dataservice.UpsertObjectsRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\nnewReplica\x12:.dataclay.communication.grpc.dataservice.NewReplicaRequest\x1a;.dataclay.communication.grpc.dataservice.NewReplicaResponse\"\x00\x12\x8a\x01\n\x0bmoveObjects\x12;.dataclay.communication.grpc.dataservice.MoveObjectsRequest\x1a<.dataclay.communication.grpc.dataservice.MoveObjectsResponse\"\x00\x12\x90\x01\n\rremoveObjects\x12=.dataclay.communication.grpc.dataservice.RemoveObjectsRequest\x1a>.dataclay.communication.grpc.dataservice.RemoveObjectsResponse\"\x00\x12\x9d\x01\n\x18migrateObjectsToBackends\x12>.dataclay.communication.grpc.dataservice.MigrateObjectsRequest\x1a?.dataclay.communication.grpc.dataservice.MigrateObjectsResponse\"\x00\x12\xbd\x01\n\x1cgetClassIDFromObjectInMemory\x12L.dataclay.communication.grpc.dataservice.GetClassIDFromObjectInMemoryRequest\x1aM.dataclay.communication.grpc.dataservice.GetClassIDFromObjectInMemoryResponse\"\x00\x12\xa8\x01\n\x15\x65xecuteImplementation\x12\x45.dataclay.communication.grpc.dataservice.ExecuteImplementationRequest\x1a\x46.dataclay.communication.grpc.dataservice.ExecuteImplementationResponse\"\x00\x12\x85\x01\n\x0emakePersistent\x12>.dataclay.communication.grpc.dataservice.MakePersistentRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12y\n\x08\x66\x65\x64\x65rate\x12\x38.dataclay.communication.grpc.dataservice.FederateRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12}\n\nunfederate\x12:.dataclay.communication.grpc.dataservice.UnfederateRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x89\x01\n\x10notifyFederation\x12@.dataclay.communication.grpc.dataservice.NotifyFederationRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x8d\x01\n\x12notifyUnfederation\x12\x42.dataclay.communication.grpc.dataservice.NotifyUnfederationRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12{\n\x06\x65xists\x12\x36.dataclay.communication.grpc.dataservice.ExistsRequest\x1a\x37.dataclay.communication.grpc.dataservice.ExistsResponse\"\x00\x12\x7f\n\x0bsynchronize\x12;.dataclay.communication.grpc.dataservice.SynchronizeRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12{\n\tstoreToDB\x12\x39.dataclay.communication.grpc.dataservice.StoreToDBRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x84\x01\n\tgetFromDB\x12\x39.dataclay.communication.grpc.dataservice.GetFromDBRequest\x1a:.dataclay.communication.grpc.dataservice.GetFromDBResponse\"\x00\x12}\n\nupdateToDB\x12:.dataclay.communication.grpc.dataservice.UpdateToDBRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12}\n\ndeleteToDB\x12:.dataclay.communication.grpc.dataservice.DeleteToDBRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\nexistsInDB\x12:.dataclay.communication.grpc.dataservice.ExistsInDBRequest\x1a;.dataclay.communication.grpc.dataservice.ExistsInDBResponse\"\x00\x12\x85\x01\n\x1c\x63leanExecutionClassDirectory\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12w\n\x0e\x63loseDbHandler\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12q\n\x08shutDown\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12}\n\x14\x64isconnectFromOthers\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x7f\n\x16registerPendingObjects\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12t\n\x0b\x63leanCaches\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\x0f\x61\x63tivateTracing\x12?.dataclay.communication.grpc.dataservice.ActivateTracingRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12z\n\x11\x64\x65\x61\x63tivateTracing\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12v\n\tgetTraces\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x35.dataclay.communication.grpc.common.GetTracesResponse\"\x00\x12\x7f\n\x0b\x64\x65leteAlias\x12;.dataclay.communication.grpc.dataservice.DeleteAliasRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x97\x01\n\x17\x64\x65tachObjectFromSession\x12G.dataclay.communication.grpc.dataservice.DetachObjectFromSessionRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x89\x01\n\x10\x63loseSessionInDS\x12@.dataclay.communication.grpc.dataservice.CloseSessionInDSRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12}\n\nupdateRefs\x12:.dataclay.communication.grpc.dataservice.UpdateRefsRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x93\x01\n\x15getRetainedReferences\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x46.dataclay.communication.grpc.dataservice.GetRetainedReferencesResponse\"\x00\x12~\n\rgetNumObjects\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x39.dataclay.communication.grpc.common.GetNumObjectsResponse\"\x00\x12\x82\x01\n\x11getNumObjectsInEE\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x39.dataclay.communication.grpc.common.GetNumObjectsResponse\"\x00\x42R\n8es.bsc.dataclay.communication.grpc.generated.dataserviceB\x16\x44\x61taServiceGrpcServiceb\x06proto3')
+  serialized_pb=_b('\nCdataclay/communication/grpc/generated/dataservice/dataservice.proto\x12\'dataclay.communication.grpc.dataservice\x1aKdataclay/communication/grpc/messages/dataservice/dataservice_messages.proto\x1a\x41\x64\x61taclay/communication/grpc/messages/common/common_messages.proto2\xdd\x33\n\x0b\x44\x61taService\x12\x83\x01\n\rinitBackendID\x12=.dataclay.communication.grpc.dataservice.InitBackendIDRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xa3\x01\n\x1d\x61ssociateExecutionEnvironment\x12M.dataclay.communication.grpc.dataservice.AssociateExecutionEnvironmentRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x8b\x01\n\x11\x64\x65ployMetaClasses\x12\x41.dataclay.communication.grpc.dataservice.DeployMetaClassesRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x83\x01\n\rdeployClasses\x12=.dataclay.communication.grpc.dataservice.DeployClassesRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x7f\n\x0b\x65nrichClass\x12;.dataclay.communication.grpc.dataservice.EnrichClassRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\xa8\x01\n\x15newPersistentInstance\x12\x45.dataclay.communication.grpc.dataservice.NewPersistentInstanceRequest\x1a\x46.dataclay.communication.grpc.dataservice.NewPersistentInstanceResponse\"\x00\x12\x81\x01\n\x0cstoreObjects\x12<.dataclay.communication.grpc.dataservice.StoreObjectsRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x96\x01\n\x0fgetCopyOfObject\x12?.dataclay.communication.grpc.dataservice.GetCopyOfObjectRequest\x1a@.dataclay.communication.grpc.dataservice.GetCopyOfObjectResponse\"\x00\x12\x81\x01\n\x0cupdateObject\x12<.dataclay.communication.grpc.dataservice.UpdateObjectRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\ngetObjects\x12:.dataclay.communication.grpc.dataservice.GetObjectsRequest\x1a;.dataclay.communication.grpc.dataservice.GetObjectsResponse\"\x00\x12\x87\x01\n\nnewVersion\x12:.dataclay.communication.grpc.dataservice.NewVersionRequest\x1a;.dataclay.communication.grpc.dataservice.NewVersionResponse\"\x00\x12\x8d\x01\n\x12\x63onsolidateVersion\x12\x42.dataclay.communication.grpc.dataservice.ConsolidateVersionRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x83\x01\n\rupsertObjects\x12=.dataclay.communication.grpc.dataservice.UpsertObjectsRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\nnewReplica\x12:.dataclay.communication.grpc.dataservice.NewReplicaRequest\x1a;.dataclay.communication.grpc.dataservice.NewReplicaResponse\"\x00\x12\x8a\x01\n\x0bmoveObjects\x12;.dataclay.communication.grpc.dataservice.MoveObjectsRequest\x1a<.dataclay.communication.grpc.dataservice.MoveObjectsResponse\"\x00\x12\x90\x01\n\rremoveObjects\x12=.dataclay.communication.grpc.dataservice.RemoveObjectsRequest\x1a>.dataclay.communication.grpc.dataservice.RemoveObjectsResponse\"\x00\x12\x9d\x01\n\x18migrateObjectsToBackends\x12>.dataclay.communication.grpc.dataservice.MigrateObjectsRequest\x1a?.dataclay.communication.grpc.dataservice.MigrateObjectsResponse\"\x00\x12\xbd\x01\n\x1cgetClassIDFromObjectInMemory\x12L.dataclay.communication.grpc.dataservice.GetClassIDFromObjectInMemoryRequest\x1aM.dataclay.communication.grpc.dataservice.GetClassIDFromObjectInMemoryResponse\"\x00\x12\xa8\x01\n\x15\x65xecuteImplementation\x12\x45.dataclay.communication.grpc.dataservice.ExecuteImplementationRequest\x1a\x46.dataclay.communication.grpc.dataservice.ExecuteImplementationResponse\"\x00\x12\x85\x01\n\x0emakePersistent\x12>.dataclay.communication.grpc.dataservice.MakePersistentRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12y\n\x08\x66\x65\x64\x65rate\x12\x38.dataclay.communication.grpc.dataservice.FederateRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12}\n\nunfederate\x12:.dataclay.communication.grpc.dataservice.UnfederateRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x89\x01\n\x10notifyFederation\x12@.dataclay.communication.grpc.dataservice.NotifyFederationRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x8d\x01\n\x12notifyUnfederation\x12\x42.dataclay.communication.grpc.dataservice.NotifyUnfederationRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12{\n\x06\x65xists\x12\x36.dataclay.communication.grpc.dataservice.ExistsRequest\x1a\x37.dataclay.communication.grpc.dataservice.ExistsResponse\"\x00\x12\x7f\n\x0bsynchronize\x12;.dataclay.communication.grpc.dataservice.SynchronizeRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12{\n\tstoreToDB\x12\x39.dataclay.communication.grpc.dataservice.StoreToDBRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x84\x01\n\tgetFromDB\x12\x39.dataclay.communication.grpc.dataservice.GetFromDBRequest\x1a:.dataclay.communication.grpc.dataservice.GetFromDBResponse\"\x00\x12}\n\nupdateToDB\x12:.dataclay.communication.grpc.dataservice.UpdateToDBRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12}\n\ndeleteToDB\x12:.dataclay.communication.grpc.dataservice.DeleteToDBRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\x0f\x64\x65leteSetFromDB\x12?.dataclay.communication.grpc.dataservice.DeleteSetFromDBRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\nexistsInDB\x12:.dataclay.communication.grpc.dataservice.ExistsInDBRequest\x1a;.dataclay.communication.grpc.dataservice.ExistsInDBResponse\"\x00\x12\x85\x01\n\x1c\x63leanExecutionClassDirectory\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12w\n\x0e\x63loseDbHandler\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12q\n\x08shutDown\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12}\n\x14\x64isconnectFromOthers\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x7f\n\x16registerPendingObjects\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12t\n\x0b\x63leanCaches\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x87\x01\n\x0f\x61\x63tivateTracing\x12?.dataclay.communication.grpc.dataservice.ActivateTracingRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12z\n\x11\x64\x65\x61\x63tivateTracing\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12v\n\tgetTraces\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x35.dataclay.communication.grpc.common.GetTracesResponse\"\x00\x12\x7f\n\x0b\x64\x65leteAlias\x12;.dataclay.communication.grpc.dataservice.DeleteAliasRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x97\x01\n\x17\x64\x65tachObjectFromSession\x12G.dataclay.communication.grpc.dataservice.DetachObjectFromSessionRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x89\x01\n\x10\x63loseSessionInDS\x12@.dataclay.communication.grpc.dataservice.CloseSessionInDSRequest\x1a\x31.dataclay.communication.grpc.common.ExceptionInfo\"\x00\x12\x93\x01\n\x15getRetainedReferences\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x46.dataclay.communication.grpc.dataservice.GetRetainedReferencesResponse\"\x00\x12~\n\rgetNumObjects\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x39.dataclay.communication.grpc.common.GetNumObjectsResponse\"\x00\x12\x82\x01\n\x11getNumObjectsInEE\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a\x39.dataclay.communication.grpc.common.GetNumObjectsResponse\"\x00\x12\x85\x01\n\x0egetObjectGraph\x12\x30.dataclay.communication.grpc.common.EmptyMessage\x1a?.dataclay.communication.grpc.dataservice.GetObjectGraphResponse\"\x00\x42R\n8es.bsc.dataclay.communication.grpc.generated.dataserviceB\x16\x44\x61taServiceGrpcServiceb\x06proto3')
   ,
   dependencies=[dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2.DESCRIPTOR,dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2.DESCRIPTOR,])
 
@@ -40,7 +40,7 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=257,
-  serialized_end=6731,
+  serialized_end=6878,
   methods=[
   _descriptor.MethodDescriptor(
     name='initBackendID',
@@ -313,9 +313,18 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
     serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
+    name='deleteSetFromDB',
+    full_name='dataclay.communication.grpc.dataservice.DataService.deleteSetFromDB',
+    index=30,
+    containing_service=None,
+    input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2._DELETESETFROMDBREQUEST,
+    output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
     name='existsInDB',
     full_name='dataclay.communication.grpc.dataservice.DataService.existsInDB',
-    index=30,
+    index=31,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2._EXISTSINDBREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2._EXISTSINDBRESPONSE,
@@ -324,7 +333,7 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='cleanExecutionClassDirectory',
     full_name='dataclay.communication.grpc.dataservice.DataService.cleanExecutionClassDirectory',
-    index=31,
+    index=32,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -333,7 +342,7 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='closeDbHandler',
     full_name='dataclay.communication.grpc.dataservice.DataService.closeDbHandler',
-    index=32,
+    index=33,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -342,7 +351,7 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='shutDown',
     full_name='dataclay.communication.grpc.dataservice.DataService.shutDown',
-    index=33,
+    index=34,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -351,7 +360,7 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='disconnectFromOthers',
     full_name='dataclay.communication.grpc.dataservice.DataService.disconnectFromOthers',
-    index=34,
+    index=35,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -360,7 +369,7 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='registerPendingObjects',
     full_name='dataclay.communication.grpc.dataservice.DataService.registerPendingObjects',
-    index=35,
+    index=36,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -369,7 +378,7 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='cleanCaches',
     full_name='dataclay.communication.grpc.dataservice.DataService.cleanCaches',
-    index=36,
+    index=37,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -378,7 +387,7 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='activateTracing',
     full_name='dataclay.communication.grpc.dataservice.DataService.activateTracing',
-    index=37,
+    index=38,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2._ACTIVATETRACINGREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -387,7 +396,7 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='deactivateTracing',
     full_name='dataclay.communication.grpc.dataservice.DataService.deactivateTracing',
-    index=38,
+    index=39,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -396,7 +405,7 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getTraces',
     full_name='dataclay.communication.grpc.dataservice.DataService.getTraces',
-    index=39,
+    index=40,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._GETTRACESRESPONSE,
@@ -405,7 +414,7 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='deleteAlias',
     full_name='dataclay.communication.grpc.dataservice.DataService.deleteAlias',
-    index=40,
+    index=41,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2._DELETEALIASREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -414,7 +423,7 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='detachObjectFromSession',
     full_name='dataclay.communication.grpc.dataservice.DataService.detachObjectFromSession',
-    index=41,
+    index=42,
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2._DETACHOBJECTFROMSESSIONREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
@@ -423,18 +432,9 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='closeSessionInDS',
     full_name='dataclay.communication.grpc.dataservice.DataService.closeSessionInDS',
-    index=42,
-    containing_service=None,
-    input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2._CLOSESESSIONINDSREQUEST,
-    output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
-    serialized_options=None,
-  ),
-  _descriptor.MethodDescriptor(
-    name='updateRefs',
-    full_name='dataclay.communication.grpc.dataservice.DataService.updateRefs',
     index=43,
     containing_service=None,
-    input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2._UPDATEREFSREQUEST,
+    input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2._CLOSESESSIONINDSREQUEST,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EXCEPTIONINFO,
     serialized_options=None,
   ),
@@ -463,6 +463,15 @@ _DATASERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
     output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._GETNUMOBJECTSRESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='getObjectGraph',
+    full_name='dataclay.communication.grpc.dataservice.DataService.getObjectGraph',
+    index=47,
+    containing_service=None,
+    input_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_common_dot_common__messages__pb2._EMPTYMESSAGE,
+    output_type=dataclay_dot_communication_dot_grpc_dot_messages_dot_dataservice_dot_dataservice__messages__pb2._GETOBJECTGRAPHRESPONSE,
     serialized_options=None,
   ),
 ])

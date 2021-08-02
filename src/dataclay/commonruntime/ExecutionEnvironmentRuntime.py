@@ -402,36 +402,24 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         @summary Get retained refs by this EE
         @return Retained refs (alias, sessions, ...)
         """
-        retained_refs = list()
+        retained_refs = set()
         
         """ memory references """
-        retained_refs.extend(self.dataclay_heap_manager.get_object_ids_retained())
-        if len(retained_refs) > 0:
-            logger.debug("Obtained retained references in memory: %s " % str(len(retained_refs)))
+        for oid in self.dataclay_heap_manager.get_object_ids_retained():
+            retained_refs.add(oid)
+        logger.debug("[==GC==] Session refs: %s" % str(len(self.references_hold_by_sessions)))
+        logger.debug("References hold by sessions: %s" % str(self.references_hold_by_sessions.keys()))
 
-        """ session references """ 
+        """ session references """
         now = datetime.datetime.now()
 
         sessions_to_close = set()
         for oid in list(self.references_hold_by_sessions.keys()):  # use keys as copy to avoid concurrency problems
             sessions_of_obj = self.references_hold_by_sessions.get(oid)
-            logger.debug("[==DGC==] Object %s is retained by sessions %s" % (oid, str(sessions_of_obj)))
             """ create a copy of the list to avoid modification issues while iterating and concurrence problems """
             for cur_session in list(sessions_of_obj):
                 
                 """ check session expired """
-                """
-                ==== session counting design - Race condition ==== //
-                Race condition: object is send between two nodes and they are both notifying 0 references. This is not
-                solved using quarantine in SL since during quarantine period they could do the same and always send 0: while one is
-                notifying 0, the other keeps the object, and send to the other before notifying 0.
-                In order to avoid this, since session reference is added every time we communicate
-                (even between nodes! not only client - node)
-                we do NOT remove session reference till GGC asks TWO times
-        
-                Explicit closes of sessions set expire date to "now" but user can restart a session
-                so, even if session is in quarantine, we must check date.
-                """
                 session_expired = False
                 expired_date = self.session_expires_dates.get(cur_session)
                 if expired_date is not None and now > expired_date:
@@ -467,13 +455,12 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                     TODO: what if after if, it is added?
                     """
                     logger.debug("Session %s expired" % str(cur_session))
-                    if not self.dataclay_heap_manager.exists_in_heap(oid) and len(sessions_of_obj) == 0:
+                    if len(sessions_of_obj) == 0:
                         logger.debug("Removing session reference for oid %s" % str(oid))
-                        for oid, oid_ref in self.references_hold_by_sessions.items():
-                            oid_ref.discard(cur_session)  # do not raise key error if not found
+                        del self.references_hold_by_sessions[oid]
 
                 else:
-                    retained_refs.append(oid)
+                    retained_refs.add(oid)
         
         """ check closed sessions """ 
         """ Remove all expired sessions if, and only if, there is no object retained by it. 
@@ -535,6 +522,8 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             if cur_session in sessions_of_obj:
                 sessions_of_obj.remove(cur_session)
                 logger.debug("Session %s removed from object %s" % (str(cur_session), str(object_id)))
+                if len(sessions_of_obj) == 0:
+                    del self.references_hold_by_sessions[object_id]
 
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
         object_id = dc_obj.get_object_id()

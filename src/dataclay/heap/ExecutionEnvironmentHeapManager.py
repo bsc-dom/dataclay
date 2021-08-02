@@ -71,7 +71,9 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         """
         @postcondition: get ids of objects retained in memory
         @return ids of objects retained in memory 
-        """ 
+        """
+        self.logger.debug("[==GC==] Retained refs: %s " % str(len(self.retained_objects)))
+        self.logger.debug("[==GC==] Inmemory refs: %s " % str(len(self.inmemory_objects)))
         return self.inmemory_objects.keys()
 
     def add_to_heap(self, dc_object):
@@ -252,19 +254,11 @@ class ExecutionEnvironmentHeapManager(HeapManager):
                 self.logger.debug(f"[==GCUpdate==] Storing and registering object {object_to_update.get_object_id()}")
                 obj_bytes = SerializationLibUtilsSingleton.serialize_for_db_gc(object_to_update, False, None)
                 self.exec_env.register_and_store_pending(object_to_update, obj_bytes, True)
-            elif object_to_update.is_dirty():
+            else:
+                # TODO: use dirty flag to avoid trips to SL? how to update SL graph of references?
                 self.logger.debug("[==GCUpdate==] Updating dirty object %s ", object_to_update.get_object_id())
                 obj_bytes = SerializationLibUtilsSingleton.serialize_for_db_gc(object_to_update, False, None)
                 self.runtime.update_to_sl(object_to_update.get_object_id(), obj_bytes, True)
-            else: 
-                # TODO: how to check if GlobalGC is enabled?
-                self.logger.debug("[==GCUpdate==] Going to update dirty object in database object with ID %s ", object_to_update.get_object_id())
-                obj_bytes = SerializationLibUtilsSingleton.serialize_for_db_gc_not_dirty(object_to_update, False, None, False)
-                if obj_bytes is not None:
-                    ref_counting_bytes = DeserializationLibUtilsSingleton.extract_reference_counting(obj_bytes)
-                    self.runtime.update_to_sl(object_to_update.get_object_id(), ref_counting_bytes, False)
-                else:
-                    self.logger.debug("[==GCUpdate==] %s object is not dirty and have no references. Not going to SL", object_to_update.get_object_id())
 
         except: 
             # do nothing

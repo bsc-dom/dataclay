@@ -102,22 +102,6 @@ class SLClient(object):
     
     # STORAGE LOCATION - DBHANDLER
 
-    def update_refs(self, ref_counting):
-        
-        """ ref_counting is a dict uuid - integer """ 
-        request = dataservice_messages_pb2.UpdateRefsRequest(
-            refsToUpdate=ref_counting
-        )
-
-        try:
-            response = self.ds_stub.updateRefs(request, metadata=self.metadata_call)
-        
-        except RuntimeError as e:
-            raise e
-        
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
     def store_to_db(self, execution_environment_id, object_id, obj_bytes):
         
         request = dataservice_messages_pb2.StoreToDBRequest(
