@@ -41,9 +41,12 @@ logger = logging.getLogger(__name__)
 
 class ExecutionEnvironment(object):
 
-    def __init__(self, theee_name):
+    def __init__(self, theee_name, theee_port):
         self.runtime = ExecutionEnvironmentRuntime(self)
         self.ee_name = theee_name
+        # Note that the port is (atm) exclusively for unique identification of an EE
+        # (given that the name is shared between all EE that share a SL, which happens in HPC deployments)
+        self.ee_port = theee_port
         """ Initialize runtime """
         self.runtime.initialize_runtime()
         # TODO: de-hardcode this value
@@ -59,11 +62,18 @@ class ExecutionEnvironment(object):
         # store ee info
         self.store_ee_info()
 
+    @property
+    def info_file(self):
+        # Note that we are dynamically evaluating it just in case things happen
+        # (e.g. the Configuration changes during runtime)
+        # I may be acting overzealously
+        return f"{Configuration.STORAGE_METADATA_PATH}/python_ee_{self.ee_name}%{self.ee_port}.info"
+
     def init_ee_info(self):
         """
         Initialize EE information (ID). Try to find information in stored files first, otherwise create EE ID. 
         """
-        info_file = Configuration.STORAGE_METADATA_PATH + "/python_ee_" + self.ee_name + ".info"
+        info_file = self.info_file
         exists = os.path.isfile(info_file)
         self.logger.info("Reading EE info from %s" % str(info_file))
         if exists:
@@ -82,7 +92,7 @@ class ExecutionEnvironment(object):
         """
         Store EE information in file 
         """
-        info_file = Configuration.STORAGE_METADATA_PATH + "/python_ee_" + self.ee_name + ".info"
+        info_file = self.info_file
         self.logger.info("Storing EE info to %s" % str(info_file))
         exists = os.path.isfile(info_file)
         if not exists:

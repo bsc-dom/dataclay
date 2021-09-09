@@ -205,7 +205,7 @@ class ExecutionEnvironmentSrv(object):
                 raise
         sys.path.insert(1, settings.deploy_path_source)
         
-        self.execution_environment = ExecutionEnvironment(settings.dataservice_name)
+        self.execution_environment = ExecutionEnvironment(settings.dataservice_name, settings.server_listen_port)
 
         # 0 or undefined should become None, which becomes a default of 5x number of cores (see futures' docs)
         max_workers = Configuration.THREAD_POOL_WORKERS or None
