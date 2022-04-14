@@ -28,11 +28,11 @@ apt install openjdk-8-jdk git maven python3-pip
 
 The architecture of dataClay is composed by two main components: the *Logic Module* and the *Data Service*. The *Logic Module* is a central repository that handles object metadata and management information. The *Data Service* is a distributed object store that handles object persistence and execution requests.
 
-In order to deploy dataClay on a cluster of N nodes, one possible setup is to assign 1 node for the *Logic Module* and N-1 nodes for *Data Service* backends. You can easy extrapolete this scenario to more complex ones. For example, adding a backend to the "Logic Module" node, or sharing one node for multiple backends.
+In order to deploy dataClay on a cluster of N nodes, one possible setup is to assign 1 node for the *Logic Module* and N-1 nodes for *Data Service* backends. You can easy extrapolete this scenario to more complex ones. For example, adding a backend to the *Logic Module* node, or sharing one node for multiple backends.
 
 Considering our simple setup, the deployment would be as follows:
 
-Deploy the *Logic Module* in one node:
+Deploy the ***Logic Module*** in one node:
 
 1. Define the necessary environment variables (you may want to change the default values):
    - `export LOGICMODULE_PORT_TCP=11034`
@@ -44,7 +44,7 @@ Deploy the *Logic Module* in one node:
    <!-- - `export STORAGE_PATH=./dataclay/storage` -->
 2. Deploy the *Logic Module*: `java -cp <jar_path> es.bsc.dataclay.logic.server.LogicModuleSrv`
 
-In the rest of the nodes deploy a *Data Service* backend:
+In the rest of the nodes deploy a ***Data Service*** backend:
 
 1. Define the necessary environment variables (you may want to change the default values):
    - `export DATASERVICE_NAME=DS1`
@@ -63,13 +63,13 @@ The Python *Execution Environment* do not have to be deployed if the client is n
 
 ## Client libraries
 
-In order to connect your applications with dataClay services you need a client library for your preferred programming language. If you are developing a Java application, you can add the following dependency into your *pom* file to install the Java client library for dataClay version 2.5:
+In order to connect your applications with dataClay services you need a client library for your preferred programming language. If you are developing a Java application, you can add the following dependency into your *pom* file to install the Java client library for dataClay version 2.6:
 
 ```xml
 <dependency>
     <groupId>es.bsc.dataclay</groupId>
     <artifactId>dataclay</artifactId>
-    <version>2.5.1</version>
+    <version>2.6.1</version>
 </dependency>
 ```
 
@@ -85,7 +85,7 @@ The basic client configuration for an application is the minimum information req
 
 ### Session properties
 
-This file contains the basic info to initialize a session with dataClay. It is automatically loaded during the initialization process (*DataClay.init()* in Java or *api.init()* in Python) and its default path is *./cfgfiles/session.properties*. This path can be overridden by setting a different path through the environment variable DATACLAYSESSIONCONFIG.
+This file contains the basic info to initialize a session with dataClay. It is automatically loaded during the initialization process (*DataClay.init()* in Java or *api.init()* in Python) and its default path is ***./cfgfiles/session.properties***. This path can be overridden by setting a different path through the environment variable DATACLAYSESSIONCONFIG.
 
 Here is an example:
 
@@ -99,14 +99,14 @@ LocalBackends=DS1
 DataClayClientConfig=./cfgfiles/client.properties
 ```
 
-Account and Password properties are used to specify user’s credentials.  
-StubsClasspath defines a path where the stub classes can be located. That is, the path where the dataClay command line utility (exposed in section 6) saved our stub classes after calling GetStubs operation.  
-DataSetForStore specifies which dataset the application will use in case a makePersistent request is produced to store a new object in the system, and DataSets provide information about the datasets the application will access (normally it includes the DataSetForStore).  
-LocalBackend defines the default backend that the application will access when using either DataClay.LOCAL in Java or api.LOCAL in Python (examples of this can be found in API sections 4 and 5).
+**Account** and **Password** properties are used to specify user’s credentials.  
+**StubsClasspath** defines a path where the stub classes can be located. That is, the path where the dataClay command line utility saved our stub classes after calling GetStubs operation.  
+**DataSetForStore** specifies which dataset the application will use in case a makePersistent request is produced to store a new object in the system, and **DataSets** provide information about the datasets the application will access (normally it includes the DataSetForStore).  
+**LocalBackend** defines the default backend that the application will access when using either DataClay.LOCAL in Java or api.LOCAL in Python.
 
 ### Client properties
 
-This file contains the minimum service info to connect applications with dataClay. It is also loaded automatically during the initialization process and its default path is *./cfgfiles/client.properties*, which can be overriden by setting the environment variable DATACLAYCLIENTCONFIG.
+This file contains the minimum service info to connect applications with dataClay. It is also loaded automatically during the initialization process and its default path is ***./cfgfiles/client.properties***, which can be overriden by setting the environment variable DATACLAYCLIENTCONFIG.
 
 ```Properties
 HOST=127.0.0.1
@@ -117,7 +117,7 @@ As you can see, it only requires two properties to be defined: HOST and TCPPORT;
 
 ## Application cycle
 
-Before executing our application in Java or Python, some steps need to be done in order for the application to run using dataClay and store its data in a persistent state. For that matter, we are going to use *dataclaycmd*, the dataClay command line utility intended to be used for management operations such as accounting, class registering, or contract creation.
+Before executing our application in Java or Python, some steps need to be done in order for the application to run using dataClay and store its data in a persistent state. For that matter, we are going to use ***dataclaycmd***, the dataClay command line utility intended to be used for management operations such as accounting, class registering, or contract creation.
 
 Here is an example:
 
