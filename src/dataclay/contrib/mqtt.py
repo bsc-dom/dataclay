@@ -25,6 +25,7 @@ class MQTTMixin(object):
         else:
             mqtt_producer = mqtt.Client(mqtt_client)
             mqtt_producer.connect(mqtt_host, mqtt_port)
+            mqtt_producer.loop_start()
             MQTT_PRODUCERS[mqtt_address] = mqtt_producer
         data_str = dumps(data).encode('utf-8')
         mqtt_producer.publish(topic, data_str)
