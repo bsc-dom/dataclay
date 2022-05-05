@@ -7,3 +7,4 @@ protobuf==3.10.0
 psutil
 six
 numpy;platform.machine=="x86_64"
+etcd3
