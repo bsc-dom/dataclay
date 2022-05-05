@@ -28,7 +28,7 @@ class MQTTMixin(object):
             mqtt_producer.loop_start()
             MQTT_PRODUCERS[mqtt_address] = mqtt_producer
         data_str = dumps(data).encode('utf-8')
-        mqtt_producer.publish(topic, data_str)
+        mqtt_producer.publish(topic, data_str, qos=1)
 
     @dclayMethod()
     def send_to_mqtt(self):
