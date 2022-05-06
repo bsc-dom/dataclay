@@ -35,6 +35,7 @@ from dataclay.util.config.CfgExecEnv import set_defaults
 from dataclay.executionenv.ExecutionEnvironment import ExecutionEnvironment
 from dataclay.commonruntime.Initializer import logger
 from dataclay.util import Configuration
+from dataclay.util.ETCDClientManager import etcdClientMgr
 
 __author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
 __copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
@@ -195,6 +196,9 @@ class ExecutionEnvironmentSrv(object):
         """
         
         set_defaults()
+
+        # ETCD
+        etcdClientMgr.initialize()
 
         # Create the deployment folder and add it to the path
         try:

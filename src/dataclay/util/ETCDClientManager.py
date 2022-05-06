@@ -1,11 +1,20 @@
 import json
 import etcd3
 
-etcd = etcd3.client('localhost', 2379)
+from dataclay.commonruntime.Settings import settings
 
-def get_classname_and_namespace_for_ds(metaclass_id):
-    global etcd
-    key = f'/metaclass/{metaclass_id}'
-    value = etcd.get(key)
-    metaclass = json.loads(value[0])
-    return metaclass['name'], metaclass['namespace']
+class ETCDClientManager:
+
+    def __init__(self):
+        pass
+
+    def initialize(self):
+        self.etcd = etcd3.client(settings.logicmodule_host, 2379)
+
+    def get_classname_and_namespace_for_ds(self, metaclass_id):
+        key = f'/metaclass/{metaclass_id}'
+        value = self.etcd.get(key)
+        metaclass = json.loads(value[0])
+        return metaclass['name'], metaclass['namespace']
+
+etcdClientMgr = ETCDClientManager()

@@ -17,7 +17,7 @@ requires some specific methods from here. But this may change in the future.
 from dataclay.commonruntime.Runtime import getRuntime
 from dataclay.commonruntime.Settings import settings
 from dataclay.util.YamlParser import dataclay_yaml_load
-from dataclay.util.ETCDClientManager import get_classname_and_namespace_for_ds
+from dataclay.util.ETCDClientManager import etcdClientMgr
 from lru import LRU
 import os.path
 import six
@@ -83,6 +83,6 @@ def load_metaclass_info(metaclass_id):
     try:
         return cached_metaclass_info[metaclass_id]
     except KeyError:
-        class_name, namespace = get_classname_and_namespace_for_ds(metaclass_id)
+        class_name, namespace = etcdClientMgr.get_classname_and_namespace_for_ds(metaclass_id)
         cached_metaclass_info[metaclass_id] = (class_name, namespace)
         return class_name, namespace
