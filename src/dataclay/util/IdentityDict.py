@@ -9,7 +9,7 @@ __author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
 __copyright__ = '2016 Barcelona Supercomputing Center (BSC-CNS)'
 
 
-class IdentityDict(collections.MutableMapping):
+class IdentityDict(collections.abc.MutableMapping):
     __slots__ = ("internal_dict",)
 
     def __init__(self):
