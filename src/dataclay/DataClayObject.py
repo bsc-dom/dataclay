@@ -707,7 +707,7 @@ class DataClayObject(object):
             elif six.PY3:
                 import _pickle as pickle
             
-            state = pickle.dumps(self.__getstate__(), protocol=-1)
+            state = pickle.dumps(self.__getstate__())
 
             # Leave the previous value, probably False & True`
             dco_extradata.loaded_flag = last_loaded_flag

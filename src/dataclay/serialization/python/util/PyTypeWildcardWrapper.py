@@ -1,6 +1,7 @@
 """ Class description goes here. """
 
 import logging
+import os
 import re
 import six
 import traceback
@@ -21,6 +22,9 @@ logger = logging.getLogger(__name__)
 
 __author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
 __copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+
+# TODO: Only being able to change this with an environment variables is not good design
+PICKLE_PROTOCOL_VERSION = int(os.getenv("DATACLAY_PICKLE_PROTOCOL_VERSION", "4"))
 
 
 def safe_wait_if_compss_future(potential_future):
@@ -208,7 +212,7 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
                 # special serialization on two parts
 
                 # first the "metadata" of the array (shape and type)
-                s = pickle.dumps((value.shape, value.dtype.str), protocol=-1)
+                s = pickle.dumps((value.shape, value.dtype.str), protocol=PICKLE_PROTOCOL_VERSION)
                 IntegerWrapper(32).write(io_file, len(s))
                 io_file.write(s)
 
@@ -227,7 +231,7 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
         # anything is also a special case, also all its alias
         if self._signature == self.ANYTHING_SIGNATURE or \
                 self._signature == self.STORAGEOBJECT_SIGNATURE:
-            s = pickle.dumps(value, protocol=-1)
+            s = pickle.dumps(value, protocol=PICKLE_PROTOCOL_VERSION)
             IntegerWrapper(32).write(io_file, len(s))
             io_file.write(s)
             return
@@ -237,7 +241,7 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
             # ... except the fallbacks (mostly for subtypes like lists of persistent objects)
             # TODO: Check pickle fallback or ignore it completely
 
-            s = pickle.dumps(value, protocol=-1)
+            s = pickle.dumps(value, protocol=PICKLE_PROTOCOL_VERSION)
             IntegerWrapper(32).write(io_file, len(s))
             io_file.write(s)
             return
