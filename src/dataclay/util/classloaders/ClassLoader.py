@@ -80,9 +80,7 @@ def load_metaclass_info(metaclass_id):
     :param metaclass_id: The dataClay UUID of the MetaClass.
     :return: A tuple (class_name, namespace).
     """
-    try:
-        return cached_metaclass_info[metaclass_id]
-    except KeyError:
-        class_name, namespace = etcdClientMgr.get_classname_and_namespace_for_ds(metaclass_id)
-        cached_metaclass_info[metaclass_id] = (class_name, namespace)
-        return class_name, namespace
+
+    metaclass = etcdClientMgr.get_metaclass(metaclass_id)
+    return metaclass['name'], metaclass['namespace']
+
