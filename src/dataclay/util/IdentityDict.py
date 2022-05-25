@@ -1,15 +1,9 @@
-
-""" Class description goes here. """
-
 """Management of Persistent Objects."""
 
-import collections
-
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2016 Barcelona Supercomputing Center (BSC-CNS)'
+from collections.abc import MutableMapping
 
 
-class IdentityDict(collections.MutableMapping):
+class IdentityDict(MutableMapping):
     __slots__ = ("internal_dict",)
 
     def __init__(self):
