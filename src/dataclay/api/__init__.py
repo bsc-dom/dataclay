@@ -16,6 +16,7 @@ from dataclay.commonruntime.ClientRuntime import settings, LANG_PYTHON
 from dataclay.commonruntime.ClientRuntime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
 from dataclay.commonruntime.Initializer import initialize, _get_logging_dict_config
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
+from dataclay.communication.grpc.clients.MetadataServiceGrpcClient import MDSClient
 from dataclay.paraver import TRACE_ENABLED, extrae_tracing_is_enabled, get_task_id, \
     set_current_available_task_id
 from dataclay.util.StubUtils import track_local_available_classes
@@ -108,6 +109,10 @@ def init_connection(client_file) -> LMClient:
 
     return client
 
+
+def init_connection_mds(client_file) -> MDSClient:
+    client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
+    return client
 
 def get_backends():
     """Return all the dataClay backend present in the system."""
@@ -227,6 +232,21 @@ def pre_network_init(config_file):
     settings.load_properties(config_file)
 
 
+def mds_init():
+    logger.info("Initializing dataClay API")
+
+    client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
+
+    session_id = client.new_session(
+        settings.DC_USERNAME,
+        settings.DC_PASSWORD,
+        settings.DATASETS,
+        settings.DATASET_FOR_STORE
+    )
+
+    logger.debug(f"Started session {session_id}")
+
+
 def init(config_file=None) -> None:
     """Initialization made on the client-side, with file-based settings.
 
@@ -237,6 +257,10 @@ def init(config_file=None) -> None:
      the DATACLAYSESSIONCONFIG environment variable will be used and the fallback
      will be the `./cfgfiles/session.properties` path.
     """
+
+    # DEV: mds_init content will replace init
+    mds_init()
+
     global _initialized
 
     logger.info("Initializing dataClay API")

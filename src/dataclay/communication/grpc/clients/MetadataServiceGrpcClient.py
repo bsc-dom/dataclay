@@ -3,8 +3,8 @@ import atexit
 
 import grpc
 
-from dataclay_mds.grpc.protos.generated import metadata_service_pb2_grpc
-from dataclay_mds.grpc.protos.generated import metadata_service_pb2
+from dataclay.protos import metadata_service_pb2_grpc
+from dataclay.protos import metadata_service_pb2
 
 logger = logging.getLogger(__name__)
 
@@ -24,33 +24,18 @@ class MDSClient:
 
     # Methods for Session Manager
 
-    def new_session(self, username, credential, contracts, data_sets,
-                    data_set_for_store, new_session_lang):
+    def new_session(self, username, password, datasets,
+                    dataset_for_store):
 
-        contracts_list = []
-
-        for con_id in contracts:
-            contracts_list.append(Utils.get_msg_id(con_id))
-
-        data_set_list = []
-        for data_set in data_sets:
-            data_set_list.append(Utils.get_msg_id(data_set))
-
-        request = logicmodule_messages_pb2.NewSessionRequest(
-            accountID=Utils.get_msg_id(account_id),
-            credential=Utils.get_credential(credential),
-            contractIDs=contracts_list,
-            dataSetIDs=data_set_list,
-            storeDataSet=Utils.get_msg_id(data_set_for_store),
-            sessionLang=new_session_lang
+        request = metadata_service_pb2.NewSessionRequest(
+            username=username,
+            password=password,
+            datasets=datasets,
+            dataset_for_store=dataset_for_store
         )
-        lm_function = lambda request: self.lm_stub.newSession.future(request=request, metadata=self.metadata_call)
-        response = self._call_logicmodule(request, lm_function)
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
 
-        return dataclay_yaml_load(response.sessionInfo)
-
+        response = self.stub.NewSession(request)
+        return response
 
     def new_account(self, username, password):
         request = metadata_service_pb2.NewAccountRequest(username=username, password=password)
