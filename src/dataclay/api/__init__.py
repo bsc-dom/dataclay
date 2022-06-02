@@ -235,6 +235,8 @@ def pre_network_init(config_file):
 def mds_init():
     logger.info("Initializing dataClay API")
 
+    settings.load_session_properties()
+    
     client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
 
     session_id = client.new_session(
@@ -259,7 +261,6 @@ def init(config_file=None) -> None:
     """
 
     # DEV: mds_init content will replace init
-    mds_init()
 
     global _initialized
 
@@ -289,6 +290,9 @@ def init(config_file=None) -> None:
 
     pre_network_init(config_file)
     post_network_init()
+
+    mds_init()
+
 
 
 def post_network_init():

@@ -24,8 +24,7 @@ class MDSClient:
 
     # Methods for Session Manager
 
-    def new_session(self, username, password, datasets,
-                    dataset_for_store):
+    def new_session(self, username, password, datasets, dataset_for_store):
 
         request = metadata_service_pb2.NewSessionRequest(
             username=username,
@@ -40,7 +39,3 @@ class MDSClient:
     def new_account(self, username, password):
         request = metadata_service_pb2.NewAccountRequest(username=username, password=password)
         return self.stub.NewAccount(request)
-
-    def new_session(self, username, password):
-        request = metadata_service_pb2.NewSessionRequest(username=username, password=password)
-        return self.stub.NewSession(request)

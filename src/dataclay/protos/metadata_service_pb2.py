@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x16metadata_service.proto\x12\x10metadata_service\"7\n\x11NewAccountRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"&\n\x12NewAccountResponse\x12\x10\n\x08username\x18\x01 \x01(\t\"7\n\x11NewSessionRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\" \n\x12NewSessionResponse\x12\n\n\x02id\x18\x01 \x01(\t\"%\n\x11GetAccountRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"\x14\n\x12GetAccountResponse2\xa2\x02\n\x0fMetadataService\x12Y\n\nNewAccount\x12#.metadata_service.NewAccountRequest\x1a$.metadata_service.NewAccountResponse\"\x00\x12Y\n\nGetAccount\x12#.metadata_service.GetAccountRequest\x1a$.metadata_service.GetAccountResponse\"\x00\x12Y\n\nNewSession\x12#.metadata_service.NewSessionRequest\x1a$.metadata_service.NewSessionResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x16metadata_service.proto\x12\x10metadata_service\"7\n\x11NewAccountRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"&\n\x12NewAccountResponse\x12\x10\n\x08username\x18\x01 \x01(\t\"d\n\x11NewSessionRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x10\n\x08\x64\x61tasets\x18\x03 \x03(\t\x12\x19\n\x11\x64\x61taset_for_store\x18\x04 \x01(\t\" \n\x12NewSessionResponse\x12\n\n\x02id\x18\x01 \x01(\t\"%\n\x11GetAccountRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"\x14\n\x12GetAccountResponse2\xa2\x02\n\x0fMetadataService\x12Y\n\nNewAccount\x12#.metadata_service.NewAccountRequest\x1a$.metadata_service.NewAccountResponse\"\x00\x12Y\n\nGetAccount\x12#.metadata_service.GetAccountRequest\x1a$.metadata_service.GetAccountResponse\"\x00\x12Y\n\nNewSession\x12#.metadata_service.NewSessionRequest\x1a$.metadata_service.NewSessionResponse\"\x00\x62\x06proto3')
 
 
 
@@ -75,13 +75,13 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _NEWACCOUNTRESPONSE._serialized_start=101
   _NEWACCOUNTRESPONSE._serialized_end=139
   _NEWSESSIONREQUEST._serialized_start=141
-  _NEWSESSIONREQUEST._serialized_end=196
-  _NEWSESSIONRESPONSE._serialized_start=198
-  _NEWSESSIONRESPONSE._serialized_end=230
-  _GETACCOUNTREQUEST._serialized_start=232
-  _GETACCOUNTREQUEST._serialized_end=269
-  _GETACCOUNTRESPONSE._serialized_start=271
-  _GETACCOUNTRESPONSE._serialized_end=291
-  _METADATASERVICE._serialized_start=294
-  _METADATASERVICE._serialized_end=584
+  _NEWSESSIONREQUEST._serialized_end=241
+  _NEWSESSIONRESPONSE._serialized_start=243
+  _NEWSESSIONRESPONSE._serialized_end=275
+  _GETACCOUNTREQUEST._serialized_start=277
+  _GETACCOUNTREQUEST._serialized_end=314
+  _GETACCOUNTRESPONSE._serialized_start=316
+  _GETACCOUNTRESPONSE._serialized_end=336
+  _METADATASERVICE._serialized_start=339
+  _METADATASERVICE._serialized_end=629
 # @@protoc_insertion_point(module_scope)
