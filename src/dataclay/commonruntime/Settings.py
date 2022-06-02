@@ -60,15 +60,6 @@ class _SettingsHub(object):
     def initialize(self):
         # Ensure a instance copy of the global class-default dictionary
         self._values = {
-            'METADATA_SERVICE_HOST': os.environ["METADATA_SERVICE_HOST"],
-            'METADATA_SERVICE_PORT': int(os.getenv("METADATA_SERVICE_PORT", "16587")),
-
-            'DC_USERNAME': os.environ["DC_USERNAME"],
-            'DC_PASSWORD': os.environ["DC_PASSWORD"],
-
-            'DATASETS': os.environ["DATASETS"].split(':'),
-            'DATASET_FOR_STORE': os.environ["DATASET_FOR_STORE"],
-
             'logicmodule_host': "127.0.0.1",
             'logicmodule_port': "2127",
             'logicmodule_rmiport': "2127",
@@ -192,6 +183,19 @@ class _SettingsHub(object):
 
         # This method suffices for the load flag
         self.loaded = True
+
+    def load_session_properties(self):
+        self._values['METADATA_SERVICE_HOST'] = os.environ["METADATA_SERVICE_HOST"]
+        self._values['METADATA_SERVICE_PORT'] = int(os.getenv("METADATA_SERVICE_PORT", "16587"))
+
+        self._values['DC_USERNAME'] = os.environ["DC_USERNAME"]
+        self._values['DC_PASSWORD'] = os.environ["DC_PASSWORD"]
+
+        self._values['DATASETS'] = os.environ["DATASETS"].split(':')
+        self._values['DATASET_FOR_STORE'] =os.environ["DATASET_FOR_STORE"]
+
+        self.loaded = True
+
 
     def __getattr__(self, item):
         if not self.loaded:
