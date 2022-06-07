@@ -233,18 +233,22 @@ def pre_network_init(config_file):
 
 
 def mds_init():
+    """"Init that will replace current one for Metadata Service"""
     logger.info("Initializing dataClay API")
 
     settings.load_session_properties()
     
+    # TODO: Store client in a persistent way to reuse it
     client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
 
+    # Create a new session
     session_id = client.new_session(
         settings.DC_USERNAME,
         settings.DC_PASSWORD,
-        settings.DATASETS,
-        settings.DATASET_FOR_STORE
+        settings.DEFAULT_DATASET
     )
+
+    # TODO: Store session_id (in settings?) to reuse it
 
     logger.debug(f"Started session {session_id}")
 

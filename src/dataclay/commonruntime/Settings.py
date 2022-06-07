@@ -191,8 +191,8 @@ class _SettingsHub(object):
         self._values['DC_USERNAME'] = os.environ["DC_USERNAME"]
         self._values['DC_PASSWORD'] = os.environ["DC_PASSWORD"]
 
-        self._values['DATASETS'] = os.environ["DATASETS"].split(':')
-        self._values['DATASET_FOR_STORE'] =os.environ["DATASET_FOR_STORE"]
+        # self._values['DATASETS'] = os.environ["DATASETS"].split(':')
+        self._values['DEFAULT_DATASET'] =os.environ["DEFAULT_DATASET"]
 
         self.loaded = True
 
