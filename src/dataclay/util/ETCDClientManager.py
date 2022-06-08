@@ -11,12 +11,16 @@ class ETCDClientManager:
     def initialize(self):
         self.etcd = etcd3.client(settings.logicmodule_host, 2379)
 
-    def get_metaclass(self, metaclass_id) -> dict:
-        key = f'/metaclass/{metaclass_id}'
-        value = self.etcd.get(key)
-        return json.loads(value[0])
+    def get_metaclass(self, id):
+        key = f'/metaclass/{id}'
+        value = self.etcd.get(key)[0]
+        if value is None:
+            raise Exception(f'Metaclass {id} does not exists!')
+        # TODO: Create and return a Metaclass object
+        return json.loads(value)
 
     def put_object(self, object):
+        # TODO: Create a Object object and use self.__dict__
         key = f'/object/{object.get_object_id()}'
         value = dict()
         value['class_id'] = str(object.get_class_id())
@@ -29,12 +33,13 @@ class ETCDClientManager:
         value = json.dumps(value)
         self.etcd.put(key, value)
 
-    def get_value(self, key) -> dict:
-        value = self.etcd.get(key)
-        return json.loads(value[0])
+    def get_value(self, key):
+        value = self.etcd.get(key)[0]
+        if value is None:
+            raise Exception(f'Key {key} does not exists!')
+        return json.loads(value)
 
     def put_value(self, key, value):
-        value = json.dumps(value)
         self.etcd.put(key, value)
 
 etcdClientMgr = ETCDClientManager()
