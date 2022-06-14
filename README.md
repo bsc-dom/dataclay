@@ -27,6 +27,55 @@ This package is available from PyPI, so just `pip` it:
 
 Official documentation available at [read the docs](https://pyclay.readthedocs.io/en/latest/)
 
+## Packaging
+
+Build and push the docker images for different Python versions and architectures.
+
+``` bash
+# Python 3.10 bullseye
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.10-bullseye \
+-t bscdataclay/dspython:2.7 \
+-t bscdataclay/dspython:latest \
+--build-arg PYTHON_VERSION=3.10-bullseye --push .
+
+# Python 3.10 alpine
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.10-alpine \
+--build-arg PYTHON_VERSION=3.10-alpine --push .
+
+# Python 3.10 slim
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.10-slim \
+--build-arg PYTHON_VERSION=3.10-slim --push .
+
+# Python 3.8 bullseye
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.8-bullseye \
+--build-arg PYTHON_VERSION=3.8-bullseye --push .
+
+# Python 3.8 alpine
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.8-alpine \
+--build-arg PYTHON_VERSION=3.8-alpine --push .
+
+# Python 3.8 slim
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.8-slim \
+--build-arg PYTHON_VERSION=3.8-slim --push .
+```
+
+To generate development images use the following tag:
+**devYYYYMMDD-py{version}-(bullseye|alpine|slim)**
+
+For example:
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dev20220612-py3.10-bullseye \
+--build-arg PYTHON_VERSION=3.10-bullseye --push .
+```
+
+To use buildx for different architectures you may need to install QEMU binaries. You can install them with:
+
+```bash
+sudo apt install qemu-user-static
+```
+
+
 ## Other resources
 
 [BSC official dataClay webpage](https://www.bsc.es/dataclay)
