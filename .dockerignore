@@ -7,6 +7,8 @@
 #
 !src
 !setup.py
+!setup.cfg
+!pyproject.toml
 !README.md
 !MANIFEST.in
 !requirements.txt

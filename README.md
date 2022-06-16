@@ -1,5 +1,5 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/g2q9140ejkt92.7m/branch/develop?retina=true)](https://ci.appveyor.com/project/support-dataclay/pyclay/branch/develop)
-[![Build status](https://ci.appveyor.com/api/projects/status/cstwh34am85hsehq/branch/main?svg=true&passingText=Passing+functional+tests&pendingText=Building+functional+tests)](https://dataclay.bsc.es/testing-report/)
+[![Build status](https://ci.appveyor.com/api/projects/status/g2q9140ejkt92b6m/branch/develop?retina=true)](https://ci.appveyor.com/project/support-dataclay/pyclay/branch/develop)
+[![Build status](https://ci.appveyor.com/api/projects/status/g2q9140ejkt92b6m/branch/develop?svg=true&passingText=Passing+functional+tests&pendingText=Building+functional+tests)](https://dataclay.bsc.es/testing-report/)
 
 [![Documentation Status](https://readthedocs.org/projects/pyclay/badge/?version=latest)](https://pyclay.readthedocs.io/en/latest/?badge=latest)
 ![PyPI - Status](https://img.shields.io/pypi/status/dataclay)
@@ -26,6 +26,55 @@ This package is available from PyPI, so just `pip` it:
 ## Documentation
 
 Official documentation available at [read the docs](https://pyclay.readthedocs.io/en/latest/)
+
+## Packaging
+
+Build and push the docker images for different Python versions and architectures.
+
+``` bash
+# Python 3.10 bullseye
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.10-bullseye \
+-t bscdataclay/dspython:2.7 \
+-t bscdataclay/dspython:latest \
+--build-arg PYTHON_VERSION=3.10-bullseye --push .
+
+# Python 3.10 alpine
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.10-alpine \
+--build-arg PYTHON_VERSION=3.10-alpine --push .
+
+# Python 3.10 slim
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.10-slim \
+--build-arg PYTHON_VERSION=3.10-slim --push .
+
+# Python 3.8 bullseye
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.8-bullseye \
+--build-arg PYTHON_VERSION=3.8-bullseye --push .
+
+# Python 3.8 alpine
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.8-alpine \
+--build-arg PYTHON_VERSION=3.8-alpine --push .
+
+# Python 3.8 slim
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.8-slim \
+--build-arg PYTHON_VERSION=3.8-slim --push .
+```
+
+To generate development images use the following tag:
+**devYYYYMMDD-py{version}-(bullseye|alpine|slim)**
+
+For example:
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dev20220612-py3.10-bullseye \
+--build-arg PYTHON_VERSION=3.10-bullseye --push .
+```
+
+To use buildx for different architectures you may need to install QEMU binaries. You can install them with:
+
+```bash
+sudo apt install qemu-user-static
+```
+
 
 ## Other resources
 
