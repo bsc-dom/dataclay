@@ -33,29 +33,35 @@ Build and push the docker images for different Python versions and architectures
 
 ``` bash
 # Python 3.10 bullseye
-docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.10-bullseye \
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:2.7-py3.10-bullseye \
 -t bscdataclay/dspython:2.7 \
 -t bscdataclay/dspython:latest \
 --build-arg PYTHON_VERSION=3.10-bullseye --push .
 
 # Python 3.10 alpine
-docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.10-alpine \
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:2.7-py3.10-alpine \
 --build-arg PYTHON_VERSION=3.10-alpine --push .
 
 # Python 3.10 slim
-docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.10-slim \
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:2.7-py3.10-slim \
 --build-arg PYTHON_VERSION=3.10-slim --push .
 
 # Python 3.8 bullseye
-docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.8-bullseye \
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:2.7-py3.8-bullseye \
 --build-arg PYTHON_VERSION=3.8-bullseye --push .
 
 # Python 3.8 alpine
-docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.8-alpine \
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:2.7-py3.8-alpine \
 --build-arg PYTHON_VERSION=3.8-alpine --push .
 
 # Python 3.8 slim
-docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dspython:2.7-py3.8-slim \
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:2.7-py3.8-slim \
 --build-arg PYTHON_VERSION=3.8-slim --push .
 ```
 
