@@ -216,7 +216,7 @@ class ClientRuntime(DataClayRuntime):
 
     def close_session(self):
         self.logger.debug("** Closing session **")
-        self.ready_clients["@LM"].close_session(settings.current_session_id)
+        self.ready_clients["@MDS"].close_session(settings.current_session_id)
 
     def get_hint(self):
         return None

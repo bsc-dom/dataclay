@@ -109,11 +109,6 @@ def init_connection(client_file) -> LMClient:
 
     return client
 
-
-def init_connection_mds(client_file) -> MDSClient:
-    client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
-    return client
-
 def get_backends():
     """Return all the dataClay backend present in the system."""
     result = getRuntime().get_execution_environments_names(force_update=True)
@@ -238,19 +233,23 @@ def mds_init():
 
     settings.load_session_properties()
     
-    # TODO: Store client in a persistent way to reuse it
+    # Create MDS Client and store it in a persistent way
     client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
+    runtime = getRuntime()
+    runtime.ready_clients["@MDS"] = client
 
     # Create a new session
-    session_id = client.new_session(
+    response = client.new_session(
         settings.DC_USERNAME,
         settings.DC_PASSWORD,
         settings.DEFAULT_DATASET
     )
+    settings.current_session_id = response.id
 
-    # TODO: Store session_id (in settings?) to reuse it
+    # Ensure they are in the path (high "priority")
+    sys.path.insert(0, os.path.join(settings.stubs_folder, 'sources'))
 
-    logger.debug(f"Started session {session_id}")
+    logger.debug(f"Started session {settings.current_session_id}")
 
 
 def init(config_file=None) -> None:
@@ -308,25 +307,12 @@ def post_network_init():
     # In all cases, track (done through babelstubs YAML file)
     contracts = track_local_available_classes()
 
-    # Ensure they are in the path (high "priority")
-    sys.path.insert(0, os.path.join(settings.stubs_folder, 'sources'))
-
     if not contracts:
         logger.warning("No contracts available. Calling new_session, but no classes will be available")
 
     """ Initialize runtime """
     getRuntime().initialize_runtime()
 
-    session_info = client.new_session(
-        settings.current_id,
-        settings.current_credential,
-        contracts,
-        [client.get_dataset_id(settings.current_id, settings.current_credential, dataset) for dataset in settings.datasets],
-        client.get_dataset_id(settings.current_id, settings.current_credential, settings.dataset_for_store),
-        LANG_PYTHON
-    )
-    settings.current_session_id = session_info.sessionID
-    logger.debug(f"Started session {settings.current_session_id}")
     name = settings.local_backend_name
     if name:
         exec_envs = getRuntime().get_all_execution_environments_info()

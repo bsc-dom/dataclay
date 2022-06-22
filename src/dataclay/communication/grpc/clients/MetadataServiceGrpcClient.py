@@ -38,3 +38,7 @@ class MDSClient:
     def new_account(self, username, password):
         request = metadata_service_pb2.NewAccountRequest(username=username, password=password)
         return self.stub.NewAccount(request)
+
+    def close_session(self, id):
+        request = metadata_service_pb2.CloseSessionRequest(id=str(id))
+        return self.stub.CloseSession(request)
