@@ -18,3 +18,4 @@ tests/mock/client.properties
 /.idea/
 /venv/
 /pyclay.iml
+/.vscode
