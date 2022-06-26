@@ -324,11 +324,6 @@ def post_network_init():
         else:
             logger.warning("Backend with name '%s' not found, ignoring", name)
 
-    settings.dataset_id = client.get_dataset_id(
-        settings.current_id,
-        settings.current_credential,
-        settings.dataset_for_store)
-
     # Remember this function is called after a fork in workers also. 
     # Activate Extrae if needed.
     ### READ #### 
