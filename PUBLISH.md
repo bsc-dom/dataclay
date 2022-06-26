@@ -1,3 +1,5 @@
+# Publish
+
 ## Instructions for publishing into Pypi
 
 **Prerequisite**: Have a dataClay's pypi and testpypi account with owner access.
@@ -46,3 +48,62 @@ python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-u
 
 `--index-url` tell pip to download the package form TestPyPI instead of PyPI
 `--extra-index-url` is used to install the package dependencies from PyPI
+
+
+## Instructions for building and publishing Docker images
+
+**Release images:**
+
+``` bash
+# Python 3.10 bullseye
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:2.7-py3.10-bullseye \
+-t bscdataclay/dspython:2.7 \
+-t bscdataclay/dspython:latest \
+--build-arg PYTHON_VERSION=3.10-bullseye --push .
+
+# Python 3.8 bullseye
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:2.7-py3.8-bullseye \
+--build-arg PYTHON_VERSION=3.8-bullseye --push .
+```
+
+<!-- NOT SUPPORTED```bash
+# Python 3.10 alpine
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:2.7-py3.10-alpine \
+--build-arg PYTHON_VERSION=3.10-alpine --push .
+
+# Python 3.10 slim
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:2.7-py3.10-slim \
+--build-arg PYTHON_VERSION=3.10-slim --push .
+
+# Python 3.8 alpine
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:2.7-py3.8-alpine \
+--build-arg PYTHON_VERSION=3.8-alpine --push .
+
+# Python 3.8 slim
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:2.7-py3.8-slim \
+--build-arg PYTHON_VERSION=3.8-slim --push .
+``` -->
+
+**Development images:**
+
+To generate development images use the following tag:  
+*devYYYYMMDD-py{version}-bullseye*
+
+For example:
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dev20220612-py3.10-bullseye \
+--build-arg PYTHON_VERSION=3.10-bullseye --push .
+```
+
+To use buildx for different architectures you may need to install `QEMU` binaries. You can install them with:
+
+```bash
+sudo apt install qemu-user-static
+```
