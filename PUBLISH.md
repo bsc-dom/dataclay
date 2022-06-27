@@ -107,3 +107,26 @@ To use buildx for different architectures you may need to install `QEMU` binarie
 ```bash
 sudo apt install qemu-user-static
 ```
+
+## Pre Release
+
+Create release branch from `develop`, update versions and create a pull request to `master`.
+
+Create and publish a release tag to the new `master` commit with:
+
+```bash
+git tag -a {VERSION} -m "Release {VERSION}"
+
+git push origin {VERSION}
+```
+
+Publish new release to PyPI and Docker Hub.
+
+## Post Release
+
+Update in `develop`:
+
+- VERSION.txt
+- PUBLISH.md instructions with new version
+- README.md version
+- setup.cfg version
