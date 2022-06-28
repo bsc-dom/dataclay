@@ -16,12 +16,13 @@ from dataclay.commonruntime.ClientRuntime import settings, LANG_PYTHON
 from dataclay.commonruntime.ClientRuntime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
 from dataclay.commonruntime.Initializer import initialize, _get_logging_dict_config
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
-from dataclay.communication.grpc.clients.MetadataServiceGrpcClient import MDSClient
 from dataclay.paraver import TRACE_ENABLED, extrae_tracing_is_enabled, get_task_id, \
     set_current_available_task_id
 from dataclay.util.StubUtils import track_local_available_classes
 from dataclay.util.StubUtils import clean_babel_data
 from dataclay.commonruntime.Settings import unload_settings
+
+from dataclay_common.clients.metadata_service_client import MDSClient
 
 from time import sleep
 
