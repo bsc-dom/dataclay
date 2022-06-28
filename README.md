@@ -1,10 +1,10 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/g2q9140ejkt92b6m/branch/develop?retina=true)](https://ci.appveyor.com/project/support-dataclay/pyclay/branch/develop)
-[![Build status](https://ci.appveyor.com/api/projects/status/g2q9140ejkt92b6m/branch/develop?svg=true&passingText=Passing+functional+tests&pendingText=Building+functional+tests)](https://dataclay.bsc.es/testing-report/)
+[![Build status](https://ci.appveyor.com/api/projects/status/g2q9140ejkt92b6m/branch/main?retina=true)](https://ci.appveyor.com/project/support-dataclay/pyclay/branch/main)
+[![Build status](https://ci.appveyor.com/api/projects/status/g2q9140ejkt92b6m/branch/main?svg=true&passingText=Passing+functional+tests&pendingText=Building+functional+tests)](https://dataclay.bsc.es/testing-report/)
 
 [![Documentation Status](https://readthedocs.org/projects/pyclay/badge/?version=latest)](https://pyclay.readthedocs.io/en/latest/?badge=latest)
 ![PyPI - Status](https://img.shields.io/pypi/status/dataclay)
 ![PyPI - Format](https://img.shields.io/pypi/format/dataclay)
-[![License](https://img.shields.io/github/license/bsc-dom/pyclay)](https://github.com/bsc-dom/pyclay/blob/develop/LICENSE.txt)
+[![License](https://img.shields.io/github/license/bsc-dom/pyclay)](https://github.com/bsc-dom/pyclay/blob/main/LICENSE.txt)
 [![PyPI version](https://badge.fury.io/py/dataClay.png)](https://badge.fury.io/py/dataClay)
 [![Pypi Downloads](https://pepy.tech/badge/dataclay)](https://pepy.tech/project/dataclay)
 <br/>
