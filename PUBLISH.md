@@ -110,9 +110,9 @@ sudo apt install qemu-user-static
 
 ## Pre Release
 
-Create release branch from `develop`, update versions and create a pull request to `master`.
+Create release branch from `main`, update versions and create a pull request.
 
-Create and publish a release tag to the new `master` commit with:
+Create and publish a release tag to the new `main` commit with:
 
 ```bash
 git tag -a {VERSION} -m "Release {VERSION}"
