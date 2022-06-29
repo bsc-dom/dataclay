@@ -9,7 +9,7 @@
 [![Pypi Downloads](https://pepy.tech/badge/dataclay)](https://pepy.tech/project/dataclay)
 <br/>
 
-[![Test Pypi](https://img.shields.io/badge/testpypi-2.7.dev-green)](https://test.pypi.org/project/dataClay/)
+[![Test Pypi](https://img.shields.io/badge/testpypi-2.8.dev-green)](https://test.pypi.org/project/dataClay/)
 
 # dataClay Python codebase
 
