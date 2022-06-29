@@ -20,14 +20,20 @@ python3 -m pip install --upgrade build twine
 # Remove dist folder if exists
 rm -rf dist/
 
+# Set NUM_TAG to 0 and increment its value 
+# to publish multiple builds on the same day
+NUM_TAG=0
+
 # Build development distribution with date tag
-python3 -m build -C--global-option=egg_info -C--global-option=--tag-date -C--global-option=--tag-build=dev
+python3 -m build -C--global-option=egg_info -C--global-option=--tag-date -C--global-option=--tag-build=$NUM_TAG
 
 # Publish package to TestPyPI
 python3 -m twine upload --repository testpypi dist/*
 ```
 
 ### Build and upload a *release* distribution to PyPI
+
+Make sure to remove **dev** suffix from `setup.cfg` version.
 
 ```bash
 # Remove dist folder if exists
@@ -57,36 +63,36 @@ python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-u
 ``` bash
 # Python 3.10 bullseye
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:2.7-py3.10-bullseye \
--t bscdataclay/dspython:2.7 \
+-t bscdataclay/dspython:2.8-py3.10-bullseye \
+-t bscdataclay/dspython:2.8 \
 -t bscdataclay/dspython:latest \
 --build-arg PYTHON_VERSION=3.10-bullseye --push .
 
 # Python 3.8 bullseye
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:2.7-py3.8-bullseye \
+-t bscdataclay/dspython:2.8-py3.8-bullseye \
 --build-arg PYTHON_VERSION=3.8-bullseye --push .
 ```
 
 <!-- NOT SUPPORTED```bash
 # Python 3.10 alpine
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:2.7-py3.10-alpine \
+-t bscdataclay/dspython:2.8-py3.10-alpine \
 --build-arg PYTHON_VERSION=3.10-alpine --push .
 
 # Python 3.10 slim
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:2.7-py3.10-slim \
+-t bscdataclay/dspython:2.8-py3.10-slim \
 --build-arg PYTHON_VERSION=3.10-slim --push .
 
 # Python 3.8 alpine
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:2.7-py3.8-alpine \
+-t bscdataclay/dspython:2.8-py3.8-alpine \
 --build-arg PYTHON_VERSION=3.8-alpine --push .
 
 # Python 3.8 slim
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:2.7-py3.8-slim \
+-t bscdataclay/dspython:2.8-py3.8-slim \
 --build-arg PYTHON_VERSION=3.8-slim --push .
 ``` -->
 
@@ -110,23 +116,19 @@ sudo apt install qemu-user-static
 
 ## Pre Release
 
-Create release branch from `main`, update versions and create a pull request.
-
-Create and publish a release tag to the new `main` commit with:
-
-```bash
-git tag -a {VERSION} -m "Release {VERSION}"
-
-git push origin {VERSION}
-```
-
-Publish new release to PyPI and Docker Hub.
+- Create a new branch from `main` called **release-{release_version}**.
+- Remove **dev** from setup.cfg version.
+- Change **pyclay.deploy.build** to **{release_version}.build** from `deploy.yml` and `test.yml` version.
+- Merge branch to `main` with a pull request.
+- Create a tag to the merge commit with `git tag -a {VERSION} -m "Release {VERSION}"`
+- Publish tag with `git push origin {VERSION}`
+- Follow instructions to publish the release to PyPI and Docker Hub.
 
 ## Post Release
 
-Update in `develop`:
-
-- VERSION.txt
-- PUBLISH.md instructions with new version
-- README.md version
-- setup.cfg version
+- Create a new branch from `main` called **prepare-{new_version}-dev**
+- setup.cfg: Update version to **{new_version}-dev**
+- VERSION.txt: Set new version
+- PUBLISH.md: Update docker build instructions with the new version
+- Change version tag from `deploy.yml` and `test.yml` to **pyclay.deploy.build**.
+- Merge branch to `main` with a pull request.

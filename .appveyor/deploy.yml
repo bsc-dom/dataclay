@@ -1,4 +1,4 @@
-version: 2.7.build{build}
+version: pyclay.deploy.build{build}
 max_jobs: 1
 image: Ubuntu2004
 environment:
