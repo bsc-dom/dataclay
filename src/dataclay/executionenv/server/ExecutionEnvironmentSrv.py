@@ -37,6 +37,8 @@ from dataclay.commonruntime.Initializer import logger
 from dataclay.util import Configuration
 from dataclay.util.ETCDClientManager import etcdClientMgr
 
+from dataclay_common.clients.metadata_service_client import MDSClient
+
 __author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
 __copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
 
@@ -71,21 +73,22 @@ class ExecutionEnvironmentSrv(object):
     def preface_autoregister(self):
         """Perform a pre-initialization of stuff (prior to the autoregister call)."""
         self.execution_environment.prepareThread()
-        # logger.info("Preface Autoregister")
     
         # Check if there is an explicit IP for autoregistering
         local_ip = os.getenv("DATASERVICE_HOST", "")
         if not local_ip:
             local_ip = socket.gethostbyname(socket.gethostname())
     
+        # Starting LogicModule client and saving it to ready_clients to be gloabally available
         logger.info("Starting client to LogicModule at %s:%d",
                      settings.logicmodule_host, settings.logicmodule_port)
-    
         lm_client = LMClient(settings.logicmodule_host, settings.logicmodule_port)
-    
-        # Leave the ready client to the LogicModule globally available
         self.execution_environment.get_runtime().ready_clients["@LM"] = lm_client
     
+        # Starting MetadataService client
+        mds_client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
+        self.execution_environment.get_runtime().ready_clients["@MDS"] = mds_client
+
         # logger.info("local_ip %s returned", local_ip)
         return local_ip
     
@@ -122,6 +125,7 @@ class ExecutionEnvironmentSrv(object):
         execution_environment_id = self.execution_environment.get_execution_environment_id()
         while not success:
             try:
+                # TODO: Remove lm_client.autoregister_ee and use the mds_client
                 storage_location_id = lm_client.autoregister_ee(execution_environment_id,
                     settings.dataservice_name,
                     local_ip,
@@ -183,6 +187,15 @@ class ExecutionEnvironmentSrv(object):
 
         self.execution_environment.get_runtime().ready_clients[settings.logicmodule_dc_instance_id] = self.execution_environment.get_runtime().ready_clients["@LM"]
 
+        # Autoregister execution environment to Metadata Service
+        mds_client = self.execution_environment.get_runtime().ready_clients["@MDS"]
+        mds_client.autoregister_ee(
+            str(execution_environment_id),
+            settings.dataservice_name,
+            local_ip,
+            settings.dataservice_port,
+            LANG_PYTHON)
+
     def start(self):
         """Start the dataClay server (Execution Environment).
     
@@ -195,6 +208,7 @@ class ExecutionEnvironmentSrv(object):
         a greenlet or a subprocess (typical in testing)
         """
         
+        # TODO: Restructure settings
         set_defaults()
 
         # ETCD

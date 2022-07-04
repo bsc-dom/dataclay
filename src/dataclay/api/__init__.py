@@ -69,7 +69,7 @@ def reinitialize_clients() -> None:
         "@LM": LMClient(settings.logicmodule_host, settings.logicmodule_port),
     }
 
-
+# TODO: Remove this function
 def init_connection(client_file) -> LMClient:
     """Initialize the connection client ==> LogicModule.
 
@@ -98,15 +98,17 @@ def init_connection(client_file) -> LMClient:
     
     _connection_initialized = True
 
-    settings.logicmodule_dc_instance_id = client.get_dataclay_id()
+    # TODO: Remove this setting, and use metadata service id
+    # settings.logicmodule_dc_instance_id = client.get_dataclay_id()
 
     logger.debug("DataclayInstanceID is %s, storing client in cache", settings.logicmodule_dc_instance_id)
     runtime.ready_clients[settings.logicmodule_dc_instance_id] = runtime.ready_clients["@LM"]
 
+    # TODO: Remove this call to LM
     # wait for 1 python backend 
-    while len(get_backends_info()) < 1:
-        logger.info("Waiting for any python backend to be ready ...")
-        sleep(2)
+    # while len(get_backends_info()) < 1:
+    #     logger.info("Waiting for any python backend to be ready ...")
+    #     sleep(2)
 
     return client
 
@@ -223,6 +225,7 @@ def get_num_objects():
     """
     return getRuntime().get_num_objects()
 
+# TODO: Remove this function
 def pre_network_init(config_file):
     """Perform a partial initialization, with no network."""
     settings.load_properties(config_file)
@@ -239,18 +242,30 @@ def mds_init():
     runtime = getRuntime()
     runtime.ready_clients["@MDS"] = client
 
+    # Get dataclay id and map it to Metadata Service client
+    # TODO: Rename setting to a more meaningfull name
+    #       like metadata_id, dataclay_id, etc.
+    settings.logicmodule_dc_instance_id = client.get_dataclay_id()
+    runtime.ready_clients[settings.logicmodule_dc_instance_id] = client
+
+    # wait for 1 python backend 
+    # TODO: implement get_backends_info in MDS
+    # while len(get_backends_info()) < 1:
+    #     logger.info("Waiting for any python backend to be ready ...")
+    #     sleep(2)
+
     # Create a new session
-    response = client.new_session(
+    session_id = client.new_session(
         settings.DC_USERNAME,
         settings.DC_PASSWORD,
         settings.DEFAULT_DATASET
     )
-    settings.current_session_id = response.id
+    settings.current_session_id = session_id
 
     # Ensure they are in the path (high "priority")
     sys.path.insert(0, os.path.join(settings.stubs_folder, 'sources'))
 
-    logger.debug(f"Started session {settings.current_session_id}")
+    logger.debug(f"Started session {session_id}")
 
 
 def init(config_file=None) -> None:
@@ -264,7 +279,7 @@ def init(config_file=None) -> None:
      will be the `./cfgfiles/session.properties` path.
     """
 
-    # DEV: mds_init content will replace init
+    # TODO: Use replace init(..) to mds_init(..)
 
     global _initialized
 
@@ -299,6 +314,7 @@ def init(config_file=None) -> None:
 
 
 
+# TODO: Remove this function
 def post_network_init():
     global _initialized
 

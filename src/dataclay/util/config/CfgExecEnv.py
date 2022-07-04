@@ -55,5 +55,10 @@ def set_defaults():
     settings.logicmodule_rmiport = int(os.getenv("LOGICMODULE_PORT_RMI", "1024"))
     settings.logicmodule_port = int(os.getenv("LOGICMODULE_PORT_TCP", "1034"))
 
+    ###########################################################################
+
+    settings.METADATA_SERVICE_HOST = os.environ["METADATA_SERVICE_HOST"]
+    settings.METADATA_SERVICE_PORT = int(os.getenv("METADATA_SERVICE_PORT", "16587"))
+
     # Setting defaults is considered loading settings
     settings.loaded = True
