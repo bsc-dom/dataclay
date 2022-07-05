@@ -1,5 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/g2q9140ejkt92b6m/branch/main?retina=true)](https://ci.appveyor.com/project/support-dataclay/pyclay/branch/main)
-[![Build status](https://ci.appveyor.com/api/projects/status/g2q9140ejkt92b6m/branch/main?svg=true&passingText=Passing+functional+tests&pendingText=Building+functional+tests)](https://dataclay.bsc.es/testing-report/)
+[![Tests](https://github.com/bsc-dom/pyclay/actions/workflows/tests.yml/badge.svg)](https://github.com/bsc-dom/pyclay/actions/workflows/tests.yml)
 
 [![Documentation Status](https://readthedocs.org/projects/pyclay/badge/?version=latest)](https://pyclay.readthedocs.io/en/latest/?badge=latest)
 ![PyPI - Status](https://img.shields.io/pypi/status/dataclay)
