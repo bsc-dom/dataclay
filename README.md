@@ -1,5 +1,4 @@
 [![Tests](https://github.com/bsc-dom/pyclay/actions/workflows/tests.yml/badge.svg)](https://github.com/bsc-dom/pyclay/actions/workflows/tests.yml)
-
 [![Documentation Status](https://readthedocs.org/projects/pyclay/badge/?version=latest)](https://pyclay.readthedocs.io/en/latest/?badge=latest)
 ![PyPI - Status](https://img.shields.io/pypi/status/dataclay)
 ![PyPI - Format](https://img.shields.io/pypi/format/dataclay)
