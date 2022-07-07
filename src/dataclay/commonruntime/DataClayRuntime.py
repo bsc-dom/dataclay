@@ -732,7 +732,7 @@ class DataClayRuntime(object):
         :rtype: UUID
         """
         if self.dataclay_id is None:
-            self.dataclay_id = self.ready_clients["@LM"].get_dataclay_id()
+            self.dataclay_id = self.ready_clients["@MDS"].get_dataclay_id()
         return self.dataclay_id
 
     def get_external_dataclay_id(self, exthostname, extport):
@@ -829,7 +829,7 @@ class DataClayRuntime(object):
 
     def get_all_execution_environments_info(self, force_update=False):
         if self.ee_info_map is None or self.ee_info_map is not None and force_update:
-            self.ee_info_map = self.ready_clients["@LM"].get_all_execution_environments_info(LANG_PYTHON, from_backend=self.is_exec_env())
+            self.ee_info_map = self.ready_clients["@MDS"].get_all_execution_environments(LANG_PYTHON, from_backend=self.is_exec_env())
             if self.logger.isEnabledFor(TRACE):
                 n = len(self.ee_info_map)
                 self.logger.trace("Response of ExecutionEnvironmentsInfo returned #%d ExecutionEnvironmentsInfo", n)
@@ -841,11 +841,12 @@ class DataClayRuntime(object):
 
     def get_execution_environment_info(self, backend_id):
         exec_envs = self.get_all_execution_environments_info(force_update=False)
+        # TODO: backend_id should be string, not UUID
         if backend_id in exec_envs:
-            return exec_envs[backend_id]
+            return exec_envs[str(backend_id)]
         else:
             exec_envs = self.get_all_execution_environments_info(force_update=True)
-            return exec_envs[backend_id]
+            return exec_envs[str(backend_id)]
 
 
     def get_all_execution_environments_at_host(self, hostname):
@@ -867,13 +868,13 @@ class DataClayRuntime(object):
             exec_envs = self.get_all_execution_environments_info(force_update=False)
             for exec_env_id, exec_env in exec_envs.items():
                 self.logger.debug(f"Checking if {exec_env} belongs to dataclay with id {dataclay_instance_id}")
-                if exec_env.dataclay_instance_id == dataclay_instance_id:
+                if exec_env.dataclay_id == dataclay_instance_id:
                     exec_envs_at_dataclay_instance_id[exec_env_id] = exec_env
         if not bool(exec_envs_at_dataclay_instance_id):
             exec_envs = self.get_all_execution_environments_info(force_update=True)
             for exec_env_id, exec_env in exec_envs.items():
                 self.logger.debug(f"Checking if {exec_env} belongs to dataclay with id {dataclay_instance_id}")
-                if exec_env.dataclay_instance_id == dataclay_instance_id:
+                if exec_env.dataclay_id == dataclay_instance_id:
                     exec_envs_at_dataclay_instance_id[exec_env_id] = exec_env
         return exec_envs_at_dataclay_instance_id
 
@@ -882,12 +883,12 @@ class DataClayRuntime(object):
         exec_envs_with_name = dict()
         exec_envs = self.get_all_execution_environments_info(force_update=False)
         for exec_env_id, exec_env in exec_envs.items():
-            if exec_env.name == dsname and exec_env.dataclay_instance_id == self.get_dataclay_id():
+            if exec_env.name == dsname and exec_env.dataclay_id == self.get_dataclay_id():
                 exec_envs_with_name[exec_env_id] = exec_env
         if not bool(exec_envs_with_name):
             exec_envs = self.get_all_execution_environments_info(force_update=True)
             for exec_env_id, exec_env in exec_envs.items():
-                if exec_env.name == dsname and exec_env.dataclay_instance_id == self.get_dataclay_id():
+                if exec_env.name == dsname and exec_env.dataclay_id == self.get_dataclay_id():
                     exec_envs_with_name[exec_env_id] = exec_env
         return exec_envs_with_name
 
@@ -895,7 +896,7 @@ class DataClayRuntime(object):
         exec_envs_names = list()
         exec_envs = self.get_all_execution_environments_info(force_update=force_update)
         for exec_env_id, exec_env in exec_envs.items():
-            if exec_env.dataclay_instance_id == self.get_dataclay_id():
+            if exec_env.dataclay_id == self.get_dataclay_id():
                 exec_envs_names.append(exec_env.name)
         if self.logger.isEnabledFor(TRACE):
             n = len(exec_envs_names)

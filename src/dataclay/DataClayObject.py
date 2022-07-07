@@ -337,9 +337,10 @@ class DataClayObject(object):
 
     def set_master_location(self, eeid):
         """Set the master location of this object."""
-        if not isinstance(eeid, UUID):
-            raise AttributeError("The master location should be the ExecutionEnvironmentID, "
-                                 "instead we received: %s" % eeid)
+        # Commented since now we are using string to represent uuid
+        # if not isinstance(eeid, UUID):
+        #     raise AttributeError("The master location should be the ExecutionEnvironmentID, "
+        #                          "instead we received: %s" % eeid)
         self.__dclay_instance_extradata.master_location = eeid
         
     def get_all_locations(self):

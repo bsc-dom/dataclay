@@ -597,7 +597,7 @@ class ExecutionEnvironment(object):
         :param dest_backend_id: ID of destination backend
         :return: API to connect to destination Execution environment with id provided
         """
-        backend = getRuntime().get_all_execution_environments_info()[dest_backend_id]
+        backend = getRuntime().get_execution_environment_info(dest_backend_id)
         try:
             client_backend = getRuntime().ready_clients[dest_backend_id]
         except KeyError:
