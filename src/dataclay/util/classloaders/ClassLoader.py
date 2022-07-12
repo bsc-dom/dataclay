@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 """Management of dataClay MetaClass containers.
@@ -22,14 +21,14 @@ from lru import LRU
 import os.path
 import six
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 # TODO: un-hardcode this
 cached_metaclasses = LRU(200)
 cached_metaclass_info = LRU(200)
 
-        
+
 def deploy_metaclass_grpc(namespace, class_name, metaclass_yaml_str, metaclass):
     """Deploy binary data into the internal structure (currently, a file)
     :param namespace: The name of the namespace for the class.
@@ -45,15 +44,14 @@ def deploy_metaclass_grpc(namespace, class_name, metaclass_yaml_str, metaclass):
         # Assume that it is not created yet
         os.makedirs(namespace_path)
         if not os.access(namespace_path, os.X_OK | os.W_OK):
-            raise OSError("Could not create/have write access to folder {}".
-                          format(namespace_path))
+            raise OSError("Could not create/have write access to folder {}".format(namespace_path))
 
     # Store in a file
-    with open(os.path.join(namespace_path, class_name + ".mcs"), 'wb') as f:
+    with open(os.path.join(namespace_path, class_name + ".mcs"), "wb") as f:
         if six.PY2:
             f.write(bytes(metaclass_yaml_str))
-        elif six.PY3:    
-            f.write(bytes(metaclass_yaml_str, 'utf-8'))
+        elif six.PY3:
+            f.write(bytes(metaclass_yaml_str, "utf-8"))
 
     if settings.cache_on_deploy:
         cached_metaclasses[class_name] = metaclass
@@ -69,7 +67,7 @@ def load_metaclass(namespace, class_name):
         return cached_metaclasses[class_name]
     except KeyError:
         namespace_path = os.path.join(settings.deploy_path, namespace)
-        with open(os.path.join(namespace_path, class_name + ".mcs"), 'rb') as f:
+        with open(os.path.join(namespace_path, class_name + ".mcs"), "rb") as f:
             mc = dataclay_yaml_load(f.read())
         cached_metaclasses[class_name] = mc
         return mc
@@ -82,5 +80,4 @@ def load_metaclass_info(metaclass_id):
     """
 
     metaclass = etcdClientMgr.get_metaclass(metaclass_id)
-    return metaclass['name'], metaclass['namespace']
-
+    return metaclass["name"], metaclass["namespace"]

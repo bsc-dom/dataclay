@@ -5,11 +5,12 @@ import os
 import re
 import six
 import traceback
+
 if six.PY2:
     import cPickle as pickle
 elif six.PY3:
     import _pickle as pickle
-    
+
 from dataclay.commonruntime.Initializer import size_tracking
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
@@ -20,8 +21,8 @@ import six
 
 logger = logging.getLogger(__name__)
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 # TODO: Only being able to change this with an environment variables is not good design
 PICKLE_PROTOCOL_VERSION = int(os.getenv("DATACLAY_PICKLE_PROTOCOL_VERSION", "4"))
@@ -39,15 +40,13 @@ def safe_wait_if_compss_future(potential_future):
     """
     real_type = type(potential_future)
 
-    if real_type.__name__ == "Future" and \
-            real_type.__module__ == "pycompss.runtime.binding":
+    if real_type.__name__ == "Future" and real_type.__module__ == "pycompss.runtime.binding":
         from pycompss.api.api import compss_wait_on
 
         logger.info("Received a `Future` PyCOMPSs object, waiting for the real object...")
         param = compss_wait_on(potential_future)
         real_type = type(param)
-        logger.info("Using the parameter: %r (type: %s)",
-                    param, real_type)
+        logger.info("Using the parameter: %r (type: %s)", param, real_type)
     else:
         param = potential_future
 
@@ -56,23 +55,28 @@ def safe_wait_if_compss_future(potential_future):
 
 class PyTypeWildcardWrapper(DataClayPythonWrapper):
     """Generic catch-all for Python types (including custom-signature binary types)."""
+
     __slots__ = ("_signature", "_pickle_fallback")
 
-    PYTHON_PREFIX = 'python.'
+    PYTHON_PREFIX = "python."
 
     # Note that this regex does not have guarantees on matching <> or [] (so <] will be a valid group,
     # as so will be its [> counterpart). But... that seems a user problem.
     # Also: deep and esoteric nesting is not supported (regex should be thrown away and a sane
     # markup reader used instead).
-    SEQUENCE_REGEX = re.compile(r'(?P<base_type>(list)|(tuple)|(set))\s*(?:[<\[]\s*(?P<subtype>.*?)\s*[>\]])?\s*$')
-    MAPPING_REGEX = re.compile(r'(?P<base_type>dict)\s*(?:[<\[]\s*(?P<keytype>.*?)\s*,\s*(?P<valuetype>.*?)\s*[>\]])?\s*$')
-    STR_SIGNATURE = 'str'
-    BYTES_SIGNATURE = 'bytes'
-    UNICODE_SIGNATURE = 'unicode'
-    STORAGEOBJECT_SIGNATURE = 'storageobject'
-    ANYTHING_SIGNATURE = 'anything'
-    NUMPY_SIGNATURE = 'numpy'
-    NUMPY_NDARRAY = 'ndarray'
+    SEQUENCE_REGEX = re.compile(
+        r"(?P<base_type>(list)|(tuple)|(set))\s*(?:[<\[]\s*(?P<subtype>.*?)\s*[>\]])?\s*$"
+    )
+    MAPPING_REGEX = re.compile(
+        r"(?P<base_type>dict)\s*(?:[<\[]\s*(?P<keytype>.*?)\s*,\s*(?P<valuetype>.*?)\s*[>\]])?\s*$"
+    )
+    STR_SIGNATURE = "str"
+    BYTES_SIGNATURE = "bytes"
+    UNICODE_SIGNATURE = "unicode"
+    STORAGEOBJECT_SIGNATURE = "storageobject"
+    ANYTHING_SIGNATURE = "anything"
+    NUMPY_SIGNATURE = "numpy"
+    NUMPY_NDARRAY = "ndarray"
 
     def __init__(self, signature, pickle_fallback=False):
         # TODO make some checks, and raise InvalidPythonSignature otherwise
@@ -81,6 +85,7 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
 
     def read(self, io_file):
         from dataclay.util.management.classmgr.Utils import serialization_types
+
         try:
             return serialization_types[self._signature].read(io_file)
         except KeyError:
@@ -109,8 +114,10 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
                 return np.load(io_file)
 
         # anything is also a special case, also all its alias
-        if self._signature == self.ANYTHING_SIGNATURE or \
-                self._signature == self.STORAGEOBJECT_SIGNATURE:
+        if (
+            self._signature == self.ANYTHING_SIGNATURE
+            or self._signature == self.STORAGEOBJECT_SIGNATURE
+        ):
             field_size = IntegerWrapper(32).read(io_file)
             logger.debug("Deserializing DataClayObject from pickle")
 
@@ -123,7 +130,7 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
             field_size = IntegerWrapper(32).read(io_file)
             return pickle.loads(io_file.read(field_size))
 
-        subtype = self._signature[len(self.PYTHON_PREFIX):]
+        subtype = self._signature[len(self.PYTHON_PREFIX) :]
 
         sequence_match = self.SEQUENCE_REGEX.match(subtype)
         mapping_match = self.MAPPING_REGEX.match(subtype)
@@ -146,7 +153,7 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
                     ret.append(instances_type.read(io_file))
                 else:
                     ret.append(None)
-            
+
             if gd["base_type"] == "tuple":
                 logger.debug("Returning deserialized Python tuple")
                 return tuple(ret)
@@ -183,21 +190,24 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
 
         elif subtype == self.STR_SIGNATURE:
             if six.PY2:
-                return StringWrapper('binary').read(io_file)
+                return StringWrapper("binary").read(io_file)
             elif six.PY3:
-                return StringWrapper('utf-8').read(io_file)
+                return StringWrapper("utf-8").read(io_file)
         elif subtype == self.UNICODE_SIGNATURE:
-            return StringWrapper('utf-16').read(io_file)
+            return StringWrapper("utf-16").read(io_file)
         elif subtype == self.BYTES_SIGNATURE:
-            return StringWrapper('binary').read(io_file)
+            return StringWrapper("binary").read(io_file)
         else:
-            raise NotImplementedError("Python types supported at the moment: "
-                                      "list and mappings (but not `%s`), sorry" % subtype)
+            raise NotImplementedError(
+                "Python types supported at the moment: "
+                "list and mappings (but not `%s`), sorry" % subtype
+            )
 
     def write(self, io_file, value):
         value = safe_wait_if_compss_future(value)
 
         from dataclay.util.management.classmgr.Utils import serialization_types
+
         try:
             serialization_types[self._signature].write(io_file, value)
             return
@@ -221,7 +231,7 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
                 IntegerWrapper(32).write(io_file, len(b))
                 io_file.write(b)
                 return
-                            
+
             else:
                 # Use np.save / np.load for all other numpy types.
                 with size_tracking(io_file):
@@ -229,8 +239,10 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
                 return
 
         # anything is also a special case, also all its alias
-        if self._signature == self.ANYTHING_SIGNATURE or \
-                self._signature == self.STORAGEOBJECT_SIGNATURE:
+        if (
+            self._signature == self.ANYTHING_SIGNATURE
+            or self._signature == self.STORAGEOBJECT_SIGNATURE
+        ):
             s = pickle.dumps(value, protocol=PICKLE_PROTOCOL_VERSION)
             IntegerWrapper(32).write(io_file, len(s))
             io_file.write(s)
@@ -247,11 +259,12 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
             return
 
         # Now everything must be a python type
-        assert self._signature.startswith(self.PYTHON_PREFIX), \
-            "Signature for Python types is expected to start with " \
+        assert self._signature.startswith(self.PYTHON_PREFIX), (
+            "Signature for Python types is expected to start with "
             "'python'. Found signature: %s" % self._signature
+        )
 
-        subtype = self._signature[len(self.PYTHON_PREFIX):]
+        subtype = self._signature[len(self.PYTHON_PREFIX) :]
 
         sequence_match = self.SEQUENCE_REGEX.match(subtype)
         mapping_match = self.MAPPING_REGEX.match(subtype)
@@ -304,14 +317,15 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
 
         elif subtype == self.STR_SIGNATURE:
             if six.PY2:
-                StringWrapper('utf-8').write(io_file, value)
+                StringWrapper("utf-8").write(io_file, value)
             elif six.PY3:
-                StringWrapper('binary').write(io_file, value)
+                StringWrapper("binary").write(io_file, value)
         elif subtype == self.BYTES_SIGNATURE:
-            StringWrapper('binary').write(io_file, value)
+            StringWrapper("binary").write(io_file, value)
         elif subtype == self.UNICODE_SIGNATURE:
-            StringWrapper('utf-16').write(io_file, value)
+            StringWrapper("utf-16").write(io_file, value)
         else:
-            raise NotImplementedError("Python types supported at the moment: "
-                                      "list and mappings (but not `%s`), sorry" % subtype)
-
+            raise NotImplementedError(
+                "Python types supported at the moment: "
+                "list and mappings (but not `%s`), sorry" % subtype
+            )

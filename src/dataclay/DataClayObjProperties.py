@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 from collections import namedtuple
@@ -6,8 +5,8 @@ import logging
 
 from dataclay.commonruntime.Runtime import getRuntime
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2016 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +15,10 @@ DCLAY_GETTER_PREFIX = "$$get"
 DCLAY_SETTER_PREFIX = "$$set"
 DCLAY_REPLICATED_SETTER_PREFIX = "$$rset"
 
-PreprocessedProperty = namedtuple('PreprocessedProperty', field_names=[
-    'name', 'position', 'type', 'beforeUpdate', 'afterUpdate', 'inMaster'])
+PreprocessedProperty = namedtuple(
+    "PreprocessedProperty",
+    field_names=["name", "position", "type", "beforeUpdate", "afterUpdate", "inMaster"],
+)
 
 
 class DynamicProperty(property):
@@ -27,6 +28,7 @@ class DynamicProperty(property):
     decorators. Instead, the initialization is done from the ExecutionGateway
     metaclass, containing the required information about the property
     """
+
     __slots__ = ("p_name",)
 
     def __init__(self, property_name):
@@ -53,19 +55,29 @@ class DynamicProperty(property):
         non-loaded instances, which may either "not-yet-loaded" or remote)
         """
         is_exec_env = getRuntime().is_exec_env()
-        logger.debug("Calling getter for property %s in %s", self.p_name,
-                     "an execution environment" if is_exec_env else "the client")
+        logger.debug(
+            "Calling getter for property %s in %s",
+            self.p_name,
+            "an execution environment" if is_exec_env else "the client",
+        )
         if (is_exec_env and obj.is_loaded()) or (not is_exec_env and not obj.is_persistent()):
             try:
-                obj.set_dirty(True)  # set dirty = true for language types like lists, dicts, that are get and modified. TODO: improve this.
+                obj.set_dirty(
+                    True
+                )  # set dirty = true for language types like lists, dicts, that are get and modified. TODO: improve this.
                 return object.__getattribute__(obj, "%s%s" % (DCLAY_PROPERTY_PREFIX, self.p_name))
             except AttributeError:
-                logger.warning("Received AttributeError while accessing property %s on object %r",
-                               self.p_name, obj)
+                logger.warning(
+                    "Received AttributeError while accessing property %s on object %r",
+                    self.p_name,
+                    obj,
+                )
                 logger.debug("Internal dictionary of the object: %s", obj.__dict__)
                 raise
         else:
-            return getRuntime().execute_implementation_aux(DCLAY_GETTER_PREFIX + self.p_name, obj, (), obj.get_hint())
+            return getRuntime().execute_implementation_aux(
+                DCLAY_GETTER_PREFIX + self.p_name, obj, (), obj.get_hint()
+            )
 
     def __set__(self, obj, value):
         """Setter for the dataClay property
@@ -75,18 +87,25 @@ class DynamicProperty(property):
         logger.debug("Calling setter for property %s", self.p_name)
 
         is_exec_env = getRuntime().is_exec_env()
-        if (is_exec_env and obj.is_loaded()) or (not is_exec_env and not obj.is_persistent()): 
+        if (is_exec_env and obj.is_loaded()) or (not is_exec_env and not obj.is_persistent()):
             object.__setattr__(obj, "%s%s" % (DCLAY_PROPERTY_PREFIX, self.p_name), value)
-            if is_exec_env: 
+            if is_exec_env:
                 obj.set_dirty(True)
         else:
-            getRuntime().execute_implementation_aux(DCLAY_SETTER_PREFIX + self.p_name, obj, (value,), obj.get_hint())
+            getRuntime().execute_implementation_aux(
+                DCLAY_SETTER_PREFIX + self.p_name, obj, (value,), obj.get_hint()
+            )
 
 
 class ReplicatedDynamicProperty(DynamicProperty):
-
     def __init__(self, property_name, before_method, after_method, in_master):
-        logger.debug("Initializing ReplicatedDynamicProperty %s | BEFORE = %s | AFTER = %s | INMASTER = %s", property_name, before_method, after_method, in_master)
+        logger.debug(
+            "Initializing ReplicatedDynamicProperty %s | BEFORE = %s | AFTER = %s | INMASTER = %s",
+            property_name,
+            before_method,
+            after_method,
+            in_master,
+        )
         super(ReplicatedDynamicProperty, self).__init__(property_name)
         self.beforeUpdate = before_method
         self.afterUpdate = after_method
@@ -103,13 +122,26 @@ class ReplicatedDynamicProperty(DynamicProperty):
         if is_client and not obj.is_persistent():
             object.__setattr__(obj, "%s%s" % (DCLAY_PROPERTY_PREFIX, self.p_name), value)
         elif not is_client and not obj.is_loaded():
-            getRuntime().execute_implementation_aux(DCLAY_SETTER_PREFIX + self.p_name, obj, (value,), obj.get_hint())
+            getRuntime().execute_implementation_aux(
+                DCLAY_SETTER_PREFIX + self.p_name, obj, (value,), obj.get_hint()
+            )
         else:
             if self.inMaster:
-                logger.debug("Calling update in master [%s] for property %s with value %s", obj.get_master_location, self.p_name, value)
-                getRuntime().execute_implementation_aux('__setUpdate__', obj, (obj, self.p_name, value, self.beforeUpdate, self.afterUpdate), obj.get_master_location())
+                logger.debug(
+                    "Calling update in master [%s] for property %s with value %s",
+                    obj.get_master_location,
+                    self.p_name,
+                    value,
+                )
+                getRuntime().execute_implementation_aux(
+                    "__setUpdate__",
+                    obj,
+                    (obj, self.p_name, value, self.beforeUpdate, self.afterUpdate),
+                    obj.get_master_location(),
+                )
             else:
-                logger.debug("Calling update locally for property %s with value %s", self.p_name, value)
+                logger.debug(
+                    "Calling update locally for property %s with value %s", self.p_name, value
+                )
                 obj.__setUpdate__(obj, self.p_name, value, self.beforeUpdate, self.afterUpdate)
             obj.set_dirty(True)
-

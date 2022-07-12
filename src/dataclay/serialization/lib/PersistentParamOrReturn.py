@@ -1,6 +1,4 @@
 class PersistentParamOrReturn(object):
-
-
     def __init__(self, object_id, hint, class_id):
         """
         :param object_id: id of the object
@@ -10,6 +8,3 @@ class PersistentParamOrReturn(object):
         self.object_id = object_id
         self.hint = hint
         self.class_id = class_id
-
-
-

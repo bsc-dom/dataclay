@@ -1,6 +1,3 @@
-
 """ Class description goes here. """
 
-MODULES_TO_REGISTER = (
-    "collections", "splitting"
-)
+MODULES_TO_REGISTER = ("collections", "splitting")

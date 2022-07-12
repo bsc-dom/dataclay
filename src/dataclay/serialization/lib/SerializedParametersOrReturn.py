@@ -1,8 +1,7 @@
 class SerializedParametersOrReturn(object):
-
-
-    def __init__(self, num_params=0, imm_objs=dict(), lang_objs=dict(), vol_objs=dict(),
-                 pers_objs=dict()):
+    def __init__(
+        self, num_params=0, imm_objs=dict(), lang_objs=dict(), vol_objs=dict(), pers_objs=dict()
+    ):
         """
         Serialized parameters or return
         :param num_params: number of parameters
@@ -16,4 +15,3 @@ class SerializedParametersOrReturn(object):
         self.lang_objs = lang_objs
         self.vol_objs = vol_objs
         self.persistent_refs = pers_objs
-

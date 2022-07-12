@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 """Module that implements dummy (no-op) stuff for PyCOMPSs.
@@ -15,8 +14,8 @@ from the master and its execution triggers a taskified dataClay method. It will
 not be a task. Which seems a bug.
 """
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2017 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
 
 # PyCOMPSs constants:
 INOUT = None

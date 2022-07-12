@@ -1,11 +1,10 @@
-
 """ Class description goes here. """
 
-'''
+"""
 Created on Jan 25, 2018
 
 @author: dgasull
-'''
+"""
 from weakref import WeakValueDictionary
 import logging
 from abc import ABCMeta, abstractmethod
@@ -21,20 +20,20 @@ class HeapManager(threading.Thread):
     """
     @summary: This class is intended to manage all dataClay objects in runtime's memory.
     """
-    
+
     """ Logger """
     logger = None
-    
+
     def __init__(self, theruntime):
         """
         @postcondition: Constructor of the object called from sub-class
-        @param theruntime: Runtime being managed 
-        """ 
+        @param theruntime: Runtime being managed
+        """
         """ Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs. """
         self.inmemory_objects = WeakValueDictionary()
         threading.Thread.__init__(self)
         self._finished = threading.Event()
-        """ Runtime being monitorized. Java uses abstract functions to get the field in the proper type (EE or client) due to type-check. Not needed here. """    
+        """ Runtime being monitorized. Java uses abstract functions to get the field in the proper type (EE or client) due to type-check. Not needed here. """
         self.runtime = theruntime
         self.logger = logging.getLogger(__name__)
         self.daemon = True
@@ -42,28 +41,29 @@ class HeapManager(threading.Thread):
 
     def get_heap(self):
         return self.inmemory_objects
-    
+
     def shutdown(self):
         """Stop this thread"""
         self.logger.debug("HEAP MANAGER shutdown request received.")
         self._finished.set()
-        
+
     def run(self):
         """
-        @postcondition: Overrides run function 
+        @postcondition: Overrides run function
         """
         gc_check_time_interval_seconds = Configuration.MEMMGMT_CHECK_TIME_INTERVAL / 1000.0
         while 1:
             self.logger.trace("HEAP MANAGER THREAD is awake...")
-            if self._finished.isSet(): break
+            if self._finished.isSet():
+                break
             self.run_task()
-            
+
             # sleep for interval or until shutdown
             self.logger.trace("HEAP MANAGER THREAD is going to sleep...")
             self._finished.wait(gc_check_time_interval_seconds)
-        
+
         self.logger.debug("HEAP MANAGER THREAD Finished.")
-    
+
     def _add_to_inmemory_map(self, dc_object):
         """
         @postcondition: the object is added to inmemory map
@@ -74,7 +74,7 @@ class HeapManager(threading.Thread):
 
     def remove_from_heap(self, object_id):
         """
-        @postcondition: Remove reference from Heap. Even if we remove it from the heap, 
+        @postcondition: Remove reference from Heap. Even if we remove it from the heap,
         the object won't be Garbage collected till HeapManager flushes the object and releases it.
         @param object_id: id of object to remove from heap
         """
@@ -82,7 +82,7 @@ class HeapManager(threading.Thread):
 
     def get_from_heap(self, object_id):
         """
-        @postcondition: Get from heap. 
+        @postcondition: Get from heap.
         @param object_id: id of object to get from heap
         @return Object with id provided in heap or None if not found.
         """
@@ -96,21 +96,21 @@ class HeapManager(threading.Thread):
 
     def exists_in_heap(self, object_id):
         """
-        @postcondition: Exists from heap. 
+        @postcondition: Exists from heap.
         @param object_id: id of object to get from heap
         @return True if exists. False otherwise.
         """
         try:
             if self.inmemory_objects[object_id] is None:
                 return False
-            else: 
+            else:
                 return True
         except KeyError:
             return False
-  
+
     def heap_size(self):
         """
-        @postcondition: Get heap size. 
+        @postcondition: Get heap size.
         @return Heap size
         """
         return len(self.inmemory_objects)
@@ -123,13 +123,15 @@ class HeapManager(threading.Thread):
         return num_loaded_objs
 
     @abstractmethod
-    def flush_all(self): pass
-    
+    def flush_all(self):
+        pass
+
     @abstractmethod
-    def run_task(self): pass
-    
-    def cleanReferencesAndLockers(self): 
+    def run_task(self):
+        pass
+
+    def cleanReferencesAndLockers(self):
         """
         @postcondition: Clean references and lockers not being used.
-        """ 
+        """
         self.runtime.locker_pool.cleanLockers()

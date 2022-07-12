@@ -74,12 +74,12 @@ def trivial_constructor(loader, node):
 
 
 def tuple_constructor(loader, node):
-    ''' Constructor for a Java Tuple represented in YAML, which is is a simple two-element python tuple.
-    :param loader: 
+    """Constructor for a Java Tuple represented in YAML, which is is a simple two-element python tuple.
+    :param loader:
     :param node:
     :returns: None
     :rtype: None
-    '''
+    """
     d = loader.construct_mapping(node)
     return d["first"], d["second"]
 
@@ -105,29 +105,35 @@ def lang_constructor(loader, node):
     return Langs.Value(s)
 
 
-Loader.add_constructor(u"tag:yaml.org,2002:value", lonely_equal_constructor)
+Loader.add_constructor("tag:yaml.org,2002:value", lonely_equal_constructor)
 
 # The tuple is a bit special itself
-Loader.add_constructor(u"tag:yaml.org,2002:es.bsc.dataclay.util.structs.Tuple", tuple_constructor)
+Loader.add_constructor("tag:yaml.org,2002:es.bsc.dataclay.util.structs.Tuple", tuple_constructor)
 
 # Not needed for Python, but nice to avoid errors
-Loader.add_constructor(u"tag:yaml.org,2002:es.bsc.dataclay.util.management.classmgr.features.Feature$FeatureType",
-                       feature_constructor)
+Loader.add_constructor(
+    "tag:yaml.org,2002:es.bsc.dataclay.util.management.classmgr.features.Feature$FeatureType",
+    feature_constructor,
+)
 
 # The language is very special
-Loader.add_constructor(u"tag:yaml.org,2002:es.bsc.dataclay.communication.grpc.messages.common.CommonMessages$Langs", lang_constructor)
+Loader.add_constructor(
+    "tag:yaml.org,2002:es.bsc.dataclay.communication.grpc.messages.common.CommonMessages$Langs",
+    lang_constructor,
+)
 
 for prefix in IGNORE_PREFIXES:
-    yaml_tag_prefix = u"tag:yaml.org,2002:%s" % prefix
+    yaml_tag_prefix = "tag:yaml.org,2002:%s" % prefix
     Loader.add_multi_constructor(
         yaml_tag_prefix,
         # The following is used to disregard the tag
-        lambda loader, _, node: trivial_constructor(loader, node))
+        lambda loader, _, node: trivial_constructor(loader, node),
+    )
 
 for class_tag in IGNORE_CLASSES:
-    yaml_class_tag = u"tag:yaml.org,2002:%s" % class_tag
+    yaml_class_tag = "tag:yaml.org,2002:%s" % class_tag
     Loader.add_constructor(yaml_class_tag, trivial_constructor)
-    
+
 # Force all YAML usages to go through this class (so Loader is properly set)
 dataclay_yaml_load = partial(load, Loader=Loader)
 dataclay_yaml_dump = dump

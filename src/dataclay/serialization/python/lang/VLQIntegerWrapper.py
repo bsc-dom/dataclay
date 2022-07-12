@@ -1,14 +1,15 @@
-
 """ Class description goes here. """
 
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 from six import int2byte
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
+
 
 class VLQIntegerWrapper(DataClayPythonWrapper):
     """Variable Length Quantity."""
+
     __slots__ = ()
 
     def __init__(self):
@@ -28,7 +29,7 @@ class VLQIntegerWrapper(DataClayPythonWrapper):
     # FIXME: Check with Python 2.7
     def write(self, io_file, value):
         if value == 0:
-            io_file.write(b'\x00')
+            io_file.write(b"\x00")
             return
         values = []
         while value > 0:

@@ -1,3 +1,1 @@
-
 """ Class description goes here. """
-

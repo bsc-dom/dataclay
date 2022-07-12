@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 """Deactivate dataClay to allow sequential un-modified execution.
@@ -7,8 +6,8 @@ This will allow some loaded-modules-mangling and make dataClay classes
 harmless.
 """
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2017 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
 
 
 class StorageObject(object):

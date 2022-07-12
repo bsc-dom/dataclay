@@ -16,8 +16,12 @@ from dataclay.commonruntime.ClientRuntime import settings, LANG_PYTHON
 from dataclay.commonruntime.ClientRuntime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
 from dataclay.commonruntime.Initializer import initialize, _get_logging_dict_config
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
-from dataclay.paraver import TRACE_ENABLED, extrae_tracing_is_enabled, get_task_id, \
-    set_current_available_task_id
+from dataclay.paraver import (
+    TRACE_ENABLED,
+    extrae_tracing_is_enabled,
+    get_task_id,
+    set_current_available_task_id,
+)
 from dataclay.util.StubUtils import track_local_available_classes
 from dataclay.util.StubUtils import clean_babel_data
 from dataclay.commonruntime.Settings import unload_settings
@@ -29,9 +33,9 @@ from time import sleep
 # This will be populated during initialization
 LOCAL = _UNDEFINED_LOCAL
 
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 __all__ = ["init", "finish", "DataClayObject"]
-logger = logging.getLogger('dataclay.api')
+logger = logging.getLogger("dataclay.api")
 _connection_initialized = False
 _initialized = False
 
@@ -63,11 +67,14 @@ def reinitialize_clients() -> None:
     :return: None
     """
     runtime = getRuntime()
-    logger.verbose("Performing reinitialization of clients, removing #%d cached ones and recreating LMClient",
-                len(runtime.ready_clients))
+    logger.verbose(
+        "Performing reinitialization of clients, removing #%d cached ones and recreating LMClient",
+        len(runtime.ready_clients),
+    )
     runtime.ready_clients = {
         "@LM": LMClient(settings.logicmodule_host, settings.logicmodule_port),
     }
+
 
 # TODO: Remove this function
 def init_connection(client_file) -> LMClient:
@@ -92,25 +99,32 @@ def init_connection(client_file) -> LMClient:
         settings.load_connection(client_file)
 
     # Once the properties are load, we can prepare the LM client
-    logger.debug("Initializing dataClay connection with LM %s:%s", settings.logicmodule_host, settings.logicmodule_port)
+    logger.debug(
+        "Initializing dataClay connection with LM %s:%s",
+        settings.logicmodule_host,
+        settings.logicmodule_port,
+    )
     client = LMClient(settings.logicmodule_host, settings.logicmodule_port)
     runtime.ready_clients["@LM"] = client
-    
+
     _connection_initialized = True
 
     # TODO: Remove this setting, and use metadata service id
     # settings.logicmodule_dc_instance_id = client.get_dataclay_id()
 
-    logger.debug("DataclayInstanceID is %s, storing client in cache", settings.logicmodule_dc_instance_id)
+    logger.debug(
+        "DataclayInstanceID is %s, storing client in cache", settings.logicmodule_dc_instance_id
+    )
     runtime.ready_clients[settings.logicmodule_dc_instance_id] = runtime.ready_clients["@LM"]
 
     # TODO: Remove this call to LM
-    # wait for 1 python backend 
+    # wait for 1 python backend
     # while len(get_backends_info()) < 1:
     #     logger.info("Waiting for any python backend to be ready ...")
     #     sleep(2)
 
     return client
+
 
 def get_backends():
     """Return all the dataClay backend present in the system."""
@@ -134,6 +148,7 @@ def get_backend_id_by_name(name):
             return backend.id
     return None
 
+
 def get_external_backend_id_by_name(name, external_dataclay_id):
     """Return dataClay backend present in the system with name provided."""
     all_backends = getRuntime().get_all_execution_environments_at_dataclay(external_dataclay_id)
@@ -141,6 +156,7 @@ def get_external_backend_id_by_name(name, external_dataclay_id):
         if backend.name == name:
             return backend.id
     return None
+
 
 def get_backend_id(hostname, port):
     """Return dataClay backend present in the system with name provided."""
@@ -152,7 +168,7 @@ def get_backend_id(hostname, port):
 
 
 def register_dataclay(exthostname, extport):
-    """ Register external dataClay for federation
+    """Register external dataClay for federation
     :param exthostname: external dataClay host name
     :param extport: external dataClay port
     :return: external dataClay ID registered
@@ -164,7 +180,7 @@ def register_dataclay(exthostname, extport):
 
 
 def get_dataclay_id(exthostname, extport):
-    """ Get external dataClay ID with host and port identified
+    """Get external dataClay ID with host and port identified
     :param exthostname: external dataClay host name
     :param extport: external dataClay port
     :return: None
@@ -174,8 +190,9 @@ def get_dataclay_id(exthostname, extport):
     """
     return getRuntime().get_external_dataclay_id(exthostname, extport)
 
+
 def import_models_from_external_dataclay(namespace, ext_dataclay_id) -> None:
-    """ Import models in namespace specified from an external dataClay
+    """Import models in namespace specified from an external dataClay
     :param namespace: external dataClay namespace to get
     :param ext_dataclay_id: external dataClay ID
     :return: None
@@ -187,11 +204,11 @@ def import_models_from_external_dataclay(namespace, ext_dataclay_id) -> None:
 
 
 def unfederate(ext_dataclay_id=None):
-    """ Unfederate all objects belonging to/federated with external data clay with id provided 
-    or with all any external dataclay if no argument provided. 
+    """Unfederate all objects belonging to/federated with external data clay with id provided
+    or with all any external dataclay if no argument provided.
     :param ext_dataclay_id: external dataClay id
     :return: None
-    :type ext_dataclay_id: uuid 
+    :type ext_dataclay_id: uuid
     :rtype: None
     """
     if ext_dataclay_id is not None:
@@ -201,8 +218,8 @@ def unfederate(ext_dataclay_id=None):
 
 
 def migrate_federated_objects(origin_dataclay_id, dest_dataclay_id):
-    """ Migrate federated objects from origin dataclay to destination dataclay
-    :param origin_dataclay_id: origin dataclay id 
+    """Migrate federated objects from origin dataclay to destination dataclay
+    :param origin_dataclay_id: origin dataclay id
     :param dest_dataclay_id destination dataclay id
     :return: None
     :rtype: None
@@ -211,19 +228,21 @@ def migrate_federated_objects(origin_dataclay_id, dest_dataclay_id):
 
 
 def federate_all_objects(dest_dataclay_id):
-    """ Federate all objects from current dataclay to destination dataclay
+    """Federate all objects from current dataclay to destination dataclay
     :param dest_dataclay_id destination dataclay id
     :return: None
     :rtype: None
     """
     return getRuntime().federate_all_objects(dest_dataclay_id)
 
+
 def get_num_objects():
-    """ Get number of objects in dataClay
+    """Get number of objects in dataClay
     :return: number of objects in dataClay
     :rtype: int32
     """
     return getRuntime().get_num_objects()
+
 
 # TODO: Remove this function
 def pre_network_init(config_file):
@@ -232,11 +251,11 @@ def pre_network_init(config_file):
 
 
 def mds_init():
-    """"Init that will replace current one for Metadata Service"""
+    """ "Init that will replace current one for Metadata Service"""
     logger.info("Initializing dataClay API")
 
     settings.load_session_properties()
-    
+
     # Create MDS Client and store it in a persistent way
     client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
     runtime = getRuntime()
@@ -248,7 +267,7 @@ def mds_init():
     settings.logicmodule_dc_instance_id = client.get_dataclay_id()
     runtime.ready_clients[settings.logicmodule_dc_instance_id] = client
 
-    # wait for 1 python backend 
+    # wait for 1 python backend
     # TODO: implement get_backends_info in MDS
     # while len(get_backends_info()) < 1:
     #     logger.info("Waiting for any python backend to be ready ...")
@@ -256,14 +275,12 @@ def mds_init():
 
     # Create a new session
     session_id = client.new_session(
-        settings.DC_USERNAME,
-        settings.DC_PASSWORD,
-        settings.DEFAULT_DATASET
+        settings.DC_USERNAME, settings.DC_PASSWORD, settings.DEFAULT_DATASET
     )
     settings.current_session_id = session_id
 
     # Ensure they are in the path (high "priority")
-    sys.path.insert(0, os.path.join(settings.stubs_folder, 'sources'))
+    sys.path.insert(0, os.path.join(settings.stubs_folder, "sources"))
 
     logger.debug(f"Started session {session_id}")
 
@@ -295,14 +312,12 @@ def init(config_file=None) -> None:
         if env_config_file:
             # If the environment is defined, it is preferred
             config_file = env_config_file
-            logger.info("Using the environment variable DATACLAYSESSIONCONFIG=%s",
-                        config_file)
+            logger.info("Using the environment variable DATACLAYSESSIONCONFIG=%s", config_file)
         else:
             config_file = "./cfgfiles/session.properties"
             logger.info("Fallback to default ./cfgfiles/session.properties")
     else:
-        logger.info("Explicit parameter config_file=\"%s\" will be used",
-                    config_file)
+        logger.info('Explicit parameter config_file="%s" will be used', config_file)
 
     if not os.path.isfile(config_file):
         raise ValueError("dataClay requires a session.properties in order to initialize")
@@ -311,7 +326,6 @@ def init(config_file=None) -> None:
     post_network_init()
 
     mds_init()
-
 
 
 # TODO: Remove this function
@@ -325,7 +339,9 @@ def post_network_init():
     contracts = track_local_available_classes()
 
     if not contracts:
-        logger.warning("No contracts available. Calling new_session, but no classes will be available")
+        logger.warning(
+            "No contracts available. Calling new_session, but no classes will be available"
+        )
 
     """ Initialize runtime """
     getRuntime().initialize_runtime()
@@ -341,35 +357,34 @@ def post_network_init():
         else:
             logger.warning("Backend with name '%s' not found, ignoring", name)
 
-    # Remember this function is called after a fork in workers also. 
+    # Remember this function is called after a fork in workers also.
     # Activate Extrae if needed.
-    ### READ #### 
-    # Activating tracing with tracing_enabled property set True and starting task id = 0 means we are only tracing dataClay 
-    # dataClay client will not increment current available task ID and will send a 0 to LM, which will understand the 0 as 
+    ### READ ####
+    # Activating tracing with tracing_enabled property set True and starting task id = 0 means we are only tracing dataClay
+    # dataClay client will not increment current available task ID and will send a 0 to LM, which will understand the 0 as
     # "only dataClay tracing" since for compss it is never 0.
-    # Activating tracing with tracing_enabled property set True and starting task id != 0 means we are tracing COMPSs 
-    # and dataClay. Current client will not initialize pyextrae or increment task id since COMPSs already initializes 
-    # it for us (as a worker). 
-    # In any case, none of them needs to add synchronization event or increment the available task id (only services). 
-    # Synchronization events are used to merge LM traces and python EE traces. Incrementing available task id is useful to 
+    # Activating tracing with tracing_enabled property set True and starting task id != 0 means we are tracing COMPSs
+    # and dataClay. Current client will not initialize pyextrae or increment task id since COMPSs already initializes
+    # it for us (as a worker).
+    # In any case, none of them needs to add synchronization event or increment the available task id (only services).
+    # Synchronization events are used to merge LM traces and python EE traces. Incrementing available task id is useful to
     # send to N EE/DS nodes.
     if settings.tracing_enabled:
         logger.info("Initializing tracing")
-        
+
         extrae_compss = int(settings.extrae_starting_task_id) != 0
-        
-        if extrae_compss:  
+
+        if extrae_compss:
             getRuntime().activate_tracing(False)
-            # set current available task id 
-            # set_current_available_task_id(int(settings.extrae_starting_task_id)) 
+            # set current available task id
+            # set_current_available_task_id(int(settings.extrae_starting_task_id))
             # if get_task_id() == 0:
             #    getRuntime().activate_tracing_in_dataclay_services()
-            
+
         else:
             getRuntime().activate_tracing(True)
             if get_task_id() == 0:
                 getRuntime().activate_tracing_in_dataclay_services()
-
 
     # The new_session RPC may fall, and thus we will consider
     # the library as "not initialized". Arriving here means "all ok".
@@ -383,14 +398,14 @@ def finish_tracing():
     if extrae_tracing_is_enabled():
         extrae_compss = int(settings.extrae_starting_task_id) != 0
 
-        if extrae_compss: 
+        if extrae_compss:
             if get_task_id() == 0:
                 getRuntime().deactivate_tracing(False)
                 # in compss Java runtime will get traces for us
             else:
                 getRuntime().deactivate_tracing(False)
 
-        else: 
+        else:
             if get_task_id() == 0:
                 getRuntime().deactivate_tracing_in_dataclay_services()
                 getRuntime().deactivate_tracing(True)
@@ -401,8 +416,6 @@ def finish_tracing():
                 getRuntime().deactivate_tracing(True)
 
 
-
-            
 def finish():
     global _initialized
     if not _initialized:
@@ -416,10 +429,14 @@ def finish():
     getRuntime().stop_runtime()
     # Unload stubs
     clean_babel_data()
-    sys.path.remove(os.path.join(settings.stubs_folder, 'sources'))
+    sys.path.remove(os.path.join(settings.stubs_folder, "sources"))
     # unload caches of stubs
-    from dataclay.commonruntime.ExecutionGateway import loaded_classes, class_extradata_cache_client, \
-        class_extradata_cache_exec_env
+    from dataclay.commonruntime.ExecutionGateway import (
+        loaded_classes,
+        class_extradata_cache_client,
+        class_extradata_cache_exec_env,
+    )
+
     loaded_classes.clear()
     class_extradata_cache_exec_env.clear()
     class_extradata_cache_client.clear()
@@ -427,6 +444,7 @@ def finish():
     unload_settings()
     _initialized = False
     _connection_initialized = False
+
 
 ######################################
 # Static initialization of dataClay

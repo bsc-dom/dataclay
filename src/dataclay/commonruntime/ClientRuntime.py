@@ -111,9 +111,7 @@ class ClientRuntime(DataClayRuntime):
                 # new_object_ids = self.ready_clients["@LM"].register_objects(
                 #     reg_infos, location, LANG_PYTHON
                 # )
-                self.ready_clients["@MDS"].register_objects(
-                    reg_infos, location, LANG_PYTHON
-                )
+                self.ready_clients["@MDS"].register_objects(reg_infos, location, LANG_PYTHON)
                 # self.logger.debug(f"Received ids: {new_object_ids}")
                 # new_object_id = next(iter(new_object_ids))
                 # self.update_object_id(instance, new_object_id)
@@ -137,9 +135,7 @@ class ClientRuntime(DataClayRuntime):
             params_order = list()
             params_order.append("object")
             params_spec = dict()
-            params_spec[
-                "object"
-            ] = "DataClayObject"  # not used, see serialized_params_or_return
+            params_spec["object"] = "DataClayObject"  # not used, see serialized_params_or_return
             serialized_objs = SerializationLibUtilsSingleton.serialize_params_or_return(
                 params=parameters,
                 iface_bitmaps=None,
@@ -179,9 +175,7 @@ class ClientRuntime(DataClayRuntime):
             instance.set_hint(location)
 
             # remove volatiles under deserialization
-            self.remove_volatiles_under_deserialization(
-                serialized_objs.vol_objs.values()
-            )
+            self.remove_volatiles_under_deserialization(serialized_objs.vol_objs.values())
 
         object_id = instance.get_object_id()
         locations = set()
@@ -205,9 +199,7 @@ class ClientRuntime(DataClayRuntime):
         """
         pass
 
-    def execute_implementation_aux(
-        self, operation_name, instance, parameters, exeenv_id=None
-    ):
+    def execute_implementation_aux(self, operation_name, instance, parameters, exeenv_id=None):
         stub_info = instance.get_class_extradata().stub_info
         implementation_stub_infos = stub_info.implementations
         object_id = instance.get_object_id()
@@ -229,9 +221,7 @@ class ClientRuntime(DataClayRuntime):
         else:
             exeenv_id = next(iter(self.get_metadata(object_id).locations))
 
-        return self.call_execute_to_ds(
-            instance, parameters, operation_name, exeenv_id, using_hint
-        )
+        return self.call_execute_to_ds(instance, parameters, operation_name, exeenv_id, using_hint)
 
     def get_operation_info(self, object_id, operation_name):
         dcc_extradata = self.get_object_by_id(object_id).get_class_extradata()
@@ -279,9 +269,7 @@ class ClientRuntime(DataClayRuntime):
         object_id = instance.get_object_id()
         dest_backend_id = self.get_location(instance.get_object_id())
         operation = self.get_operation_info(instance.get_object_id(), operation_name)
-        implementation_id = self.get_implementation_id(
-            instance.get_object_id(), operation_name
-        )
+        implementation_id = self.get_implementation_id(instance.get_object_id(), operation_name)
         # === SERIALIZE PARAMETER ===
         serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
             params=[params],
@@ -297,9 +285,7 @@ class ClientRuntime(DataClayRuntime):
             exeenv = self.get_execution_environment_info(dest_backend_id)
             execution_client = EEClient(exeenv.hostname, exeenv.port)
             self.ready_clients[dest_backend_id] = execution_client
-        execution_client.synchronize(
-            session_id, object_id, implementation_id, serialized_params
-        )
+        execution_client.synchronize(session_id, object_id, implementation_id, serialized_params)
 
     def detach_object_from_session(self, object_id, hint):
         try:
@@ -311,9 +297,7 @@ class ClientRuntime(DataClayRuntime):
                 execution_client = self.ready_clients[exec_location_id]
             except KeyError:
                 backend_to_call = self.get_execution_environment_info(exec_location_id)
-                execution_client = EEClient(
-                    backend_to_call.hostname, backend_to_call.port
-                )
+                execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
                 self.ready_clients[exec_location_id] = execution_client
             execution_client.detach_object_from_session(object_id, cur_session)
         except:
@@ -344,9 +328,7 @@ class ClientRuntime(DataClayRuntime):
             session_id, object_id, external_execution_environment_id, recursive
         )
 
-    def unfederate_from_backend(
-        self, dc_obj, external_execution_environment_id, recursive
-    ):
+    def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
         object_id = dc_obj.get_object_id()
         hint = dc_obj.get_hint()
         session_id = self.get_session_id()

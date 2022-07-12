@@ -21,8 +21,8 @@ from dataclay.util.management.classmgr.python.PythonImplementation import Python
 from dataclay.exceptions.exceptions import DataClayException
 
 # Publicly show the dataClay method decorators
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2016 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
 
 logger = getLogger(__name__)
 
@@ -43,7 +43,7 @@ class ExecutionGateway(type):
 
     def __new__(mcs, classname, bases, dct):
 
-        if classname == 'DataClayObject':
+        if classname == "DataClayObject":
             # Trivial implementation, do nothing
             return super(ExecutionGateway, mcs).__new__(mcs, classname, bases, dct)
         # at this point, a real dataClay class is on-the-go
@@ -52,15 +52,14 @@ class ExecutionGateway(type):
         return klass
 
     def __init__(cls, name, bases, dct):
-        logger.verbose("Initialization of class %s in module %s",
-                       name, cls.__module__)
+        logger.verbose("Initialization of class %s in module %s", name, cls.__module__)
 
         super(ExecutionGateway, cls).__init__(name, bases, dct)
 
     def __call__(cls, *args, **kwargs):
-        if cls.__name__ == 'DataClayObject':
+        if cls.__name__ == "DataClayObject":
             raise TypeError("Cannot create base objects")
-        
+
         if getattr(cls, STATIC_ATTRIBUTE_FOR_EXTERNAL_INIT, False):
             logger.debug("New Persistent Instance (remote init) of class `%s`", cls.__name__)
             raise NotImplementedError("External initialization not implemented")
@@ -95,15 +94,18 @@ class ExecutionGateway(type):
         try:
             class_extradata = cls.get_class_extradata()
         except AttributeError:
-            raise ValueError("MetaClass can only be prepared for correctly initialized DataClay Classes")
+            raise ValueError(
+                "MetaClass can only be prepared for correctly initialized DataClay Classes"
+            )
 
-        logger.verbose("Preparing MetaClass container for class %s (%s)",
-                       class_extradata.classname, class_extradata.full_name)
+        logger.verbose(
+            "Preparing MetaClass container for class %s (%s)",
+            class_extradata.classname,
+            class_extradata.full_name,
+        )
 
         # The thing we are being asked (this method will keep populating it)
-        current_python_info = PythonClassInfo(
-            imports=list()
-        )
+        current_python_info = PythonClassInfo(imports=list())
         current_class = MetaClass(
             namespace=namespace,
             name=class_extradata.full_name,
@@ -111,7 +113,7 @@ class ExecutionGateway(type):
             operations=list(),
             properties=list(),
             isAbstract=False,
-            languageDepInfos={'LANG_PYTHON': current_python_info}
+            languageDepInfos={"LANG_PYTHON": current_python_info},
         )
 
         ####################################################################
@@ -121,8 +123,7 @@ class ExecutionGateway(type):
         for name, dataclay_func in inspect.getmembers(cls, predicate):
             # Consider only functions with _dclay_method
             if not getattr(dataclay_func, "_dclay_method", False):
-                logger.verbose("Method `%s` doesn't have attribute `_dclay_method`",
-                               dataclay_func)
+                logger.verbose("Method `%s` doesn't have attribute `_dclay_method`", dataclay_func)
                 continue
 
             original_func = dataclay_func._dclay_entrypoint
@@ -141,7 +142,8 @@ class ExecutionGateway(type):
                 returnType=Type.build_from_type(dataclay_func._dclay_ret),
                 implementations=list(),
                 isAbstract=False,
-                isStaticConstructor=False)
+                isStaticConstructor=False,
+            )
 
             # Start with parameters
             #########################
@@ -152,13 +154,16 @@ class ExecutionGateway(type):
                 raise NotImplementedError("No support for varargs or varkw yet")
 
             current_operation.paramsOrder[:] = signature.args[1:]  # hop over 'self'
-            current_operation.params.update({k: Type.build_from_type(v)
-                                             for k, v in dataclay_func._dclay_args.items()})
+            current_operation.params.update(
+                {k: Type.build_from_type(v) for k, v in dataclay_func._dclay_args.items()}
+            )
 
             if len(current_operation.paramsOrder) != len(current_operation.params):
-                raise DataClayException("All the arguments are expected to be annotated, " \
-                    "there is some error in %s::%s|%s" \
-                                        % (namespace, class_extradata.full_name, name))
+                raise DataClayException(
+                    "All the arguments are expected to be annotated, "
+                    "there is some error in %s::%s|%s"
+                    % (namespace, class_extradata.full_name, name)
+                )
 
             # Follow by implementation
             ############################
@@ -174,7 +179,8 @@ class ExecutionGateway(type):
                 accessedImplementations=list(),
                 requiredQuantitativeFeatures=dict(),
                 requiredQualitativeFeatures=dict(),
-                code=inspect.getsource(dataclay_func._dclay_entrypoint))
+                code=inspect.getsource(dataclay_func._dclay_entrypoint),
+            )
 
             current_operation.implementations.append(current_implementation)
 
@@ -194,7 +200,8 @@ class ExecutionGateway(type):
                 type=p.type,
                 beforeUpdate=p.beforeUpdate,
                 afterUpdate=p.afterUpdate,
-                inMaster=p.inMaster)
+                inMaster=p.inMaster,
+            )
 
             current_class.properties.append(current_property)
 

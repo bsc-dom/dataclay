@@ -1,8 +1,17 @@
 class DataClayObjectMetaData(object):
-
-
-    def __init__(self, alias, is_read_only, tags_to_oids, tags_to_class_ids, tags_to_hints, num_refs_pointing_to_obj,
-                 orig_object_id, root_location, origin_location, replica_locations):
+    def __init__(
+        self,
+        alias,
+        is_read_only,
+        tags_to_oids,
+        tags_to_class_ids,
+        tags_to_hints,
+        num_refs_pointing_to_obj,
+        orig_object_id,
+        root_location,
+        origin_location,
+        replica_locations,
+    ):
         self.alias = alias
         self.is_read_only = is_read_only
         self.tags_to_oids = tags_to_oids
@@ -29,7 +38,9 @@ class DataClayObjectMetaData(object):
                 self.tags_to_hints[tag] = new_hint
 
     def __str__(self):
-        return f"[tags_to_oids={self.tags_to_oids}, tags_to_class_ids={self.tags_to_class_ids} " \
-               f"is_read_only={self.is_read_only}, orig_object_id={self.orig_object_id}, " \
-               f"root_location={self.root_location}, origin_location={self.origin_location}, " \
-               f"alias={self.alias}, replica_locations={self.replica_locations}]"
+        return (
+            f"[tags_to_oids={self.tags_to_oids}, tags_to_class_ids={self.tags_to_class_ids} "
+            f"is_read_only={self.is_read_only}, orig_object_id={self.orig_object_id}, "
+            f"root_location={self.root_location}, origin_location={self.origin_location}, "
+            f"alias={self.alias}, replica_locations={self.replica_locations}]"
+        )

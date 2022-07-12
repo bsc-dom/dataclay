@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 from io import BytesIO
@@ -8,12 +7,13 @@ from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWr
 from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 
 class StringWrapper(DataClayPythonWrapper):
     """String with different modes/encodings."""
+
     __slots__ = ("_mode", "_nullable")
 
     modes = {"utf-8", "utf-16", "binary"}
@@ -33,9 +33,9 @@ class StringWrapper(DataClayPythonWrapper):
         ba = io_file.read(size)
 
         if self._mode == "utf-8":
-            return ba.decode('utf-8')
+            return ba.decode("utf-8")
         elif self._mode == "utf-16":
-            return ba.decode('utf-16-be')
+            return ba.decode("utf-16-be")
         elif self._mode == "binary":
             return ba
         else:
@@ -50,9 +50,9 @@ class StringWrapper(DataClayPythonWrapper):
                 BooleanWrapper().write(io_file, True)
 
         if self._mode == "utf-8":
-            ba = value.encode('utf-8')
+            ba = value.encode("utf-8")
         elif self._mode == "utf-16":
-            ba = value.encode('utf-16-be')
+            ba = value.encode("utf-16-be")
         elif self._mode == "binary":
             if isinstance(value, BytesIO):
                 ba = value.getvalue()

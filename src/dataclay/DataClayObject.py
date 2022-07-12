@@ -22,15 +22,28 @@ elif six.PY3:
     from _pickle import Pickler, Unpickler
 import uuid
 from dataclay.DataClayObjMethods import dclayMethod
-from dataclay.DataClayObjProperties import DCLAY_PROPERTY_PREFIX, PreprocessedProperty, DynamicProperty, \
-    ReplicatedDynamicProperty
+from dataclay.DataClayObjProperties import (
+    DCLAY_PROPERTY_PREFIX,
+    PreprocessedProperty,
+    DynamicProperty,
+    ReplicatedDynamicProperty,
+)
 from dataclay.DataClayObjectExtraData import DataClayInstanceExtraData, DataClayClassExtraData
-from dataclay.commonruntime.ExecutionGateway import ExecutionGateway, class_extradata_cache_client, \
-    class_extradata_cache_exec_env
+from dataclay.commonruntime.ExecutionGateway import (
+    ExecutionGateway,
+    class_extradata_cache_client,
+    class_extradata_cache_exec_env,
+)
 from dataclay.commonruntime.Runtime import getRuntime
 from dataclay.commonruntime.RuntimeType import RuntimeType
-from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton, PersistentLoadPicklerHelper
-from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton, PersistentIdPicklerHelper
+from dataclay.serialization.lib.DeserializationLibUtils import (
+    DeserializationLibUtilsSingleton,
+    PersistentLoadPicklerHelper,
+)
+from dataclay.serialization.lib.SerializationLibUtils import (
+    SerializationLibUtilsSingleton,
+    PersistentIdPicklerHelper,
+)
 from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
 from dataclay.serialization.python.lang.StringWrapper import StringWrapper
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
@@ -43,14 +56,17 @@ from dataclay.exceptions.exceptions import DataClayException, ImproperlyConfigur
 import six
 
 # Publicly show the dataClay method decorators
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2016 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
 
 logger = logging.getLogger(__name__)
 
 # For efficiency purposes compile the folowing regular expressions:
 # (they return a tuple of two elements)
-re_property = re.compile(r"(?:^\s*@dclayReplication\s*\(\s*(before|after)Update\s*=\s*'([^']+)'(?:,\s(before|after)Update='([^']+)')?(?:,\sinMaster='(True|False)')?\s*\)\n)?^\s*@ClassField\s+([\w.]+)[ \t]+([\w.\[\]<> ,]+)", re.MULTILINE)
+re_property = re.compile(
+    r"(?:^\s*@dclayReplication\s*\(\s*(before|after)Update\s*=\s*'([^']+)'(?:,\s(before|after)Update='([^']+)')?(?:,\sinMaster='(True|False)')?\s*\)\n)?^\s*@ClassField\s+([\w.]+)[ \t]+([\w.\[\]<> ,]+)",
+    re.MULTILINE,
+)
 re_import = re.compile(r"^\s*@d[cC]layImport(?P<from_mode>From)?\s+(?P<import>.+)$", re.MULTILINE)
 
 
@@ -69,23 +85,25 @@ class DataClayObject(object):
 
     # Extradata of the object. Private field.
     __dclay_instance_extradata = None
-    
+
     def initialize_object(self, new_object_id=None):
-        """ 
-        @postcondition: Initialize the object 
+        """
+        @postcondition: Initialize the object
         @param new_object_id: Object Id of the object
         """
-        if new_object_id is not None:  # TODO: remove this if once ExecutionGateway is not initializing object id twice
+        if (
+            new_object_id is not None
+        ):  # TODO: remove this if once ExecutionGateway is not initializing object id twice
             self.set_object_id(new_object_id)
         getRuntime().add_to_heap(self)
-        
+
     def initialize_object_as_persistent(self):
         """
         @postcondition: object is initialized as a persistent object.
         Flags for "persistent" state might be different in EE and client.
         """
-        # TODO: improve this using an specialization (dgasull) 
-        if getRuntime().is_exec_env(): 
+        # TODO: improve this using an specialization (dgasull)
+        if getRuntime().is_exec_env():
             # *** Execution Environment flags
             self.set_persistent(True)
 
@@ -95,8 +113,8 @@ class DataClayObject(object):
             # same happens for pending to register flag.
             self.set_loaded(False)
             self.set_pending_to_register(False)
-            
-        else: 
+
+        else:
             # *** Client flags
             self.set_persistent(True)
 
@@ -106,15 +124,15 @@ class DataClayObject(object):
         class,.. See same function in DataClayExecutionObject for a different initialization. This design is intended to be
         clear with object state.
         """
-        # TODO: improve this using an specialization (dgasull) 
-        if getRuntime().is_exec_env(): 
+        # TODO: improve this using an specialization (dgasull)
+        if getRuntime().is_exec_env():
             # *** Execution Environment flags
             self.set_persistent(True)  # All objects in the EE are persistent
             self.set_loaded(True)
             self.set_pending_to_register(True)
             self.set_hint(getRuntime().get_hint())
             self.set_owner_session_id(getRuntime().get_session_id())
-    
+
     @classmethod
     def get_class_extradata(cls):
         classname = cls.__name__
@@ -131,15 +149,16 @@ class DataClayObject(object):
             logger.debug("Found class %s extradata in cache" % full_name)
             return dc_ced
 
-        logger.verbose('Proceeding to prepare the class `%s` from the ExecutionGateway',
-                       full_name)
-        logger.debug("The RuntimeType is: %s",
-                     "client" if getRuntime().current_type == RuntimeType.client else "not client")
+        logger.verbose("Proceeding to prepare the class `%s` from the ExecutionGateway", full_name)
+        logger.debug(
+            "The RuntimeType is: %s",
+            "client" if getRuntime().current_type == RuntimeType.client else "not client",
+        )
 
         dc_ced = DataClayClassExtraData(
             full_name=full_name,
             classname=classname,
-            namespace=module_name.split('.', 1)[0],
+            namespace=module_name.split(".", 1)[0],
             properties=dict(),
             imports=list(),
         )
@@ -181,18 +200,31 @@ class DataClayObject(object):
                         prop_name = declaration[-2]
                         prop_type = declaration[-1]
 
-                        beforeUpdate = declaration[1] if declaration[0] == 'before' \
-                            else declaration[3] if declaration[2] == 'before' else None
+                        beforeUpdate = (
+                            declaration[1]
+                            if declaration[0] == "before"
+                            else declaration[3]
+                            if declaration[2] == "before"
+                            else None
+                        )
 
-                        afterUpdate = declaration[1] if declaration[0] == 'after' \
-                            else declaration[3] if declaration[2] == 'after' else None
+                        afterUpdate = (
+                            declaration[1]
+                            if declaration[0] == "after"
+                            else declaration[3]
+                            if declaration[2] == "after"
+                            else None
+                        )
 
-                        inMaster = declaration[4] == 'True'
+                        inMaster = declaration[4] == "True"
 
                         current_type = Type.build_from_docstring(prop_type)
 
-                        logger.trace("Property `%s` (with type signature `%s`) ready to go",
-                                    prop_name, current_type.signature)
+                        logger.trace(
+                            "Property `%s` (with type signature `%s`) ready to go",
+                            prop_name,
+                            current_type.signature,
+                        )
 
                         dc_ced.properties[prop_name] = PreprocessedProperty(
                             name=prop_name,
@@ -200,7 +232,8 @@ class DataClayObject(object):
                             type=current_type,
                             beforeUpdate=beforeUpdate,
                             afterUpdate=afterUpdate,
-                            inMaster=inMaster)
+                            inMaster=inMaster,
+                        )
 
                         # Keep the position tracking (required for other languages compatibility)
                         property_pos += 1
@@ -236,31 +269,41 @@ class DataClayObject(object):
 
                     prop_info = class_stubinfo.properties[prop_name]
                     if prop_info.beforeUpdate is not None or prop_info.afterUpdate is not None:
-                        setattr(cls, prop_name,
-                                ReplicatedDynamicProperty(
-                                    prop_name,
-                                    prop_info.beforeUpdate,
-                                    prop_info.afterUpdate,
-                                    prop_info.inMaster
-                                ))
+                        setattr(
+                            cls,
+                            prop_name,
+                            ReplicatedDynamicProperty(
+                                prop_name,
+                                prop_info.beforeUpdate,
+                                prop_info.afterUpdate,
+                                prop_info.inMaster,
+                            ),
+                        )
 
                     else:
                         # dct[prop_name] = DynamicProperty(prop_name)
                         setattr(cls, prop_name, DynamicProperty(prop_name))
 
-                    dc_ced.properties[prop_name] = PreprocessedProperty(name=prop_name, position=i,
-                                                                        type=prop_info.propertyType,
-                                                                        beforeUpdate=prop_info.beforeUpdate,
-                                                                        afterUpdate=prop_info.afterUpdate,
-                                                                        inMaster=prop_info.inMaster)
+                    dc_ced.properties[prop_name] = PreprocessedProperty(
+                        name=prop_name,
+                        position=i,
+                        type=prop_info.propertyType,
+                        beforeUpdate=prop_info.beforeUpdate,
+                        afterUpdate=prop_info.afterUpdate,
+                        inMaster=prop_info.inMaster,
+                    )
 
         elif getRuntime().current_type == RuntimeType.exe_env:
-            logger.verbose("Seems that we are a DataService, proceeding to load class %s",
-                           dc_ced.full_name)
+            logger.verbose(
+                "Seems that we are a DataService, proceeding to load class %s", dc_ced.full_name
+            )
             namespace_in_classname, dclay_classname = dc_ced.full_name.split(".", 1)
             if namespace_in_classname != dc_ced.namespace:
-                raise DataClayException("Namespace in ClassName: %s is different from one in ClassExtraData: %s",
-                                        namespace_in_classname, dc_ced.namespace)
+                raise DataClayException(
+                    "Namespace in ClassName: %s is different from one in ClassExtraData: %s",
+                    namespace_in_classname,
+                    dc_ced.namespace,
+                )
             mc = load_metaclass(dc_ced.namespace, dclay_classname)
             dc_ced.metaclass_container = mc
             dc_ced.class_id = mc.dataClayID
@@ -268,13 +311,16 @@ class DataClayObject(object):
             # Prepare the `property` magic --in addition to prepare the properties dictionary too
             for prop_info in dc_ced.metaclass_container.properties:
                 if prop_info.beforeUpdate is not None or prop_info.afterUpdate is not None:
-                    setattr(cls, prop_info.name,
-                            ReplicatedDynamicProperty(
-                                prop_info.name,
-                                prop_info.beforeUpdate,
-                                prop_info.afterUpdate,
-                                prop_info.inMaster
-                            ))
+                    setattr(
+                        cls,
+                        prop_info.name,
+                        ReplicatedDynamicProperty(
+                            prop_info.name,
+                            prop_info.beforeUpdate,
+                            prop_info.afterUpdate,
+                            prop_info.inMaster,
+                        ),
+                    )
                 else:
                     setattr(cls, prop_info.name, DynamicProperty(prop_info.name))
 
@@ -284,7 +330,8 @@ class DataClayObject(object):
                     type=prop_info.type,
                     beforeUpdate=prop_info.beforeUpdate,
                     afterUpdate=prop_info.afterUpdate,
-                    inMaster=prop_info.inMaster)
+                    inMaster=prop_info.inMaster,
+                )
         else:
             raise RuntimeError("Could not recognize RuntimeType %s", getRuntime().current_type)
 
@@ -297,7 +344,11 @@ class DataClayObject(object):
         return dc_ced
 
     def _populate_internal_fields(self, deserializing=False, **kwargs):
-        logger.debug("Populating internal fields for the class. Provided kwargs: %s deserializing=%s", kwargs, str(deserializing))
+        logger.debug(
+            "Populating internal fields for the class. Provided kwargs: %s deserializing=%s",
+            kwargs,
+            str(deserializing),
+        )
 
         # Mix default values with the provided ones through kwargs
         fields = {
@@ -313,18 +364,20 @@ class DataClayObject(object):
 
         # Store some extradata in the class
         instance_dict = object.__getattribute__(self, "__dict__")
-        instance_dict["_DataClayObject__dclay_instance_extradata"] = DataClayInstanceExtraData(**fields)
+        instance_dict["_DataClayObject__dclay_instance_extradata"] = DataClayInstanceExtraData(
+            **fields
+        )
 
         """
         TODO: get_class_extradata function is adding DynamicProperties to class (not to instance!) so it is needed 
         to be called. Please, use a better function for that. 
         """
         instance_dict["_dclay_class_extradata"] = self.get_class_extradata()
-        
+
         # Initialize object
         self.initialize_object()
-        if not deserializing: 
-            """ object created during executions is volatile. """
+        if not deserializing:
+            """object created during executions is volatile."""
             self.initialize_object_as_volatile()
 
     def get_location(self):
@@ -342,26 +395,34 @@ class DataClayObject(object):
         #     raise AttributeError("The master location should be the ExecutionEnvironmentID, "
         #                          "instead we received: %s" % eeid)
         self.__dclay_instance_extradata.master_location = eeid
-        
+
     def get_all_locations(self):
         """Return all the locations of this object."""
         return getRuntime().get_all_locations(self.__dclay_instance_extradata.object_id)
-    
+
     def new_replica(self, backend_id=None, recursive=True):
-        return getRuntime().new_replica(self.get_object_id(), self.get_hint(),
-                                        backend_id, None, recursive)
+        return getRuntime().new_replica(
+            self.get_object_id(), self.get_hint(), backend_id, None, recursive
+        )
 
     def new_version(self, backend_id=None, recursive=True):
-        return getRuntime().new_version(self.get_object_id(), self.get_hint(), self.get_class_id(),
-                                        self.get_dataset_id(), backend_id, None, recursive)
+        return getRuntime().new_version(
+            self.get_object_id(),
+            self.get_hint(),
+            self.get_class_id(),
+            self.get_dataset_id(),
+            backend_id,
+            None,
+            recursive,
+        )
 
     def consolidate_version(self):
-        """ Consolidate: copy contents of current version object to original object"""
+        """Consolidate: copy contents of current version object to original object"""
         return getRuntime().consolidate_version(self.get_object_id(), self.get_hint())
 
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
         if alias == "":
-            raise AttributeError('Alias cannot be empty')
+            raise AttributeError("Alias cannot be empty")
         getRuntime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
     def get_execution_environments_info(self):
@@ -393,15 +454,16 @@ class DataClayObject(object):
             return
         else:
             getRuntime().update_object(self, from_object)
-            
+
     def dc_put(self, alias, backend_id=None, recursive=True):
         if not alias:
-            raise AttributeError('Alias cannot be null or empty')
+            raise AttributeError("Alias cannot be null or empty")
         getRuntime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
-            
+
     def set_all(self, from_object):
-        properties = sorted(self.get_class_extradata().properties.values(),
-                key=attrgetter('position'))
+        properties = sorted(
+            self.get_class_extradata().properties.values(), key=attrgetter("position")
+        )
 
         logger.verbose("Set all properties from object %s", from_object.get_object_id())
 
@@ -415,7 +477,7 @@ class DataClayObject(object):
         @return Object id
         """
         return self.__dclay_instance_extradata.object_id
-    
+
     def set_object_id(self, new_object_id):
         """
         @postcondition: Set object id of the object
@@ -474,8 +536,6 @@ class DataClayObject(object):
             self.__dclay_instance_extradata.replica_locations = replica_locations
         replica_locations.append(new_replica_location)
 
-
-
     def remove_replica_location(self, new_replica_location):
         replica_locations = self.__dclay_instance_extradata.replica_locations
         replica_locations.remove(new_replica_location)
@@ -501,11 +561,11 @@ class DataClayObject(object):
 
     def get_dataset_id(self):
         """
-        @postcondition: Return dataset id of the object 
+        @postcondition: Return dataset id of the object
         @return Data set id
         """
         return self.__dclay_instance_extradata.dataset_id
-    
+
     def set_dataset_id(self, new_dataset_id):
         """
         @postcondition: Set dataset id of the object
@@ -532,7 +592,7 @@ class DataClayObject(object):
             return "%s:%s:%s" % (
                 self.__dclay_instance_extradata.object_id,
                 hint,
-                self.get_class_extradata().class_id
+                self.get_class_extradata().class_id,
             )
         else:
             return None
@@ -569,14 +629,14 @@ class DataClayObject(object):
 
     def is_persistent(self):
         """
-        @postcondition: Return TRUE if object is persistent. FALSE otherwise. 
+        @postcondition: Return TRUE if object is persistent. FALSE otherwise.
         @return is persistent flag
         """
         return self.__dclay_instance_extradata.persistent_flag
 
     def is_loaded(self):
         """
-        @postcondition: Return TRUE if object is loaded. FALSE otherwise. 
+        @postcondition: Return TRUE if object is loaded. FALSE otherwise.
         @return is loaded flag
         """
         return self.__dclay_instance_extradata.loaded_flag
@@ -590,49 +650,49 @@ class DataClayObject(object):
         @return Owner session id
         """
         return self.__dclay_instance_extradata.owner_session_id
-    
+
     def set_owner_session_id(self, the_owner_session_id):
         """
-        @postcondition: Set ID of session of the owner of the object. 
-        @param the_owner_session_id: owner session id 
-        """ 
+        @postcondition: Set ID of session of the owner of the object.
+        @param the_owner_session_id: owner session id
+        """
         self.__dclay_instance_extradata.owner_session_id = the_owner_session_id
-    
+
     def is_pending_to_register(self):
         """
-        @postcondition: Return TRUE if object is pending to register. FALSE otherwise. 
+        @postcondition: Return TRUE if object is pending to register. FALSE otherwise.
         @return is pending to register flag
         """
         return self.__dclay_instance_extradata.pending_to_register_flag
-    
+
     def set_pending_to_register(self, pending_to_register):
         """
-        @postcondition: Set pending to register flag. 
+        @postcondition: Set pending to register flag.
         @param pending_to_register: The flag to set
         """
         self.__dclay_instance_extradata.pending_to_register_flag = pending_to_register
-    
+
     def is_dirty(self):
         """
-        @postcondition: Return TRUE if object is dirty (it was modified). FALSE otherwise. 
+        @postcondition: Return TRUE if object is dirty (it was modified). FALSE otherwise.
         @return dirty flag
         """
         return self.__dclay_instance_extradata.dirty_flag
-    
+
     def set_dirty(self, dirty_value):
         """
-        @postcondition: Set dirty flag. 
+        @postcondition: Set dirty flag.
         @param dirty_value: The flag to set
         """
         self.__dclay_instance_extradata.dirty_flag = dirty_value
-    
+
     def get_hint(self):
         """
         @postcondition: Get hint
         @return Hint
         """
         return self.__dclay_instance_extradata.execenv_id
-    
+
     def set_hint(self, new_hint):
         """
         @postcondition: Set hint
@@ -658,17 +718,18 @@ class DataClayObject(object):
 
     def synchronize(self, field_name, value):
         from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
+
         return getRuntime().synchronize(self, DCLAY_SETTER_PREFIX + field_name, value)
 
     def session_detach(self):
         """
         Detach object from session, i.e. remove reference from current session provided to current object,
-	    'dear garbage-collector, the current session is not using this object anymore'
+            'dear garbage-collector, the current session is not using this object anymore'
         """
         getRuntime().detach_object_from_session(self.get_object_id(), self.get_hint())
 
     def get_external_dataclay_info(self, dataclay_id):
-        """ Get external dataClay information
+        """Get external dataClay information
         :param dataclay_id: external dataClay ID
         :return: DataClayInstance information
         :type dataclay_id: UUID
@@ -676,8 +737,15 @@ class DataClayObject(object):
         """
         return getRuntime().get_external_dataclay_info(dataclay_id)
 
-    def serialize(self, io_file, ignore_user_types, iface_bitmaps,
-                  cur_serialized_objs, pending_objs, reference_counting):
+    def serialize(
+        self,
+        io_file,
+        ignore_user_types,
+        iface_bitmaps,
+        cur_serialized_objs,
+        pending_objs,
+        reference_counting,
+    ):
         # Reference counting information
         # First integer represent the position in the buffer in which
         # reference counting starts. This is done to avoid "holding"
@@ -686,12 +754,12 @@ class DataClayObject(object):
         # in new serialization, this will be done through padding
         # TODO: use padding instead once new serialization is implemented
         IntegerWrapper().write(io_file, 0)
-        
+
         cur_master_loc = self.get_master_location()
         if cur_master_loc is not None:
             StringWrapper().write(io_file, str(cur_master_loc))
         else:
-            StringWrapper().write(io_file, str("x"))        
+            StringWrapper().write(io_file, str("x"))
 
         if hasattr(self, "__getstate__"):
             # The object has a user-defined serialization method.
@@ -707,7 +775,7 @@ class DataClayObject(object):
                 import cPickle as pickle
             elif six.PY3:
                 import _pickle as pickle
-            
+
             state = pickle.dumps(self.__getstate__())
 
             # Leave the previous value, probably False & True`
@@ -720,8 +788,8 @@ class DataClayObject(object):
             # Regular dataClay provided serialization
             # Get the list of properties, making sure it is sorted
             properties = sorted(
-                self.get_class_extradata().properties.values(),
-                key=attrgetter('position'))
+                self.get_class_extradata().properties.values(), key=attrgetter("position")
+            )
 
             logger.verbose("Serializing list of properties: %s", properties)
 
@@ -731,7 +799,7 @@ class DataClayObject(object):
                     value = object.__getattribute__(self, "%s%s" % (DCLAY_PROPERTY_PREFIX, p.name))
                 except AttributeError:
                     value = None
-                
+
                 logger.verbose("Serializing property %s", p.name)
 
                 if value is None:
@@ -740,28 +808,34 @@ class DataClayObject(object):
                     if isinstance(p.type, UserType):
                         if not ignore_user_types:
                             BooleanWrapper().write(io_file, True)
-                            SerializationLibUtilsSingleton.serialize_association(io_file, value, cur_serialized_objs, pending_objs, reference_counting)
-                        else: 
+                            SerializationLibUtilsSingleton.serialize_association(
+                                io_file,
+                                value,
+                                cur_serialized_objs,
+                                pending_objs,
+                                reference_counting,
+                            )
+                        else:
                             BooleanWrapper().write(io_file, False)
                     else:
                         BooleanWrapper().write(io_file, True)
                         pck = Pickler(io_file, protocol=-1)
-                        pck.persistent_id = PersistentIdPicklerHelper(cur_serialized_objs, pending_objs, reference_counting)
+                        pck.persistent_id = PersistentIdPicklerHelper(
+                            cur_serialized_objs, pending_objs, reference_counting
+                        )
                         pck.dump(value)
 
         # Reference counting
         # TODO: this should be removed in new serialization
         # TODO: (by using paddings to directly access reference counters inside metadata)
-        
+
         cur_stream_pos = io_file.tell()
         io_file.seek(0)
         IntegerWrapper().write(io_file, cur_stream_pos)
-        io_file.seek(cur_stream_pos)        
+        io_file.seek(cur_stream_pos)
         reference_counting.serialize_reference_counting(self, io_file)
 
-    def deserialize(self, io_file, iface_bitmaps,
-                    metadata,
-                    cur_deserialized_python_objs):
+    def deserialize(self, io_file, iface_bitmaps, metadata, cur_deserialized_python_objs):
         """Reciprocal to serialize."""
         logger.verbose("Deserializing object %s", str(self.get_object_id()))
 
@@ -785,7 +859,7 @@ class DataClayObject(object):
         #     self.__dclay_instance_extradata.loaded_flag = True
 
         """ reference counting """
-        """ discard padding """ 
+        """ discard padding """
         IntegerWrapper().read(io_file)
 
         """ deserialize master_location """
@@ -798,12 +872,12 @@ class DataClayObject(object):
         if hasattr(self, "__setstate__"):
             # The object has a user-defined deserialization method.
 
-            # Use pickle, and use that method instead            
+            # Use pickle, and use that method instead
             if six.PY2:
                 import cPickle as pickle
             elif six.PY3:
                 import _pickle as pickle
-                
+
             state = pickle.loads(StringWrapper(mode="binary").read(io_file))
             self.__setstate__(state)
 
@@ -812,14 +886,14 @@ class DataClayObject(object):
 
             # Start by getting the properties
             properties = sorted(
-                self.get_class_extradata().properties.values(),
-                key=attrgetter('position'))
-            
+                self.get_class_extradata().properties.values(), key=attrgetter("position")
+            )
+
             logger.trace("Tell io_file before loop: %s", io_file.tell())
             logger.verbose("Deserializing list of properties: %s", properties)
 
             for p in properties:
-                
+
                 logger.trace("Tell io_file in loop: %s", io_file.tell())
                 not_null = BooleanWrapper().read(io_file)
                 value = None
@@ -828,25 +902,32 @@ class DataClayObject(object):
                     if isinstance(p.type, UserType):
                         try:
                             logger.debug("Property %s is an association", p.name)
-                            value = DeserializationLibUtilsSingleton.deserialize_association(io_file, iface_bitmaps, metadata, cur_deserialized_python_objs, getRuntime())
+                            value = DeserializationLibUtilsSingleton.deserialize_association(
+                                io_file,
+                                iface_bitmaps,
+                                metadata,
+                                cur_deserialized_python_objs,
+                                getRuntime(),
+                            )
                         except KeyError as e:
-                            logger.error('Failed to deserialize association', exc_info=True)
+                            logger.error("Failed to deserialize association", exc_info=True)
                     else:
                         try:
                             upck = Unpickler(io_file)
                             upck.persistent_load = PersistentLoadPicklerHelper(
-                                metadata, cur_deserialized_python_objs, getRuntime())
+                                metadata, cur_deserialized_python_objs, getRuntime()
+                            )
                             value = upck.load()
                         except:
                             traceback.print_exc()
 
-                #FIXME: setting value calls __str__ that can cause a remote call!
-                #logger.debug("Setting value %s for property %s", value, p.name)
+                # FIXME: setting value calls __str__ that can cause a remote call!
+                # logger.debug("Setting value %s for property %s", value, p.name)
 
                 object.__setattr__(self, "%s%s" % (DCLAY_PROPERTY_PREFIX, p.name), value)
-                
+
         """ reference counting bytes here """
-        """ TODO: discard bytes? """ 
+        """ TODO: discard bytes? """
 
     def __reduce__(self):
         """Support for pickle protocol.
@@ -867,20 +948,28 @@ class DataClayObject(object):
             logger.verbose("Pickling of object is causing a make_persistent")
             self.make_persistent()
 
-        return _get_object_by_id_helper, (self.get_object_id(),
-                                          self.get_class_extradata().class_id,
-                                          self.get_hint())
+        return _get_object_by_id_helper, (
+            self.get_object_id(),
+            self.get_class_extradata().class_id,
+            self.get_hint(),
+        )
 
     def __repr__(self):
         dco_extradata = self.__dclay_instance_extradata
         dcc_extradata = self.get_class_extradata()
 
         if dco_extradata.persistent_flag:
-            return "<%s (ClassID=%s) instance with ObjectID=%s>" % \
-                   (dcc_extradata.classname, dcc_extradata.class_id, dco_extradata.object_id)
+            return "<%s (ClassID=%s) instance with ObjectID=%s>" % (
+                dcc_extradata.classname,
+                dcc_extradata.class_id,
+                dco_extradata.object_id,
+            )
         else:
-            return "<%s (ClassID=%s) volatile instance with ObjectID=%s>" % \
-                   (dcc_extradata.classname, dcc_extradata.class_id, dco_extradata.object_id)
+            return "<%s (ClassID=%s) volatile instance with ObjectID=%s>" % (
+                dcc_extradata.classname,
+                dcc_extradata.class_id,
+                dco_extradata.object_id,
+            )
 
     def __eq__(self, other):
         if not isinstance(other, DataClayObject):
@@ -892,15 +981,20 @@ class DataClayObject(object):
         if not self_extradata.persistent_flag or not other_extradata.persistent_flag:
             return False
 
-        return self_extradata.object_id and other_extradata.object_id \
+        return (
+            self_extradata.object_id
+            and other_extradata.object_id
             and self_extradata.object_id == other_extradata.object_id
+        )
 
     # FIXME: Think another solution, the user may want to override the method
     def __hash__(self):
         self_extradata = self.__dclay_instance_extradata
         return hash(self_extradata.object_id)
 
-    @dclayMethod(obj='anything', property_name='str', value='anything', beforeUpdate='str', afterUpdate='str')
+    @dclayMethod(
+        obj="anything", property_name="str", value="anything", beforeUpdate="str", afterUpdate="str"
+    )
     def __setUpdate__(self, obj, property_name, value, beforeUpdate, afterUpdate):
         if beforeUpdate is not None:
             getattr(self, beforeUpdate)(property_name, value)

@@ -1,15 +1,16 @@
-
 """ Class description goes here. """
 
 from dataclay import StorageObject
 from dataclay import dclayMethod
 import logging
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2016 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
 
 CLASSES_TO_REGISTER = (
-    "GenericSplit", "WorkStealingSplit", "WorkMovingSplit",
+    "GenericSplit",
+    "WorkStealingSplit",
+    "WorkMovingSplit",
 )
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ def split(iterable, **split_options):
         return iterable.split(**split_options)
     except AttributeError:
         # Otherwise, simply return a iterable which yields a single item
-        return iterable,  # <- that comma is important!
+        return (iterable,)  # <- that comma is important!
 
 
 # Intended to be also collections.Iterable
@@ -85,7 +86,9 @@ class GenericSplit(StorageObject):
         try:
             return next(self._current_iter_chunk)
         except StopIteration:
-            logger.info("Iterator %s passing the chunk_idx %d", self.getID(), self._current_chunk_idx)
+            logger.info(
+                "Iterator %s passing the chunk_idx %d", self.getID(), self._current_chunk_idx
+            )
 
         if self._go_next_chunk():
             # At this point, for non-degenerate collections, means that there
@@ -159,13 +162,16 @@ class WorkStealingSplit(GenericSplit):
         try:
             return next(self._current_iter_chunk)
         except StopIteration:
-            logger.info("Iterator %s passing the chunk_idx %d", self.getID(), self._current_chunk_idx)
+            logger.info(
+                "Iterator %s passing the chunk_idx %d", self.getID(), self._current_chunk_idx
+            )
 
         if self._go_next_chunk():
             return next(self)
         else:
             # Proceed to worksteal!
             import random
+
             # Use the list of brother locally [**]
             brothers = self.split_brothers
             while brothers:
@@ -211,8 +217,9 @@ class WorkMovingSplit(WorkStealingSplit):
     def _post_stealing(self, stolen_object):
         """Once an object has been stolen, perform the movement."""
         # FIXME: We should not assume that this is server-side
-        from dataclay.commonruntime.Runtime import getRuntime 
+        from dataclay.commonruntime.Runtime import getRuntime
         from dataclay.commonruntime.Settings import settings
+
         getRuntime().move_object(stolen_object, settings.storage_id)
         return stolen_object
 
@@ -235,23 +242,26 @@ class SplittableCollectionMixin(object):
         try:
             return self.chunks
         except AttributeError:
-            raise NotImplementedError("ChunkedCollections must either implement the get_chunks method "
-                                      "or contain a `chunks` attribute.")
+            raise NotImplementedError(
+                "ChunkedCollections must either implement the get_chunks method "
+                "or contain a `chunks` attribute."
+            )
 
     # TODO: define the actual split method parameters (contact with Hecuba?).
     # TODO: Right now you can see "hardcoded" the "LocalIteration" behaviour
-    @dclayMethod(return_="list<storageobject>", split_class="anything",
-                 _local=True)
+    @dclayMethod(return_="list<storageobject>", split_class="anything", _local=True)
     def split(self, split_class=None):
         # TODO: this could be improved, library could cache stuff, or a joint call could be added
         from dataclay.commonruntime.Runtime import getRuntime
+
         location_chunks = sorted(
             (
                 # Overly complex way to get a single ExecutionEnvironmentID
                 # works in both Python2 & Python3
                 next(iter(((getRuntime().get_all_locations(ch.get_object_id())).keys()))),
-                ch
-            ) for ch in self.get_chunks()
+                ch,
+            )
+            for ch in self.get_chunks()
         )
 
         result = list()
@@ -266,8 +276,9 @@ class SplittableCollectionMixin(object):
         elif isinstance(split_class, basestring):
             split_class = getattr(splitting, split_class)
         else:
-            raise NotImplementedError("I could not understand %s (of type %s)" % 
-                                      (split_class, type(split_class)))
+            raise NotImplementedError(
+                "I could not understand %s (of type %s)" % (split_class, type(split_class))
+            )
 
         unused_exec_envs = set(getRuntime().get_all_execution_environments_info().keys())
 

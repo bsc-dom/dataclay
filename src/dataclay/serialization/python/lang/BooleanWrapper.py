@@ -1,15 +1,15 @@
-
 """ Class description goes here. """
 
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 
 class BooleanWrapper(DataClayPythonWrapper):
     """One-byte bool type (0 means False)."""
+
     __slots__ = ()
 
     def __init__(self):
@@ -27,4 +27,3 @@ class BooleanWrapper(DataClayPythonWrapper):
             IntegerWrapper(8).write(io_file, 0x01)
         else:
             IntegerWrapper(8).write(io_file, 0x00)
-

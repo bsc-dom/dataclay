@@ -1,16 +1,16 @@
-
 """ Class description goes here. """
 
 import uuid
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 
 class DCIDWrapper(DataClayPythonWrapper):
     """dataClay UUID (straightforward serialization)."""
+
     __slots__ = ("_nullable",)
 
     def __init__(self, nullable=False):

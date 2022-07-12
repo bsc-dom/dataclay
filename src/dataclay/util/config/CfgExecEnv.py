@@ -1,12 +1,11 @@
-
 """ Class description goes here. """
 
 import os
 import logging
 from dataclay.commonruntime.Settings import settings
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 logger = logging.getLogger(__name__)
 
 
@@ -32,13 +31,14 @@ def set_defaults():
     settings.cache_on_deploy = True
 
     # ToDo: This is a dangerous default, used in Docker but... useless everywhere else.
-        
+
     deploy_path = os.getenv("DEPLOY_PATH", "/dataclay/deploy")
     settings.deploy_path = deploy_path
-    settings.deploy_path_source = os.getenv("DEPLOY_PATH_SRC",
-                                            os.path.join(deploy_path, "source"))
+    settings.deploy_path_source = os.getenv("DEPLOY_PATH_SRC", os.path.join(deploy_path, "source"))
     # Retain the IDs associated to this server
-    settings.storage_id = None  # The Java, which is both StorageLocation and Java ExecutionEnvironment
+    settings.storage_id = (
+        None  # The Java, which is both StorageLocation and Java ExecutionEnvironment
+    )
     settings.environment_id = None  # This is (should be) ourselves
 
     ###########################################################################

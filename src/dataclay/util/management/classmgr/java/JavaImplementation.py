@@ -1,12 +1,10 @@
-
 """ Class description goes here. """
 
 from ..Implementation import Implementation
 
 
 class JavaImplementation(Implementation):
-    _fields = ["dataClayID"
-               ]
+    _fields = ["dataClayID"]
 
 
 """ _fields = ["position",

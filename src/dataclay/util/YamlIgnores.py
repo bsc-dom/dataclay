@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 IGNORE_PREFIXES = [

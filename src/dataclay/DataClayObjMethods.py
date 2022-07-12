@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 from decorator import decorate
@@ -7,8 +6,8 @@ import six
 import traceback
 from dataclay.commonruntime.Runtime import getRuntime
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2016 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +17,13 @@ def _dclayMethod(f, self, *args, **kwargs):
     logger.verbose("Calling function %s", f.__name__)
     is_exec_env = getRuntime().is_exec_env()
     try:
-        if (is_exec_env and self.is_loaded()) \
-                or (not is_exec_env and not self.is_persistent())\
-                or f._dclay_local \
-                or f.__name__ == "__setstate__"\
-                or f.__name__ == "__getstate__":
+        if (
+            (is_exec_env and self.is_loaded())
+            or (not is_exec_env and not self.is_persistent())
+            or f._dclay_local
+            or f.__name__ == "__setstate__"
+            or f.__name__ == "__getstate__"
+        ):
             return f(self, *args, **kwargs)
         else:
             return getRuntime().execute_implementation_aux(f.__name__, self, args, self.get_hint())
@@ -67,11 +68,13 @@ class dclayMethod(object):
 
     def __call__(self, f):
         if six.PY2:
-            logger.verbose('Preparing dataClay method `%s` with arguments: %s',
-                     f.func_name, self._method_args)
+            logger.verbose(
+                "Preparing dataClay method `%s` with arguments: %s", f.func_name, self._method_args
+            )
         elif six.PY3:
-            logger.verbose('Preparing dataClay method `%s` with arguments: %s',
-                     f.__name__, self._method_args)
+            logger.verbose(
+                "Preparing dataClay method `%s` with arguments: %s", f.__name__, self._method_args
+            )
         decorated_func = decorate(f, _dclayMethod)
         decorated_func._dclay_entrypoint = f
         decorated_func._dclay_ret = self._method_args.pop("return_", None)

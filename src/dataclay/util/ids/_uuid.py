@@ -1,11 +1,10 @@
-
 """ Class description goes here. """
 
 from uuid import UUID
 from yaml import Loader, Dumper
 
-JAVA_UUID_TAG = u'tag:yaml.org,2002:java.util.UUID'
-DATACLAY_ID_PREFIX = u'tag:yaml.org,2002:es.bsc.dataclay.util.ids'
+JAVA_UUID_TAG = "tag:yaml.org,2002:java.util.UUID"
+DATACLAY_ID_PREFIX = "tag:yaml.org,2002:es.bsc.dataclay.util.ids"
 
 
 def uuid_representer(dumper, data):
@@ -23,4 +22,5 @@ Loader.add_multi_constructor(
     DATACLAY_ID_PREFIX,
     # This ignores the tag, as ImplementationID, OperationID, *ID are always
     # used directly as their UUID, not their specific type.
-    lambda loader, _, node: uuid_constructor(loader, node))
+    lambda loader, _, node: uuid_constructor(loader, node),
+)

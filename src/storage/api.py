@@ -10,6 +10,7 @@ from dataclay.commonruntime.Runtime import getRuntime
 
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
+
 # Also "publish" the split method
 from dataclay.contrib.splitting import split
 
@@ -17,12 +18,12 @@ from dataclay.contrib.splitting import split
 from .models.storagedict import StorageDict
 from .models.storagelist import StorageList
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 _initialized = False
 
-logger = logging.getLogger('dataclay.storage.api')
+logger = logging.getLogger("dataclay.storage.api")
 
 
 def getByID(object_strid):
@@ -32,9 +33,9 @@ def getByID(object_strid):
     """
     try:
         object_id, hint, class_id = object_strid.split(":")
-        ret = getRuntime().get_object_by_id(uuid.UUID(object_id),
-                                            class_id=uuid.UUID(class_id),
-                                            hint=uuid.UUID(hint))
+        ret = getRuntime().get_object_by_id(
+            uuid.UUID(object_id), class_id=uuid.UUID(class_id), hint=uuid.UUID(hint)
+        )
     except ValueError:  # this can fail for both [not enough semicolons]|[invalid uuid]
         # Fallback behaviour: no extra fields, the whole string is the ObjectID UUID
         object_id = object_strid
@@ -83,10 +84,13 @@ def initWorkerPostFork():
 
     # ToDo: this is ugly, avoid, fix the issue:
     # https://storage.bsc.es/gitlab/object_storage/poas/issues/78
-    logger.warning("Arbitrary sleep done here in order to minimize "
-                   "race conditions on opened connections to management database")
+    logger.warning(
+        "Arbitrary sleep done here in order to minimize "
+        "race conditions on opened connections to management database"
+    )
     from time import sleep
     from random import randint
+
     sleep(randint(0, 30))
     ##########################################################
     dataclay.api.post_network_init()
@@ -138,7 +142,6 @@ def finish(**kwargs):
 
 
 class TaskContext(object):
-
     def __init__(self, logger, values, config_file_path=None, **kwargs):
         """Initialize the TaskContext for the current task.
         :param logger: A logger that can be used for the storage.api
@@ -167,6 +170,7 @@ class TaskContext(object):
             logger.warn("Exception received: %s", etype)
 
             import traceback
+
             traceback.print_exception(etype, value, tb)
 
             pass  # Exception occurred
@@ -179,4 +183,5 @@ class TaskContext(object):
 
 if strtobool(os.getenv("DEACTIVATE_STORAGE_LIBRARY", "False")):
     from dataclay.contrib.dataclay_dummy import deactivate_storage_library
+
     deactivate_storage_library()

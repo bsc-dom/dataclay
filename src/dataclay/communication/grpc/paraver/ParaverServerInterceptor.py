@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 """Interceptor for GRPC server calls."""
@@ -42,30 +41,34 @@ class ParaverServerInterceptor(ServerInterceptor):
         if settings.paraver_tracing_enabled:
 
             logger.debug("Intercept")
-            
+
             try:
-                ParaverServerInterceptor.request_id = int(handler_call_details.invocation_metadata[1].value)
+                ParaverServerInterceptor.request_id = int(
+                    handler_call_details.invocation_metadata[1].value
+                )
             except Exception:
                 try:
-                    ParaverServerInterceptor.request_id = int(handler_call_details.invocation_metadata[0].value)
+                    ParaverServerInterceptor.request_id = int(
+                        handler_call_details.invocation_metadata[0].value
+                    )
                 except Exception:
                     return continuation(handler_call_details)
 
             if "java" in handler_call_details.invocation_metadata[0].value:
                 # If client call comes from Java client_port is logicmodule_port
                 ParaverServerInterceptor.sv_client_port = settings.logicmodule_port
-                
+
             elif "python" in handler_call_details.invocation_metadata[1].value:
                 # If comes from python client_port is static one defined in client interceptor
                 ParaverServerInterceptor.sv_client_port = 892892
-                
+
             client_port = ParaverServerInterceptor.sv_client_port
 
             self.prv_manager.add_network_receive(
                 self.origin_hostname,
-                client_port, 
+                client_port,
                 ParaverServerInterceptor.request_id,
-                0 # unknown/unused method id
+                0,  # unknown/unused method id
             )
             response = continuation(handler_call_details)
 
@@ -75,12 +78,12 @@ class ParaverServerInterceptor(ServerInterceptor):
             return continuation(handler_call_details)
 
     def add_send(self):
-        """ If Paraver is active add the send trace to the traces queue"""
+        """If Paraver is active add the send trace to the traces queue"""
         if settings.paraver_tracing_enabled:
             if ParaverServerInterceptor.request_id == None:
                 # Interceptor didn't receive request
                 return
-            
+
             self.prv_manager.add_network_send(
                 int(time.time() * 1000000000),
                 TraceType.SEND_RESPONSE,
@@ -89,5 +92,5 @@ class ParaverServerInterceptor(ServerInterceptor):
                 self.origin_hostname,
                 ParaverServerInterceptor.sv_client_port,
                 0,  # unknown/unused message size
-                0   # unknown/unused method id
+                0,  # unknown/unused method id
             )

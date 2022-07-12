@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 """Automatic population helpers for the settings.
@@ -8,10 +7,11 @@ here help to automatically populate them.
 """
 from abc import ABCMeta, abstractmethod
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 from dataclay.commonruntime.Runtime import getRuntime
 import six
+
 
 @six.add_metaclass(ABCMeta)
 class AbstractLoader(object):
@@ -39,7 +39,6 @@ class AbstractLoader(object):
 
 
 class AccountIdLoader(AbstractLoader):
-
     def __init__(self, settings_object, field_of_account_name):
         """Load an Account ID for a certain user
 
@@ -55,7 +54,6 @@ class AccountIdLoader(AbstractLoader):
 
 
 class AccountCredentialLoader(AbstractLoader):
-
     def __init__(self, settings_object, field_of_account_id, field_of_account_password):
         """Prepare a credential pair for a certain account.
         :param field_of_account_id: The name of the field of the settings
@@ -68,5 +66,7 @@ class AccountCredentialLoader(AbstractLoader):
         super(AccountCredentialLoader, self).__init__(settings_object)
 
     def load_value(self):
-        return (getattr(self._settings, self._field_id),
-                getattr(self._settings, self._field_password))
+        return (
+            getattr(self._settings, self._field_id),
+            getattr(self._settings, self._field_password),
+        )
