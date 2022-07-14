@@ -279,6 +279,9 @@ def mds_init():
     )
     settings.current_session_id = session_id
 
+    # TODO: Remove it and use only DEFAULT_DATASET
+    settings.dataset_id = settings.DEFAULT_DATASET
+
     # Ensure they are in the path (high "priority")
     sys.path.insert(0, os.path.join(settings.stubs_folder, "sources"))
 

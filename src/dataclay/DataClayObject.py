@@ -351,6 +351,7 @@ class DataClayObject(object):
         )
 
         # Mix default values with the provided ones through kwargs
+        # TODO: Rename dataset_id to dataset_name
         fields = {
             "persistent_flag": False,
             "object_id": uuid.uuid4(),
@@ -420,10 +421,12 @@ class DataClayObject(object):
         """Consolidate: copy contents of current version object to original object"""
         return getRuntime().consolidate_version(self.get_object_id(), self.get_hint())
 
-    def make_persistent(self, alias=None, backend_id=None, recursive=True):
+    def make_persistent(self, alias=None, backend_id=None, recursive=True, dataset_name=None):
         if alias == "":
             raise AttributeError("Alias cannot be empty")
-        getRuntime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
+        getRuntime().make_persistent(
+            self, alias=alias, backend_id=backend_id, recursive=recursive, dataset_name=dataset_name
+        )
 
     def get_execution_environments_info(self):
         return getRuntime().get_all_execution_environments_info()
@@ -602,8 +605,11 @@ class DataClayObject(object):
         return getRuntime().get_object_by_id(object_id, *args, **kwargs)
 
     @classmethod
-    def get_by_alias(cls, alias, safe=True):
-        return getRuntime().get_by_alias(alias, cls.get_class_extradata().class_id, safe)
+    def get_by_alias(cls, alias, dataset_name=None):
+        # NOTE: "safe" was removed. The object_id cannot be obtained from alias string.
+        # NOTE: The alias is unique for each dataset. dataset_name is added. If none,
+        #       the default_dataset is used.
+        return getRuntime().get_by_alias(alias, dataset_name)
 
     @classmethod
     def delete_alias(cls, alias):

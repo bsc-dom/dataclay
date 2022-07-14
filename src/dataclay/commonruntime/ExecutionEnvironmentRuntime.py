@@ -144,7 +144,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             # If object is already persistent -> it must have a Hint (location = hint here)
             # If object is not persistent -> location is choosen (provided backend id or random, hash...).
             if location is None:
-                location = self.choose_location(instance, alias)
+                location = self.choose_location(instance)
 
         if alias is not None:
             # Add a new alias to an object.

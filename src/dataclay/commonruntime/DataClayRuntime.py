@@ -569,33 +569,15 @@ class DataClayRuntime(object):
         )
         self.ready_clients["@LM"].import_models_from_external_dataclay(namespace, ext_dataclay_id)
 
-    def get_by_alias(self, alias, class_id, safe=True):
-        if safe:
-            oid, class_id, hint = self.ready_clients["@LM"].get_object_from_alias(
-                self.get_session_id(), alias
-            )
-            return self.get_object_by_id(oid, class_id, hint)
-
-        if alias in self.alias_cache:
-            oid, class_id, hint = self.alias_cache[alias]
-        else:
-            oid = self.get_object_id_by_alias(alias)
-            class_id = class_id
-            hint = self.get_object_location_by_id(oid)
-            self.logger.debug("Added alias %s to cache", alias)
-            self.alias_cache[alias] = oid, class_id, hint
-
+    def get_by_alias(self, alias, dataset_name):
+        oid, class_id, hint = self.ready_clients["@MDS"].get_object_from_alias(
+            self.get_session_id(), alias, dataset_name
+        )
         return self.get_object_by_id(oid, class_id, hint)
-
-    def get_object_id_by_alias(self, alias):
-        return uuid.uuid3(NULL_NAMESPACE, alias)
 
     def get_object_location_by_id(self, object_id):
         exec_envs = list(self.get_all_execution_environments_at_dataclay(self.get_dataclay_id()))
         return exec_envs[hash(object_id) % len(exec_envs)]
-
-    def get_object_location_by_alias(self, alias):
-        return self.get_object_location_by_id(self.get_object_id_by_alias(alias))
 
     def delete_alias_in_dataclay(self, alias):
         self.ready_clients["@LM"].delete_alias(self.get_session_id(), alias)
@@ -985,7 +967,7 @@ class DataClayRuntime(object):
             )
         return exec_envs_names
 
-    def choose_location(self, instance, alias=None):
+    def choose_location(self, instance):
         """Choose execution/make persistent location.
         :param instance: Instance to use in call
         :param alias: The alias of the instance
@@ -994,10 +976,7 @@ class DataClayRuntime(object):
         :rtype: DataClayID
         """
 
-        if alias:
-            exec_env_id = self.get_object_location_by_id(self.get_object_id_by_alias(alias))
-        else:
-            exec_env_id = self.get_object_location_by_id(instance.get_object_id())
+        exec_env_id = self.get_object_location_by_id(instance.get_object_id())
         instance.set_hint(exec_env_id)
         self.logger.verbose("ExecutionEnvironmentID obtained for execution = %s", exec_env_id)
         return exec_env_id

@@ -20,6 +20,8 @@ from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
 from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
 import traceback
 
+from dataclay_common.managers.object_manager import ObjectMetadata
+
 UNDEFINED_LOCAL = object()
 
 
@@ -41,7 +43,7 @@ class ClientRuntime(DataClayRuntime):
     def store_object(self, instance):
         raise RuntimeError("StoreObject can only be used from the ExecutionEnvironment")
 
-    def make_persistent(self, instance, alias, backend_id, recursive):
+    def make_persistent(self, instance, alias, backend_id, recursive, dataset_name):
         """This method creates a new Persistent Object using the provided stub
         instance and, if indicated, all its associated objects also Logic module API used for communication
         This function is called from a stub/execution class
@@ -62,6 +64,12 @@ class ClientRuntime(DataClayRuntime):
             "Starting make persistent object for instance with id %s",
             instance.get_object_id(),
         )
+
+        if dataset_name is None:
+            instance.set_dataset_id(settings.DEFAULT_DATASET)
+        else:
+            instance.set_dataset_id(dataset_name)
+
         if backend_id is UNDEFINED_LOCAL:
             # This is a commonruntime end user pitfall,
             # @abarcelo thinks that it is nice
@@ -87,7 +95,7 @@ class ClientRuntime(DataClayRuntime):
             # If object is already persistent -> it must have a Hint (location = hint here)
             # If object is not persistent -> location is choosen (provided backend id or random, hash...).
             if location is None:
-                location = self.choose_location(instance, alias)
+                location = self.choose_location(instance)
 
         if not instance.is_persistent():
             if alias is not None:
@@ -99,28 +107,16 @@ class ClientRuntime(DataClayRuntime):
 
                 # From client side, we cannot check if object is registered or not (we do not have isPendingToRegister like EE)
                 # Therefore, we call LogicModule with all information for registration.
-                reg_infos = list()
-                reg_info = RegistrationInfo(
+                object_md = ObjectMetadata(
                     instance.get_object_id(),
-                    instance.get_class_extradata().class_id,
-                    self.get_session_id(),
-                    instance.get_dataset_id(),
                     alias,
-                )
-                reg_infos.append(reg_info)
-                # new_object_ids = self.ready_clients["@LM"].register_objects(
-                #     reg_infos, location, LANG_PYTHON
-                # )
-                self.ready_clients["@MDS"].register_objects(reg_infos, location, LANG_PYTHON)
-                # self.logger.debug(f"Received ids: {new_object_ids}")
-                # new_object_id = next(iter(new_object_ids))
-                # self.update_object_id(instance, new_object_id)
-
-                self.alias_cache[alias] = (
-                    instance.get_object_id(),
+                    instance.get_dataset_id(),
                     instance.get_class_extradata().class_id,
-                    location,
+                    [location],
+                    LANG_PYTHON,
+                    owner=None,
                 )
+                self.ready_clients["@MDS"].register_object(self.get_session_id(), object_md)
 
             # === MAKE PERSISTENT === #
             self.logger.debug(
