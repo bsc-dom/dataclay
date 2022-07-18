@@ -11,6 +11,7 @@ from abc import ABCMeta, abstractmethod
 import threading
 from dataclay.util import Configuration
 import six
+from uuid import UUID
 
 """ Make this class abstract """
 
@@ -70,7 +71,7 @@ class HeapManager(threading.Thread):
         @param dc_object: object to add
         """
         oid = dc_object.get_object_id()
-        self.inmemory_objects[oid] = dc_object
+        self.inmemory_objects[UUID(str(oid))] = dc_object
 
     def remove_from_heap(self, object_id):
         """
@@ -78,7 +79,7 @@ class HeapManager(threading.Thread):
         the object won't be Garbage collected till HeapManager flushes the object and releases it.
         @param object_id: id of object to remove from heap
         """
-        self.inmemory_objects.pop(object_id)
+        self.inmemory_objects.pop(UUID(str(object_id)))
 
     def get_from_heap(self, object_id):
         """
@@ -87,7 +88,7 @@ class HeapManager(threading.Thread):
         @return Object with id provided in heap or None if not found.
         """
         try:
-            obj = self.inmemory_objects[object_id]
+            obj = self.inmemory_objects[UUID(str(object_id))]
             self.logger.debug("Hit in Heap object %s" % str(object_id))
             return obj
         except KeyError:
@@ -101,7 +102,7 @@ class HeapManager(threading.Thread):
         @return True if exists. False otherwise.
         """
         try:
-            if self.inmemory_objects[object_id] is None:
+            if self.inmemory_objects[UUID(str(object_id))] is None:
                 return False
             else:
                 return True
