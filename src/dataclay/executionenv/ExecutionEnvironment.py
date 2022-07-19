@@ -350,7 +350,7 @@ class ExecutionEnvironment(object):
             settings.environment_id, object_id, obj_bytes
         )
         # class_id = instance.get_class_extradata().class_id
-        # reg_info = [object_id, class_id, instance.get_owner_session_id(), instance.get_dataset_id()]
+        # reg_info = [object_id, class_id, instance.get_owner_session_id(), instance.get_dataset_name()]
 
         dataset_id = None
         dcc_extradata = instance.get_class_extradata()

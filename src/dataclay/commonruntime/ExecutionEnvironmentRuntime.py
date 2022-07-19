@@ -160,7 +160,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                     instance.get_object_id(),
                     instance.get_class_extradata().class_id,
                     self.get_session_id(),
-                    instance.get_dataset_id(),
+                    instance.get_dataset_name(),
                     alias,
                 )
                 reg_infos.append(reg_info)
@@ -305,7 +305,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                         )
                     object_id = uuid.uuid4()
                     current_obj.set_object_id(object_id)
-                    current_obj.set_dataset_id(
+                    current_obj.set_dataset_name(
                         self.execution_environment.thread_local_info.dataset_id
                     )
 

@@ -411,7 +411,7 @@ class DataClayObject(object):
             self.get_object_id(),
             self.get_hint(),
             self.get_class_id(),
-            self.get_dataset_id(),
+            self.get_dataset_name(),
             backend_id,
             None,
             recursive,
@@ -562,19 +562,19 @@ class DataClayObject(object):
         """
         self.__dclay_instance_extradata.memory_pinned = new_memory_pinned
 
-    def get_dataset_id(self):
+    def get_dataset_name(self):
         """
         @postcondition: Return dataset id of the object
         @return Data set id
         """
         return self.__dclay_instance_extradata.dataset_id
 
-    def set_dataset_id(self, new_dataset_id):
+    def set_dataset_name(self, new_dataset_name):
         """
         @postcondition: Set dataset id of the object
-        @param new_dataset_id: dataset id
+        @param new_dataset_name: dataset id
         """
-        self.__dclay_instance_extradata.dataset_id = new_dataset_id
+        self.__dclay_instance_extradata.dataset_id = new_dataset_name
 
     def getID(self):
         """Return the string representation of the persistent object for COMPSs.

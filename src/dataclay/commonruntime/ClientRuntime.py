@@ -66,9 +66,9 @@ class ClientRuntime(DataClayRuntime):
         )
 
         if dataset_name is None:
-            instance.set_dataset_id(settings.DEFAULT_DATASET)
+            instance.set_dataset_name(settings.DEFAULT_DATASET)
         else:
-            instance.set_dataset_id(dataset_name)
+            instance.set_dataset_name(dataset_name)
 
         if backend_id is UNDEFINED_LOCAL:
             # This is a commonruntime end user pitfall,
@@ -110,7 +110,7 @@ class ClientRuntime(DataClayRuntime):
                 object_md = ObjectMetadata(
                     instance.get_object_id(),
                     alias,
-                    instance.get_dataset_id(),
+                    instance.get_dataset_name(),
                     instance.get_class_extradata().class_id,
                     [location],
                     LANG_PYTHON,
@@ -179,7 +179,7 @@ class ClientRuntime(DataClayRuntime):
         metadata_info = MetaDataInfo(
             object_id,
             False,
-            instance.get_dataset_id(),
+            instance.get_dataset_name(),
             instance.get_class_extradata().class_id,
             locations,
             alias,

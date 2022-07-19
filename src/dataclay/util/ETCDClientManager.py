@@ -24,7 +24,7 @@ class ETCDClientManager:
         key = f"/object/{object.get_object_id()}"
         value = dict()
         value["class_id"] = str(object.get_class_id())
-        value["dataset_id"] = str(object.get_dataset_id())
+        value["dataset_id"] = str(object.get_dataset_name())
         value["execution_environments"] = [str(ee) for ee in object.get_all_locations().keys()]
         value["is_read_only"] = object.is_read_only()
         value["alias"] = str(object.get_alias())
