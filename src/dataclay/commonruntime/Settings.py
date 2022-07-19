@@ -199,6 +199,7 @@ class _SettingsHub(object):
 
         # self._values['DATASETS'] = os.environ["DATASETS"].split(':')
         self._values["DEFAULT_DATASET"] = os.environ["DEFAULT_DATASET"]
+        self._values["LOCAL_BACKEND"] = os.environ["LOCAL_BACKEND"]
 
         self.loaded = True
 
