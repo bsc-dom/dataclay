@@ -458,10 +458,12 @@ class DataClayObject(object):
         else:
             getRuntime().update_object(self, from_object)
 
-    def dc_put(self, alias, backend_id=None, recursive=True):
+    def dc_put(self, alias, backend_id=None, recursive=True, dataset_name=None):
         if not alias:
             raise AttributeError("Alias cannot be null or empty")
-        getRuntime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
+        getRuntime().make_persistent(
+            self, alias=alias, backend_id=backend_id, recursive=recursive, dataset_name=dataset_name
+        )
 
     def set_all(self, from_object):
         properties = sorted(
