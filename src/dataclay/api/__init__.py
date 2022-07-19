@@ -273,6 +273,9 @@ def mds_init():
     #     logger.info("Waiting for any python backend to be ready ...")
     #     sleep(2)
 
+    # Initialize runtime
+    getRuntime().initialize_runtime()
+
     # Create a new session
     session_id = client.new_session(
         settings.DC_USERNAME, settings.DC_PASSWORD, settings.DEFAULT_DATASET
@@ -281,6 +284,18 @@ def mds_init():
 
     # TODO: Remove it and use only DEFAULT_DATASET
     settings.dataset_id = settings.DEFAULT_DATASET
+
+    # Set LOCAL_BACKEND
+    name = settings.LOCAL_BACKEND
+    if name:
+        exec_envs = getRuntime().get_all_execution_environments_info()
+        for ee_id in exec_envs.keys():
+            if exec_envs[ee_id].name == name:
+                global LOCAL
+                LOCAL = ee_id
+                break
+        else:
+            logger.warning("Backend with name '%s' not found, ignoring", name)
 
     # Ensure they are in the path (high "priority")
     sys.path.insert(0, os.path.join(settings.stubs_folder, "sources"))
@@ -345,20 +360,6 @@ def post_network_init():
         logger.warning(
             "No contracts available. Calling new_session, but no classes will be available"
         )
-
-    """ Initialize runtime """
-    getRuntime().initialize_runtime()
-
-    name = settings.local_backend_name
-    if name:
-        exec_envs = getRuntime().get_all_execution_environments_info()
-        for k, v in exec_envs.items():
-            if exec_envs[k].name == name:
-                global LOCAL
-                LOCAL = k
-                break
-        else:
-            logger.warning("Backend with name '%s' not found, ignoring", name)
 
     # Remember this function is called after a fork in workers also.
     # Activate Extrae if needed.
