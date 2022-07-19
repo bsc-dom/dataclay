@@ -429,7 +429,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
     def delete_alias(self, dc_obj):
         alias = dc_obj.get_alias()
         if alias is not None:
-            self.delete_alias_in_dataclay(alias)
+            self.delete_alias_in_dataclay(alias, dc_obj.get_dataset_name())
         dc_obj.set_alias(None)
         dc_obj.set_dirty(True)
 

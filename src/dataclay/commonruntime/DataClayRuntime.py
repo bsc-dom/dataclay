@@ -44,11 +44,8 @@ class DataClayRuntime(object):
     logger = logging.getLogger("dataclay.api")
 
     def __init__(self):
-        """Cache of alias"""
-        # TODO: un-hardcode this
-        self.alias_cache = LRU(50000)
 
-        """ Cache of EE info """
+        """Cache of EE info"""
         self.ee_info_map = None
 
         """ GRPC clients """
@@ -579,11 +576,8 @@ class DataClayRuntime(object):
         exec_envs = list(self.get_all_execution_environments_at_dataclay(self.get_dataclay_id()))
         return exec_envs[hash(object_id) % len(exec_envs)]
 
-    def delete_alias_in_dataclay(self, alias):
-        self.ready_clients["@LM"].delete_alias(self.get_session_id(), alias)
-        self.logger.debug("Removing from cache alias %s", alias)
-        if alias in self.alias_cache:
-            del self.alias_cache[alias]
+    def delete_alias_in_dataclay(self, alias, dataset_name):
+        self.ready_clients["@MDS"].delete_alias(self.get_session_id(), alias, dataset_name)
 
     @abstractmethod
     def delete_alias(self, dc_obj):

@@ -614,11 +614,12 @@ class DataClayObject(object):
         return getRuntime().get_by_alias(alias, dataset_name)
 
     @classmethod
-    def delete_alias(cls, alias):
-        return getRuntime().delete_alias_in_dataclay(alias)
+    def delete_alias(cls, alias, dataset_name=None):
+        getRuntime().delete_alias_in_dataclay(alias, dataset_name=dataset_name)
 
-    def delete_alias(self):
-        getRuntime().delete_alias(self)
+    # BUG: Python don't have method overloading
+    # def delete_alias(self):
+    #     getRuntime().delete_alias(self)
 
     def set_persistent(self, ispersistent):
         """

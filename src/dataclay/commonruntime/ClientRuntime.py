@@ -244,10 +244,6 @@ class ClientRuntime(DataClayRuntime):
             execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
             self.ready_clients[exec_location_id] = execution_client
         execution_client.delete_alias(session_id, object_id)
-        alias = dc_obj.get_alias()
-        if alias is not None:
-            if alias in self.alias_cache:
-                del self.alias_cache[alias]
         dc_obj.set_alias(None)
 
     def close_session(self):
