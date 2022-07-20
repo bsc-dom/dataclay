@@ -244,15 +244,27 @@ def get_num_objects():
     return getRuntime().get_num_objects()
 
 
-# TODO: Remove this function
+# DEPRECATED: Remove this function
 def pre_network_init(config_file):
     """Perform a partial initialization, with no network."""
     settings.load_properties(config_file)
 
 
-def mds_init():
-    """ "Init that will replace current one for Metadata Service"""
+# TODO: Structure in smaller functions
+def init():
+    """Initialization made on the client-side, with .env settings
+
+    Note that after a successful call to this method, subsequent calls will be
+    a no-operation.
+    """
+
     logger.info("Initializing dataClay API")
+
+    # Checks if dataclay is already initialized
+    global _initialized
+    if _initialized:
+        logger.warning("Already initialized --ignoring")
+        return
 
     settings.load_session_properties()
 
@@ -272,6 +284,16 @@ def mds_init():
     # while len(get_backends_info()) < 1:
     #     logger.info("Waiting for any python backend to be ready ...")
     #     sleep(2)
+
+    # In all cases, track (done through babelstubs YAML file)
+    contracts = track_local_available_classes()
+    if not contracts:
+        logger.warning(
+            "No contracts available. Calling new_session, but no classes will be available"
+        )
+
+    # Ensure stubs are in the path (high "priority")
+    sys.path.insert(0, os.path.join(settings.STUBS_PATH, "sources"))
 
     # Initialize runtime
     getRuntime().initialize_runtime()
@@ -297,13 +319,12 @@ def mds_init():
         else:
             logger.warning("Backend with name '%s' not found, ignoring", name)
 
-    # Ensure they are in the path (high "priority")
-    sys.path.insert(0, os.path.join(settings.stubs_folder, "sources"))
-
+    _initialized = True
     logger.debug(f"Started session {session_id}")
 
 
-def init(config_file=None) -> None:
+# DEPRECATED: Remove this method
+def init_deprecated(config_file=None) -> None:
     """Initialization made on the client-side, with file-based settings.
 
     Note that after a successful call to this method, subsequent calls will be
@@ -343,23 +364,13 @@ def init(config_file=None) -> None:
     pre_network_init(config_file)
     post_network_init()
 
-    mds_init()
 
-
-# TODO: Remove this function
+# DEPRECATED: Remove this function
 def post_network_init():
     global _initialized
 
     """Perform the last part of initialization, now with network."""
     client = init_connection(None)
-
-    # In all cases, track (done through babelstubs YAML file)
-    contracts = track_local_available_classes()
-
-    if not contracts:
-        logger.warning(
-            "No contracts available. Calling new_session, but no classes will be available"
-        )
 
     # Remember this function is called after a fork in workers also.
     # Activate Extrae if needed.
@@ -433,7 +444,7 @@ def finish():
     getRuntime().stop_runtime()
     # Unload stubs
     clean_babel_data()
-    sys.path.remove(os.path.join(settings.stubs_folder, "sources"))
+    sys.path.remove(os.path.join(settings.STUBS_PATH, "sources"))
     # unload caches of stubs
     from dataclay.commonruntime.ExecutionGateway import (
         loaded_classes,

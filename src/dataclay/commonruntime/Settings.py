@@ -199,7 +199,8 @@ class _SettingsHub(object):
 
         # self._values['DATASETS'] = os.environ["DATASETS"].split(':')
         self._values["DEFAULT_DATASET"] = os.environ["DEFAULT_DATASET"]
-        self._values["LOCAL_BACKEND"] = os.environ["LOCAL_BACKEND"]
+        self._values["LOCAL_BACKEND"] = os.getenv("LOCAL_BACKEND")
+        self._values["STUBS_PATH"] = os.environ["STUBS_PATH"]
 
         self.loaded = True
 

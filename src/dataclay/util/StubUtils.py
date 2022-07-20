@@ -28,11 +28,11 @@ def babel_stubs_load(stream):
 def prepare_storage(stubs_folder=None):
     """Ensure (force creation if not exists) the STUB_STORAGE folder.
 
-    By default, the settings.stubs_folder is used. You can override by providing
+    By default, the settings.STUBS_PATH is used. You can override by providing
     the stubs_folder argument.
     """
     if not stubs_folder:
-        stubs_folder = settings.stubs_folder
+        stubs_folder = settings.STUBS_PATH
 
     if not os.path.exists(stubs_folder):
         os.mkdir(stubs_folder)
@@ -44,14 +44,14 @@ def prepare_storage(stubs_folder=None):
 def load_babel_data(stubs_folder=None):
     """Load all Babel Stub data from the cached file.
 
-    By default, the settings.stubs_folder is used. You can override by providing
+    By default, the settings.STUBS_PATH is used. You can override by providing
     the stubs_folder argument.
 
     :return: A dictionary (the parsed YAML).
     """
     global _babel_data
     if _babel_data is None:
-        babel_path = os.path.join(stubs_folder or settings.stubs_folder, "babelstubs.yml")
+        babel_path = os.path.join(stubs_folder or settings.STUBS_PATH, "babelstubs.yml")
         logger.debug(f"Loading babel stubs from {babel_path}")
         with open(babel_path, "rb") as f:
             _babel_data = babel_stubs_load(f)
@@ -62,11 +62,11 @@ def load_babel_data(stubs_folder=None):
 def deploy_stubs(stubs_folder=None):
     """Perform the actual deployment of classes (python files).
 
-    By default, the settings.stubs_folder is used. You can override by providing
+    By default, the settings.STUBS_PATH is used. You can override by providing
     the stubs_folder argument.
     """
     if not stubs_folder:
-        stubs_folder = settings.stubs_folder
+        stubs_folder = settings.STUBS_PATH
 
     # Use the stored StubInfo (which is a YAML)
     babel_data = load_babel_data(stubs_folder)
