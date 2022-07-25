@@ -23,6 +23,9 @@ import signal
 import threading
 import traceback
 
+from dataclay_common.clients.metadata_service_client import MDSClient
+from dataclay_mds.metadata_service import MetadataService
+
 from dataclay.commonruntime.Runtime import clean_runtime
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.StorageLocationGrpcClient import SLClient
@@ -38,7 +41,6 @@ from dataclay.commonruntime.Initializer import logger
 from dataclay.util import Configuration
 from dataclay.util.ETCDClientManager import etcdClientMgr
 
-from dataclay_common.clients.metadata_service_client import MDSClient
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
@@ -89,9 +91,15 @@ class ExecutionEnvironmentSrv(object):
         lm_client = LMClient(settings.logicmodule_host, settings.logicmodule_port)
         self.execution_environment.get_runtime().ready_clients["@LM"] = lm_client
 
-        # Starting MetadataService client
+        # Starting MetadataService
+        # Backends use the MetadataService class instead of calling a gRPC server
         mds_client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
-        self.execution_environment.get_runtime().ready_clients["@MDS"] = mds_client
+        mds = MetadataService(settings.ETCD_HOST, settings.ETCD_PORT)
+        # Updates the dataclay_id from MetadataService class.
+        # FIXME: Instead, the function get_dataclay_id from MetadataService should look for
+        #        /dataclay/... in etcd (if called from backend).
+        mds.dataclay_id = mds_client.get_dataclay_id()
+        self.execution_environment.get_runtime().ready_clients["@MDS"] = mds
 
         # logger.info("local_ip %s returned", local_ip)
         return local_ip
@@ -135,6 +143,7 @@ class ExecutionEnvironmentSrv(object):
         while not success:
             try:
                 # TODO: Remove lm_client.autoregister_ee and use the mds_client
+                # We already have storage_location_id from get_storage_location_id (above)
                 storage_location_id = lm_client.autoregister_ee(
                     execution_environment_id,
                     settings.dataservice_name,
@@ -168,6 +177,7 @@ class ExecutionEnvironmentSrv(object):
         settings.environment_id = execution_environment_id
 
         # Retrieve the storage_location connection data
+        # TODO: Get info directly from etcd using dataclay_common.managers.dataclay
         storage_location = lm_client.get_storage_location_info(
             storage_location_id, from_backend=True
         )

@@ -60,5 +60,8 @@ def set_defaults():
     settings.METADATA_SERVICE_HOST = os.environ["METADATA_SERVICE_HOST"]
     settings.METADATA_SERVICE_PORT = int(os.getenv("METADATA_SERVICE_PORT", "16587"))
 
+    settings.ETCD_HOST = os.environ["ETCD_HOST"]
+    settings.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
+
     # Setting defaults is considered loading settings
     settings.loaded = True
