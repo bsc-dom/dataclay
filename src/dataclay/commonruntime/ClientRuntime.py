@@ -106,7 +106,7 @@ class ClientRuntime(DataClayRuntime):
                 # 3 - object was persisted with an alias and it must be already registered -> we add a new alias.
 
                 # From client side, we cannot check if object is registered or not (we do not have isPendingToRegister like EE)
-                # Therefore, we call LogicModule with all information for registration.
+                # Therefore, we call MetadataService with all information for registration.
                 object_md = ObjectMetadata(
                     instance.get_object_id(),
                     alias,

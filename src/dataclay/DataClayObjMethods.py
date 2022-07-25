@@ -17,6 +17,8 @@ def _dclayMethod(f, self, *args, **kwargs):
     logger.verbose("Calling function %s", f.__name__)
     is_exec_env = getRuntime().is_exec_env()
     try:
+        # If the object is not persistent executes the method locally,
+        # else, executes the method within the execution environment
         if (
             (is_exec_env and self.is_loaded())
             or (not is_exec_env and not self.is_persistent())
