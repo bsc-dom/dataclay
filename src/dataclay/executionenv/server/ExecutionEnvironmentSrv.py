@@ -93,12 +93,7 @@ class ExecutionEnvironmentSrv(object):
 
         # Starting MetadataService
         # Backends use the MetadataService class instead of calling a gRPC server
-        mds_client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
         mds = MetadataService(settings.ETCD_HOST, settings.ETCD_PORT)
-        # Updates the dataclay_id from MetadataService class.
-        # FIXME: Instead, the function get_dataclay_id from MetadataService should look for
-        #        /dataclay/... in etcd (if called from backend).
-        mds.dataclay_id = mds_client.get_dataclay_id()
         self.execution_environment.get_runtime().ready_clients["@MDS"] = mds
 
         # logger.info("local_ip %s returned", local_ip)
