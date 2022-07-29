@@ -938,12 +938,12 @@ class DataClayRuntime(object):
         exec_envs_with_name = dict()
         exec_envs = self.get_all_execution_environments_info(force_update=False)
         for exec_env_id, exec_env in exec_envs.items():
-            if exec_env.name == dsname and exec_env.dataclay_id == self.get_dataclay_id():
+            if exec_env.sl_name == dsname and exec_env.dataclay_id == self.get_dataclay_id():
                 exec_envs_with_name[exec_env_id] = exec_env
         if not bool(exec_envs_with_name):
             exec_envs = self.get_all_execution_environments_info(force_update=True)
             for exec_env_id, exec_env in exec_envs.items():
-                if exec_env.name == dsname and exec_env.dataclay_id == self.get_dataclay_id():
+                if exec_env.sl_name == dsname and exec_env.dataclay_id == self.get_dataclay_id():
                     exec_envs_with_name[exec_env_id] = exec_env
         return exec_envs_with_name
 
@@ -952,7 +952,7 @@ class DataClayRuntime(object):
         exec_envs = self.get_all_execution_environments_info(force_update=force_update)
         for exec_env_id, exec_env in exec_envs.items():
             if exec_env.dataclay_id == self.get_dataclay_id():
-                exec_envs_names.append(exec_env.name)
+                exec_envs_names.append(exec_env.sl_name)
         if self.logger.isEnabledFor(TRACE):
             n = len(exec_envs_names)
             self.logger.trace(

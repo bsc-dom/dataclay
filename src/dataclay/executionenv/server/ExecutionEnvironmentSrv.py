@@ -232,9 +232,9 @@ class ExecutionEnvironmentSrv(object):
         mds_client = self.execution_environment.get_runtime().ready_clients["@MDS"]
         mds_client.autoregister_ee(
             execution_environment_id,
-            settings.dataservice_name,
             local_ip,
             settings.dataservice_port,
+            settings.dataservice_name,
             LANG_PYTHON,
         )
 

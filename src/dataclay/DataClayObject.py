@@ -421,7 +421,7 @@ class DataClayObject(object):
         """Consolidate: copy contents of current version object to original object"""
         return getRuntime().consolidate_version(self.get_object_id(), self.get_hint())
 
-    def make_persistent(self, alias=None, backend_id=None, recursive=True, dataset_name=None):
+    def make_persistent(self, alias=None, dataset_name=None, backend_id=None, recursive=True):
         if alias == "":
             raise AttributeError("Alias cannot be empty")
         getRuntime().make_persistent(

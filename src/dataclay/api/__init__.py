@@ -144,7 +144,7 @@ def get_backend_id_by_name(name):
     """Return dataClay backend present in the system with name provided."""
     all_backends = getRuntime().get_all_execution_environments_with_name(name)
     for backend in all_backends.values():
-        if backend.name == name:
+        if backend.sl_name == name:
             return backend.id
     return None
 
@@ -153,7 +153,7 @@ def get_external_backend_id_by_name(name, external_dataclay_id):
     """Return dataClay backend present in the system with name provided."""
     all_backends = getRuntime().get_all_execution_environments_at_dataclay(external_dataclay_id)
     for backend in all_backends.values():
-        if backend.name == name:
+        if backend.sl_name == name:
             return backend.id
     return None
 
@@ -308,16 +308,16 @@ def init():
     settings.dataset_id = settings.DEFAULT_DATASET
 
     # Set LOCAL_BACKEND
-    name = settings.LOCAL_BACKEND
-    if name:
+    sl_name = settings.LOCAL_BACKEND
+    if sl_name:
         exec_envs = getRuntime().get_all_execution_environments_info()
         for ee_id in exec_envs.keys():
-            if exec_envs[ee_id].name == name:
+            if exec_envs[ee_id].sl_name == sl_name:
                 global LOCAL
                 LOCAL = ee_id
                 break
         else:
-            logger.warning("Backend with name '%s' not found, ignoring", name)
+            logger.warning("Backend with name '%s' not found, ignoring", sl_name)
 
     _initialized = True
     logger.debug(f"Started session {session_id}")

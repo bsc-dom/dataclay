@@ -205,7 +205,7 @@ def get_execution_environment(execution_environment):
         id = get_id(execution_environment.id)
         hostname = execution_environment.hostname
         dataclay_instance_id = get_id(execution_environment.dataClayInstanceID)
-        name = execution_environment.name
+        name = execution_environment.sl_name
         port = execution_environment.port
         language = execution_environment.language
         return ExecutionEnvironment(id, hostname, name, port, language, dataclay_instance_id)
@@ -213,7 +213,7 @@ def get_execution_environment(execution_environment):
         response = common_messages.ExecutionEnvironmentInfo(
             id=get_msg_id(execution_environment.object_id),
             hostname=execution_environment.hostname,
-            name=execution_environment.name,
+            name=execution_environment.sl_name,
             port=execution_environment.port,
             language=execution_environment.language,
             dataClayInstanceID=get_msg_id(execution_environment.dataclay_instance_id),
