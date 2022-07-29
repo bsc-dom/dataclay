@@ -425,7 +425,7 @@ class DataClayObject(object):
         if alias == "":
             raise AttributeError("Alias cannot be empty")
         getRuntime().make_persistent(
-            self, alias=alias, backend_id=backend_id, recursive=recursive, dataset_name=dataset_name
+            self, alias=alias, dataset_name=dataset_name, backend_id=backend_id, recursive=recursive
         )
 
     def get_execution_environments_info(self):
@@ -458,11 +458,11 @@ class DataClayObject(object):
         else:
             getRuntime().update_object(self, from_object)
 
-    def dc_put(self, alias, backend_id=None, recursive=True, dataset_name=None):
+    def dc_put(self, alias, dataset_name=None, backend_id=None, recursive=True):
         if not alias:
             raise AttributeError("Alias cannot be null or empty")
         getRuntime().make_persistent(
-            self, alias=alias, backend_id=backend_id, recursive=recursive, dataset_name=dataset_name
+            self, alias=alias, dataset_name=dataset_name, backend_id=backend_id, recursive=recursive
         )
 
     def set_all(self, from_object):

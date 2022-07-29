@@ -43,7 +43,7 @@ class ClientRuntime(DataClayRuntime):
     def store_object(self, instance):
         raise RuntimeError("StoreObject can only be used from the ExecutionEnvironment")
 
-    def make_persistent(self, instance, alias, backend_id, recursive, dataset_name):
+    def make_persistent(self, instance, alias, dataset_name, backend_id, recursive):
         """This method creates a new Persistent Object using the provided stub
         instance and, if indicated, all its associated objects also Logic module API used for communication
         This function is called from a stub/execution class
