@@ -4,6 +4,9 @@ import logging
 import time
 import uuid
 import datetime
+
+from dataclay_common.managers.object_manager import ObjectMetadata
+
 from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
@@ -95,8 +98,14 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         @postcondition: Get Session ID associated to current thread
         @return: Session ID associated to current thread
         """
-        if hasattr(threadLocal, "session_id"):
-            return threadLocal.session_id
+        if hasattr(threadLocal, "session"):
+            return threadLocal.session.id
+        else:
+            return None
+
+    def get_default_dataset(self):
+        if hasattr(threadLocal, "session"):
+            return threadLocal.session.default_dataset
         else:
             return None
 
@@ -115,7 +124,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
         self.internal_store(instance, make_persistent=False)
 
-    def make_persistent(self, instance, alias, backend_id, recursive):
+    def make_persistent(self, instance, alias, backend_id, recursive, dataset_name):
         """This method creates a new Persistent Object using the provided stub
         instance and, if indicated, all its associated objects also Logic module API used for communication
         This function is called from a stub/execution class
@@ -137,6 +146,11 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             instance.get_object_id(),
         )
 
+        if dataset_name:
+            instance.set_dataset_name(dataset_name)
+        else:
+            instance.set_dataset_name(self.get_default_dataset())
+
         location = instance.get_hint()
         if location is None:
             location = backend_id
@@ -155,21 +169,17 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             # 3 - object was persisted with an alias and it must be already registered -> we add a new alias.
             if instance.is_pending_to_register():
                 # Use case 1
-                reg_infos = list()
-                reg_info = RegistrationInfo(
-                    instance.get_object_id(),
-                    instance.get_class_extradata().class_id,
-                    self.get_session_id(),
-                    instance.get_dataset_name(),
-                    alias,
-                )
-                reg_infos.append(reg_info)
                 # TODO: Review if we use hint of the object or the hint of the runtime.
-                new_object_ids = self.ready_clients["@LM"].register_objects(
-                    reg_infos, instance.get_hint(), LANG_PYTHON
+                object_md = ObjectMetadata(
+                    instance.get_object_id(),
+                    alias,
+                    instance.get_dataset_name(),
+                    instance.get_class_extradata().class_id,
+                    [location],
+                    LANG_PYTHON,
+                    owner=None,
                 )
-                new_object_id = next(iter(new_object_ids))
-                self.update_object_id(instance, new_object_id)
+                self.ready_clients["@MDS"].register_object(self.get_session_id(), object_md)
             else:
                 # Use case 2 and 3 - add new alias
                 instance.set_alias(alias)
@@ -305,9 +315,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                         )
                     object_id = uuid.uuid4()
                     current_obj.set_object_id(object_id)
-                    current_obj.set_dataset_name(
-                        self.execution_environment.thread_local_info.dataset_id
-                    )
+                    current_obj.set_dataset_name(dataset_id)
 
                 logger.debug(
                     "Ready to make persistent object {%s} of class %s {%s}"

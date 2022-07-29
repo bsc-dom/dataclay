@@ -65,10 +65,10 @@ class ClientRuntime(DataClayRuntime):
             instance.get_object_id(),
         )
 
-        if dataset_name is None:
-            instance.set_dataset_name(settings.DEFAULT_DATASET)
-        else:
+        if dataset_name:
             instance.set_dataset_name(dataset_name)
+        else:
+            instance.set_dataset_name(self.get_default_dataset())
 
         if backend_id is UNDEFINED_LOCAL:
             # This is a commonruntime end user pitfall,
@@ -164,7 +164,7 @@ class ClientRuntime(DataClayRuntime):
             # Call EE
             self.logger.verbose("Calling make persistent to EE %s ", location)
             execution_client.make_persistent(
-                settings.current_session_id, serialized_objs.vol_objs.values()
+                self.get_session_id(), serialized_objs.vol_objs.values()
             )
 
             # update the hint with the location, and return it
@@ -248,13 +248,16 @@ class ClientRuntime(DataClayRuntime):
 
     def close_session(self):
         self.logger.debug("** Closing session **")
-        self.ready_clients["@MDS"].close_session(settings.current_session_id)
+        self.ready_clients["@MDS"].close_session(self.get_session_id())
 
     def get_hint(self):
         return None
 
     def get_session_id(self):
         return settings.current_session_id
+
+    def get_default_dataset(self):
+        return settings.DEFAULT_DATASET
 
     def synchronize(self, instance, operation_name, params):
         session_id = self.get_session_id()
