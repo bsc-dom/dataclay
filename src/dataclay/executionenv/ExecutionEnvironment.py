@@ -287,7 +287,11 @@ class ExecutionEnvironment(object):
         Set the SessionID
         """
         self.prepareThread()
+        # TODO: Remove thread_local_info.session_id and use the session object
         self.thread_local_info.session_id = session_id
+        self.thread_local_info.session = (
+            self.get_runtime().ready_clients["@MDS"].get_session(session_id)
+        )
 
     def update_hints_to_current_ee(self, objects_data_to_store):
         """
@@ -380,7 +384,6 @@ class ExecutionEnvironment(object):
         :type objects_to_store:
         :rtype: None
         """
-        self.prepareThread()
         self.set_local_session(session_id)
 
         # No need to provide params specs or param order since objects are not language types
@@ -412,8 +415,8 @@ class ExecutionEnvironment(object):
         """
         logger.debug("Starting make persistent")
         objects = self.store_in_memory(session_id, objects_to_persist)
-        for object in objects:
-            etcdClientMgr.put_object(object)
+        # for object in objects:
+        #     etcdClientMgr.put_object(object)
         logger.debug("Finished make persistent")
 
     def federate(self, session_id, object_id, external_execution_env_id, recursive):
@@ -540,7 +543,6 @@ class ExecutionEnvironment(object):
         :type session_id: Session ID
         :type objects_to_persist: Object ID
         """
-        self.prepareThread()
         self.set_local_session(session_id)
         logger.debug("---> Notified unfederation: running when_unfederated")
         try:
@@ -581,7 +583,6 @@ class ExecutionEnvironment(object):
 
         See Java Implementation for details on parameters and purpose.
         """
-        self.prepareThread()
         self.set_local_session(session_id)
 
         instance = self.get_local_instance(object_id, True)
@@ -773,7 +774,6 @@ class ExecutionEnvironment(object):
         :param into_object_id: ID of the object to be updated
         :param from_object: object with contents to be used
         """
-        self.prepareThread()
         self.set_local_session(session_id)
         logger.debug("[==PutObject==] Updating object %s", into_object_id)
         object_into = getRuntime().get_or_new_instance_from_db(into_object_id, False)
@@ -807,10 +807,10 @@ class ExecutionEnvironment(object):
         :return: List of serialized objects
         """
         logger.debug("[==Get==] Getting objects %s", object_ids)
-        self.prepareThread()
+
+        self.set_local_session(session_id)
 
         result = list()
-        self.thread_local_info.session_id = session_id
         pending_oids_and_hint = list()
         objects_in_other_backend = list()
 
@@ -1081,7 +1081,7 @@ class ExecutionEnvironment(object):
         :param session_id:ID of session
         :param final_version_id: ID of final version object
         """
-        self.prepareThread()
+        self.set_local_session()
         logger.debug("----> Starting consolidate version of %s", final_version_id)
 
         # Consolidate in this backend - the complete version is here
@@ -1109,7 +1109,6 @@ class ExecutionEnvironment(object):
             serialized_objs_updated.append(serialized_obj)
 
         try:
-            self.thread_local_info.session_id = session_id
             if root_location == self.execution_environment_id:
                 self.upsert_objects(session_id, serialized_objs_updated)
             else:
@@ -1146,8 +1145,7 @@ class ExecutionEnvironment(object):
         :param session_id: ID of session needed.
         :param object_ids_and_bytes: Map of objects to update.
         """
-        self.prepareThread()
-        self.thread_local_info.session_id = session_id
+        self.set_local_session()
 
         try:
             objects_in_other_backends = list()
@@ -1353,13 +1351,11 @@ class ExecutionEnvironment(object):
 
     def detach_object_from_session(self, object_id, session_id):
         logger.debug(f"--> Detaching object {object_id} from session {session_id}")
-        self.prepareThread()
         self.set_local_session(session_id)
         self.runtime.detach_object_from_session(object_id, None)
         logger.debug(f"<-- Detached object {object_id} from session {session_id}")
 
     def delete_alias(self, session_id, object_id):
-        self.prepareThread()
         self.set_local_session(session_id)
         instance = self.get_local_instance(object_id, True)
         self.runtime.delete_alias(instance)
