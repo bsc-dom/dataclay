@@ -231,7 +231,7 @@ class ExecutionEnvironmentSrv(object):
         # Autoregister execution environment to Metadata Service
         mds_client = self.execution_environment.get_runtime().ready_clients["@MDS"]
         mds_client.autoregister_ee(
-            str(execution_environment_id),
+            execution_environment_id,
             settings.dataservice_name,
             local_ip,
             settings.dataservice_port,

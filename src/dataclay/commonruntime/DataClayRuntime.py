@@ -170,7 +170,7 @@ class DataClayRuntime(object):
         :type hint: uuid
         :rtype: DataClayObject
         """
-        self.logger.debug("Get object %s by id", str(object_id))
+        self.logger.debug(f"Get object {object_id} by id")
         o = self.get_from_heap(object_id)
         if o is not None:
             return o
@@ -895,12 +895,11 @@ class DataClayRuntime(object):
 
     def get_execution_environment_info(self, backend_id):
         exec_envs = self.get_all_execution_environments_info(force_update=False)
-        # TODO: backend_id should be string, not UUID
         if backend_id in exec_envs:
-            return exec_envs[str(backend_id)]
+            return exec_envs[backend_id]
         else:
             exec_envs = self.get_all_execution_environments_info(force_update=True)
-            return exec_envs[str(backend_id)]
+            return exec_envs[backend_id]
 
     def get_all_execution_environments_at_host(self, hostname):
         exec_envs_at_host = dict()
