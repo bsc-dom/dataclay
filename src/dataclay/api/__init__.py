@@ -12,7 +12,8 @@ import warnings
 
 from dataclay import getRuntime
 from dataclay.DataClayObject import DataClayObject
-from dataclay.commonruntime.ClientRuntime import settings, LANG_PYTHON
+from dataclay.commonruntime.Runtime import setRuntime
+from dataclay.commonruntime.ClientRuntime import ClientRuntime, settings, LANG_PYTHON
 from dataclay.commonruntime.ClientRuntime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
 from dataclay.commonruntime.Initializer import initialize, _get_logging_dict_config
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
@@ -267,6 +268,9 @@ def init():
         return
 
     settings.load_session_properties()
+
+    # Initialize ClientRuntime
+    setRuntime(ClientRuntime())
 
     # Create MDS Client and store it in a persistent way
     client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)

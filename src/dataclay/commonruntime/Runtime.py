@@ -27,6 +27,8 @@ runtimes_per_thread = dict()
 """ Runtime for all threads in client side. It's a singleton, created once. """
 client_static_runtime = None
 
+runtime = None
+
 
 def clean_runtime():
     global threadLocal
@@ -37,13 +39,13 @@ def clean_runtime():
     client_static_runtime = None
 
 
-def setRuntime(runtime):
+def setRuntime(new_runtime):
     """
     @summary: set runtime in current thread. This function is used in Execution Environment
     @param runtime: runtime to set
     """
-    thread_id = threading.current_thread().ident
-    runtimes_per_thread[thread_id] = runtime
+    global runtime
+    runtime = new_runtime
 
 
 def getRuntime():
@@ -53,17 +55,12 @@ def getRuntime():
     @return runtime of the current thread
     """
 
-    global client_static_runtime
-    thread_id = threading.current_thread().ident
-    if thread_id in runtimes_per_thread:
-        # logger.info("==== Welcome back thread %s", threading.current_thread().name)
-        return runtimes_per_thread.get(thread_id)
-    else:
-        if client_static_runtime is None:
-            from dataclay.commonruntime.ClientRuntime import ClientRuntime
+    global runtime
+    if runtime is None:
+        from dataclay.commonruntime.ClientRuntime import ClientRuntime
 
-            client_static_runtime = ClientRuntime()
-        return client_static_runtime
+        runtime = ClientRuntime()
+    return runtime
 
 
 # Those need the commonruntime

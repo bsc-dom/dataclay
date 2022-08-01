@@ -7,6 +7,9 @@ import uuid
 import traceback
 import time
 import os
+
+from dataclay_common.managers.object_manager import ObjectMetadata
+
 from dataclay.DataClayObject import DataClayObject
 from dataclay.commonruntime.Runtime import getRuntime, setRuntime
 from dataclay.commonruntime.Runtime import threadLocal
@@ -48,21 +51,19 @@ logger = logging.getLogger(__name__)
 class ExecutionEnvironment(object):
     def __init__(self, theee_name, theee_port):
         self.runtime = ExecutionEnvironmentRuntime(self)
+        setRuntime(self.runtime)
+
         self.ee_name = theee_name
         # Note that the port is (atm) exclusively for unique identification of an EE
         # (given that the name is shared between all EE that share a SL, which happens in HPC deployments)
         self.ee_port = theee_port
-        """ Initialize runtime """
+
+        # Initialize runtime
         self.runtime.initialize_runtime()
         # TODO: de-hardcode this value
         self.cached_sessioninfo = lru.LRU(50)
         self.logger = logging.getLogger(__name__)
-        # This variable will store the following:
-        #   - iface_bm (Interface BitMap): used across calls
-        #   - session_id (SessionID): is maintained during a deep call
-        #   - dataset_id (DataSetID): set on executeImplementation and newPersistentInstance,
-        #                             and used for makePersistent of instances.
-        self.thread_local_info = threadLocal
+
         self.init_ee_info()
         # store ee info
         self.store_ee_info()
@@ -135,7 +136,7 @@ class ExecutionEnvironment(object):
         to obtain proper Runtimes. This function was designed for a multithreading design.
         IMPORTANT: This function should be called at the beginning of all "public" functions in this module.
         """
-        setRuntime(self.runtime)
+        # setRuntime(self.runtime)
 
     def ds_deploy_metaclasses(self, namespace, classes_map_yamls):
         """Deploy MetaClass containers to the Python Execution Environment.
@@ -279,19 +280,16 @@ class ExecutionEnvironment(object):
         return ret_value
 
     def set_local_session(self, session_id):
-        """Set the global `self.thread_local_info` with Session.
+        """Set the global `threadLocal` with Session.
 
         :param session_id: The UUID for SessionID.
         :return: None
 
         Set the SessionID
         """
-        self.prepareThread()
         # TODO: Remove thread_local_info.session_id and use the session object
-        self.thread_local_info.session_id = session_id
-        self.thread_local_info.session = (
-            self.get_runtime().ready_clients["@MDS"].get_session(session_id)
-        )
+        threadLocal.session_id = session_id
+        threadLocal.session = self.get_runtime().ready_clients["@MDS"].get_session(session_id)
 
     def update_hints_to_current_ee(self, objects_data_to_store):
         """
@@ -356,19 +354,18 @@ class ExecutionEnvironment(object):
         # class_id = instance.get_class_extradata().class_id
         # reg_info = [object_id, class_id, instance.get_owner_session_id(), instance.get_dataset_name()]
 
-        dataset_id = None
-        dcc_extradata = instance.get_class_extradata()
-        reg_infos = list()
-        reg_info = RegistrationInfo(
-            object_id, dcc_extradata.class_id, instance.get_owner_session_id(), dataset_id, None
+        object_md = ObjectMetadata(
+            instance.get_object_id(),
+            instance.get_alias(),
+            instance.get_dataset_name(),
+            instance.get_class_extradata().class_id,
+            [settings.environment_id],
+            LANG_PYTHON,
+            owner=None,
         )
-        reg_infos.append(reg_info)
-        try:
-            lm_client = getRuntime().ready_clients["@LM"]
-            lm_client.register_objects(reg_infos, settings.environment_id, LANG_PYTHON)
-        except:
-            # do nothing: alias exception
-            pass
+        self.runtime.ready_clients["@MDS"].register_object(
+            instance.get_owner_session_id(), object_md
+        )
 
         instance.set_pending_to_register(False)
 

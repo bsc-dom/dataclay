@@ -219,14 +219,15 @@ class ExecutionEnvironmentSrv(object):
         self.execution_environment.get_runtime().ready_clients["@STORAGE"] = storage_client
         storage_client.associate_execution_environment(execution_environment_id)
 
-        settings.logicmodule_dc_instance_id = lm_client.get_dataclay_id()
-        logger.verbose(
-            "DataclayInstanceID is %s, storing client in cache", settings.logicmodule_dc_instance_id
-        )
+        # TODO: Remove this or use setings.dataclay_id with MDS
+        # settings.logicmodule_dc_instance_id = lm_client.get_dataclay_id()
+        # logger.verbose(
+        #     "DataclayInstanceID is %s, storing client in cache", settings.logicmodule_dc_instance_id
+        # )
 
-        self.execution_environment.get_runtime().ready_clients[
-            settings.logicmodule_dc_instance_id
-        ] = self.execution_environment.get_runtime().ready_clients["@LM"]
+        # self.execution_environment.get_runtime().ready_clients[
+        #     settings.logicmodule_dc_instance_id
+        # ] = self.execution_environment.get_runtime().ready_clients["@LM"]
 
         # Autoregister execution environment to Metadata Service
         mds_client = self.execution_environment.get_runtime().ready_clients["@MDS"]
