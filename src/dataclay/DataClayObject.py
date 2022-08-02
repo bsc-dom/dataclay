@@ -137,7 +137,7 @@ class DataClayObject(object):
     def get_class_extradata(cls):
         classname = cls.__name__
         module_name = cls.__module__
-        full_name = "%s.%s" % (module_name, classname)
+        full_name = module_name + "." + classname
 
         # Check if class extradata is in cache.
         if getRuntime().current_type == RuntimeType.client:

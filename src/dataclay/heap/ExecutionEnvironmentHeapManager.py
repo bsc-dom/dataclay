@@ -347,7 +347,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
                         )
                         continue
 
-                    if dc_obj.get_object_id() in self.runtime.volatiles_under_deserialitzation:
+                    if dc_obj.get_object_id() in self.runtime.volatiles_under_deserialization:
                         self.logger.trace(
                             "[==GC==] Not collecting since it is under deserialization."
                         )

@@ -73,10 +73,10 @@ class MetaClass(ManagementObject):
             % (implementation_id, self.name, self.namespace)
         )
 
-    def juxtapose_code(self, exeenv_flag=False):
+    def juxtapose_code(self, exec_env_flag=False):
         """Return the complete source code for the current MetaClass.
 
-        :param exeenv_flag: Set to true to generate code for the ExecutionEnvironment.
+        :param exec_env_flag: Set to true to generate code for the ExecutionEnvironment.
         :return: A valid source for this class.
 
         Note that this class will use the "local_implementation" of its
@@ -114,7 +114,7 @@ class MetaClass(ManagementObject):
             imp = op.implementations[0]
 
             if isinstance(imp, PythonImplementation):
-                # ToDo fix behaviour regarding exeenv_flag, local/remote implementation
+                # ToDo fix behaviour regarding exec_env_flag, local/remote implementation
                 imp_codes.append(imp.code)
             else:
                 if op.name == "__init__" or op.name == "<init>":

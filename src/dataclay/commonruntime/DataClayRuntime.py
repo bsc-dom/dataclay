@@ -81,7 +81,7 @@ class DataClayRuntime(object):
         self.dataclay_id = None
 
         """ volatiles currently under deserialization """
-        self.volatiles_under_deserialitzation = dict()
+        self.volatiles_under_deserialization = dict()
 
     @abstractmethod
     def initialize_runtime_aux(self):
@@ -242,15 +242,15 @@ class DataClayRuntime(object):
         @param volatiles: volatiles under deserialization
         """
         for vol_obj in volatiles:
-            self.volatiles_under_deserialitzation[vol_obj.object_id] = vol_obj
+            self.volatiles_under_deserialization[vol_obj.object_id] = vol_obj
 
     def remove_volatiles_under_deserialization(self, volatiles):
         """
         @postcondition: Remove volatiles under deserialization
         """
         for vol_obj in volatiles:
-            if vol_obj.object_id in self.volatiles_under_deserialitzation:
-                del self.volatiles_under_deserialitzation[vol_obj.object_id]
+            if vol_obj.object_id in self.volatiles_under_deserialization:
+                del self.volatiles_under_deserialization[vol_obj.object_id]
 
     def get_copy_of_object(self, from_object, recursive):
         session_id = self.get_session_id()
@@ -259,8 +259,8 @@ class DataClayRuntime(object):
         try:
             execution_client = self.ready_clients[backend_id]
         except KeyError:
-            exeenv = self.get_execution_environment_info(backend_id)
-            execution_client = EEClient(exeenv.hostname, exeenv.port)
+            exec_env = self.get_execution_environment_info(backend_id)
+            execution_client = EEClient(exec_env.hostname, exec_env.port)
             self.ready_clients[backend_id] = execution_client
 
         copiedObject = execution_client.ds_get_copy_of_object(
@@ -279,8 +279,8 @@ class DataClayRuntime(object):
         try:
             execution_client = self.ready_clients[backend_id]
         except KeyError:
-            exeenv = self.get_execution_environment_info(backend_id)
-            execution_client = EEClient(exeenv.hostname, exeenv.port)
+            exec_env = self.get_execution_environment_info(backend_id)
+            execution_client = EEClient(exec_env.hostname, exec_env.port)
             self.ready_clients[backend_id] = execution_client
 
         # We serialize objects like volatile parameters
@@ -365,8 +365,8 @@ class DataClayRuntime(object):
         try:
             execution_client = self.ready_clients[backend_id]
         except KeyError:
-            exeenv = self.get_execution_environment_info(backend_id)
-            execution_client = EEClient(exeenv.hostname, exeenv.port)
+            exec_env = self.get_execution_environment_info(backend_id)
+            execution_client = EEClient(exec_env.hostname, exec_env.port)
             self.ready_clients[backend_id] = execution_client
 
         operation = self.get_operation_info(object_id, operation_name)
@@ -388,7 +388,7 @@ class DataClayRuntime(object):
                 ret, None, operation.returnType, self
             )
 
-    def call_execute_to_ds(self, instance, parameters, operation_name, exeenv_id, using_hint):
+    def call_execute_to_ds(self, instance, parameters, operation_name, exec_env_id, using_hint):
 
         object_id = instance.get_object_id()
         operation = self.get_operation_info(object_id, operation_name)
@@ -401,7 +401,7 @@ class DataClayRuntime(object):
             iface_bitmaps=None,
             params_spec=operation.params,
             params_order=operation.paramsOrder,
-            hint_volatiles=exeenv_id,
+            hint_volatiles=exec_env_id,
             runtime=self,
         )
 
@@ -415,21 +415,21 @@ class DataClayRuntime(object):
         executed = False
         for _ in range(max_retry):
             try:
-                self.logger.verbose("Obtaining API for remote execution in %s ", exeenv_id)
-                execution_client = self.ready_clients[exeenv_id]
+                self.logger.verbose("Obtaining API for remote execution in %s ", exec_env_id)
+                execution_client = self.ready_clients[exec_env_id]
             except KeyError:
-                exeenv = self.get_execution_environment_info(exeenv_id)
+                exec_env = self.get_execution_environment_info(exec_env_id)
                 self.logger.debug(
                     "Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
-                    exeenv_id,
-                    exeenv.hostname,
-                    exeenv.port,
+                    exec_env_id,
+                    exec_env.hostname,
+                    exec_env.port,
                 )
-                execution_client = EEClient(exeenv.hostname, exeenv.port)
-                self.ready_clients[exeenv_id] = execution_client
+                execution_client = EEClient(exec_env.hostname, exec_env.port)
+                self.ready_clients[exec_env_id] = execution_client
 
             try:
-                self.logger.verbose("Calling remote EE %s ", exeenv_id)
+                self.logger.verbose("Calling remote EE %s ", exec_env_id)
                 ret = execution_client.ds_execute_implementation(
                     object_id, implementation_id, session_id, serialized_params
                 )
@@ -466,19 +466,19 @@ class DataClayRuntime(object):
 
                     for loc in locations:
                         self.logger.debug("Found location %s" % str(loc))
-                        if loc != exeenv_id:
-                            exeenv_id = loc
+                        if loc != exec_env_id:
+                            exec_env_id = loc
                             self.logger.debug("Found different location %s" % str(loc))
                             new_location = True
                             break
 
                     if not new_location:
-                        exeenv_id = next(iter(locations))
+                        exec_env_id = next(iter(locations))
                     if using_hint:
-                        instance.set_hint(exeenv_id)
+                        instance.set_hint(exec_env_id)
                     self.logger.debug(
                         "[==Miss Jump==] MISS. The object %s was not in the exec.location %s. Retrying execution."
-                        % (instance.get_object_id(), str(exeenv_id))
+                        % (instance.get_object_id(), str(exec_env_id))
                     )
 
         if serialized_params is not None and serialized_params.vol_objs is not None:
@@ -494,7 +494,7 @@ class DataClayRuntime(object):
                     # in the same location as the object with the method to execute
                     # ===========================================================
                     param_instance = self.get_from_heap(param.object_id)
-                    param_instance.set_hint(exeenv_id)
+                    param_instance.set_hint(exec_env_id)
                 self.volatile_parameters_being_send.remove(param.object_id)
 
         if not executed:

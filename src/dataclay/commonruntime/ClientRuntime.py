@@ -65,10 +65,8 @@ class ClientRuntime(DataClayRuntime):
             instance.get_object_id(),
         )
 
-        if dataset_name:
-            instance.set_dataset_name(dataset_name)
-        else:
-            instance.set_dataset_name(self.get_default_dataset())
+        # If dataset_name is None or empty string, use the default dataset
+        instance.set_dataset_name(dataset_name or self.get_default_dataset())
 
         if backend_id is UNDEFINED_LOCAL:
             # This is a commonruntime end user pitfall,
@@ -116,6 +114,7 @@ class ClientRuntime(DataClayRuntime):
                     LANG_PYTHON,
                     owner=None,
                 )
+                # FIXME: The object registration should be done by execution environment.
                 self.ready_clients["@MDS"].register_object(self.get_session_id(), object_md)
 
             # === MAKE PERSISTENT === #
@@ -151,17 +150,17 @@ class ClientRuntime(DataClayRuntime):
             try:
                 execution_client = self.ready_clients[location]
             except KeyError:
-                exeenv = self.get_execution_environment_info(location)
+                exec_env = self.get_execution_environment_info(location)
                 self.logger.debug(
                     "Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
                     location,
-                    exeenv.hostname,
-                    exeenv.port,
+                    exec_env.hostname,
+                    exec_env.port,
                 )
-                execution_client = EEClient(exeenv.hostname, exeenv.port)
+                execution_client = EEClient(exec_env.hostname, exec_env.port)
                 self.ready_clients[location] = execution_client
 
-            # Call EE
+            # Call Execution Environment
             self.logger.verbose("Calling make persistent to EE %s ", location)
             execution_client.make_persistent(
                 self.get_session_id(), serialized_objs.vol_objs.values()
@@ -173,19 +172,16 @@ class ClientRuntime(DataClayRuntime):
             # remove volatiles under deserialization
             self.remove_volatiles_under_deserialization(serialized_objs.vol_objs.values())
 
-        object_id = instance.get_object_id()
-        locations = set()
-        locations.add(location)
         metadata_info = MetaDataInfo(
-            object_id,
+            instance.get_object_id(),
             False,
             instance.get_dataset_name(),
             instance.get_class_extradata().class_id,
-            locations,
+            {location},
             alias,
             None,
         )
-        self.metadata_cache[object_id] = metadata_info
+        self.metadata_cache[instance.get_object_id()] = metadata_info
         return location
 
     def add_session_reference(self, object_id):
@@ -195,7 +191,7 @@ class ClientRuntime(DataClayRuntime):
         """
         pass
 
-    def execute_implementation_aux(self, operation_name, instance, parameters, exeenv_id=None):
+    def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):
         stub_info = instance.get_class_extradata().stub_info
         implementation_stub_infos = stub_info.implementations
         object_id = instance.get_object_id()
@@ -211,13 +207,15 @@ class ClientRuntime(DataClayRuntime):
 
         using_hint = False
         if instance.get_hint() is not None:
-            exeenv_id = instance.get_hint()
-            self.logger.verbose("Using hint = %s", exeenv_id)
+            exec_env_id = instance.get_hint()
+            self.logger.verbose("Using hint = %s", exec_env_id)
             using_hint = True
         else:
-            exeenv_id = next(iter(self.get_metadata(object_id).locations))
+            exec_env_id = next(iter(self.get_metadata(object_id).locations))
 
-        return self.call_execute_to_ds(instance, parameters, operation_name, exeenv_id, using_hint)
+        return self.call_execute_to_ds(
+            instance, parameters, operation_name, exec_env_id, using_hint
+        )
 
     def get_operation_info(self, object_id, operation_name):
         dcc_extradata = self.get_object_by_id(object_id).get_class_extradata()
@@ -277,8 +275,8 @@ class ClientRuntime(DataClayRuntime):
         try:
             execution_client = self.ready_clients[dest_backend_id]
         except KeyError:
-            exeenv = self.get_execution_environment_info(dest_backend_id)
-            execution_client = EEClient(exeenv.hostname, exeenv.port)
+            exec_env = self.get_execution_environment_info(dest_backend_id)
+            execution_client = EEClient(exec_env.hostname, exec_env.port)
             self.ready_clients[dest_backend_id] = execution_client
         execution_client.synchronize(session_id, object_id, implementation_id, serialized_params)
 
@@ -308,8 +306,8 @@ class ClientRuntime(DataClayRuntime):
         try:
             execution_client = self.ready_clients[exec_location_id]
         except KeyError:
-            exeenv = self.get_execution_environment_info(exec_location_id)
-            execution_client = EEClient(exeenv.hostname, exeenv.port)
+            exec_env = self.get_execution_environment_info(exec_location_id)
+            execution_client = EEClient(exec_env.hostname, exec_env.port)
             self.ready_clients[exec_location_id] = execution_client
 
         self.logger.debug(
@@ -339,8 +337,8 @@ class ClientRuntime(DataClayRuntime):
         try:
             execution_client = self.ready_clients[exec_location_id]
         except KeyError:
-            exeenv = self.get_execution_environment_info(exec_location_id)
-            execution_client = EEClient(exeenv.hostname, exeenv.port)
+            exec_env = self.get_execution_environment_info(exec_location_id)
+            execution_client = EEClient(exec_env.hostname, exec_env.port)
             self.ready_clients[exec_location_id] = execution_client
 
         execution_client.unfederate(

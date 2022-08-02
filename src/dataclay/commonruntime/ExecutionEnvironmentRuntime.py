@@ -186,7 +186,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
         return instance.get_location()
 
-    def execute_implementation_aux(self, operation_name, instance, parameters, exeenv_id=None):
+    def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):
 
         object_id = instance.get_object_id()
 
@@ -209,16 +209,16 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         # // === HINT === //
         thisExecEnv = settings.environment_id
         using_hint = False
-        if exeenv_id is None:
+        if exec_env_id is None:
             if instance.get_hint() is not None:
-                exeenv_id = instance.get_hint()
+                exec_env_id = instance.get_hint()
                 using_hint = True
-                logger.debug("Using hint %s for object id %s", exeenv_id, object_id)
+                logger.debug("Using hint %s for object id %s", exec_env_id, object_id)
             else:
                 logger.debug("Asking for EE of object with id %s", object_id)
-                exeenv_id = next(iter(self.get_metadata(object_id).locations))
+                exec_env_id = next(iter(self.get_metadata(object_id).locations))
 
-        if exeenv_id == thisExecEnv:
+        if exec_env_id == thisExecEnv:
             logger.debug("Object execution is local")
 
             # Note that fat_instance tend to be the same as instance...
@@ -241,7 +241,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             logger.debug("Object execution is not local")
             object_id = instance.get_object_id()
             return self.call_execute_to_ds(
-                instance, parameters, operation_name, exeenv_id, using_hint
+                instance, parameters, operation_name, exec_env_id, using_hint
             )
 
     #########################################
@@ -368,9 +368,9 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         """
 
         object_id = volatile_obj.get_object_id()
-        if hasattr(self.thread_local_info, "volatiles_under_deserialitzation"):
-            if self.thread_local_info.volatiles_under_deserialitzation is not None:
-                for obj_with_data in self.thread_local_info.volatiles_under_deserialitzation:
+        if hasattr(self.thread_local_info, "volatiles_under_deserialization"):
+            if self.thread_local_info.volatiles_under_deserialization is not None:
+                for obj_with_data in self.thread_local_info.volatiles_under_deserialization:
                     curr_obj_id = obj_with_data.object_id
                     if object_id == curr_obj_id:
                         if hasattr(volatile_obj, "__setstate__"):
@@ -397,11 +397,11 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             # session id can be none in case of when federated
             return
 
-        if not object_id in self.references_hold_by_sessions:
+        if object_id not in self.references_hold_by_sessions:
             """race condition: two objects creating set of sessions at same time"""
             self.lock(object_id)
             try:
-                if not object_id in self.references_hold_by_sessions:
+                if object_id not in self.references_hold_by_sessions:
                     session_refs = set()
                     self.references_hold_by_sessions[object_id] = session_refs
             finally:
