@@ -23,8 +23,8 @@ import signal
 import threading
 import traceback
 
-from dataclay_common.clients.metadata_service_client import MDSClient
 from dataclay_mds.metadata_service import MetadataService
+from dataclay_common.exceptions.exceptions import *
 
 from dataclay.commonruntime.Runtime import clean_runtime
 from dataclay.commonruntime.Settings import settings
@@ -106,87 +106,43 @@ class ExecutionEnvironmentSrv(object):
         logger.info("Start Autoregister with %s local_ip", local_ip)
         lm_client = self.execution_environment.get_runtime().ready_clients["@LM"]
 
-        sl_found = False
-        retries = 0
-        max_retries = Configuration.MAX_RETRY_AUTOREGISTER
-        sleep_time = Configuration.RETRY_AUTOREGISTER_TIME / 1000
-        sl_name = settings.dataservice_name
-        while not sl_found:
-            try:
-                storage_location_id = lm_client.get_storage_location_id(sl_name)
-            except:
-                if retries > max_retries:
-                    logger.warn(f"Could not get storage location named {sl_name}, aborting")
-                    raise
-                else:
-                    logger.info(
-                        f"Storage location (usually dsjava) {sl_name} not ready, retry #%d of %i in %i seconds",
-                        retries,
-                        max_retries,
-                        sleep_time,
-                    )
-                    time.sleep(sleep_time)
-                    retries += 1
-            else:
-                sl_found = True
-
-        logger.info(f"Storage location (usually dsjava) {sl_name} found!")
-        logger.info("Registering current execution environment")
-        success = False
-        retries = 0
         execution_environment_id = self.execution_environment.get_execution_environment_id()
-        while not success:
-            try:
-                # TODO: Remove lm_client.autoregister_ee and use the mds_client
-                # We already have storage_location_id from get_storage_location_id (above)
-                storage_location_id = lm_client.autoregister_ee(
-                    execution_environment_id,
-                    settings.dataservice_name,
-                    local_ip,
-                    settings.dataservice_port,
-                    LANG_PYTHON,
-                )
-            except Exception as e:
-                logger.debug("Catched exception of type %s. Message:\n%s", type(e), e)
-                if retries > max_retries:
-                    logger.warn("Could not create channel, aborting (reraising exception)")
-                    raise
-                else:
-                    logger.info(
-                        "Could not create channel, retry #%d of %i in %i seconds",
-                        retries,
-                        max_retries,
-                        sleep_time,
-                    )
-                    # TODO: Not Very performing, find a better way
-                    time.sleep(sleep_time)
-                    retries += 1
-            else:
-                success = True
-
-        logger.info(
-            "Current DataService autoregistered. Associated StorageLocationID: %s",
-            storage_location_id,
-        )
-        settings.storage_id = storage_location_id
         settings.environment_id = execution_environment_id
 
-        # Retrieve the storage_location connection data
-        # TODO: Get info directly from etcd using dataclay_common.managers.dataclay
-        storage_location = lm_client.get_storage_location_info(
-            storage_location_id, from_backend=True
+        # Autoregister execution environment to Metadata Service
+        mds_client = self.execution_environment.get_runtime().ready_clients["@MDS"]
+        mds_client.autoregister_ee(
+            execution_environment_id,
+            local_ip,
+            settings.dataservice_port,
+            settings.dataservice_name,
+            LANG_PYTHON,
         )
 
-        logger.debug(
-            "StorageLocation data: {name: '%s', hostname: '%s', port: %d}",
-            storage_location.name,
-            storage_location.hostname,
-            storage_location.port,
-        )
+        sl_name = settings.dataservice_name
+        settings.storage_id = sl_name
+
+        max_retries = Configuration.MAX_RETRY_AUTOREGISTER
+        sleep_time = Configuration.RETRY_AUTOREGISTER_TIME / 1000
+        retries = 0
+        while True:
+            try:
+                storage_location = mds_client.get_storage_location(sl_name)
+                break
+            except StorageLocationDoesNotExistError as e:
+                if retries == max_retries:
+                    logger.warn(f"Could not get storage location {sl_name}, aborting")
+                    raise e
+                else:
+                    logger.info(
+                        f"Storage location {sl_name} not ready, retry {retries} of {max_retries} in {sleep_time} seconds"
+                    )
+                    retries += 1
+                    time.sleep(sleep_time)
 
         logger.info(
             "Starting client to StorageLocation {%s} at %s:%d",
-            storage_location_id,
+            storage_location.name,
             storage_location.hostname,
             storage_location.port,
         )
@@ -218,26 +174,6 @@ class ExecutionEnvironmentSrv(object):
         # Leave the ready client to the Storage Location globally available
         self.execution_environment.get_runtime().ready_clients["@STORAGE"] = storage_client
         storage_client.associate_execution_environment(execution_environment_id)
-
-        # TODO: Remove this or use setings.dataclay_id with MDS
-        # settings.logicmodule_dc_instance_id = lm_client.get_dataclay_id()
-        # logger.verbose(
-        #     "DataclayInstanceID is %s, storing client in cache", settings.logicmodule_dc_instance_id
-        # )
-
-        # self.execution_environment.get_runtime().ready_clients[
-        #     settings.logicmodule_dc_instance_id
-        # ] = self.execution_environment.get_runtime().ready_clients["@LM"]
-
-        # Autoregister execution environment to Metadata Service
-        mds_client = self.execution_environment.get_runtime().ready_clients["@MDS"]
-        mds_client.autoregister_ee(
-            execution_environment_id,
-            local_ip,
-            settings.dataservice_port,
-            settings.dataservice_name,
-            LANG_PYTHON,
-        )
 
     def start(self):
         """Start the dataClay server (Execution Environment).
