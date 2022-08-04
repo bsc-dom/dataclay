@@ -82,12 +82,7 @@ class ExecutionEnvironmentSrv(object):
         if not local_ip:
             local_ip = socket.gethostbyname(socket.gethostname())
 
-        # Starting LogicModule client and saving it to ready_clients to be gloabally available
-        logger.info(
-            "Starting client to LogicModule at %s:%d",
-            settings.logicmodule_host,
-            settings.logicmodule_port,
-        )
+        # TODO: Remove LogicModule client.
         lm_client = LMClient(settings.logicmodule_host, settings.logicmodule_port)
         self.execution_environment.get_runtime().ready_clients["@LM"] = lm_client
 
@@ -96,20 +91,50 @@ class ExecutionEnvironmentSrv(object):
         mds = MetadataService(settings.ETCD_HOST, settings.ETCD_PORT)
         self.execution_environment.get_runtime().ready_clients["@MDS"] = mds
 
-        # logger.info("local_ip %s returned", local_ip)
         return local_ip
 
     def start_autoregister(self, local_ip):
         """Start the autoregister procedure to introduce ourselves to the LogicModule."""
         self.execution_environment.prepareThread()
 
-        logger.info("Start Autoregister with %s local_ip", local_ip)
-        lm_client = self.execution_environment.get_runtime().ready_clients["@LM"]
+        logger.info(f"Start Autoregister with {local_ip} local_ip")
 
+        # Setting settings
         execution_environment_id = self.execution_environment.get_execution_environment_id()
         settings.environment_id = execution_environment_id
+        sl_name = settings.dataservice_name
+        settings.storage_id = sl_name
 
-        # Autoregister execution environment to Metadata Service
+        max_retries = Configuration.MAX_RETRY_AUTOREGISTER
+        sleep_time = Configuration.RETRY_AUTOREGISTER_TIME / 1000
+
+        # Autoregister of ExecutionEnvironment to LogicModule
+        # NOTE: Needed to get registered classes from LogicModule
+        # TODO: Should be removed when LogicModule is replaced by MetadataService
+        lm_client = self.execution_environment.get_runtime().ready_clients["@LM"]
+        retries = 0
+        while True:
+            try:
+                lm_client.autoregister_ee(
+                    execution_environment_id,
+                    settings.dataservice_name,
+                    local_ip,
+                    settings.dataservice_port,
+                    LANG_PYTHON,
+                )
+                break
+            except Exception as e:
+                if retries == max_retries:
+                    logger.critical("Could not create channel, aborting")
+                    raise
+                else:
+                    logger.info(
+                        f"Could not create channel, retry #{retries} of {max_retries} in {sleep_time} seconds"
+                    )
+                    time.sleep(sleep_time)
+                    retries += 1
+
+        # Autoregister of ExecutionEnvironment to MetadataService
         mds_client = self.execution_environment.get_runtime().ready_clients["@MDS"]
         mds_client.autoregister_ee(
             execution_environment_id,
@@ -119,11 +144,7 @@ class ExecutionEnvironmentSrv(object):
             LANG_PYTHON,
         )
 
-        sl_name = settings.dataservice_name
-        settings.storage_id = sl_name
-
-        max_retries = Configuration.MAX_RETRY_AUTOREGISTER
-        sleep_time = Configuration.RETRY_AUTOREGISTER_TIME / 1000
+        # Get the StorageLocation info associated to ExecutionEnvironment
         retries = 0
         while True:
             try:
@@ -131,47 +152,41 @@ class ExecutionEnvironmentSrv(object):
                 break
             except StorageLocationDoesNotExistError as e:
                 if retries == max_retries:
-                    logger.warn(f"Could not get storage location {sl_name}, aborting")
+                    logger.critical(f"Could not get StorageLocation {sl_name}, aborting")
                     raise e
                 else:
-                    logger.info(
-                        f"Storage location {sl_name} not ready, retry {retries} of {max_retries} in {sleep_time} seconds"
+                    logger.warning(
+                        f"StorageLocation {sl_name} not ready, retry #{retries} of {max_retries} in {sleep_time} seconds"
                     )
                     retries += 1
                     time.sleep(sleep_time)
 
         logger.info(
-            "Starting client to StorageLocation {%s} at %s:%d",
-            storage_location.name,
-            storage_location.hostname,
-            storage_location.port,
+            f"Starting client to StorageLocation {storage_location.name} at {storage_location.hostname}:{storage_location.port}"
         )
-        sl_connected = False
+
+        # Connect to the StorageLocation
         retries = 0
-        while not sl_connected:
+        while True:
             try:
                 storage_client = SLClient(storage_location.hostname, storage_location.port)
+                break
             except:
-                if retries > max_retries:
-                    logger.warn(
+                if retries == max_retries:
+                    logger.critical(
                         f"Could not connect to storage location at {storage_location.hostname} and {storage_location.port}, aborting"
                     )
                     raise
                 else:
-                    logger.info(
-                        f"Storage location (usually dsjava) {sl_name} not ready, retry #%d of %i in %i seconds",
-                        retries,
-                        max_retries,
-                        sleep_time,
+                    logger.warning(
+                        f"StorageLocation {sl_name} not ready, retry #{retries} of {max_retries} in {sleep_time} seconds",
                     )
-                    time.sleep(sleep_time)
                     retries += 1
-            else:
-                sl_connected = True
+                    time.sleep(sleep_time)
 
         logger.info(f"Connected to StorageLocation {sl_name}!")
 
-        # Leave the ready client to the Storage Location globally available
+        # Makes the StorageLocation client globally available
         self.execution_environment.get_runtime().ready_clients["@STORAGE"] = storage_client
         storage_client.associate_execution_environment(execution_environment_id)
 
