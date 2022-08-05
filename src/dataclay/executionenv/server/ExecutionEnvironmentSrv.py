@@ -39,7 +39,6 @@ from dataclay.util.config.CfgExecEnv import set_defaults
 from dataclay.executionenv.ExecutionEnvironment import ExecutionEnvironment
 from dataclay.commonruntime.Initializer import logger
 from dataclay.util import Configuration
-from dataclay.util.ETCDClientManager import etcdClientMgr
 
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
@@ -82,7 +81,7 @@ class ExecutionEnvironmentSrv(object):
         if not local_ip:
             local_ip = socket.gethostbyname(socket.gethostname())
 
-        # TODO: Remove LogicModule client.
+        # TODO: Remove LogicModule client. Needed for getting stubs.
         lm_client = LMClient(settings.logicmodule_host, settings.logicmodule_port)
         self.execution_environment.get_runtime().ready_clients["@LM"] = lm_client
 
@@ -205,9 +204,6 @@ class ExecutionEnvironmentSrv(object):
         # TODO: Restructure settings
         set_defaults()
 
-        # ETCD
-        etcdClientMgr.initialize()
-
         # Create the deployment folder and add it to the path
         try:
             os.makedirs(settings.deploy_path_source)
@@ -247,11 +243,11 @@ class ExecutionEnvironmentSrv(object):
 
         logger.info("Starting DataServiceEE on %s", address)
         try:
-            # ToDo: Better way for start server?
+            # TODO: Better way for start server?
             self.server.add_insecure_port(address)
             self.server.start()
-            # ToDo: Check that the server is correctly started
-            # ToDo:   -> aka "if the port was in use, fail tremendously and loudly
+            # TODO: Check that the server is correctly started
+            # TODO:   -> aka "if the port was in use, fail tremendously and loudly
 
             self.local_ip = self.preface_autoregister()
             self.start_autoregister(self.local_ip)
@@ -261,7 +257,7 @@ class ExecutionEnvironmentSrv(object):
             signal.signal(signal.SIGTERM, self.exit_gracefully_signal)
             logger.info("Started Python Execution environment on %s", address)
 
-            # write state file
+            # writes state file
             try:
                 f = open("state.txt", "w")
                 f.write("READY")

@@ -38,7 +38,6 @@ from dataclay.util.YamlParser import dataclay_yaml_load
 from dataclay.commonruntime.ExecutionEnvironmentRuntime import ExecutionEnvironmentRuntime
 from ctypes import c_void_p
 from dataclay.util import Configuration
-from dataclay.util.ETCDClientManager import etcdClientMgr
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
