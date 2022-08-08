@@ -115,7 +115,9 @@ class ClientRuntime(DataClayRuntime):
                     owner=None,
                 )
                 # FIXME: The object registration should be done by execution environment.
-                self.ready_clients["@MDS"].register_object(self.get_session_id(), object_md)
+                # So if the serialization fails, it is not stored. The client maybe can use
+                # the update_object in order to change the alias or the is_read_only (to be decided)
+                # self.ready_clients["@MDS"].register_object(self.get_session_id(), object_md)
 
             # === MAKE PERSISTENT === #
             self.logger.debug(

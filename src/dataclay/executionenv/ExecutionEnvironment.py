@@ -350,9 +350,8 @@ class ExecutionEnvironment(object):
         getRuntime().ready_clients["@STORAGE"].store_to_db(
             settings.environment_id, object_id, obj_bytes
         )
-        # class_id = instance.get_class_extradata().class_id
-        # reg_info = [object_id, class_id, instance.get_owner_session_id(), instance.get_dataset_name()]
 
+        # TODO: When the object metadat is updated synchronously, this should me removed
         object_md = ObjectMetadata(
             instance.get_object_id(),
             instance.get_alias(),
@@ -362,9 +361,7 @@ class ExecutionEnvironment(object):
             LANG_PYTHON,
             owner=None,
         )
-        self.runtime.ready_clients["@MDS"].register_object(
-            instance.get_owner_session_id(), object_md
-        )
+        self.runtime.ready_clients["@MDS"].update_object(instance.get_owner_session_id(), object_md)
 
         instance.set_pending_to_register(False)
 
@@ -411,8 +408,18 @@ class ExecutionEnvironment(object):
         """
         logger.debug("Starting make persistent")
         objects = self.store_in_memory(session_id, objects_to_persist)
-        # for object in objects:
-        #     etcdClientMgr.put_object(object)
+        for object in objects:
+            # TODO: The location should be check (in the deserialization) that is the same as current ee, and reasign if not
+            object_md = ObjectMetadata(
+                object.get_object_id(),
+                object.get_alias(),
+                object.get_dataset_name(),
+                object.get_class_extradata().class_id,
+                list(object.get_all_locations()),
+                LANG_PYTHON,
+                owner=None,
+            )
+            self.runtime.ready_clients["@MDS"].register_object(session_id, object_md)
         logger.debug("Finished make persistent")
 
     def federate(self, session_id, object_id, external_execution_env_id, recursive):

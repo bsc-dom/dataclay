@@ -53,9 +53,9 @@ class HeapManager(threading.Thread):
         @postcondition: Overrides run function
         """
         gc_check_time_interval_seconds = Configuration.MEMMGMT_CHECK_TIME_INTERVAL / 1000.0
-        while 1:
+        while True:
             self.logger.trace("HEAP MANAGER THREAD is awake...")
-            if self._finished.isSet():
+            if self._finished.is_set():
                 break
             self.run_task()
 
