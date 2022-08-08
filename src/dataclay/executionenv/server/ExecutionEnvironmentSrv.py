@@ -30,7 +30,7 @@ from dataclay.commonruntime.Runtime import clean_runtime
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.StorageLocationGrpcClient import SLClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
-from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.communication.grpc.server.ExecutionEnvironmentService import DataServiceEE
 from dataclay.util.classloaders import (
     ClassLoader,
@@ -235,7 +235,7 @@ class ExecutionEnvironmentSrv(object):
         )
         ee = DataServiceEE(self.execution_environment)
 
-        from dataclay.communication.grpc.generated.dataservice import dataservice_pb2_grpc as ds
+        from dataclay_common.protos import dataservice_pb2_grpc as ds
 
         ds.add_DataServiceServicer_to_server(ee, self.server)
 

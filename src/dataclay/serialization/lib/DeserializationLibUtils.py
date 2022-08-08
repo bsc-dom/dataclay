@@ -15,7 +15,7 @@ from dataclay.exceptions.exceptions import InvalidPythonSignature
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
 from dataclay.serialization.python.lang.VLQIntegerWrapper import VLQIntegerWrapper
 from dataclay.serialization.python.util.PyTypeWildcardWrapper import PyTypeWildcardWrapper
-import dataclay.communication.grpc.messages.common.common_messages_pb2 as common_messages
+import dataclay_common.protos.common_messages_pb2 as common_messages
 from dataclay.communication.grpc.Utils import get_metadata
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

@@ -10,7 +10,7 @@ from logging import TRACE
 from lru import LRU
 from grpc import RpcError
 from dataclay.heap.LockerPool import LockerPool
-from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.paraver import (
     extrae_tracing_is_enabled,
     initialize_extrae,

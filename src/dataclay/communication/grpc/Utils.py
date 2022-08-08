@@ -16,7 +16,7 @@ import traceback
 import uuid
 import six
 
-import dataclay.communication.grpc.messages.common.common_messages_pb2 as common_messages
+from dataclay_common.protos import common_messages_pb2 as common_messages
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
 __copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"

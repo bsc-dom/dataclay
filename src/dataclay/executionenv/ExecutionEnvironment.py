@@ -16,7 +16,7 @@ from dataclay.commonruntime.Runtime import threadLocal
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
-from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.paraver import (
     set_current_available_task_id,

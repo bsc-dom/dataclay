@@ -53,7 +53,7 @@ from .management.sessionmgr.SessionProperty import SessionProperty
 from .management.stubs.ImplementationStubInfo import ImplementationStubInfo
 from .management.stubs.PropertyStubInfo import PropertyStubInfo
 from .management.stubs.StubInfo import StubInfo
-from dataclay.communication.grpc.messages.common.common_messages_pb2 import Langs
+from dataclay_common.protos.common_messages_pb2 import Langs
 
 
 def trivial_constructor(loader, node):

@@ -7,7 +7,7 @@ import datetime
 
 from dataclay_common.managers.object_manager import ObjectMetadata
 
-from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
 from dataclay.commonruntime.RuntimeType import RuntimeType

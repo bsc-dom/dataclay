@@ -1,6 +1,6 @@
 """ Class description goes here. """
 
-from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 import logging
 import os
 

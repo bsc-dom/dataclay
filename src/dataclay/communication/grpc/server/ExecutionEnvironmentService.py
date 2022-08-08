@@ -14,9 +14,8 @@ elif six.PY3:
 
 from dataclay.commonruntime.Runtime import getRuntime
 from dataclay.communication.grpc import Utils
-from dataclay.communication.grpc.generated.dataservice import dataservice_pb2_grpc as ds
-from dataclay.communication.grpc.messages.common import common_messages_pb2
-from dataclay.communication.grpc.messages.dataservice import dataservice_messages_pb2
+from dataclay_common.protos import common_messages_pb2
+from dataclay_common.protos import dataservice_pb2_grpc as ds, dataservice_messages_pb2
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util.YamlParser import dataclay_yaml_load
 

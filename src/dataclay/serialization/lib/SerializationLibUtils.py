@@ -16,7 +16,7 @@ from dataclay.serialization.python.util.PyTypeWildcardWrapper import (
 )
 from dataclay.util.DataClayObjectMetaData import DataClayObjectMetaData
 from dataclay.util.IdentityDict import IdentityDict
-import dataclay.communication.grpc.messages.common.common_messages_pb2 as common_messages
+import dataclay_common.protos.common_messages_pb2 as common_messages
 from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.util.ReferenceCounting import ReferenceCounting
 from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn

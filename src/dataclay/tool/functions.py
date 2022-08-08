@@ -12,7 +12,7 @@ import os
 import sys
 from uuid import UUID
 
-from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.util.StubUtils import deploy_stubs
 from dataclay.util.StubUtils import prepare_storage
 from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load

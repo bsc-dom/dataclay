@@ -16,11 +16,15 @@ elif six.PY3:
 from grpc._cython.cygrpc import ChannelArgKey
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc import Utils
-from dataclay.communication.grpc.generated.dataservice import dataservice_pb2_grpc
-from dataclay.communication.grpc.messages.dataservice import dataservice_messages_pb2
+
+# from dataclay_common.protos import dataservice_pb2_grpc
+# from dataclay_common.protos import dataservice_messages_pb2
+from dataclay_common.protos import dataservice_messages_pb2, dataservice_pb2_grpc
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util.YamlParser import dataclay_yaml_dump
-import dataclay.communication.grpc.messages.common.common_messages_pb2 as CommonMessages
+
+# import dataclay_common.protos.common_messages_pb2 as CommonMessages
+from dataclay_common.protos import common_messages_pb2 as CommonMessages
 from dataclay.util import Configuration
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"

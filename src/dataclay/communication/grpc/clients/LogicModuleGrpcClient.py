@@ -17,11 +17,11 @@ elif six.PY3:
 from time import sleep
 from grpc._cython.cygrpc import ChannelArgKey
 from dataclay.commonruntime.Settings import settings
-import dataclay.communication.grpc.messages.common.common_messages_pb2 as CommonMessages
+import dataclay_common.protos.common_messages_pb2 as CommonMessages
 from dataclay.communication.grpc import Utils
-from dataclay.communication.grpc.generated.logicmodule import logicmodule_pb2_grpc
-from dataclay.communication.grpc.messages.common import common_messages_pb2
-from dataclay.communication.grpc.messages.logicmodule import logicmodule_messages_pb2
+from dataclay_common.protos import logicmodule_pb2_grpc
+from dataclay_common.protos import common_messages_pb2
+from dataclay_common.protos import logicmodule_messages_pb2
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load
 from dataclay.util import Configuration

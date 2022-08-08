@@ -6,7 +6,7 @@ dataclay.api package.
 
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
-from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.serialization.lib.SerializationLibUtils import (
     SerializationLibUtilsSingleton,
 )
