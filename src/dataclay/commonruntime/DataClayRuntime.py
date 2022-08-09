@@ -753,6 +753,7 @@ class DataClayRuntime(object):
         :type hint: BackendID
         :rtype: DataClayObject
         """
+        # TODO: Remove call to LM and use metaclass name not id
         if metaclass_id is None:
             metadata = self.ready_clients["@LM"].get_metadata_by_oid(
                 self.get_session_id(), object_id

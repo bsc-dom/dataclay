@@ -386,7 +386,7 @@ class ExecutionEnvironment(object):
             vol_objs[i] = object_to_store
             i = i + 1
         return DeserializationLibUtilsSingleton.deserialize_params(
-            SerializedParametersOrReturn(num_params=1, vol_objs=vol_objs),
+            SerializedParametersOrReturn(num_params=i, vol_objs=vol_objs),
             None,
             None,
             None,
@@ -415,7 +415,7 @@ class ExecutionEnvironment(object):
                 object.get_alias(),
                 object.get_dataset_name(),
                 object.get_class_extradata().class_id,
-                list(object.get_all_locations()),
+                [object.get_location()],
                 LANG_PYTHON,
                 owner=None,
             )
@@ -475,6 +475,8 @@ class ExecutionEnvironment(object):
                     reg_infos, self.execution_environment_id, LANG_PYTHON
                 )
 
+            # TODO: Check that change in store_in_memory (num_params=i) dont break this.
+            #       Maybe add [0] at the end of store_in_memory call (to replicate previous logic) if it has sense
             # No need to provide params specs or param order since objects are not language types
             federated_objs = self.store_in_memory(None, objects_to_persist)
             for federated_obj in federated_objs:
