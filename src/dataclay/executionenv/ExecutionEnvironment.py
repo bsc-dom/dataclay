@@ -1166,7 +1166,7 @@ class ExecutionEnvironment(object):
                     )
                     instance = getRuntime().get_or_new_instance_from_db(object_id, False)
                     DeserializationLibUtilsSingleton.deserialize_object_with_data(
-                        cur_entry, instance, None, getRuntime(), getRuntime().get_session_id(), True
+                        cur_entry, instance, None, getRuntime(), getRuntime().get_session().id, True
                     )
 
                     instance.set_dirty(True)

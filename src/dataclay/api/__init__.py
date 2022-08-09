@@ -303,10 +303,13 @@ def init():
     getRuntime().initialize_runtime()
 
     # Create a new session
-    session_id = client.new_session(
+    session = client.new_session(
         settings.DC_USERNAME, settings.DC_PASSWORD, settings.DEFAULT_DATASET
     )
-    settings.current_session_id = session_id
+    settings.current_session = session
+
+    # DEPRECATED
+    settings.current_session_id = session.id
 
     # TODO: Remove it and use only DEFAULT_DATASET
     settings.dataset_id = settings.DEFAULT_DATASET
@@ -324,7 +327,7 @@ def init():
             logger.warning("Backend with name '%s' not found, ignoring", sl_name)
 
     _initialized = True
-    logger.debug(f"Started session {session_id}")
+    logger.debug(f"Started session {session.id}")
 
 
 # DEPRECATED: Remove this method
@@ -444,7 +447,7 @@ def finish():
     logger.info("Finishing dataClay API")
     finish_tracing()
     getRuntime().close_session()
-    logger.debug(f"Closed session {settings.current_session_id}")
+    logger.debug(f"Closed session {settings.current_session.id}")
     getRuntime().stop_runtime()
     # Unload stubs
     clean_babel_data()

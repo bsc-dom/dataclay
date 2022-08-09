@@ -93,19 +93,9 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         """
         self.dataclay_heap_manager.flush_all()
 
-    def get_session_id(self):
-        """
-        @postcondition: Get Session ID associated to current thread
-        @return: Session ID associated to current thread
-        """
+    def get_session(self):
         if hasattr(threadLocal, "session"):
-            return threadLocal.session.id
-        else:
-            return None
-
-    def get_default_dataset(self):
-        if hasattr(threadLocal, "session"):
-            return threadLocal.session.default_dataset
+            return threadLocal.session
         else:
             return None
 
@@ -149,7 +139,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         if dataset_name:
             instance.set_dataset_name(dataset_name)
         else:
-            instance.set_dataset_name(self.get_default_dataset())
+            instance.set_dataset_name(self.get_session().dataset_name)
 
         location = instance.get_hint()
         if location is None:
@@ -178,7 +168,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                     [location],
                     LANG_PYTHON,
                 )
-                self.ready_clients["@MDS"].register_object(self.get_session_id(), object_md)
+                self.ready_clients["@MDS"].register_object(self.get_session().id, object_md)
             else:
                 # Use case 2 and 3 - add new alias
                 instance.set_alias(alias)
@@ -391,7 +381,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         @summary Add +1 reference associated to thread session
         @param object_id ID of object.
         """
-        session_id = self.get_session_id()
+        session_id = self.get_session().id
         if session_id is None:
             # session id can be none in case of when federated
             return
@@ -560,7 +550,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         )
 
     def synchronize(self, instance, operation_name, params):
-        session_id = self.get_session_id()
+        session_id = self.get_session().id
         object_id = instance.get_object_id()
         operation = self.get_operation_info(instance.get_object_id(), operation_name)
         implementation_id = self.get_implementation_id(instance.get_object_id(), operation_name)
@@ -578,7 +568,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         )
 
     def detach_object_from_session(self, object_id, hint):
-        cur_session = self.get_session_id()
+        cur_session = self.get_session().id
         if object_id in self.references_hold_by_sessions:
             sessions_of_obj = self.references_hold_by_sessions.get(object_id)
             if cur_session in sessions_of_obj:
@@ -591,7 +581,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
         object_id = dc_obj.get_object_id()
-        session_id = self.get_session_id()
+        session_id = self.get_session().id
         self.logger.debug(
             "[==FederateObject==] Starting federation of object by %s with dest dataClay %s, and session %s",
             object_id,
@@ -604,7 +594,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
     def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
         object_id = dc_obj.get_object_id()
-        session_id = self.get_session_id()
+        session_id = self.get_session().id
         self.logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",
             object_id,
