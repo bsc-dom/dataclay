@@ -177,7 +177,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                     instance.get_class_extradata().class_id,
                     [location],
                     LANG_PYTHON,
-                    owner=None,
                 )
                 self.ready_clients["@MDS"].register_object(self.get_session_id(), object_md)
             else:

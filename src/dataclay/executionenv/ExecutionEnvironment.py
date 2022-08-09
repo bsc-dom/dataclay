@@ -359,7 +359,6 @@ class ExecutionEnvironment(object):
             instance.get_class_extradata().class_id,
             [settings.environment_id],
             LANG_PYTHON,
-            owner=None,
         )
         self.runtime.ready_clients["@MDS"].update_object(instance.get_owner_session_id(), object_md)
 
@@ -417,7 +416,6 @@ class ExecutionEnvironment(object):
                 object.get_class_extradata().class_id,
                 [object.get_location()],
                 LANG_PYTHON,
-                owner=None,
             )
             self.runtime.ready_clients["@MDS"].register_object(session_id, object_md)
         logger.debug("Finished make persistent")

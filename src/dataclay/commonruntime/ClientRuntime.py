@@ -112,7 +112,6 @@ class ClientRuntime(DataClayRuntime):
                     instance.get_class_extradata().class_id,
                     [location],
                     LANG_PYTHON,
-                    owner=None,
                 )
                 # FIXME: The object registration should be done by execution environment.
                 # So if the serialization fails, it is not stored. The client maybe can use
