@@ -71,6 +71,7 @@ class SerializationLibUtils(object):
             instance.get_replica_locations(),
             instance.get_alias(),
             instance.is_read_only(),
+            instance.get_dataset_name(),
         )
         dcc_extradata = instance.get_class_extradata()
         byte_array = buffer.getvalue()
@@ -313,6 +314,7 @@ class SerializationLibUtils(object):
         replica_locs,
         alias,
         is_read_only,
+        dataset_name,
     ):
 
         # Prepare metadata structure
@@ -364,6 +366,7 @@ class SerializationLibUtils(object):
             root_location,
             origin_location,
             replica_locs,
+            dataset_name,
         )
 
         return response

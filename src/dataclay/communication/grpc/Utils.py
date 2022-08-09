@@ -101,6 +101,7 @@ def get_metadata(metadata):
         root_location = get_id(metadata.rootLocation)
         origin_location = get_id(metadata.originLocation)
         alias = metadata.alias
+        dataset_name = metadata.dataset_name
         is_read_only = metadata.isReadOnly
         replica_locations = None
         if metadata.replicaLocations is not None:
@@ -118,6 +119,7 @@ def get_metadata(metadata):
             root_location,
             origin_location,
             replica_locations,
+            dataset_name,
         )
 
     else:
@@ -154,6 +156,7 @@ def get_metadata(metadata):
             replicaLocations=replica_locs,
             alias=metadata.alias,
             isReadOnly=metadata.is_read_only,
+            dataset_name=metadata.dataset_name,
         )
 
         return request

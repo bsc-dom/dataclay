@@ -11,6 +11,7 @@ class DataClayObjectMetaData(object):
         root_location,
         origin_location,
         replica_locations,
+        dataset_name,
     ):
         self.alias = alias
         self.is_read_only = is_read_only
@@ -26,6 +27,7 @@ class DataClayObjectMetaData(object):
         if replica_locations is not None:
             for loc in replica_locations:
                 self.replica_locations.append(loc)
+        self.dataset_name = dataset_name
 
     def modify_hints(self, hints_mapping):
         """

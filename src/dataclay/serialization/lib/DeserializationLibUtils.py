@@ -86,6 +86,7 @@ class DeserializationLibUtils(object):
         object_to_fill.set_root_location(metadata.root_location)
         object_to_fill.set_replica_locations(metadata.replica_locations)
         object_to_fill.set_alias(metadata.alias)
+        object_to_fill.set_dataset_name(metadata.dataset_name)
         self._create_buffer_and_deserialize(
             io_file, object_to_fill, None, metadata, cur_deser_python_objs
         )
@@ -165,6 +166,7 @@ class DeserializationLibUtils(object):
             instance.set_root_location(metadata.root_location)
             instance.set_replica_locations(metadata.replica_locations)
             instance.set_alias(metadata.alias)
+            instance.set_dataset_name(metadata.dataset_name)
         finally:
             runtime.unlock(instance.get_object_id())
 
@@ -212,6 +214,7 @@ class DeserializationLibUtils(object):
                 instance.set_alias(metadata.alias)
                 if owner_session_id is not None:
                     instance.set_owner_session_id(owner_session_id)
+                instance.set_dataset_name(metadata.dataset_name)
 
         finally:
             runtime.unlock(instance.get_object_id())
