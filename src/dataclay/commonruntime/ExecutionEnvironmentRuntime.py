@@ -114,7 +114,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
         self.internal_store(instance, make_persistent=False)
 
-    def make_persistent(self, instance, alias, dataset_name, backend_id, recursive):
+    def make_persistent(self, instance, alias, backend_id, recursive):
         """This method creates a new Persistent Object using the provided stub
         instance and, if indicated, all its associated objects also Logic module API used for communication
         This function is called from a stub/execution class
@@ -135,11 +135,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             instance,
             instance.get_object_id(),
         )
-
-        if dataset_name:
-            instance.set_dataset_name(dataset_name)
-        else:
-            instance.set_dataset_name(self.get_session().dataset_name)
 
         location = instance.get_hint()
         if location is None:

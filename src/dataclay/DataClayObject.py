@@ -87,19 +87,15 @@ class DataClayObject(object):
     __dclay_instance_extradata = None
 
     def initialize_object(self, new_object_id=None):
-        """
-        @postcondition: Initialize the object
-        @param new_object_id: Object Id of the object
-        """
-        if (
-            new_object_id is not None
-        ):  # TODO: remove this if once ExecutionGateway is not initializing object id twice
+        """Initializes the object"""
+        # TODO: remove this if once ExecutionGateway is not initializing object id twice
+        if new_object_id is not None:
             self.set_object_id(new_object_id)
         getRuntime().add_to_heap(self)
 
     def initialize_object_as_persistent(self):
-        """
-        @postcondition: object is initialized as a persistent object.
+        """Initializes the object as a persistent
+
         Flags for "persistent" state might be different in EE and client.
         """
         # TODO: improve this using an specialization (dgasull)
@@ -345,9 +341,7 @@ class DataClayObject(object):
 
     def _populate_internal_fields(self, deserializing=False, **kwargs):
         logger.debug(
-            "Populating internal fields for the class. Provided kwargs: %s deserializing=%s",
-            kwargs,
-            str(deserializing),
+            f"Populating internal fields for the class. Provided kwargs: {kwargs} deserializing={deserializing}"
         )
 
         # Mix default values with the provided ones through kwargs
@@ -421,12 +415,10 @@ class DataClayObject(object):
         """Consolidate: copy contents of current version object to original object"""
         return getRuntime().consolidate_version(self.get_object_id(), self.get_hint())
 
-    def make_persistent(self, alias=None, dataset_name=None, backend_id=None, recursive=True):
+    def make_persistent(self, alias=None, backend_id=None, recursive=True):
         if alias == "":
             raise AttributeError("Alias cannot be empty")
-        getRuntime().make_persistent(
-            self, alias=alias, dataset_name=dataset_name, backend_id=backend_id, recursive=recursive
-        )
+        getRuntime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
     def get_execution_environments_info(self):
         return getRuntime().get_all_execution_environments_info()
