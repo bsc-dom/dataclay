@@ -122,12 +122,6 @@ class ExecutionEnvironment(object):
         """
         return self.execution_environment_id
 
-    def get_runtime(self):
-        """
-        @return: Runtime of this Execution Environment
-        """
-        return self.runtime
-
     def prepareThread(self):
         """
         Prepare thread local information. Threads contain information about session, dataset,... and it is also used

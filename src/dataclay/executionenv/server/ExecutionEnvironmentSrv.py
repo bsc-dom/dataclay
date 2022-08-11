@@ -59,9 +59,9 @@ class ExecutionEnvironmentSrv(object):
         logger.info("Performing exit hook --persisting files")
 
         self.execution_environment.prepareThread()
-        self.execution_environment.get_runtime().stop_gc()
+        self.execution_environment.runtime.stop_gc()
         logger.info("Flushing all objects to disk")
-        self.execution_environment.get_runtime().flush_all()
+        self.execution_environment.runtime.flush_all()
         logger.info("Stopping runtime")
         logger.info("Notifying LM, current EE left")
         self.execution_environment.notify_execution_environment_shutdown()
@@ -81,12 +81,12 @@ class ExecutionEnvironmentSrv(object):
 
         # TODO: Remove LogicModule client. Needed for getting stubs.
         lm_client = LMClient(settings.logicmodule_host, settings.logicmodule_port)
-        self.execution_environment.get_runtime().ready_clients["@LM"] = lm_client
+        self.execution_environment.runtime.ready_clients["@LM"] = lm_client
 
         # Starting MetadataService
         # Backends use the MetadataService class instead of calling a gRPC server
         mds = MetadataService(settings.ETCD_HOST, settings.ETCD_PORT)
-        self.execution_environment.get_runtime().ready_clients["@MDS"] = mds
+        self.execution_environment.runtime.ready_clients["@MDS"] = mds
 
         return local_ip
 
@@ -108,7 +108,7 @@ class ExecutionEnvironmentSrv(object):
         # Autoregister of ExecutionEnvironment to LogicModule
         # NOTE: Needed to get registered classes from LogicModule
         # TODO: Should be removed when LogicModule is replaced by MetadataService
-        lm_client = self.execution_environment.get_runtime().ready_clients["@LM"]
+        lm_client = self.execution_environment.runtime.ready_clients["@LM"]
         retries = 0
         while True:
             try:
@@ -132,7 +132,7 @@ class ExecutionEnvironmentSrv(object):
                     retries += 1
 
         # Autoregister of ExecutionEnvironment to MetadataService
-        mds_client = self.execution_environment.get_runtime().ready_clients["@MDS"]
+        mds_client = self.execution_environment.runtime.ready_clients["@MDS"]
         mds_client.autoregister_ee(
             execution_environment_id,
             local_ip,
@@ -184,7 +184,7 @@ class ExecutionEnvironmentSrv(object):
         logger.info(f"Connected to StorageLocation {sl_name}!")
 
         # Makes the StorageLocation client globally available
-        self.execution_environment.get_runtime().ready_clients["@STORAGE"] = storage_client
+        self.execution_environment.runtime.ready_clients["@STORAGE"] = storage_client
         storage_client.associate_execution_environment(execution_environment_id)
 
     def start(self):
