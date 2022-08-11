@@ -253,7 +253,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         stored_objects_classes = dict()
         serialized_objs = list()
         reg_infos = list()
-        dataset_id = self.execution_environment.thread_local_info.dataset_id
+        dataset_name = self.get_session().dataset_name
 
         while pending_objs:
             current_obj = pending_objs.pop()
@@ -276,8 +276,8 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                     infos = RegistrationInfo(
                         object_id,
                         dcc_extradata.class_id,
-                        self.execution_environment.thread_local_info.session_id,
-                        dataset_id,
+                        self.get_session().id,
+                        dataset_name,
                         None,
                     )
                     reg_infos.append(infos)
@@ -299,7 +299,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                         )
                     object_id = uuid.uuid4()
                     current_obj.set_object_id(object_id)
-                    current_obj.set_dataset_name(dataset_id)
+                    current_obj.set_dataset_name(dataset_name)
 
                 logger.debug(
                     "Ready to make persistent object {%s} of class %s {%s}"
@@ -308,7 +308,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
                 stored_objects_classes[object_id] = dcc_extradata.class_id
 
-                # If we are not in a make_persistent, the dataset_id hint is null (?)
+                # If we are not in a make_persistent, the dataset_name hint is null (?)
                 serialized_objs.append(
                     SerializationLibUtilsSingleton.serialize_dcobj_with_data(
                         current_obj, pending_objs, False, None, self, False
@@ -321,15 +321,13 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             lm_client = self.ready_clients["@LM"]
             lm_client.register_objects(reg_infos, settings.environment_id, LANG_PYTHON)
             client.ds_store_objects(
-                self.execution_environment.thread_local_info.session_id,
+                self.get_session().id,
                 serialized_objs,
                 False,
                 None,
             )
         else:
-            client.ds_upsert_objects(
-                self.execution_environment.thread_local_info.session_id, serialized_objs
-            )
+            client.ds_upsert_objects(self.get_session().id, serialized_objs)
 
     def get_operation_info(self, object_id, operation_name):
         dcc_extradata = self.get_object_by_id(object_id).get_class_extradata()

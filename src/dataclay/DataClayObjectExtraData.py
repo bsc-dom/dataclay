@@ -73,7 +73,7 @@ class DataClayInstanceExtraData(DataClayCommonExtraData):
         "persistent_flag",
         "object_id",
         "master_location",
-        "dataset_id",
+        "dataset_name",
         "execenv_id",
         "loaded_flag",
         "pending_to_register_flag",

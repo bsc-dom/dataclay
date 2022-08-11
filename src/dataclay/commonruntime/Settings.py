@@ -82,7 +82,7 @@ class _SettingsHub(object):
             "stubs_folder": UNSET_FIELD,
             "datasets": UNSET_FIELD,
             "dataset_for_store": UNSET_FIELD,
-            "dataset_id": UNSET_FIELD,  # This is the DataSetID for the dataset_for_store
+            "dataset_name": UNSET_FIELD,  # This is the DataSetID for the dataset_for_store
             # Tracing
             "tracing_enabled": False,
             "extrae_starting_task_id": "0",

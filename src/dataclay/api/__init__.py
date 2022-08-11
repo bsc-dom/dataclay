@@ -312,7 +312,7 @@ def init():
     settings.current_session_id = session.id
 
     # TODO: Remove it and use only DEFAULT_DATASET
-    settings.dataset_id = settings.DEFAULT_DATASET
+    settings.dataset_name = settings.DEFAULT_DATASET
 
     # Set LOCAL_BACKEND
     sl_name = settings.LOCAL_BACKEND

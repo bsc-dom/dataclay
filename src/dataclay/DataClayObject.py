@@ -349,7 +349,7 @@ class DataClayObject(object):
         fields = {
             "persistent_flag": False,
             "object_id": uuid.uuid4(),
-            "dataset_id": getRuntime().get_session().dataset_name,
+            "dataset_name": getRuntime().get_session().dataset_name,
             "loaded_flag": True,
             "pending_to_register_flag": False,
             "dirty_flag": False,
@@ -450,12 +450,10 @@ class DataClayObject(object):
         else:
             getRuntime().update_object(self, from_object)
 
-    def dc_put(self, alias, dataset_name=None, backend_id=None, recursive=True):
+    def dc_put(self, alias, backend_id=None, recursive=True):
         if not alias:
             raise AttributeError("Alias cannot be null or empty")
-        getRuntime().make_persistent(
-            self, alias=alias, dataset_name=dataset_name, backend_id=backend_id, recursive=recursive
-        )
+        getRuntime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
     def set_all(self, from_object):
         properties = sorted(
@@ -561,14 +559,14 @@ class DataClayObject(object):
         @postcondition: Return dataset id of the object
         @return Data set id
         """
-        return self.__dclay_instance_extradata.dataset_id
+        return self.__dclay_instance_extradata.dataset_name
 
     def set_dataset_name(self, new_dataset_name):
         """
         @postcondition: Set dataset id of the object
         @param new_dataset_name: dataset id
         """
-        self.__dclay_instance_extradata.dataset_id = new_dataset_name
+        self.__dclay_instance_extradata.dataset_name = new_dataset_name
 
     def getID(self):
         """Return the string representation of the persistent object for COMPSs.

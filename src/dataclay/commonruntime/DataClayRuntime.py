@@ -672,7 +672,7 @@ class DataClayRuntime(object):
         return dest_backend_id
 
     def new_version(
-        self, object_id, hint, class_id, dataset_id, backend_id, backend_hostname, recursive
+        self, object_id, hint, class_id, dataset_name, backend_id, backend_hostname, recursive
     ):
         # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
         self.logger.debug(f"Starting new version of {object_id}")
@@ -684,7 +684,9 @@ class DataClayRuntime(object):
         version_id = execution_client.new_version(session_id, object_id, dest_backend_id)
         locations = set()
         locations.add(dest_backend_id)
-        metadata_info = MetaDataInfo(version_id, False, dataset_id, class_id, locations, None, None)
+        metadata_info = MetaDataInfo(
+            version_id, False, dataset_name, class_id, locations, None, None
+        )
         self.metadata_cache[object_id] = metadata_info
         self.logger.debug(f"Finished new version of {object_id}, created version {version_id}")
         return version_id, dest_backend_id

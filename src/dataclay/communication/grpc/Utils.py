@@ -247,7 +247,7 @@ def get_metadata_info(metadata_info):
 
         id = get_id(metadata_info.id)
         is_read_only = metadata_info.is_read_only
-        dataset_id = get_id(metadata_info.dataset_id)
+        dataset_name = get_id(metadata_info.dataset_name)
         metaclass_id = get_id(metadata_info.metaclass_id)
         locations = set()
         for loc in metadata_info.locations:
@@ -255,7 +255,9 @@ def get_metadata_info(metadata_info):
         alias = metadata_info.alias
         owner_id = get_id(metadata_info.owner_id)
 
-        return MetaDataInfo(id, is_read_only, dataset_id, metaclass_id, locations, alias, owner_id)
+        return MetaDataInfo(
+            id, is_read_only, dataset_name, metaclass_id, locations, alias, owner_id
+        )
     else:
         locations_ids = set()
         for loc in metadata_info.locations:
@@ -263,7 +265,7 @@ def get_metadata_info(metadata_info):
         response = common_messages.MetaDataInfo(
             objectID=get_msg_id(metadata_info.id),
             isReadOnly=metadata_info.is_read_only,
-            datasetID=get_msg_id(metadata_info.dataset_id),
+            datasetID=get_msg_id(metadata_info.dataset_name),
             metaclassID=get_msg_id(metadata_info.metaclass_id),
             locations=locations_ids,
             alias=metadata_info.alias,

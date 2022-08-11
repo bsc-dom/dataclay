@@ -550,7 +550,7 @@ class LMClient(object):
             objectID=Utils.get_msg_id(reg_info.object_id),
             classID=Utils.get_msg_id(reg_info.class_id),
             sessionID=Utils.get_msg_id(reg_info.store_session_id),
-            dataSetID=Utils.get_msg_id(reg_info.dataset_id),
+            dataSetID=Utils.get_msg_id(reg_info.dataset_name),
             alias=reg_info.alias,
         )
 
@@ -574,7 +574,7 @@ class LMClient(object):
                 objectID=Utils.get_msg_id(reg_info.object_id),
                 classID=Utils.get_msg_id(reg_info.class_id),
                 sessionID=Utils.get_msg_id(reg_info.store_session_id),
-                dataSetID=Utils.get_msg_id(reg_info.dataset_id),
+                dataSetID=Utils.get_msg_id(reg_info.dataset_name),
                 alias=reg_info.alias,
             )
             reg_infos_msg.append(msg_reg_info)
@@ -595,10 +595,10 @@ class LMClient(object):
             result.append(Utils.get_id(oid))
         return result
 
-    def set_dataset_id_from_garbage_collector(self, object_id, dataset_id):
+    def set_dataset_id_from_garbage_collector(self, object_id, dataset_name):
 
         request = logicmodule_messages_pb2.SetDataSetIDFromGarbageCollectorRequest(
-            objectID=Utils.get_msg_id(object_id), datasetID=Utils.get_msg_id(dataset_id)
+            objectID=Utils.get_msg_id(object_id), datasetID=Utils.get_msg_id(dataset_name)
         )
 
         # ToDo: In Java at this point override the onNext/onError/onCompleted methods of responseObserver
@@ -759,12 +759,12 @@ class LMClient(object):
 
     # Methods for Storage Location
 
-    def set_dataset_id(self, session_id, object_id, dataset_id):
+    def set_dataset_name(self, session_id, object_id, dataset_name):
 
         request = logicmodule_messages_pb2.SetDataSetIDRequest(
             sessionID=Utils.get_msg_id(session_id),
             objectID=Utils.get_msg_id(object_id),
-            datasetID=Utils.get_msg_id(dataset_id),
+            datasetID=Utils.get_msg_id(dataset_name),
         )
         lm_function = lambda request: self.lm_stub.setDataSetID.future(
             request=request, metadata=self.metadata_call
