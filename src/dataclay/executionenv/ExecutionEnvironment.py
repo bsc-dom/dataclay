@@ -135,7 +135,6 @@ class ExecutionEnvironment(object):
         :return: The response (empty string)
         """
         try:
-            self.prepareThread()
             for class_name, clazz_yaml in classes_map_yamls.items():
                 metaclass = dataclay_yaml_load(clazz_yaml)
                 ClassLoader.deploy_metaclass_grpc(namespace, class_name, clazz_yaml, metaclass)
@@ -199,12 +198,10 @@ class ExecutionEnvironment(object):
         LogicModule for it.
         """
 
-        self.prepareThread()
         logger.info("Getting MetaData for object {%s}", object_id)
         return get_runtime().get_metadata(object_id)
 
     def get_local_instance(self, object_id, retry=True):
-        self.prepareThread()
         return get_runtime().get_or_new_instance_from_db(object_id, retry)
 
     def get_from_db(self, object_id):
@@ -214,7 +211,6 @@ class ExecutionEnvironment(object):
         :param object_id: ID of object to get
         :return: python object
         """
-        self.prepareThread()
         py_object = get_runtime().get_or_new_instance_from_db(object_id, True)
 
         if py_object is None:
@@ -230,7 +226,6 @@ class ExecutionEnvironment(object):
         :param params: The parameters (args)
         :return: The return value of the function being executed.
         """
-        self.prepareThread()
 
         """
         TODO: use better design for this (dgasull) 
@@ -313,7 +308,6 @@ class ExecutionEnvironment(object):
         @param moving: Indicates if store is done during a move
         @param ids_with_alias: IDs with alias
         """
-        self.prepareThread()
 
         try:
             self.set_local_session(session_id)
@@ -417,7 +411,6 @@ class ExecutionEnvironment(object):
         :param recursive: indicates if federation is recursive
         """
         logger.debug("----> Starting federation of %s", object_id)
-        self.prepareThread()
 
         object_ids = set()
         object_ids.add(object_id)
@@ -442,7 +435,6 @@ class ExecutionEnvironment(object):
         """
         try:
             logger.debug("----> Notified federation")
-            self.prepareThread()
             ## Register objects with alias
             reg_infos = list()
             for serialized_obj in objects_to_persist:
@@ -489,7 +481,6 @@ class ExecutionEnvironment(object):
 
         try:
             logger.debug("----> Starting unfederation of %s", object_id)
-            self.prepareThread()
             object_ids = set()
             object_ids.add(object_id)
             serialized_objs = self.get_objects(
@@ -645,7 +636,6 @@ class ExecutionEnvironment(object):
         :return: None
         """
         logger.debug("----> Starting new replica of %s to backend %s", object_id, dest_backend_id)
-        self.prepareThread()
 
         object_ids = set()
         object_ids.add(object_id)
@@ -715,7 +705,6 @@ class ExecutionEnvironment(object):
         :return: the generated non-persistent objects
         """
         logger.debug("[==Get==] Get copy of %s ", object_id)
-        self.prepareThread()
 
         # Get the data service of one of the backends that contains the original object.
         object_ids = set()
@@ -890,7 +879,6 @@ class ExecutionEnvironment(object):
         """
         # Serialize the object
         logger.verbose("[==GetInternal==] Trying to get local instance for object %s", oid)
-        self.prepareThread()
 
         # ToDo: Manage better this try/catch
         get_runtime().lock(
@@ -948,7 +936,6 @@ class ExecutionEnvironment(object):
                                If 0, replicaDestBackendID field is ignored
         :return: List of serialized objects
         """
-        self.prepareThread()
         result = list()
 
         # Prepare to unify calls (only one call for DS)
@@ -1029,7 +1016,6 @@ class ExecutionEnvironment(object):
         :param object_id: ID of the object
         :param dest_backend_id: Destination in which version must be created
         """
-        self.prepareThread()
         logger.debug("----> Starting new version of %s", object_id)
 
         # Get the data service of one of the backends that contains the original object.
@@ -1113,7 +1099,6 @@ class ExecutionEnvironment(object):
 
     def _modify_metadata_oids(self, metadata, original_to_version):
         """Modify the version's metadata in serialized_objs with original OID"""
-        self.prepareThread()
         logger.debug("[==ModifyMetadataOids==] Modify metadata object %r", metadata)
         logger.debug("[==ModifyMetadataOids==] Version OIDs Map: %s", original_to_version)
 
@@ -1183,7 +1168,6 @@ class ExecutionEnvironment(object):
         :param objects_in_other_backends: List of metadata of objects to update and its bytes. It is useful to avoid multiple trips.
         :return: ID of objects and for each object, its bytes.
         """
-        self.prepareThread()
         # Prepare to unify calls (only one call for DS)
         objects_per_backend = dict()
         for curr_obj_with_ids in objects_in_other_backends:
@@ -1308,7 +1292,7 @@ class ExecutionEnvironment(object):
                 sl_client = get_runtime().ready_clients[dest_backend_id]
             except KeyError:
                 st_loc = get_runtime().get_all_execution_environments_info()[dest_backend_id]
-                self.logger.debug(
+                logger.debug(
                     "Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
                     dest_backend_id,
                     st_loc.hostname,
@@ -1336,7 +1320,6 @@ class ExecutionEnvironment(object):
 
     def update_refs(self, ref_counting):
         """forward to SL"""
-        self.prepareThread()
         get_runtime().ready_clients["@STORAGE"].update_refs(ref_counting)
 
     def get_retained_references(self):
