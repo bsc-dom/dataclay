@@ -34,8 +34,9 @@ from dataclay.communication.grpc.clients.StorageLocationGrpcClient import SLClie
 from dataclay.communication.grpc.server.ExecutionEnvironmentService import DataServiceEE
 from dataclay.executionenv.ExecutionEnvironment import ExecutionEnvironment
 from dataclay.util import Configuration
-from dataclay.util.classloaders import \
-    ClassLoader  # Import after DataClayRuntime to avoid circular imports
+from dataclay.util.classloaders import (
+    ClassLoader,
+)  # Import after DataClayRuntime to avoid circular imports
 from dataclay.util.config.CfgExecEnv import set_defaults
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
@@ -95,7 +96,7 @@ class ExecutionEnvironmentSrv(object):
         logger.info(f"Start Autoregister with {local_ip} local_ip")
 
         # Setting settings
-        execution_environment_id = self.execution_environment.get_execution_environment_id()
+        execution_environment_id = self.execution_environment.execution_environment_id
         settings.environment_id = execution_environment_id
         sl_name = settings.dataservice_name
         settings.storage_id = sl_name

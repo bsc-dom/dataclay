@@ -64,10 +64,11 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         return True
 
     def get_or_new_instance_from_db(self, object_id, retry):
-        """
-        @postcondition: Get object from memory or database and WAIT in case we are still waiting for it to be persisted.
-        @param object_id: ID of object to get or create
-        @param retry: indicates if we should retry and wait
+        """Get object from memory or database and WAIT in case we are still waiting for it to be persisted.
+
+        Args:
+            object_id: ID of object to get or create
+            retry: indicates if we should retry and wait
         """
         return self.dataclay_object_loader.get_or_new_instance_from_db(object_id, retry)
 
@@ -207,7 +208,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             # Note that fat_instance tend to be the same as instance...
             # *except* if it is a proxy
             try:
-                fat_instance = self.execution_environment.get_local_instance(object_id)
+                fat_instance = self.get_or_new_instance_from_db(object_id, True)
                 # get_local_instance should indeed modify the same instance instance,
                 # so @abarcelo is leaving the assert just in case
                 assert (

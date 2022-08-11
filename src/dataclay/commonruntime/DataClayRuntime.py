@@ -811,6 +811,7 @@ class DataClayRuntime(object):
             metadata = self.get_metadata(object_id)
             return six.advance_iterator(iter(metadata.locations))
 
+    # TODO: Use MetadataService and return ObjectMD
     def get_metadata(self, object_id):
         if object_id in self.metadata_cache:
             metadata = self.metadata_cache[object_id]
