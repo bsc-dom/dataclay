@@ -11,7 +11,7 @@ import os
 from dataclay_common.managers.object_manager import ObjectMetadata
 
 from dataclay.DataClayObject import DataClayObject
-from dataclay.commonruntime.Runtime import get_runtime, setRuntime
+from dataclay.commonruntime.Runtime import get_runtime, set_runtime
 from dataclay.commonruntime.Runtime import threadLocal
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 class ExecutionEnvironment(object):
     def __init__(self, theee_name, theee_port):
         self.runtime = ExecutionEnvironmentRuntime(self)
-        setRuntime(self.runtime)
+        set_runtime(self.runtime)
 
         self.ee_name = theee_name
         # Note that the port is (atm) exclusively for unique identification of an EE
@@ -135,7 +135,7 @@ class ExecutionEnvironment(object):
         to obtain proper Runtimes. This function was designed for a multithreading design.
         IMPORTANT: This function should be called at the beginning of all "public" functions in this module.
         """
-        # setRuntime(self.runtime)
+        # set_runtime(self.runtime)
 
     def ds_deploy_metaclasses(self, namespace, classes_map_yamls):
         """Deploy MetaClass containers to the Python Execution Environment.

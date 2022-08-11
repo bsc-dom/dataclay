@@ -39,7 +39,7 @@ def clean_runtime():
     client_static_runtime = None
 
 
-def setRuntime(new_runtime):
+def set_runtime(new_runtime):
     """
     @summary: set runtime in current thread. This function is used in Execution Environment
     @param runtime: runtime to set
