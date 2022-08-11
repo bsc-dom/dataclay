@@ -6,7 +6,7 @@ import os
 import logging
 import uuid
 
-from dataclay.commonruntime.Runtime import getRuntime
+from dataclay.commonruntime.Runtime import get_runtime
 
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
@@ -33,13 +33,13 @@ def getByID(object_strid):
     """
     try:
         object_id, hint, class_id = object_strid.split(":")
-        ret = getRuntime().get_object_by_id(
+        ret = get_runtime().get_object_by_id(
             uuid.UUID(object_id), class_id=uuid.UUID(class_id), hint=uuid.UUID(hint)
         )
     except ValueError:  # this can fail for both [not enough semicolons]|[invalid uuid]
         # Fallback behaviour: no extra fields, the whole string is the ObjectID UUID
         object_id = object_strid
-        ret = getRuntime().get_object_by_id(uuid.UUID(object_id))
+        ret = get_runtime().get_object_by_id(uuid.UUID(object_id))
 
     return ret
 

@@ -12,7 +12,7 @@ if six.PY2:
 elif six.PY3:
     import _pickle as pickle
 
-from dataclay.commonruntime.Runtime import getRuntime
+from dataclay.commonruntime.Runtime import get_runtime
 from dataclay.communication.grpc import Utils
 from dataclay_common.protos import common_messages_pb2
 from dataclay_common.protos import dataservice_pb2_grpc as ds, dataservice_messages_pb2
@@ -37,7 +37,7 @@ class DataServiceEE(ds.DataServiceServicer):
         DataServiceEE.interceptor = interceptor
 
     def ass_client(self):
-        self.client = getRuntime().ready_clients["@STORAGE"]
+        self.client = get_runtime().ready_clients["@STORAGE"]
 
     def get_exception_info(self, ex):
         ex_message = None

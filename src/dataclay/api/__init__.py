@@ -10,7 +10,7 @@ import sys
 import warnings
 
 
-from dataclay import getRuntime
+from dataclay import get_runtime
 from dataclay.DataClayObject import DataClayObject
 from dataclay.commonruntime.Runtime import setRuntime
 from dataclay.commonruntime.ClientRuntime import ClientRuntime, settings, LANG_PYTHON
@@ -67,7 +67,7 @@ def reinitialize_clients() -> None:
     Reinitialize connection to logic module
     :return: None
     """
-    runtime = getRuntime()
+    runtime = get_runtime()
     logger.verbose(
         "Performing reinitialization of clients, removing #%d cached ones and recreating LMClient",
         len(runtime.ready_clients),
@@ -91,7 +91,7 @@ def init_connection(client_file) -> LMClient:
     """
     global _connection_initialized
     logger.debug("Initializing dataClay connection with LM")
-    runtime = getRuntime()
+    runtime = get_runtime()
     if _connection_initialized:
         logger.warning("Runtime already has a client with the LogicModule, reusing that")
         return runtime.ready_clients["@LM"]
@@ -129,21 +129,21 @@ def init_connection(client_file) -> LMClient:
 
 def get_backends():
     """Return all the dataClay backend present in the system."""
-    result = getRuntime().get_execution_environments_names(force_update=True)
+    result = get_runtime().get_execution_environments_names(force_update=True)
     logger.debug("Got %i python backend/s", len(result))
     return result
 
 
 def get_backends_info():
     """Return all the dataClay BackendInfo present in the system."""
-    result = getRuntime().get_all_execution_environments_info(force_update=True)
+    result = get_runtime().get_all_execution_environments_info(force_update=True)
     logger.debug("Got %i python backend/s", len(result))
     return result
 
 
 def get_backend_id_by_name(name):
     """Return dataClay backend present in the system with name provided."""
-    all_backends = getRuntime().get_all_execution_environments_with_name(name)
+    all_backends = get_runtime().get_all_execution_environments_with_name(name)
     for backend in all_backends.values():
         if backend.sl_name == name:
             return backend.id
@@ -152,7 +152,7 @@ def get_backend_id_by_name(name):
 
 def get_external_backend_id_by_name(name, external_dataclay_id):
     """Return dataClay backend present in the system with name provided."""
-    all_backends = getRuntime().get_all_execution_environments_at_dataclay(external_dataclay_id)
+    all_backends = get_runtime().get_all_execution_environments_at_dataclay(external_dataclay_id)
     for backend in all_backends.values():
         if backend.sl_name == name:
             return backend.id
@@ -161,7 +161,7 @@ def get_external_backend_id_by_name(name, external_dataclay_id):
 
 def get_backend_id(hostname, port):
     """Return dataClay backend present in the system with name provided."""
-    all_backends = getRuntime().get_all_execution_environments_info(force_update=True)
+    all_backends = get_runtime().get_all_execution_environments_info(force_update=True)
     for backend in all_backends.values():
         if backend.hostname == hostname and backend.port == port:
             return backend.id
@@ -177,7 +177,7 @@ def register_dataclay(exthostname, extport):
     :type extport: int
     :rtype: UUID
     """
-    return getRuntime().register_external_dataclay(exthostname, extport)
+    return get_runtime().register_external_dataclay(exthostname, extport)
 
 
 def get_dataclay_id(exthostname, extport):
@@ -189,7 +189,7 @@ def get_dataclay_id(exthostname, extport):
     :type extport: int
     :rtype: None
     """
-    return getRuntime().get_external_dataclay_id(exthostname, extport)
+    return get_runtime().get_external_dataclay_id(exthostname, extport)
 
 
 def import_models_from_external_dataclay(namespace, ext_dataclay_id) -> None:
@@ -201,7 +201,7 @@ def import_models_from_external_dataclay(namespace, ext_dataclay_id) -> None:
     :type ext_dataclay_id: UUID
     :rtype: None
     """
-    return getRuntime().import_models_from_external_dataclay(namespace, ext_dataclay_id)
+    return get_runtime().import_models_from_external_dataclay(namespace, ext_dataclay_id)
 
 
 def unfederate(ext_dataclay_id=None):
@@ -213,9 +213,9 @@ def unfederate(ext_dataclay_id=None):
     :rtype: None
     """
     if ext_dataclay_id is not None:
-        return getRuntime().unfederate_all_objects(ext_dataclay_id)
+        return get_runtime().unfederate_all_objects(ext_dataclay_id)
     else:
-        return getRuntime().unfederate_all_objects_with_all_dcs()
+        return get_runtime().unfederate_all_objects_with_all_dcs()
 
 
 def migrate_federated_objects(origin_dataclay_id, dest_dataclay_id):
@@ -225,7 +225,7 @@ def migrate_federated_objects(origin_dataclay_id, dest_dataclay_id):
     :return: None
     :rtype: None
     """
-    return getRuntime().migrate_federated_objects(origin_dataclay_id, dest_dataclay_id)
+    return get_runtime().migrate_federated_objects(origin_dataclay_id, dest_dataclay_id)
 
 
 def federate_all_objects(dest_dataclay_id):
@@ -234,7 +234,7 @@ def federate_all_objects(dest_dataclay_id):
     :return: None
     :rtype: None
     """
-    return getRuntime().federate_all_objects(dest_dataclay_id)
+    return get_runtime().federate_all_objects(dest_dataclay_id)
 
 
 def get_num_objects():
@@ -242,7 +242,7 @@ def get_num_objects():
     :return: number of objects in dataClay
     :rtype: int32
     """
-    return getRuntime().get_num_objects()
+    return get_runtime().get_num_objects()
 
 
 # DEPRECATED: Remove this function
@@ -274,7 +274,7 @@ def init():
 
     # Create MDS Client and store it in a persistent way
     client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
-    runtime = getRuntime()
+    runtime = get_runtime()
     runtime.ready_clients["@MDS"] = client
 
     # Get dataclay id and map it to Metadata Service client
@@ -300,7 +300,7 @@ def init():
     sys.path.insert(0, os.path.join(settings.STUBS_PATH, "sources"))
 
     # Initialize runtime
-    getRuntime().initialize_runtime()
+    get_runtime().initialize_runtime()
 
     # Create a new session
     session = client.new_session(
@@ -317,7 +317,7 @@ def init():
     # Set LOCAL_BACKEND
     sl_name = settings.LOCAL_BACKEND
     if sl_name:
-        exec_envs = getRuntime().get_all_execution_environments_info()
+        exec_envs = get_runtime().get_all_execution_environments_info()
         for ee_id in exec_envs.keys():
             if exec_envs[ee_id].sl_name == sl_name:
                 global LOCAL
@@ -397,16 +397,16 @@ def post_network_init():
         extrae_compss = int(settings.extrae_starting_task_id) != 0
 
         if extrae_compss:
-            getRuntime().activate_tracing(False)
+            get_runtime().activate_tracing(False)
             # set current available task id
             # set_current_available_task_id(int(settings.extrae_starting_task_id))
             # if get_task_id() == 0:
-            #    getRuntime().activate_tracing_in_dataclay_services()
+            #    get_runtime().activate_tracing_in_dataclay_services()
 
         else:
-            getRuntime().activate_tracing(True)
+            get_runtime().activate_tracing(True)
             if get_task_id() == 0:
-                getRuntime().activate_tracing_in_dataclay_services()
+                get_runtime().activate_tracing_in_dataclay_services()
 
     # The new_session RPC may fall, and thus we will consider
     # the library as "not initialized". Arriving here means "all ok".
@@ -422,20 +422,20 @@ def finish_tracing():
 
         if extrae_compss:
             if get_task_id() == 0:
-                getRuntime().deactivate_tracing(False)
+                get_runtime().deactivate_tracing(False)
                 # in compss Java runtime will get traces for us
             else:
-                getRuntime().deactivate_tracing(False)
+                get_runtime().deactivate_tracing(False)
 
         else:
             if get_task_id() == 0:
-                getRuntime().deactivate_tracing_in_dataclay_services()
-                getRuntime().deactivate_tracing(True)
-                getRuntime().get_traces_in_dataclay_services()  # not on workers!
+                get_runtime().deactivate_tracing_in_dataclay_services()
+                get_runtime().deactivate_tracing(True)
+                get_runtime().get_traces_in_dataclay_services()  # not on workers!
                 # Merge
                 os.system("mpi2prv -keep-mpits -no-syn -f TRACE.mpits -o ./trace/dctrace.prv")
             else:
-                getRuntime().deactivate_tracing(True)
+                get_runtime().deactivate_tracing(True)
 
 
 def finish():
@@ -446,9 +446,9 @@ def finish():
     global _connection_initialized
     logger.info("Finishing dataClay API")
     finish_tracing()
-    getRuntime().close_session()
+    get_runtime().close_session()
     logger.debug(f"Closed session {settings.current_session.id}")
-    getRuntime().stop_runtime()
+    get_runtime().stop_runtime()
     # Unload stubs
     clean_babel_data()
     sys.path.remove(os.path.join(settings.STUBS_PATH, "sources"))

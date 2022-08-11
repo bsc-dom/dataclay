@@ -33,7 +33,7 @@ class Test(TestCase):
             "@LM": api.LMClient(api.settings.logicmodule_host, api.settings.logicmodule_port),
         }
         api.reinitialize_clients()
-        self.assertEqual(result_ready_clients, api.getRuntime().ready_clients)
+        self.assertEqual(result_ready_clients, api.get_runtime().ready_clients)
 
     def test_init_connection(self):
         pass

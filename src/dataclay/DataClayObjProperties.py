@@ -3,7 +3,7 @@
 from collections import namedtuple
 import logging
 
-from dataclay.commonruntime.Runtime import getRuntime
+from dataclay.commonruntime.Runtime import get_runtime
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
@@ -54,7 +54,7 @@ class DynamicProperty(property):
         scenario for client remote instances and also Execution Environment
         non-loaded instances, which may either "not-yet-loaded" or remote)
         """
-        is_exec_env = getRuntime().is_exec_env()
+        is_exec_env = get_runtime().is_exec_env()
         logger.debug(
             "Calling getter for property %s in %s",
             self.p_name,
@@ -75,7 +75,7 @@ class DynamicProperty(property):
                 logger.debug("Internal dictionary of the object: %s", obj.__dict__)
                 raise
         else:
-            return getRuntime().execute_implementation_aux(
+            return get_runtime().execute_implementation_aux(
                 DCLAY_GETTER_PREFIX + self.p_name, obj, (), obj.get_hint()
             )
 
@@ -86,13 +86,13 @@ class DynamicProperty(property):
         """
         logger.debug("Calling setter for property %s", self.p_name)
 
-        is_exec_env = getRuntime().is_exec_env()
+        is_exec_env = get_runtime().is_exec_env()
         if (is_exec_env and obj.is_loaded()) or (not is_exec_env and not obj.is_persistent()):
             object.__setattr__(obj, "%s%s" % (DCLAY_PROPERTY_PREFIX, self.p_name), value)
             if is_exec_env:
                 obj.set_dirty(True)
         else:
-            getRuntime().execute_implementation_aux(
+            get_runtime().execute_implementation_aux(
                 DCLAY_SETTER_PREFIX + self.p_name, obj, (value,), obj.get_hint()
             )
 
@@ -118,11 +118,11 @@ class ReplicatedDynamicProperty(DynamicProperty):
         """
         logger.debug("Calling replicated setter for property %s", self.p_name)
 
-        is_client = not getRuntime().is_exec_env()
+        is_client = not get_runtime().is_exec_env()
         if is_client and not obj.is_persistent():
             object.__setattr__(obj, "%s%s" % (DCLAY_PROPERTY_PREFIX, self.p_name), value)
         elif not is_client and not obj.is_loaded():
-            getRuntime().execute_implementation_aux(
+            get_runtime().execute_implementation_aux(
                 DCLAY_SETTER_PREFIX + self.p_name, obj, (value,), obj.get_hint()
             )
         else:
@@ -133,7 +133,7 @@ class ReplicatedDynamicProperty(DynamicProperty):
                     self.p_name,
                     value,
                 )
-                getRuntime().execute_implementation_aux(
+                get_runtime().execute_implementation_aux(
                     "__setUpdate__",
                     obj,
                     (obj, self.p_name, value, self.beforeUpdate, self.afterUpdate),

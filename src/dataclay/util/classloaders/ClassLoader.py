@@ -13,7 +13,7 @@ It is in the library instead of inside executionenv because the ExecutionGateway
 requires some specific methods from here. But this may change in the future.
 """
 
-from dataclay.commonruntime.Runtime import getRuntime
+from dataclay.commonruntime.Runtime import get_runtime
 from dataclay.commonruntime.Settings import settings
 from dataclay.util.YamlParser import dataclay_yaml_load
 from lru import LRU
@@ -78,5 +78,5 @@ def load_metaclass_info(metaclass_id):
     :return: A tuple (class_name, namespace).
     """
 
-    metaclass = getRuntime().ready_clients["@MDS"].get_metaclass(metaclass_id)
+    metaclass = get_runtime().ready_clients["@MDS"].get_metaclass(metaclass_id)
     return metaclass.class_name, metaclass.namespace

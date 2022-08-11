@@ -34,7 +34,7 @@ from dataclay.commonruntime.ExecutionGateway import (
     class_extradata_cache_client,
     class_extradata_cache_exec_env,
 )
-from dataclay.commonruntime.Runtime import getRuntime
+from dataclay.commonruntime.Runtime import get_runtime
 from dataclay.commonruntime.RuntimeType import RuntimeType
 from dataclay.serialization.lib.DeserializationLibUtils import (
     DeserializationLibUtilsSingleton,
@@ -72,7 +72,7 @@ re_import = re.compile(r"^\s*@d[cC]layImport(?P<from_mode>From)?\s+(?P<import>.+
 
 def _get_object_by_id_helper(object_id, class_id, hint):
     """Helper method which can be pickled and used by DataClayObject.__reduce__"""
-    return getRuntime().get_object_by_id(object_id, class_id, hint)
+    return get_runtime().get_object_by_id(object_id, class_id, hint)
 
 
 @six.add_metaclass(ExecutionGateway)
@@ -91,7 +91,7 @@ class DataClayObject(object):
         # TODO: remove this if once ExecutionGateway is not initializing object id twice
         if new_object_id is not None:
             self.set_object_id(new_object_id)
-        getRuntime().add_to_heap(self)
+        get_runtime().add_to_heap(self)
 
     def initialize_object_as_persistent(self):
         """Initializes the object as a persistent
@@ -99,7 +99,7 @@ class DataClayObject(object):
         Flags for "persistent" state might be different in EE and client.
         """
         # TODO: improve this using an specialization (dgasull)
-        if getRuntime().is_exec_env():
+        if get_runtime().is_exec_env():
             # *** Execution Environment flags
             self.set_persistent(True)
 
@@ -121,13 +121,13 @@ class DataClayObject(object):
         clear with object state.
         """
         # TODO: improve this using an specialization (dgasull)
-        if getRuntime().is_exec_env():
+        if get_runtime().is_exec_env():
             # *** Execution Environment flags
             self.set_persistent(True)  # All objects in the EE are persistent
             self.set_loaded(True)
             self.set_pending_to_register(True)
-            self.set_hint(getRuntime().get_hint())
-            self.set_owner_session_id(getRuntime().get_session().id)
+            self.set_hint(get_runtime().get_hint())
+            self.set_owner_session_id(get_runtime().get_session().id)
 
     @classmethod
     def get_class_extradata(cls):
@@ -136,7 +136,7 @@ class DataClayObject(object):
         full_name = module_name + "." + classname
 
         # Check if class extradata is in cache.
-        if getRuntime().current_type == RuntimeType.client:
+        if get_runtime().current_type == RuntimeType.client:
             dc_ced = class_extradata_cache_client.get(full_name)
         else:
             dc_ced = class_extradata_cache_exec_env.get(full_name)
@@ -148,7 +148,7 @@ class DataClayObject(object):
         logger.verbose("Proceeding to prepare the class `%s` from the ExecutionGateway", full_name)
         logger.debug(
             "The RuntimeType is: %s",
-            "client" if getRuntime().current_type == RuntimeType.client else "not client",
+            "client" if get_runtime().current_type == RuntimeType.client else "not client",
         )
 
         dc_ced = DataClayClassExtraData(
@@ -159,7 +159,7 @@ class DataClayObject(object):
             imports=list(),
         )
 
-        if getRuntime().current_type == RuntimeType.client:
+        if get_runtime().current_type == RuntimeType.client:
             class_stubinfo = None
 
             try:
@@ -289,7 +289,7 @@ class DataClayObject(object):
                         inMaster=prop_info.inMaster,
                     )
 
-        elif getRuntime().current_type == RuntimeType.exe_env:
+        elif get_runtime().current_type == RuntimeType.exe_env:
             logger.verbose(
                 "Seems that we are a DataService, proceeding to load class %s", dc_ced.full_name
             )
@@ -329,10 +329,10 @@ class DataClayObject(object):
                     inMaster=prop_info.inMaster,
                 )
         else:
-            raise RuntimeError("Could not recognize RuntimeType %s", getRuntime().current_type)
+            raise RuntimeError("Could not recognize RuntimeType %s", get_runtime().current_type)
 
         # Update class extradata cache.
-        if getRuntime().current_type == RuntimeType.client:
+        if get_runtime().current_type == RuntimeType.client:
             class_extradata_cache_client[full_name] = dc_ced
         else:
             class_extradata_cache_exec_env[full_name] = dc_ced
@@ -349,7 +349,7 @@ class DataClayObject(object):
         fields = {
             "persistent_flag": False,
             "object_id": uuid.uuid4(),
-            "dataset_name": getRuntime().get_session().dataset_name,
+            "dataset_name": get_runtime().get_session().dataset_name,
             "loaded_flag": True,
             "pending_to_register_flag": False,
             "dirty_flag": False,
@@ -377,7 +377,7 @@ class DataClayObject(object):
 
     def get_location(self):
         """Return a single (random) location of this object."""
-        return getRuntime().get_location(self.__dclay_instance_extradata.object_id)
+        return get_runtime().get_location(self.__dclay_instance_extradata.object_id)
 
     def get_master_location(self):
         """Return the uuid relative to the master location of this object."""
@@ -393,15 +393,15 @@ class DataClayObject(object):
 
     def get_all_locations(self):
         """Return all the locations of this object."""
-        return getRuntime().get_all_locations(self.__dclay_instance_extradata.object_id)
+        return get_runtime().get_all_locations(self.__dclay_instance_extradata.object_id)
 
     def new_replica(self, backend_id=None, recursive=True):
-        return getRuntime().new_replica(
+        return get_runtime().new_replica(
             self.get_object_id(), self.get_hint(), backend_id, None, recursive
         )
 
     def new_version(self, backend_id=None, recursive=True):
-        return getRuntime().new_version(
+        return get_runtime().new_version(
             self.get_object_id(),
             self.get_hint(),
             self.get_class_id(),
@@ -413,15 +413,15 @@ class DataClayObject(object):
 
     def consolidate_version(self):
         """Consolidate: copy contents of current version object to original object"""
-        return getRuntime().consolidate_version(self.get_object_id(), self.get_hint())
+        return get_runtime().consolidate_version(self.get_object_id(), self.get_hint())
 
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
         if alias == "":
             raise AttributeError("Alias cannot be empty")
-        getRuntime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
+        get_runtime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
     def get_execution_environments_info(self):
-        return getRuntime().get_all_execution_environments_info()
+        return get_runtime().get_all_execution_environments_info()
 
     @classmethod
     def dc_clone_by_alias(cls, alias, recursive=False):
@@ -433,7 +433,7 @@ class DataClayObject(object):
         @postcondition: Returns a non-persistent object as a copy of the current object
         @return: DataClayObject non-persistent instance
         """
-        return getRuntime().get_copy_of_object(self, recursive)
+        return get_runtime().get_copy_of_object(self, recursive)
 
     @classmethod
     def dc_update_by_alias(cls, alias, from_object):
@@ -448,12 +448,12 @@ class DataClayObject(object):
         if from_object is None:
             return
         else:
-            getRuntime().update_object(self, from_object)
+            get_runtime().update_object(self, from_object)
 
     def dc_put(self, alias, backend_id=None, recursive=True):
         if not alias:
             raise AttributeError("Alias cannot be null or empty")
-        getRuntime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
+        get_runtime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
     def set_all(self, from_object):
         properties = sorted(
@@ -594,22 +594,22 @@ class DataClayObject(object):
 
     @classmethod
     def get_object_by_id(cls, object_id, *args, **kwargs):
-        return getRuntime().get_object_by_id(object_id, *args, **kwargs)
+        return get_runtime().get_object_by_id(object_id, *args, **kwargs)
 
     @classmethod
     def get_by_alias(cls, alias, dataset_name=None):
         # NOTE: "safe" was removed. The object_id cannot be obtained from alias string.
         # NOTE: The alias is unique for each dataset. dataset_name is added. If none,
         #       the default_dataset is used.
-        return getRuntime().get_by_alias(alias, dataset_name)
+        return get_runtime().get_by_alias(alias, dataset_name)
 
     @classmethod
     def delete_alias(cls, alias, dataset_name=None):
-        getRuntime().delete_alias_in_dataclay(alias, dataset_name=dataset_name)
+        get_runtime().delete_alias_in_dataclay(alias, dataset_name=dataset_name)
 
     # BUG: Python don't have method overloading
     # def delete_alias(self):
-    #     getRuntime().delete_alias(self)
+    #     get_runtime().delete_alias(self)
 
     def set_persistent(self, ispersistent):
         """
@@ -700,32 +700,32 @@ class DataClayObject(object):
         self.__dclay_instance_extradata.execenv_id = new_hint
 
     def federate_to_backend(self, ext_execution_env_id, recursive=True):
-        getRuntime().federate_to_backend(self, ext_execution_env_id, recursive)
+        get_runtime().federate_to_backend(self, ext_execution_env_id, recursive)
 
     def federate(self, ext_dataclay_id, recursive=True):
-        getRuntime().federate_object(self, ext_dataclay_id, recursive)
+        get_runtime().federate_object(self, ext_dataclay_id, recursive)
 
     def unfederate_from_backend(self, ext_execution_env_id, recursive=True):
-        getRuntime().unfederate_from_backend(self, ext_execution_env_id, recursive)
+        get_runtime().unfederate_from_backend(self, ext_execution_env_id, recursive)
 
     def unfederate(self, ext_dataclay_id=None, recursive=True):
         # FIXME: unfederate only from specific ext dataClay
-        getRuntime().unfederate_object(self, ext_dataclay_id, recursive)
+        get_runtime().unfederate_object(self, ext_dataclay_id, recursive)
 
     def get_external_dataclay_id(self, dcHost, dcPort):
-        return getRuntime().ready_clients["@LM"].get_external_dataclay_id(dcHost, dcPort)
+        return get_runtime().ready_clients["@LM"].get_external_dataclay_id(dcHost, dcPort)
 
     def synchronize(self, field_name, value):
         from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
 
-        return getRuntime().synchronize(self, DCLAY_SETTER_PREFIX + field_name, value)
+        return get_runtime().synchronize(self, DCLAY_SETTER_PREFIX + field_name, value)
 
     def session_detach(self):
         """
         Detach object from session, i.e. remove reference from current session provided to current object,
             'dear garbage-collector, the current session is not using this object anymore'
         """
-        getRuntime().detach_object_from_session(self.get_object_id(), self.get_hint())
+        get_runtime().detach_object_from_session(self.get_object_id(), self.get_hint())
 
     def get_external_dataclay_info(self, dataclay_id):
         """Get external dataClay information
@@ -734,7 +734,7 @@ class DataClayObject(object):
         :type dataclay_id: UUID
         :rtype: DataClayInstance
         """
-        return getRuntime().get_external_dataclay_info(dataclay_id)
+        return get_runtime().get_external_dataclay_info(dataclay_id)
 
     def serialize(
         self,
@@ -906,7 +906,7 @@ class DataClayObject(object):
                                 iface_bitmaps,
                                 metadata,
                                 cur_deserialized_python_objs,
-                                getRuntime(),
+                                get_runtime(),
                             )
                         except KeyError as e:
                             logger.error("Failed to deserialize association", exc_info=True)
@@ -914,7 +914,7 @@ class DataClayObject(object):
                         try:
                             upck = Unpickler(io_file)
                             upck.persistent_load = PersistentLoadPicklerHelper(
-                                metadata, cur_deserialized_python_objs, getRuntime()
+                                metadata, cur_deserialized_python_objs, get_runtime()
                             )
                             value = upck.load()
                         except:

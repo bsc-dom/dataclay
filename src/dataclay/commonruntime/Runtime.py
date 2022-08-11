@@ -48,7 +48,7 @@ def setRuntime(new_runtime):
     runtime = new_runtime
 
 
-def getRuntime():
+def get_runtime():
     """
     @summary: get runtime associated to current thread. If there is no runtime, return client runtime.
     In EE if current thread has no runtime, it means thread was not prepared properly and it is wrong!

@@ -89,7 +89,7 @@ class DataClayRuntime(object):
 
     def initialize_runtime(self):
         """
-        IMPORTANT: getRuntime can be called from decorators, during imports, and therefore a runtime might be created.
+        IMPORTANT: get_runtime can be called from decorators, during imports, and therefore a runtime might be created.
         In that case we do NOT want to create threads to start. Only if "init" was called (client side) or
         server was started. This function is for that.
         """

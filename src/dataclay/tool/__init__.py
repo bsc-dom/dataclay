@@ -17,7 +17,7 @@ import os
 import sys
 from uuid import UUID
 
-from dataclay.commonruntime.Runtime import getRuntime
+from dataclay.commonruntime.Runtime import get_runtime
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.util.StubUtils import deploy_stubs
 from dataclay.util.StubUtils import prepare_storage
@@ -70,7 +70,7 @@ access those classes.
 
 
 def _execute_from_command_line(argv=None):
-    client = getRuntime().ready_clients["@LM"]
+    client = get_runtime().ready_clients["@LM"]
 
     if len(argv) < 2:
         print("You should provide a command to the tool.", file=sys.stderr)
@@ -146,7 +146,7 @@ def _execute_from_command_line(argv=None):
             for c_str in getattr(m, "CLASSES_TO_REGISTER"):
                 mfc.add_class(getattr(m, c_str))
 
-        client = getRuntime().ready_clients["@LM"]
+        client = get_runtime().ready_clients["@LM"]
         result = client.new_class(user_id, LANG_PYTHON, mfc.classes)
 
         if not result:

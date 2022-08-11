@@ -9,7 +9,7 @@ from abc import ABCMeta, abstractmethod
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
-from dataclay.commonruntime.Runtime import getRuntime
+from dataclay.commonruntime.Runtime import get_runtime
 import six
 
 
@@ -50,7 +50,7 @@ class AccountIdLoader(AbstractLoader):
 
     def load_value(self):
         account_name = getattr(self._settings, self._field)
-        return getRuntime().ready_clients["@LM"].get_account_id(account_name)
+        return get_runtime().ready_clients["@LM"].get_account_id(account_name)
 
 
 class AccountCredentialLoader(AbstractLoader):

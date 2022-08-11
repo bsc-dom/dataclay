@@ -63,7 +63,7 @@ class ExecutionGateway(type):
         if getattr(cls, STATIC_ATTRIBUTE_FOR_EXTERNAL_INIT, False):
             logger.debug("New Persistent Instance (remote init) of class `%s`", cls.__name__)
             raise NotImplementedError("External initialization not implemented")
-            # return getRuntime().new_persistent_instance_aux(cls, args, kwargs)
+            # return get_runtime().new_persistent_instance_aux(cls, args, kwargs)
         else:
             ret = object.__new__(cls)  # this defers the __call__ method
             logger.debug("New regular dataClay instance of class `%s`", cls.__name__)

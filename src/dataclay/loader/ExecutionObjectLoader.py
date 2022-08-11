@@ -14,7 +14,7 @@ from dataclay.commonruntime.ExecutionGateway import ExecutionGateway
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.util.classloaders.ClassLoader import load_metaclass_info
-from dataclay.commonruntime.Runtime import getRuntime
+from dataclay.commonruntime.Runtime import get_runtime
 from dataclay.util import Configuration
 
 

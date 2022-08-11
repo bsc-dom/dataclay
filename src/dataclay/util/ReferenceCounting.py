@@ -11,7 +11,7 @@ from dataclay.serialization.python.lang.StringWrapper import StringWrapper
 import logging
 
 logger = logging.getLogger("ReferenceCounting")
-from dataclay.commonruntime.Runtime import getRuntime
+from dataclay.commonruntime.Runtime import get_runtime
 
 
 class ReferenceCounting(object):
@@ -54,11 +54,11 @@ class ReferenceCounting(object):
             logger.trace("Found alias reference")
             self.external_references = self.external_references + 1
 
-        cur_dataclay_id = getRuntime().get_dataclay_id()
+        cur_dataclay_id = get_runtime().get_dataclay_id()
         if dc_obj.get_replica_locations() is not None and len(dc_obj.get_replica_locations()) != 0:
             for replica_loc in dc_obj.get_replica_locations():
                 replica_dataclay_id = (
-                    getRuntime().get_execution_environment_info(replica_loc).dataclay_instance_id
+                    get_runtime().get_execution_environment_info(replica_loc).dataclay_instance_id
                 )
                 if replica_dataclay_id != cur_dataclay_id:
                     logger.trace("Found federation reference")
