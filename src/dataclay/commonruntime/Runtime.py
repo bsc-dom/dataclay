@@ -39,10 +39,6 @@ def get_runtime():
     """
 
     global runtime
-    if runtime is None:
-        from dataclay.commonruntime.ClientRuntime import ClientRuntime
-
-        runtime = ClientRuntime()
     return runtime
 
 
