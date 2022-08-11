@@ -5,8 +5,9 @@ Created on 26 ene. 2018
 
 @author: dgasull
 """
-from dataclay.heap.HeapManager import HeapManager
 from threading import Timer
+
+from dataclay.heap.HeapManager import HeapManager
 
 
 class ClientHeapManager(HeapManager):

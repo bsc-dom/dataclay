@@ -7,6 +7,7 @@ Created on 1 feb. 2018
 """
 import logging
 from abc import ABCMeta, abstractmethod
+
 import six
 
 """ Make this class abstract """

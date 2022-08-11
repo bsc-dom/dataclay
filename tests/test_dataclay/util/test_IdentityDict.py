@@ -1,5 +1,6 @@
-from dataclay.util.IdentityDict import IdentityDict
 import unittest as ut
+
+from dataclay.util.IdentityDict import IdentityDict
 
 
 class TestIdentityDict(ut.TestCase):

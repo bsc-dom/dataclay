@@ -8,15 +8,16 @@ implemented in the Java package client.CommonLib. Specifically, the deserialize*
 functions are more or less adapted here.
 """
 
-from io import BytesIO
 import logging
+from io import BytesIO
 
+import dataclay_common.protos.common_messages_pb2 as common_messages
+
+from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.exceptions.exceptions import InvalidPythonSignature
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
 from dataclay.serialization.python.lang.VLQIntegerWrapper import VLQIntegerWrapper
 from dataclay.serialization.python.util.PyTypeWildcardWrapper import PyTypeWildcardWrapper
-import dataclay_common.protos.common_messages_pb2 as common_messages
-from dataclay.communication.grpc.Utils import get_metadata
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"

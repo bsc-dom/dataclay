@@ -6,19 +6,20 @@ Metaclass is responsible of Class (not object) instantiation.
 Note that this managers also includes most serialization/deserialization code
 related to classes and function call parameters.
 """
-from decorator import getfullargspec
 import inspect
 from logging import getLogger
-import six
 
+import six
+from decorator import getfullargspec
+
+from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util.management.classmgr.MetaClass import MetaClass
 from dataclay.util.management.classmgr.Operation import Operation
 from dataclay.util.management.classmgr.Property import Property
-from dataclay.util.management.classmgr.Type import Type
-from dataclay.util.management.classmgr.Utils import STATIC_ATTRIBUTE_FOR_EXTERNAL_INIT
 from dataclay.util.management.classmgr.python.PythonClassInfo import PythonClassInfo
 from dataclay.util.management.classmgr.python.PythonImplementation import PythonImplementation
-from dataclay.exceptions.exceptions import DataClayException
+from dataclay.util.management.classmgr.Type import Type
+from dataclay.util.management.classmgr.Utils import STATIC_ATTRIBUTE_FOR_EXTERNAL_INIT
 
 # Publicly show the dataClay method decorators
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

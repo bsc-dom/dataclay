@@ -11,14 +11,11 @@ Note that this code has been heavily inspired by the Django's conf module.
 import logging
 import os
 
-from dataclay.commonruntime.SettingsLoader import (
-    AccountIdLoader,
-    AccountCredentialLoader,
-    AbstractLoader,
-)
+from dataclay.commonruntime.SettingsLoader import (AbstractLoader, AccountCredentialLoader,
+                                                   AccountIdLoader)
 from dataclay.exceptions.exceptions import ImproperlyConfigured
-from dataclay.util.PropertiesFilesLoader import PropertyDict
 from dataclay.util import Configuration
+from dataclay.util.PropertiesFilesLoader import PropertyDict
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"

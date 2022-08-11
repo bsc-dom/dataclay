@@ -27,8 +27,9 @@ class Type(ManagementObject):
         """
 
         # Imports done here to avoid circular-imports during initialization
-        from .Utils import instance_types
         from dataclay import DataClayObject
+
+        from .Utils import instance_types
 
         try:
             return instance_types[type_instance]

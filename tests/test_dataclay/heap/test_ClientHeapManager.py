@@ -1,7 +1,8 @@
+import uuid
 from unittest import TestCase
 from unittest.mock import Mock
+
 from dataclay.heap.ClientHeapManager import ClientHeapManager
-import uuid
 
 
 class TestClientHeapManager(TestCase):

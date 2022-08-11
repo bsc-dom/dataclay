@@ -2,8 +2,7 @@ from __future__ import absolute_import
 
 """ Class description goes here. """
 
-from dataclay import StorageObject
-from dataclay import dclayMethod
+from dataclay import StorageObject, dclayMethod
 
 from .splitting import SplittableCollectionMixin
 

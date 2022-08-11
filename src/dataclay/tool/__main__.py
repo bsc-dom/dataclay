@@ -7,8 +7,10 @@ from __future__ import print_function
 This module can be executed with `python -m dataclay.tool <parameters>`.
 """
 import sys
-from . import functions
+
 import six
+
+from . import functions
 
 if len(sys.argv) < 2:
     # We need at least a parameter

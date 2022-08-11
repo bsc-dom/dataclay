@@ -1,16 +1,14 @@
 """ Class description goes here. """
 
-import dataclay.api
-from distutils.util import strtobool
-import os
 import logging
+import os
 import uuid
+from distutils.util import strtobool
 
-from dataclay.commonruntime.Runtime import get_runtime
-
+import dataclay.api
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
-
+from dataclay.commonruntime.Runtime import get_runtime
 # Also "publish" the split method
 from dataclay.contrib.splitting import split
 
@@ -88,8 +86,8 @@ def initWorkerPostFork():
         "Arbitrary sleep done here in order to minimize "
         "race conditions on opened connections to management database"
     )
-    from time import sleep
     from random import randint
+    from time import sleep
 
     sleep(randint(0, 30))
     ##########################################################

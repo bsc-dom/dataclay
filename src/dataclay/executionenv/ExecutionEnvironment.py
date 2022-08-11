@@ -1,42 +1,36 @@
 """ Class description goes here. """
 
-from io import BytesIO
 import logging
-import lru
-import uuid
-import traceback
-import time
 import os
+import time
+import traceback
+import uuid
+from ctypes import c_void_p
+from io import BytesIO
 
+import lru
 from dataclay_common.managers.object_manager import ObjectMetadata
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
-from dataclay.DataClayObject import DataClayObject
+from dataclay.commonruntime.ExecutionEnvironmentRuntime import ExecutionEnvironmentRuntime
 from dataclay.commonruntime.Runtime import get_runtime, set_runtime
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
+from dataclay.DataClayObject import DataClayObject
+from dataclay.DataClayObjProperties import (DCLAY_GETTER_PREFIX, DCLAY_PROPERTY_PREFIX,
+                                            DCLAY_SETTER_PREFIX)
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.paraver import (
-    set_current_available_task_id,
-    initialize_extrae,
-    finish_tracing,
-    get_traces,
-    extrae_tracing_is_enabled,
-)
-from dataclay.DataClayObjProperties import DCLAY_GETTER_PREFIX
-from dataclay.DataClayObjProperties import DCLAY_PROPERTY_PREFIX
-from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
+from dataclay.paraver import (extrae_tracing_is_enabled, finish_tracing, get_traces,
+                              initialize_extrae, set_current_available_task_id)
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
-from dataclay.util.FileUtils import deploy_class
-from dataclay.util.classloaders import ClassLoader
-from dataclay.util.YamlParser import dataclay_yaml_load
-from dataclay.commonruntime.ExecutionEnvironmentRuntime import ExecutionEnvironmentRuntime
-from ctypes import c_void_p
 from dataclay.util import Configuration
+from dataclay.util.classloaders import ClassLoader
+from dataclay.util.FileUtils import deploy_class
+from dataclay.util.YamlParser import dataclay_yaml_load
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"

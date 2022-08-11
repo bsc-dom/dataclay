@@ -8,28 +8,26 @@ import logging.config
 import os
 import sys
 import warnings
+from time import sleep
 
+from dataclay_common.clients.metadata_service_client import MDSClient
 
 from dataclay import get_runtime
-from dataclay.DataClayObject import DataClayObject
-from dataclay.commonruntime.Runtime import set_runtime
-from dataclay.commonruntime.ClientRuntime import ClientRuntime, settings, LANG_PYTHON
+from dataclay.commonruntime.ClientRuntime import LANG_PYTHON
 from dataclay.commonruntime.ClientRuntime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
-from dataclay.commonruntime.Initializer import initialize, _get_logging_dict_config
+from dataclay.commonruntime.ClientRuntime import ClientRuntime, settings
+from dataclay.commonruntime.Initializer import _get_logging_dict_config, initialize
+from dataclay.commonruntime.Runtime import set_runtime
+from dataclay.commonruntime.Settings import unload_settings
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
+from dataclay.DataClayObject import DataClayObject
 from dataclay.paraver import (
     TRACE_ENABLED,
     extrae_tracing_is_enabled,
     get_task_id,
     set_current_available_task_id,
 )
-from dataclay.util.StubUtils import track_local_available_classes
-from dataclay.util.StubUtils import clean_babel_data
-from dataclay.commonruntime.Settings import unload_settings
-
-from dataclay_common.clients.metadata_service_client import MDSClient
-
-from time import sleep
+from dataclay.util.StubUtils import clean_babel_data, track_local_available_classes
 
 # This will be populated during initialization
 LOCAL = _UNDEFINED_LOCAL
@@ -77,7 +75,7 @@ def reinitialize_clients() -> None:
     }
 
 
-# TODO: Remove this function
+# TODO: Remove this function. Currently used by tool/functions
 def init_connection(client_file) -> LMClient:
     """Initialize the connection client ==> LogicModule.
 
@@ -91,7 +89,10 @@ def init_connection(client_file) -> LMClient:
     """
     global _connection_initialized
     logger.debug("Initializing dataClay connection with LM")
-    runtime = get_runtime()
+
+    runtime = ClientRuntime()
+    set_runtime(runtime)
+
     if _connection_initialized:
         logger.warning("Runtime already has a client with the LogicModule, reusing that")
         return runtime.ready_clients["@LM"]
@@ -270,11 +271,11 @@ def init():
     settings.load_session_properties()
 
     # Initialize ClientRuntime
-    set_runtime(ClientRuntime())
+    runtime = ClientRuntime()
+    set_runtime(runtime)
 
     # Create MDS Client and store it in a persistent way
     client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
-    runtime = get_runtime()
     runtime.ready_clients["@MDS"] = client
 
     # Get dataclay id and map it to Metadata Service client
@@ -454,9 +455,9 @@ def finish():
     sys.path.remove(os.path.join(settings.STUBS_PATH, "sources"))
     # unload caches of stubs
     from dataclay.commonruntime.ExecutionGateway import (
-        loaded_classes,
         class_extradata_cache_client,
         class_extradata_cache_exec_env,
+        loaded_classes,
     )
 
     loaded_classes.clear()

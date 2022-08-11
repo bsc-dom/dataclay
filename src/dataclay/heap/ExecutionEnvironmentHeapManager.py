@@ -7,9 +7,9 @@ Created on 26 ene. 2018
 
 @author: dgasull
 """
+import gc
 import logging
 import time
-import gc
 import traceback
 
 try:
@@ -19,10 +19,10 @@ except ImportError:
 
 import psutil
 
-from dataclay.heap.HeapManager import HeapManager
-from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
-from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.DataClayObjProperties import DCLAY_PROPERTY_PREFIX
+from dataclay.heap.HeapManager import HeapManager
+from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
+from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
 
 

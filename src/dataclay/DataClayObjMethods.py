@@ -1,9 +1,11 @@
 """ Class description goes here. """
 
-from decorator import decorate
 import logging
-import six
 import traceback
+
+import six
+from decorator import decorate
+
 from dataclay.commonruntime.Runtime import get_runtime
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

@@ -7,11 +7,12 @@ Environment.
 The "client" version is available at `dataclay` package, which works as en entry
 point for all the commonruntime user-friendly functions.
 """
-from contextlib import contextmanager
-from distutils.util import strtobool
 import logging
 import logging.config
 import os
+from contextlib import contextmanager
+from distutils.util import strtobool
+
 import yaml
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

@@ -9,8 +9,9 @@ files.
 See PropertyFile class for some considerations about the implementation.
 """
 
-from abc import ABCMeta, abstractmethod
 import re
+from abc import ABCMeta, abstractmethod
+
 import six
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

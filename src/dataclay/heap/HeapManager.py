@@ -5,13 +5,15 @@ Created on Jan 25, 2018
 
 @author: dgasull
 """
-from weakref import WeakValueDictionary
 import logging
-from abc import ABCMeta, abstractmethod
 import threading
-from dataclay.util import Configuration
-import six
+from abc import ABCMeta, abstractmethod
 from uuid import UUID
+from weakref import WeakValueDictionary
+
+import six
+
+from dataclay.util import Configuration
 
 """ Make this class abstract """
 

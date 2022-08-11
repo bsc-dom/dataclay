@@ -6,11 +6,11 @@ Metaclass is responsible of Class (not object) instantiation.
 Note that this managers also includes most serialization/deserialization code
 related to classes and function call parameters.
 """
-import inspect
-import traceback
-import logging
 import copy
+import inspect
+import logging
 import re
+import traceback
 from operator import attrgetter
 from uuid import UUID
 
@@ -20,40 +20,32 @@ if six.PY2:
     from cPickle import Pickler, Unpickler
 elif six.PY3:
     from _pickle import Pickler, Unpickler
+
 import uuid
-from dataclay.DataClayObjMethods import dclayMethod
-from dataclay.DataClayObjProperties import (
-    DCLAY_PROPERTY_PREFIX,
-    PreprocessedProperty,
-    DynamicProperty,
-    ReplicatedDynamicProperty,
-)
-from dataclay.DataClayObjectExtraData import DataClayInstanceExtraData, DataClayClassExtraData
-from dataclay.commonruntime.ExecutionGateway import (
-    ExecutionGateway,
-    class_extradata_cache_client,
-    class_extradata_cache_exec_env,
-)
+
+import six
+
+from dataclay.commonruntime.ExecutionGateway import (ExecutionGateway, class_extradata_cache_client,
+                                                     class_extradata_cache_exec_env)
 from dataclay.commonruntime.Runtime import get_runtime
 from dataclay.commonruntime.RuntimeType import RuntimeType
-from dataclay.serialization.lib.DeserializationLibUtils import (
-    DeserializationLibUtilsSingleton,
-    PersistentLoadPicklerHelper,
-)
-from dataclay.serialization.lib.SerializationLibUtils import (
-    SerializationLibUtilsSingleton,
-    PersistentIdPicklerHelper,
-)
+from dataclay.DataClayObjectExtraData import DataClayClassExtraData, DataClayInstanceExtraData
+from dataclay.DataClayObjMethods import dclayMethod
+from dataclay.DataClayObjProperties import (DCLAY_PROPERTY_PREFIX, DynamicProperty,
+                                            PreprocessedProperty, ReplicatedDynamicProperty)
+from dataclay.exceptions.exceptions import DataClayException, ImproperlyConfigured
+from dataclay.serialization.lib.DeserializationLibUtils import (DeserializationLibUtilsSingleton,
+                                                                PersistentLoadPicklerHelper)
+from dataclay.serialization.lib.SerializationLibUtils import (PersistentIdPicklerHelper,
+                                                              SerializationLibUtilsSingleton)
 from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
-from dataclay.serialization.python.lang.StringWrapper import StringWrapper
-from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
 from dataclay.serialization.python.lang.DCIDWrapper import DCIDWrapper
-from dataclay.util.StubUtils import load_babel_data
+from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
+from dataclay.serialization.python.lang.StringWrapper import StringWrapper
 from dataclay.util.classloaders.ClassLoader import load_metaclass
 from dataclay.util.management.classmgr.Type import Type
 from dataclay.util.management.classmgr.UserType import UserType
-from dataclay.exceptions.exceptions import DataClayException, ImproperlyConfigured
-import six
+from dataclay.util.StubUtils import load_babel_data
 
 # Publicly show the dataClay method decorators
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

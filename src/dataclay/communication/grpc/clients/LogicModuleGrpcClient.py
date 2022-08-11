@@ -2,11 +2,12 @@
 
 """gRPC LogicModule Client code - LogicModule methods."""
 
-from datetime import datetime
 import itertools
-import traceback
 import logging
 import sys
+import traceback
+from datetime import datetime
+
 import grpc
 import six
 
@@ -14,17 +15,19 @@ if six.PY2:
     import cPickle as pickle
 elif six.PY3:
     import _pickle as pickle
+
 from time import sleep
-from grpc._cython.cygrpc import ChannelArgKey
-from dataclay.commonruntime.Settings import settings
+
 import dataclay_common.protos.common_messages_pb2 as CommonMessages
+from dataclay_common.protos import (common_messages_pb2, logicmodule_messages_pb2,
+                                    logicmodule_pb2_grpc)
+from grpc._cython.cygrpc import ChannelArgKey
+
+from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc import Utils
-from dataclay_common.protos import logicmodule_pb2_grpc
-from dataclay_common.protos import common_messages_pb2
-from dataclay_common.protos import logicmodule_messages_pb2
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load
 from dataclay.util import Configuration
+from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
 __copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"

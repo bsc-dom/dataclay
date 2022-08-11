@@ -12,33 +12,31 @@ infrastructure is required, mainly:
 Note that this server must be aware of the "local" Storage Location and the
 central Logic Module node.
 """
-from concurrent import futures
-import grpc
 import logging
 import os
+import signal
 import socket
 import sys
-import time
-import signal
 import threading
+import time
 import traceback
+from concurrent import futures
 
-from dataclay_mds.metadata_service import MetadataService
+import grpc
 from dataclay_common.exceptions.exceptions import *
-
-from dataclay.commonruntime.Settings import settings
-from dataclay.communication.grpc.clients.StorageLocationGrpcClient import SLClient
-from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from dataclay.communication.grpc.server.ExecutionEnvironmentService import DataServiceEE
-from dataclay.util.classloaders import (
-    ClassLoader,
-)  # Import after DataClayRuntime to avoid circular imports
-from dataclay.util.config.CfgExecEnv import set_defaults
-from dataclay.executionenv.ExecutionEnvironment import ExecutionEnvironment
-from dataclay.commonruntime.Initializer import logger
-from dataclay.util import Configuration
+from dataclay_mds.metadata_service import MetadataService
 
+from dataclay.commonruntime.Initializer import logger
+from dataclay.commonruntime.Settings import settings
+from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
+from dataclay.communication.grpc.clients.StorageLocationGrpcClient import SLClient
+from dataclay.communication.grpc.server.ExecutionEnvironmentService import DataServiceEE
+from dataclay.executionenv.ExecutionEnvironment import ExecutionEnvironment
+from dataclay.util import Configuration
+from dataclay.util.classloaders import \
+    ClassLoader  # Import after DataClayRuntime to avoid circular imports
+from dataclay.util.config.CfgExecEnv import set_defaults
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"

@@ -1,8 +1,8 @@
 """ Class description goes here. """
 
-from dataclay import StorageObject
-from dataclay import dclayMethod
 import logging
+
+from dataclay import StorageObject, dclayMethod
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
@@ -269,6 +269,7 @@ class SplittableCollectionMixin(object):
         # FIXME: once support for imports has been implemented and tested, clean this up
         from itertools import groupby
         from operator import itemgetter
+
         from dataclay.contrib import splitting
 
         if split_class is None:

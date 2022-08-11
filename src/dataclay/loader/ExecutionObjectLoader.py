@@ -5,17 +5,18 @@ Created on 1 feb. 2018
 
 @author: dgasull
 """
-from dataclay.loader.DataClayObjectLoader import DataClayObjectLoader
 import importlib
-import traceback
 import logging
 import time
+import traceback
+
 from dataclay.commonruntime.ExecutionGateway import ExecutionGateway
-from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
-from dataclay.communication.grpc.Utils import get_metadata
-from dataclay.util.classloaders.ClassLoader import load_metaclass_info
 from dataclay.commonruntime.Runtime import get_runtime
+from dataclay.communication.grpc.Utils import get_metadata
+from dataclay.loader.DataClayObjectLoader import DataClayObjectLoader
+from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.util import Configuration
+from dataclay.util.classloaders.ClassLoader import load_metaclass_info
 
 
 class ExecutionObjectLoader(DataClayObjectLoader):

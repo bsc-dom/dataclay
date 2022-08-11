@@ -1,21 +1,21 @@
 """ Class description goes here. """
 
+import datetime
 import logging
+import threading
 import time
 import uuid
-import datetime
-import threading
 
 from dataclay_common.managers.object_manager import ObjectMetadata
-
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from dataclay.exceptions.exceptions import DataClayException
+
 from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
 from dataclay.commonruntime.RuntimeType import RuntimeType
 from dataclay.commonruntime.Settings import settings
-from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
+from dataclay.exceptions.exceptions import DataClayException
 from dataclay.heap.ExecutionEnvironmentHeapManager import ExecutionEnvironmentHeapManager
 from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader
+from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

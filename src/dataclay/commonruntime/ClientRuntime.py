@@ -4,23 +4,20 @@ The `init` and `finish` functions are availble through the
 dataclay.api package.
 """
 
-from dataclay.commonruntime.Settings import settings
-from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from dataclay.serialization.lib.SerializationLibUtils import (
-    SerializationLibUtilsSingleton,
-)
-from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
-from dataclay.commonruntime.RuntimeType import RuntimeType
-from dataclay.heap.ClientHeapManager import ClientHeapManager
-from dataclay.loader.ClientObjectLoader import ClientObjectLoader
-
-# Sentinel-like object to catch some typical mistakes
-from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
-from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
 import traceback
 
 from dataclay_common.managers.object_manager import ObjectMetadata
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
+
+from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
+from dataclay.commonruntime.RuntimeType import RuntimeType
+from dataclay.commonruntime.Settings import settings
+from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
+from dataclay.heap.ClientHeapManager import ClientHeapManager
+from dataclay.loader.ClientObjectLoader import ClientObjectLoader
+from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
+from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
+from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
 
 UNDEFINED_LOCAL = object()
 

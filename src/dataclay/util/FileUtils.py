@@ -9,6 +9,7 @@ is done in this module.
 
 import logging
 import os.path
+
 from dataclay.commonruntime.Initializer import logger
 
 __author__ = ["Alex Barcelo <alex.barcelo@bsc.es"]

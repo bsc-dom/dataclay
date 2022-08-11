@@ -8,17 +8,19 @@ Additionally, this module defines an application capable of performing several
 Paraver-related routines, like "merge".
 """
 from __future__ import print_function
+
+import ctypes
+import importlib
+import logging
 import os
+import traceback
 import types
+from ctypes import cdll
 from distutils.util import strtobool
 from functools import wraps
+
 from dataclay.commonruntime.Settings import settings
-import logging
-import traceback
-import importlib
 from dataclay.contrib.dummy_pycompss import task
-import ctypes
-from ctypes import cdll
 from dataclay.util import Configuration
 
 # Explicit and manually crafted list of CLASSES to be instrumentated

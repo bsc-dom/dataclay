@@ -1,13 +1,13 @@
 """ Class description goes here. """
 
-from dataclay import DataClayObject
-from importlib import import_module
 import logging
-
-from dataclay.commonruntime.ExecutionGateway import loaded_classes
-from dataclay.util.management.classmgr.UserType import UserType
-from dataclay.exceptions.exceptions import DataClayException
 import traceback
+from importlib import import_module
+
+from dataclay import DataClayObject
+from dataclay.commonruntime.ExecutionGateway import loaded_classes
+from dataclay.exceptions.exceptions import DataClayException
+from dataclay.util.management.classmgr.UserType import UserType
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es"
 __copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"

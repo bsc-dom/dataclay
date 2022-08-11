@@ -1,6 +1,7 @@
 """ Class description goes here. """
 
 from struct import Struct
+
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

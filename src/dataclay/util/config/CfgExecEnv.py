@@ -1,7 +1,8 @@
 """ Class description goes here. """
 
-import os
 import logging
+import os
+
 from dataclay.commonruntime.Settings import settings
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

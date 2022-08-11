@@ -12,9 +12,11 @@ class MQTTMixin(object):
     @dclayMethod(data="dict<str, anything>", topic="str")
     def produce_mqtt_msg(self, data, topic="dataclay"):
         import os
-        import paho.mqtt.client as mqtt
-        from dataclay.contrib.mqtt import MQTT_PRODUCERS
         from json import dumps
+
+        import paho.mqtt.client as mqtt
+
+        from dataclay.contrib.mqtt import MQTT_PRODUCERS
 
         mqtt_host = os.getenv("MQTT_HOST", "mqtt")
         mqtt_port = int(os.getenv("MQTT_PORT", "1883"))

@@ -2,9 +2,10 @@
 
 """gRPC ExecutionEnvironment Server code - StorageLocation/EE methods."""
 
-from io import BytesIO
 import logging
 import traceback
+from io import BytesIO
+
 import six
 
 if six.PY2:
@@ -12,10 +13,11 @@ if six.PY2:
 elif six.PY3:
     import _pickle as pickle
 
+from dataclay_common.protos import common_messages_pb2, dataservice_messages_pb2
+from dataclay_common.protos import dataservice_pb2_grpc as ds
+
 from dataclay.commonruntime.Runtime import get_runtime
 from dataclay.communication.grpc import Utils
-from dataclay_common.protos import common_messages_pb2
-from dataclay_common.protos import dataservice_pb2_grpc as ds, dataservice_messages_pb2
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util.YamlParser import dataclay_yaml_load
 

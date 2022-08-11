@@ -8,8 +8,8 @@ ensures proper initialization of client-side stuff.
 The Execution Environment should take care of the RuntimeType and then call the
 dataclay.core.initialize function.
 """
-import threading
 import logging
+import threading
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
@@ -43,8 +43,7 @@ def get_runtime():
 
 
 # Those need the commonruntime
-from dataclay.DataClayObject import (
-    DataClayObject,
-)  # Import after runtime to avoid circular-imports (runtime is already defined here)
+from dataclay.DataClayObject import \
+    DataClayObject  # Import after runtime to avoid circular-imports (runtime is already defined here)
 
 StorageObject = DataClayObject  # Redundant alias

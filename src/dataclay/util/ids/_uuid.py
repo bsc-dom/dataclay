@@ -1,7 +1,8 @@
 """ Class description goes here. """
 
 from uuid import UUID
-from yaml import Loader, Dumper
+
+from yaml import Dumper, Loader
 
 JAVA_UUID_TAG = "tag:yaml.org,2002:java.util.UUID"
 DATACLAY_ID_PREFIX = "tag:yaml.org,2002:es.bsc.dataclay.util.ids"

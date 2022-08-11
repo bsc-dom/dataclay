@@ -5,10 +5,11 @@ Created on 19 abr. 2018
 
 @author: dgasull
 """
-from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
-from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
-from dataclay.serialization.python.lang.StringWrapper import StringWrapper
 import logging
+
+from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
+from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
+from dataclay.serialization.python.lang.StringWrapper import StringWrapper
 
 logger = logging.getLogger("ReferenceCounting")
 from dataclay.commonruntime.Runtime import get_runtime

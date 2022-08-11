@@ -8,19 +8,19 @@ the Python specific stuff.
 
 # TODO The below code should be deprecated as soon as the dclayTool.sh is done
 
-from dataclay.api import init_connection, finish
-from dataclay.commonruntime.ExecutionGateway import ExecutionGateway
-import grpc
-from importlib import import_module
-from jinja2 import Template
 import os
 import sys
+from importlib import import_module
 from uuid import UUID
 
-from dataclay.commonruntime.Runtime import get_runtime
+import grpc
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from dataclay.util.StubUtils import deploy_stubs
-from dataclay.util.StubUtils import prepare_storage
+from jinja2 import Template
+
+from dataclay.api import finish, init_connection
+from dataclay.commonruntime.ExecutionGateway import ExecutionGateway
+from dataclay.commonruntime.Runtime import get_runtime
+from dataclay.util.StubUtils import deploy_stubs, prepare_storage
 from dataclay.util.tools.python.PythonMetaClassFactory import MetaClassFactory
 from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load
 

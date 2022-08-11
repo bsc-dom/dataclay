@@ -1,6 +1,7 @@
 """ Class description goes here. """
 
 import uuid
+
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
 

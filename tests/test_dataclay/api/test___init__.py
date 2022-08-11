@@ -1,5 +1,6 @@
 from unittest import TestCase
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
+
 from test_dataclay.test_utils import import_mock
 
 """ Mock all imports done by the tested module """

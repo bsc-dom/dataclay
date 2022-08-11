@@ -1,30 +1,26 @@
 """ Class description goes here. """
 import importlib
-import uuid
-import six
-import os
 import logging
+import os
 import traceback
+import uuid
 from abc import ABCMeta, abstractmethod
 from logging import TRACE
-from lru import LRU
-from grpc import RpcError
 
-from dataclay.heap.LockerPool import LockerPool
+import six
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from dataclay.paraver import (
-    extrae_tracing_is_enabled,
-    initialize_extrae,
-    get_current_available_task_id,
-    finish_tracing,
-    get_task_id,
-)
+from grpc import RpcError
+from lru import LRU
+
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
+from dataclay.exceptions.exceptions import DataClayException
+from dataclay.heap.LockerPool import LockerPool
+from dataclay.paraver import (extrae_tracing_is_enabled, finish_tracing,
+                              get_current_available_task_id, get_task_id, initialize_extrae)
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
-from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util import Configuration
 from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
 from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo

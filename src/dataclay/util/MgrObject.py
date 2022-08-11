@@ -1,12 +1,13 @@
 """ Class description goes here. """
 
 import logging
-from yaml import load, dump, Loader, Dumper
+
+import six
+from yaml import Dumper, Loader, dump, load
 
 from dataclay.commonruntime.Initializer import size_tracking
 from dataclay.serialization.DataClaySerializable import DataClaySerializable
 from dataclay.serialization.python.lang.StringWrapper import StringWrapper
-import six
 
 logger = logging.getLogger(__name__)
 

@@ -2,15 +2,17 @@
 
 """Interceptor for GRPC server calls."""
 
-from grpc import ServerInterceptor
+import time
 from logging import getLogger
 
+from decorator import decorate, decorator
+from grpc import ServerInterceptor
+
 from dataclay import PrvManager
-from dataclay.paraver.prv_traces import TraceType
 from dataclay.commonruntime.Settings import settings
+from dataclay.paraver.prv_traces import TraceType
+
 from . import HEADER_MESSAGEID
-from decorator import decorator, decorate
-import time
 
 logger = getLogger(__name__)
 

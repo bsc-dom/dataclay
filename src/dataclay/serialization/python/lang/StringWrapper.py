@@ -1,6 +1,7 @@
 """ Class description goes here. """
 
 from io import BytesIO
+
 import six
 
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper

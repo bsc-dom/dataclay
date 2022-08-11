@@ -3,21 +3,22 @@
 import logging
 import os
 import re
-import six
 import traceback
+
+import six
 
 if six.PY2:
     import cPickle as pickle
 elif six.PY3:
     import _pickle as pickle
 
+import six
+
 from dataclay.commonruntime.Initializer import size_tracking
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
 from dataclay.serialization.python.lang.StringWrapper import StringWrapper
-
-import six
 
 logger = logging.getLogger(__name__)
 

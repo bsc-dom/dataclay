@@ -6,17 +6,17 @@ See the __main__.py entrypoint for more information on the scenarios in which
 the functions here are called.
 """
 import atexit
-from dataclay.api import init_connection
-from jinja2 import Template
 import os
 import sys
 from uuid import UUID
 
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from dataclay.util.StubUtils import deploy_stubs
-from dataclay.util.StubUtils import prepare_storage
-from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load
+from jinja2 import Template
+
+from dataclay.api import init_connection
+from dataclay.util.StubUtils import deploy_stubs, prepare_storage
 from dataclay.util.tools.python.PythonMetaClassFactory import MetaClassFactory
+from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load
 
 
 def _establish_client():

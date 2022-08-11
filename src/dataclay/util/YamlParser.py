@@ -16,7 +16,9 @@ sugar, but should be taken into account for cross-language correctness.
 """
 from collections import namedtuple
 from functools import partial
-from yaml import Loader, load, dump
+
+from dataclay_common.protos.common_messages_pb2 import Langs
+from yaml import Loader, dump, load
 
 from dataclay.util.YamlIgnores import IGNORE_CLASSES, IGNORE_PREFIXES
 
@@ -26,22 +28,22 @@ from .management.accountmgr.Account import Account
 from .management.classmgr.AccessedImplementation import AccessedImplementation
 from .management.classmgr.AccessedProperty import AccessedProperty
 from .management.classmgr.Implementation import Implementation
+from .management.classmgr.java.JavaImplementation import JavaImplementation
 from .management.classmgr.MetaClass import MetaClass
 from .management.classmgr.Operation import Operation
 from .management.classmgr.Property import Property
-from .management.classmgr.Type import Type
-from .management.classmgr.UserType import UserType
-from .management.classmgr.java.JavaImplementation import JavaImplementation
 from .management.classmgr.python.PythonClassInfo import PythonClassInfo
 from .management.classmgr.python.PythonImplementation import PythonImplementation
+from .management.classmgr.Type import Type
+from .management.classmgr.UserType import UserType
 from .management.contractmgr.Contract import Contract
 from .management.datacontractmgr.DataContract import DataContract
 from .management.datasetmgr.DataSet import DataSet
 from .management.interfacemgr.Interface import Interface
+from .management.metadataservice.DataClayInstance import DataClayInstance
 from .management.metadataservice.ExecutionEnvironment import ExecutionEnvironment
 from .management.metadataservice.MetaDataInfo import MetaDataInfo
 from .management.metadataservice.StorageLocation import StorageLocation
-from .management.metadataservice.DataClayInstance import DataClayInstance
 from .management.namespacemgr.Namespace import Namespace
 from .management.sessionmgr.SessionContract import SessionContract
 from .management.sessionmgr.SessionDataContract import SessionDataContract
@@ -53,7 +55,6 @@ from .management.sessionmgr.SessionProperty import SessionProperty
 from .management.stubs.ImplementationStubInfo import ImplementationStubInfo
 from .management.stubs.PropertyStubInfo import PropertyStubInfo
 from .management.stubs.StubInfo import StubInfo
-from dataclay_common.protos.common_messages_pb2 import Langs
 
 
 def trivial_constructor(loader, node):

@@ -4,24 +4,23 @@ The code implemented in this module is (at "this moment") identical to the ones
 implemented in the Java package client.CommonLib. Specifically, the serialize*
 functions are more or less adapted here.
 """
-from io import BytesIO
 import logging
+from io import BytesIO
+
+import dataclay_common.protos.common_messages_pb2 as common_messages
+
 import dataclay
+from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.exceptions.exceptions import InvalidPythonSignature
+from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.PersistentParamOrReturn import PersistentParamOrReturn
+from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
 from dataclay.serialization.python.lang.VLQIntegerWrapper import VLQIntegerWrapper
-from dataclay.serialization.python.util.PyTypeWildcardWrapper import (
-    PyTypeWildcardWrapper,
-    safe_wait_if_compss_future,
-)
+from dataclay.serialization.python.util.PyTypeWildcardWrapper import (PyTypeWildcardWrapper,
+                                                                      safe_wait_if_compss_future)
 from dataclay.util.DataClayObjectMetaData import DataClayObjectMetaData
 from dataclay.util.IdentityDict import IdentityDict
-import dataclay_common.protos.common_messages_pb2 as common_messages
-from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.util.ReferenceCounting import ReferenceCounting
-from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
-from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
-
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"

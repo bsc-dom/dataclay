@@ -1,6 +1,7 @@
 """ Class description goes here. """
 
 from dataclay.util.MgrObject import ManagementObject
+
 from .Type import Type
 
 

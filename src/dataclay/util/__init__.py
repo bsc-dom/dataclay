@@ -1,10 +1,11 @@
 """ Class description goes here. """
 
-from datetime import datetime
-from dataclay.util.ConfigurationFlags import ConfigurationFlags
 import logging
 import os
 import traceback
+from datetime import datetime
+
+from dataclay.util.ConfigurationFlags import ConfigurationFlags
 
 logger = logging.getLogger("dataclay.api")
 

@@ -9,8 +9,9 @@ from abc import ABCMeta, abstractmethod
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
-from dataclay.commonruntime.Runtime import get_runtime
 import six
+
+from dataclay.commonruntime.Runtime import get_runtime
 
 
 @six.add_metaclass(ABCMeta)

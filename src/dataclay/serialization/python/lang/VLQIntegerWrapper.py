@@ -1,7 +1,8 @@
 """ Class description goes here. """
 
-from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 from six import int2byte
+
+from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"

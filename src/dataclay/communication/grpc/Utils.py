@@ -14,8 +14,8 @@ import logging
 import sys
 import traceback
 import uuid
-import six
 
+import six
 from dataclay_common.protos import common_messages_pb2 as common_messages
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"

@@ -12,9 +12,11 @@ class KafkaMixin(object):
     @dclayMethod(data="dict<str, anything>", topic="str")
     def produce_kafka_msg(self, data, topic="dataclay"):
         import os
-        from dataclay.contrib.kafka import KAFKA_PRODUCERS
-        from kafka import KafkaProducer
         from json import dumps
+
+        from kafka import KafkaProducer
+
+        from dataclay.contrib.kafka import KAFKA_PRODUCERS
 
         kafka_address = os.getenv("KAFKA_ADDR", "kafka:9092")
         if kafka_address in KAFKA_PRODUCERS:
