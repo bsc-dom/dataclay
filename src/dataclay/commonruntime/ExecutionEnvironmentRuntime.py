@@ -10,7 +10,6 @@ from dataclay_common.managers.object_manager import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
 from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
-from dataclay.commonruntime.RuntimeType import RuntimeType
 from dataclay.commonruntime.Settings import settings
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.heap.ExecutionEnvironmentHeapManager import ExecutionEnvironmentHeapManager
@@ -31,8 +30,6 @@ current_milli_time = lambda: int(round(time.time() * 1000))
 class ExecutionEnvironmentRuntime(DataClayRuntime):
     def __init__(self, theexec_env):
         DataClayRuntime.__init__(self)
-
-        self.current_type = RuntimeType.exe_env
 
         """ Execution Environment using this runtime. """
         self.execution_environment = theexec_env

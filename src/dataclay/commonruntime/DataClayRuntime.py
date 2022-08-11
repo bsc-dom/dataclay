@@ -5,25 +5,30 @@ import os
 import traceback
 import uuid
 from abc import ABCMeta, abstractmethod
+from enum import Enum
 from logging import TRACE
 
 import six
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from grpc import RpcError
-from lru import LRU
-
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.heap.LockerPool import LockerPool
-from dataclay.paraver import (extrae_tracing_is_enabled, finish_tracing,
-                              get_current_available_task_id, get_task_id, initialize_extrae)
+from dataclay.paraver import (
+    extrae_tracing_is_enabled,
+    finish_tracing,
+    get_current_available_task_id,
+    get_task_id,
+    initialize_extrae,
+)
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
 from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
 from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
+from grpc import RpcError
+from lru import LRU
 
 
 class NULL_NAMESPACE:
@@ -96,12 +101,13 @@ class DataClayRuntime(object):
         """
         return self.__initialized
 
-    @abstractmethod
     def is_exec_env(self):
-        """
-        @return: TRUE if runtime is for EE. False otherwise.
-        """
-        pass
+        # ExecutionEnvironmentRuntime must override to True.
+        return False
+
+    def is_client(self):
+        # ClientRuntime must override to True
+        return False
 
     @abstractmethod
     def get_session(self):

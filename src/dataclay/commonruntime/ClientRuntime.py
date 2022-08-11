@@ -10,7 +10,6 @@ from dataclay_common.managers.object_manager import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
 from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
-from dataclay.commonruntime.RuntimeType import RuntimeType
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.heap.ClientHeapManager import ClientHeapManager
@@ -23,19 +22,15 @@ UNDEFINED_LOCAL = object()
 
 
 class ClientRuntime(DataClayRuntime):
-
-    current_type = RuntimeType.client
-
     def __init__(self):
-
         DataClayRuntime.__init__(self)
 
     def initialize_runtime_aux(self):
         self.dataclay_heap_manager = ClientHeapManager(self)
         self.dataclay_object_loader = ClientObjectLoader(self)
 
-    def is_exec_env(self):
-        return False
+    def is_client(self):
+        return True
 
     def store_object(self, instance):
         raise RuntimeError("StoreObject can only be used from the ExecutionEnvironment")

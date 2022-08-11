@@ -25,19 +25,29 @@ import uuid
 
 import six
 
-from dataclay.commonruntime.ExecutionGateway import (ExecutionGateway, class_extradata_cache_client,
-                                                     class_extradata_cache_exec_env)
+from dataclay.commonruntime.ExecutionGateway import (
+    ExecutionGateway,
+    class_extradata_cache_client,
+    class_extradata_cache_exec_env,
+)
 from dataclay.commonruntime.Runtime import get_runtime
-from dataclay.commonruntime.RuntimeType import RuntimeType
 from dataclay.DataClayObjectExtraData import DataClayClassExtraData, DataClayInstanceExtraData
 from dataclay.DataClayObjMethods import dclayMethod
-from dataclay.DataClayObjProperties import (DCLAY_PROPERTY_PREFIX, DynamicProperty,
-                                            PreprocessedProperty, ReplicatedDynamicProperty)
+from dataclay.DataClayObjProperties import (
+    DCLAY_PROPERTY_PREFIX,
+    DynamicProperty,
+    PreprocessedProperty,
+    ReplicatedDynamicProperty,
+)
 from dataclay.exceptions.exceptions import DataClayException, ImproperlyConfigured
-from dataclay.serialization.lib.DeserializationLibUtils import (DeserializationLibUtilsSingleton,
-                                                                PersistentLoadPicklerHelper)
-from dataclay.serialization.lib.SerializationLibUtils import (PersistentIdPicklerHelper,
-                                                              SerializationLibUtilsSingleton)
+from dataclay.serialization.lib.DeserializationLibUtils import (
+    DeserializationLibUtilsSingleton,
+    PersistentLoadPicklerHelper,
+)
+from dataclay.serialization.lib.SerializationLibUtils import (
+    PersistentIdPicklerHelper,
+    SerializationLibUtilsSingleton,
+)
 from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
 from dataclay.serialization.python.lang.DCIDWrapper import DCIDWrapper
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
@@ -128,7 +138,7 @@ class DataClayObject(object):
         full_name = module_name + "." + classname
 
         # Check if class extradata is in cache.
-        if get_runtime().current_type == RuntimeType.client:
+        if get_runtime().is_client():
             dc_ced = class_extradata_cache_client.get(full_name)
         else:
             dc_ced = class_extradata_cache_exec_env.get(full_name)
@@ -139,8 +149,8 @@ class DataClayObject(object):
 
         logger.verbose("Proceeding to prepare the class `%s` from the ExecutionGateway", full_name)
         logger.debug(
-            "The RuntimeType is: %s",
-            "client" if get_runtime().current_type == RuntimeType.client else "not client",
+            "The Runtime Type is: %s",
+            "client" if get_runtime().is_client() else "not client",
         )
 
         dc_ced = DataClayClassExtraData(
@@ -151,7 +161,7 @@ class DataClayObject(object):
             imports=list(),
         )
 
-        if get_runtime().current_type == RuntimeType.client:
+        if get_runtime().is_client():
             class_stubinfo = None
 
             try:
@@ -281,7 +291,7 @@ class DataClayObject(object):
                         inMaster=prop_info.inMaster,
                     )
 
-        elif get_runtime().current_type == RuntimeType.exe_env:
+        elif get_runtime().is_exec_env():
             logger.verbose(
                 "Seems that we are a DataService, proceeding to load class %s", dc_ced.full_name
             )
@@ -321,10 +331,10 @@ class DataClayObject(object):
                     inMaster=prop_info.inMaster,
                 )
         else:
-            raise RuntimeError("Could not recognize RuntimeType %s", get_runtime().current_type)
+            raise RuntimeError(f"Could not recognize Runtime Type {type(get_runtime()).__name__}")
 
         # Update class extradata cache.
-        if get_runtime().current_type == RuntimeType.client:
+        if get_runtime().is_client():
             class_extradata_cache_client[full_name] = dc_ced
         else:
             class_extradata_cache_exec_env[full_name] = dc_ced
