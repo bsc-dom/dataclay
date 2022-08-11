@@ -300,7 +300,6 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         try:
             self.logger.trace("[==GC==] Running GC")
 
-            self.exec_env.prepareThread()
             if self.__check_memory_pressure():
                 self.logger.verbose(
                     "System memory is under pressure, proceeding to clean up objects"

@@ -57,7 +57,6 @@ class ExecutionEnvironmentSrv(object):
     def persist_and_exit(self):
         logger.info("Performing exit hook --persisting files")
 
-        self.execution_environment.prepareThread()
         self.execution_environment.runtime.stop_gc()
         logger.info("Flushing all objects to disk")
         self.execution_environment.runtime.flush_all()
@@ -71,7 +70,6 @@ class ExecutionEnvironmentSrv(object):
 
     def preface_autoregister(self):
         """Perform a pre-initialization of stuff (prior to the autoregister call)."""
-        self.execution_environment.prepareThread()
 
         # Check if there is an explicit IP for autoregistering
         local_ip = os.getenv("DATASERVICE_HOST", "")
@@ -91,7 +89,6 @@ class ExecutionEnvironmentSrv(object):
 
     def start_autoregister(self, local_ip):
         """Start the autoregister procedure to introduce ourselves to the LogicModule."""
-        self.execution_environment.prepareThread()
 
         logger.info(f"Start Autoregister with {local_ip} local_ip")
 
