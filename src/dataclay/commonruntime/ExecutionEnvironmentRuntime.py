@@ -4,6 +4,7 @@ import logging
 import time
 import uuid
 import datetime
+import threading
 
 from dataclay_common.managers.object_manager import ObjectMetadata
 
@@ -15,7 +16,6 @@ from dataclay.commonruntime.Settings import settings
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.heap.ExecutionEnvironmentHeapManager import ExecutionEnvironmentHeapManager
 from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader
-from dataclay.commonruntime.Runtime import threadLocal
 from dataclay.util import Configuration
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
@@ -57,6 +57,8 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         """
         self.session_expires_dates = dict()
 
+        self.thread_local_data = threading.local()
+
     def initialize_runtime_aux(self):
         self.dataclay_heap_manager = ExecutionEnvironmentHeapManager(self)
         self.dataclay_object_loader = ExecutionObjectLoader(self)
@@ -94,8 +96,8 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         self.dataclay_heap_manager.flush_all()
 
     def get_session(self):
-        if hasattr(threadLocal, "session"):
-            return threadLocal.session
+        if hasattr(self.thread_local_data, "session"):
+            return self.thread_local_data.session
         else:
             return None
 
@@ -350,9 +352,9 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         """
 
         object_id = volatile_obj.get_object_id()
-        if hasattr(self.thread_local_info, "volatiles_under_deserialization"):
-            if self.thread_local_info.volatiles_under_deserialization is not None:
-                for obj_with_data in self.thread_local_info.volatiles_under_deserialization:
+        if hasattr(self.thread_local_data, "volatiles_under_deserialization"):
+            if self.thread_local_data.volatiles_under_deserialization is not None:
+                for obj_with_data in self.thread_local_data.volatiles_under_deserialization:
                     curr_obj_id = obj_with_data.object_id
                     if object_id == curr_obj_id:
                         if hasattr(volatile_obj, "__setstate__"):

@@ -12,7 +12,6 @@ from dataclay_common.managers.object_manager import ObjectMetadata
 
 from dataclay.DataClayObject import DataClayObject
 from dataclay.commonruntime.Runtime import get_runtime, set_runtime
-from dataclay.commonruntime.Runtime import threadLocal
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
@@ -287,8 +286,9 @@ class ExecutionEnvironment(object):
         Set the SessionID
         """
         # TODO: Remove thread_local_info.session_id and use the session object
-        threadLocal.session_id = session_id
-        threadLocal.session = self.get_runtime().ready_clients["@MDS"].get_session(session_id)
+        self.runtime.thread_local_data.session = self.runtime.ready_clients["@MDS"].get_session(
+            session_id
+        )
 
     def update_hints_to_current_ee(self, objects_data_to_store):
         """

@@ -9,6 +9,7 @@ from abc import ABCMeta, abstractmethod
 from logging import TRACE
 from lru import LRU
 from grpc import RpcError
+
 from dataclay.heap.LockerPool import LockerPool
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.paraver import (
@@ -20,7 +21,6 @@ from dataclay.paraver import (
 )
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
-from dataclay.commonruntime.Runtime import threadLocal
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
@@ -70,9 +70,6 @@ class DataClayRuntime(object):
 
         """ Indicates volatiles being send - to avoid race-conditions """
         self.volatile_parameters_being_send = set()
-
-        # Local info of thread
-        self.thread_local_info = threadLocal
 
         """ Cache of metadata """
         self.metadata_cache = LRU(10000)

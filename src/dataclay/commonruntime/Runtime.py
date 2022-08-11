@@ -18,25 +18,8 @@ logger = logging.getLogger(__name__)
 
 __all__ = ["DataClayObject", "StorageObject", "dclayMethod"]
 
-""" Local variables in thread """
-threadLocal = threading.local()
-
-""" Cache of runtimes per thread """
-runtimes_per_thread = dict()
-
-""" Runtime for all threads in client side. It's a singleton, created once. """
-client_static_runtime = None
 
 runtime = None
-
-
-def clean_runtime():
-    global threadLocal
-    global runtimes_per_thread
-    global client_static_runtime
-    threadLocal = threading.local()
-    runtimes_per_thread.clear()
-    client_static_runtime = None
 
 
 def set_runtime(new_runtime):

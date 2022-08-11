@@ -26,7 +26,6 @@ import traceback
 from dataclay_mds.metadata_service import MetadataService
 from dataclay_common.exceptions.exceptions import *
 
-from dataclay.commonruntime.Runtime import clean_runtime
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.StorageLocationGrpcClient import SLClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
@@ -70,7 +69,6 @@ class ExecutionEnvironmentSrv(object):
         from dataclay.api import finish
 
         finish()
-        clean_runtime()
 
     def preface_autoregister(self):
         """Perform a pre-initialization of stuff (prior to the autoregister call)."""
