@@ -25,6 +25,10 @@ class ClientRuntime(DataClayRuntime):
     def __init__(self):
         DataClayRuntime.__init__(self)
 
+    @property
+    def session(self):
+        return settings.current_session
+
     def initialize_runtime_aux(self):
         self.dataclay_heap_manager = ClientHeapManager(self)
         self.dataclay_object_loader = ClientObjectLoader(self)
@@ -104,7 +108,7 @@ class ClientRuntime(DataClayRuntime):
                 # FIXME: The object registration should be done by execution environment.
                 # So if the serialization fails, it is not stored. The client maybe can use
                 # the update_object in order to change the alias or the is_read_only (to be decided)
-                # self.ready_clients["@MDS"].register_object(self.get_session().id, object_md)
+                # self.ready_clients["@MDS"].register_object(self.session.id, object_md)
 
             # === MAKE PERSISTENT === #
             self.logger.debug(
@@ -151,9 +155,7 @@ class ClientRuntime(DataClayRuntime):
 
             # Call Execution Environment
             self.logger.verbose("Calling make persistent to EE %s ", location)
-            execution_client.make_persistent(
-                self.get_session().id, serialized_objs.vol_objs.values()
-            )
+            execution_client.make_persistent(self.session.id, serialized_objs.vol_objs.values())
 
             # update the hint with the location, and return it
             instance.set_hint(location)
@@ -218,7 +220,7 @@ class ClientRuntime(DataClayRuntime):
         return operation.remoteImplID
 
     def delete_alias(self, dc_obj):
-        session_id = self.get_session().id
+        session_id = self.session.id
         hint = dc_obj.get_hint()
         object_id = dc_obj.get_object_id()
         exec_location_id = hint
@@ -235,16 +237,13 @@ class ClientRuntime(DataClayRuntime):
 
     def close_session(self):
         self.logger.debug("** Closing session **")
-        self.ready_clients["@MDS"].close_session(self.get_session().id)
+        self.ready_clients["@MDS"].close_session(self.session.id)
 
     def get_hint(self):
         return None
 
-    def get_session(self):
-        return settings.current_session
-
     def synchronize(self, instance, operation_name, params):
-        session_id = self.get_session().id
+        session_id = self.session.id
         object_id = instance.get_object_id()
         dest_backend_id = self.get_location(instance.get_object_id())
         operation = self.get_operation_info(instance.get_object_id(), operation_name)
@@ -268,7 +267,7 @@ class ClientRuntime(DataClayRuntime):
 
     def detach_object_from_session(self, object_id, hint):
         try:
-            cur_session = self.get_session().id
+            cur_session = self.session.id
             exec_location_id = hint
             if exec_location_id is None:
                 exec_location_id = self.get_location(object_id)
@@ -285,7 +284,7 @@ class ClientRuntime(DataClayRuntime):
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
         object_id = dc_obj.get_object_id()
         hint = dc_obj.get_hint()
-        session_id = self.get_session().id
+        session_id = self.session.id
         exec_location_id = hint
         if exec_location_id is None:
             exec_location_id = self.get_location(object_id)
@@ -310,7 +309,7 @@ class ClientRuntime(DataClayRuntime):
     def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
         object_id = dc_obj.get_object_id()
         hint = dc_obj.get_hint()
-        session_id = self.get_session().id
+        session_id = self.session.id
         self.logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",
             object_id,

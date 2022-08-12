@@ -56,6 +56,14 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
         self.thread_local_data = threading.local()
 
+    @property
+    def session(self):
+        return self.thread_local_data.session
+
+    @session.setter
+    def session(self, value):
+        self.thread_local_data.session = value
+
     def initialize_runtime_aux(self):
         self.dataclay_heap_manager = ExecutionEnvironmentHeapManager(self)
         self.dataclay_object_loader = ExecutionObjectLoader(self)
@@ -92,12 +100,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         @postcondition: Flush all objects in memory to disk.
         """
         self.dataclay_heap_manager.flush_all()
-
-    def get_session(self):
-        if hasattr(self.thread_local_data, "session"):
-            return self.thread_local_data.session
-        else:
-            return None
 
     def get_execution_environment(self):
         """
@@ -163,7 +165,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                     [location],
                     LANG_PYTHON,
                 )
-                self.ready_clients["@MDS"].register_object(self.get_session().id, object_md)
+                self.ready_clients["@MDS"].register_object(self.session.id, object_md)
             else:
                 # Use case 2 and 3 - add new alias
                 instance.set_alias(alias)
@@ -253,7 +255,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         stored_objects_classes = dict()
         serialized_objs = list()
         reg_infos = list()
-        dataset_name = self.get_session().dataset_name
+        dataset_name = self.session.dataset_name
 
         while pending_objs:
             current_obj = pending_objs.pop()
@@ -276,7 +278,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                     infos = RegistrationInfo(
                         object_id,
                         dcc_extradata.class_id,
-                        self.get_session().id,
+                        self.session.id,
                         dataset_name,
                         None,
                     )
@@ -321,13 +323,13 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             lm_client = self.ready_clients["@LM"]
             lm_client.register_objects(reg_infos, settings.environment_id, LANG_PYTHON)
             client.ds_store_objects(
-                self.get_session().id,
+                self.session.id,
                 serialized_objs,
                 False,
                 None,
             )
         else:
-            client.ds_upsert_objects(self.get_session().id, serialized_objs)
+            client.ds_upsert_objects(self.session.id, serialized_objs)
 
     def get_operation_info(self, object_id, operation_name):
         dcc_extradata = self.get_object_by_id(object_id).get_class_extradata()
@@ -374,7 +376,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         @summary Add +1 reference associated to thread session
         @param object_id ID of object.
         """
-        session_id = self.get_session().id
+        session_id = self.session.id
         if session_id is None:
             # session id can be none in case of when federated
             return
@@ -543,7 +545,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         )
 
     def synchronize(self, instance, operation_name, params):
-        session_id = self.get_session().id
+        session_id = self.session.id
         object_id = instance.get_object_id()
         operation = self.get_operation_info(instance.get_object_id(), operation_name)
         implementation_id = self.get_implementation_id(instance.get_object_id(), operation_name)
@@ -561,7 +563,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         )
 
     def detach_object_from_session(self, object_id, hint):
-        cur_session = self.get_session().id
+        cur_session = self.session.id
         if object_id in self.references_hold_by_sessions:
             sessions_of_obj = self.references_hold_by_sessions.get(object_id)
             if cur_session in sessions_of_obj:
@@ -574,7 +576,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
         object_id = dc_obj.get_object_id()
-        session_id = self.get_session().id
+        session_id = self.session.id
         self.logger.debug(
             "[==FederateObject==] Starting federation of object by %s with dest dataClay %s, and session %s",
             object_id,
@@ -587,7 +589,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
     def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
         object_id = dc_obj.get_object_id()
-        session_id = self.get_session().id
+        session_id = self.session.id
         self.logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",
             object_id,

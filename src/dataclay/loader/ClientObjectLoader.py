@@ -84,7 +84,7 @@ class ClientObjectLoader(DataClayObjectLoader):
                 volatile_obj,
                 ifacebitmaps,
                 self.runtime,
-                self.runtime.get_session().id,
+                self.runtime.session.id,
             )
 
             # WARNING: RACE CONDITION at EE - during deserialization of volatiles the

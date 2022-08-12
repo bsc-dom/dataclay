@@ -196,13 +196,13 @@ class ExecutionEnvironment(object):
         return ret_value
 
     def set_local_session(self, session_id):
-        """Check and set session to thread_local_data.
+        """Check and set the session to thread_local_data.
 
         Args:
             session_id: The session's UUID.
         """
         session = self.runtime.ready_clients["@MDS"].get_session(session_id)
-        self.runtime.thread_local_data.session = session
+        self.runtime.session = session
 
     def update_hints_to_current_ee(self, objects_data_to_store):
         """Update hints in serialized objects provided to use current backend id
@@ -1090,7 +1090,7 @@ class ExecutionEnvironment(object):
                         instance,
                         None,
                         get_runtime(),
-                        get_runtime().get_session().id,
+                        get_runtime().session.id,
                         True,
                     )
 

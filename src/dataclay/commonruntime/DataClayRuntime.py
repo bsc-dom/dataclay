@@ -81,6 +81,11 @@ class DataClayRuntime(object):
         """ volatiles currently under deserialization """
         self.volatiles_under_deserialization = dict()
 
+    @property
+    @abstractmethod
+    def session(self):
+        pass
+
     @abstractmethod
     def initialize_runtime_aux(self):
         pass
@@ -108,10 +113,6 @@ class DataClayRuntime(object):
     def is_client(self):
         # ClientRuntime must override to True
         return False
-
-    @abstractmethod
-    def get_session(self):
-        pass
 
     @abstractmethod
     def detach_object_from_session(self, object_id, hint):
@@ -172,7 +173,7 @@ class DataClayRuntime(object):
 
         if not class_id:
             full_name, namespace = self.ready_clients["@LM"].get_object_info(
-                self.get_session().id, object_id
+                self.session.id, object_id
             )
             self.logger.debug(
                 "Trying to import full_name: %s from namespace %s", full_name, namespace
@@ -248,7 +249,7 @@ class DataClayRuntime(object):
                 del self.volatiles_under_deserialization[vol_obj.object_id]
 
     def get_copy_of_object(self, from_object, recursive):
-        session_id = self.get_session().id
+        session_id = self.session.id
 
         backend_id = from_object.get_location()
         try:
@@ -268,7 +269,7 @@ class DataClayRuntime(object):
         return result[0]
 
     def update_object(self, into_object, from_object):
-        session_id = self.get_session().id
+        session_id = self.session.id
 
         backend_id = into_object.get_location()
         try:
@@ -354,7 +355,7 @@ class DataClayRuntime(object):
         self.locker_pool.unlock(object_id)
 
     def run_remote(self, object_id, backend_id, operation_name, value):
-        session_id = self.get_session().id
+        session_id = self.session.id
         implementation_id = self.get_implementation_id(object_id, operation_name)
 
         try:
@@ -387,7 +388,7 @@ class DataClayRuntime(object):
 
         object_id = instance.get_object_id()
         operation = self.get_operation_info(object_id, operation_name)
-        session_id = self.get_session().id
+        session_id = self.session.id
         implementation_id = self.get_implementation_id(object_id, operation_name)
 
         # // === SERIALIZE PARAMETERS === //
@@ -563,7 +564,7 @@ class DataClayRuntime(object):
 
     def get_by_alias(self, alias, dataset_name):
         oid, class_id, hint = self.ready_clients["@MDS"].get_object_from_alias(
-            self.get_session().id, alias, dataset_name
+            self.session.id, alias, dataset_name
         )
         return self.get_object_by_id(oid, class_id, hint)
 
@@ -572,7 +573,7 @@ class DataClayRuntime(object):
         return exec_envs[hash(object_id) % len(exec_envs)]
 
     def delete_alias_in_dataclay(self, alias, dataset_name):
-        self.ready_clients["@MDS"].delete_alias(self.get_session().id, alias, dataset_name)
+        self.ready_clients["@MDS"].delete_alias(self.session.id, alias, dataset_name)
 
     @abstractmethod
     def delete_alias(self, dc_obj):
@@ -649,7 +650,7 @@ class DataClayRuntime(object):
     def new_replica(self, object_id, hint, backend_id, backend_hostname, recursive):
         self.logger.debug(f"Starting new replica of {object_id}")
         # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
-        session_id = self.get_session().id
+        session_id = self.session.id
 
         execution_client, dest_backend = self.prepare_for_new_replica_version_consolidate(
             object_id, hint, backend_id, backend_hostname, True
@@ -675,7 +676,7 @@ class DataClayRuntime(object):
     ):
         # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
         self.logger.debug(f"Starting new version of {object_id}")
-        session_id = self.get_session().id
+        session_id = self.session.id
         execution_client, dest_backend = self.prepare_for_new_replica_version_consolidate(
             object_id, hint, backend_id, backend_hostname, False
         )
@@ -693,7 +694,7 @@ class DataClayRuntime(object):
     def consolidate_version(self, version_id, version_hint):
         # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
         self.logger.debug(f"Starting consolidate version of {version_id}")
-        session_id = self.get_session().id
+        session_id = self.session.id
         backend_id_to_call = version_hint
         if backend_id_to_call is None:
             backend_id_to_call = self.get_location(version_id)
@@ -712,7 +713,7 @@ class DataClayRuntime(object):
 
         object_id = instance.get_object_id()
         moved_objs = self.ready_clients["@LM"].move_object(
-            self.get_session().id, object_id, source_backend_id, dest_backend_id, recursive
+            self.session.id, object_id, source_backend_id, dest_backend_id, recursive
         )
         for oid in moved_objs:
             if oid in self.metadata_cache:
@@ -752,9 +753,7 @@ class DataClayRuntime(object):
         """
         # TODO: Remove call to LM and use metaclass name not id
         if metaclass_id is None:
-            metadata = self.ready_clients["@LM"].get_metadata_by_oid(
-                self.get_session().id, object_id
-            )
+            metadata = self.ready_clients["@LM"].get_metadata_by_oid(self.session.id, object_id)
             metaclass_id = metadata.metaclass_id
 
         return self.dataclay_object_loader.get_or_new_persistent_instance(
@@ -818,9 +817,7 @@ class DataClayRuntime(object):
             self.logger.debug(f"Object metadata found in cache: {metadata}")
             return metadata
         else:
-            metadata = self.ready_clients["@LM"].get_metadata_by_oid(
-                self.get_session().id, object_id
-            )
+            metadata = self.ready_clients["@LM"].get_metadata_by_oid(self.session.id, object_id)
             if metadata is None:
                 self.logger.debug("Object %s not registered", object_id)
                 raise DataClayException("The object %s is not registered" % object_id)

@@ -129,7 +129,7 @@ class DataClayObject(object):
             self.set_loaded(True)
             self.set_pending_to_register(True)
             self.set_hint(get_runtime().get_hint())
-            self.set_owner_session_id(get_runtime().get_session().id)
+            self.set_owner_session_id(get_runtime().session.id)
 
     @classmethod
     def get_class_extradata(cls):
@@ -351,7 +351,7 @@ class DataClayObject(object):
         fields = {
             "persistent_flag": False,
             "object_id": uuid.uuid4(),
-            "dataset_name": get_runtime().get_session().dataset_name,
+            "dataset_name": get_runtime().session.dataset_name,
             "loaded_flag": True,
             "pending_to_register_flag": False,
             "dirty_flag": False,

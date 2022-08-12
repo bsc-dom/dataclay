@@ -233,7 +233,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
                 volatile_obj,
                 ifacebitmaps,
                 self.runtime,
-                self.runtime.get_session().id,
+                self.runtime.session.id,
                 True,
             )
 
