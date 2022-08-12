@@ -1,11 +1,8 @@
 """ Class description goes here. """
 import importlib
 import logging
-import os
-import traceback
 import uuid
 from abc import ABCMeta, abstractmethod
-from enum import Enum
 from logging import TRACE
 
 import six
@@ -55,19 +52,8 @@ class DataClayRuntime(object):
         """ Cache of classes. TODO: is it used? -> Yes, in StubUtils and ClientObjectLoader"""
         self.local_available_classes = dict()
 
-        """  Heap manager. Since it is abstract it must be initialized by sub-classes. 
-        DataClay-Java uses abstract functions to get the field in the proper type (EE or client) 
-        due to type-check. Not needed here. """
-        self.dataclay_heap_manager = None
-
-        """ Object loader. """
-        self.dataclay_object_loader = None
-
         """  Locker Pool in runtime. This pool is used to provide thread-safe implementations in dataClay. """
         self.locker_pool = LockerPool()
-
-        """ Indicates if runtime was initialized. TODO: check if same in dataclay.api -> NO """
-        self.__initialized = False
 
         """ Indicates volatiles being send - to avoid race-conditions """
         self.volatile_parameters_being_send = set()
@@ -76,35 +62,37 @@ class DataClayRuntime(object):
         self.metadata_cache = LRU(10000)
 
         """ Current dataClay ID """
-        self.dataclay_id = None
+        self._dataclay_id = None
 
         """ volatiles currently under deserialization """
         self.volatiles_under_deserialization = dict()
 
     @property
     @abstractmethod
+    def metadata_service(self):
+        pass
+
+    @property
+    @abstractmethod
+    def dataclay_heap_manager(self):
+        pass
+
+    @property
+    @abstractmethod
+    def dataclay_object_loader(self):
+        pass
+
+    @property
+    @abstractmethod
     def session(self):
         pass
 
-    @abstractmethod
-    def initialize_runtime_aux(self):
-        pass
-
-    def initialize_runtime(self):
-        """
-        IMPORTANT: get_runtime can be called from decorators, during imports, and therefore a runtime might be created.
-        In that case we do NOT want to create threads to start. Only if "init" was called (client side) or
-        server was started. This function is for that.
-        """
-        self.logger.debug("INITIALIZING RUNTIME")
-        self.initialize_runtime_aux()
-        self.dataclay_heap_manager.start()
-
-    def is_initialized(self):
-        """
-        @return: TRUE if runtime is initialized (Client 'init', EE should be always TRUE). False otherwise.
-        """
-        return self.__initialized
+    @property
+    def dataclay_id(self):
+        """Get dataClay UUID of current dataClay"""
+        if self._dataclay_id is None:
+            self._dataclay_id = self.metadata_service.get_dataclay_id()
+        return self._dataclay_id
 
     def is_exec_env(self):
         # ExecutionEnvironmentRuntime must override to True.
@@ -563,17 +551,17 @@ class DataClayRuntime(object):
         self.ready_clients["@LM"].import_models_from_external_dataclay(namespace, ext_dataclay_id)
 
     def get_by_alias(self, alias, dataset_name):
-        oid, class_id, hint = self.ready_clients["@MDS"].get_object_from_alias(
+        oid, class_id, hint = self.metadata_service.get_object_from_alias(
             self.session.id, alias, dataset_name
         )
         return self.get_object_by_id(oid, class_id, hint)
 
     def get_object_location_by_id(self, object_id):
-        exec_envs = list(self.get_all_execution_environments_at_dataclay(self.get_dataclay_id()))
+        exec_envs = list(self.get_all_execution_environments_at_dataclay(self.dataclay_id))
         return exec_envs[hash(object_id) % len(exec_envs)]
 
     def delete_alias_in_dataclay(self, alias, dataset_name):
-        self.ready_clients["@MDS"].delete_alias(self.session.id, alias, dataset_name)
+        self.metadata_service.delete_alias(self.session.id, alias, dataset_name)
 
     @abstractmethod
     def delete_alias(self, dc_obj):
@@ -609,7 +597,7 @@ class DataClayRuntime(object):
                     # no destination specified, get one destination in which object is not already replicated
                     obj_locations = self.get_all_locations(object_id)
                     all_exec_envs = self.get_all_execution_environments_at_dataclay(
-                        self.get_dataclay_id()
+                        self.dataclay_id
                     )
                     for exec_env_id, exec_env in all_exec_envs.items():
                         self.logger.debug(f"Checking if {exec_env_id} is in {obj_locations}")
@@ -624,7 +612,7 @@ class DataClayRuntime(object):
                         )
                         # retry updating locations
                         all_exec_envs = self.get_all_execution_environments_at_dataclay(
-                            self.get_dataclay_id(), force_update=True
+                            self.dataclay_id, force_update=True
                         )
                         for exec_env_id, exec_env in all_exec_envs.items():
                             for obj_location in obj_locations:
@@ -760,15 +748,6 @@ class DataClayRuntime(object):
             metaclass_id, object_id, hint
         )
 
-    def get_dataclay_id(self):
-        """Get dataClay ID of current dataClay
-        :return: ID of current dataclay
-        :rtype: UUID
-        """
-        if self.dataclay_id is None:
-            self.dataclay_id = self.ready_clients["@MDS"].get_dataclay_id()
-        return self.dataclay_id
-
     def get_external_dataclay_id(self, exthostname, extport):
         """Get external dataClay ID with host and port identified
         :param exthostname: external dataClay host name
@@ -869,7 +848,7 @@ class DataClayRuntime(object):
 
     def get_all_execution_environments_info(self, force_update=False):
         if self.ee_info_map is None or self.ee_info_map is not None and force_update:
-            self.ee_info_map = self.ready_clients["@MDS"].get_all_execution_environments(
+            self.ee_info_map = self.metadata_service.get_all_execution_environments(
                 LANG_PYTHON, from_backend=self.is_exec_env()
             )
             if self.logger.isEnabledFor(TRACE):
@@ -934,12 +913,12 @@ class DataClayRuntime(object):
         exec_envs_with_name = dict()
         exec_envs = self.get_all_execution_environments_info(force_update=False)
         for exec_env_id, exec_env in exec_envs.items():
-            if exec_env.sl_name == dsname and exec_env.dataclay_id == self.get_dataclay_id():
+            if exec_env.sl_name == dsname and exec_env.dataclay_id == self.dataclay_id:
                 exec_envs_with_name[exec_env_id] = exec_env
         if not bool(exec_envs_with_name):
             exec_envs = self.get_all_execution_environments_info(force_update=True)
             for exec_env_id, exec_env in exec_envs.items():
-                if exec_env.sl_name == dsname and exec_env.dataclay_id == self.get_dataclay_id():
+                if exec_env.sl_name == dsname and exec_env.dataclay_id == self.dataclay_id:
                     exec_envs_with_name[exec_env_id] = exec_env
         return exec_envs_with_name
 
@@ -947,7 +926,7 @@ class DataClayRuntime(object):
         exec_envs_names = list()
         exec_envs = self.get_all_execution_environments_info(force_update=force_update)
         for exec_env_id, exec_env in exec_envs.items():
-            if exec_env.dataclay_id == self.get_dataclay_id():
+            if exec_env.dataclay_id == self.dataclay_id:
                 exec_envs_names.append(exec_env.sl_name)
         if self.logger.isEnabledFor(TRACE):
             n = len(exec_envs_names)
@@ -1042,7 +1021,6 @@ class DataClayRuntime(object):
 
         # Stop HeapManager
         self.stop_gc()
-        self.dataclay_id = None
 
     ################## EXTRAE IGNORED FUNCTIONS ###########################
     deactivate_tracing.do_not_trace = True

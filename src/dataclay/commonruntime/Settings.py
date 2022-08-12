@@ -202,6 +202,11 @@ class _SettingsHub(object):
 
         self.loaded = True
 
+    def load_metadata_properties(self):
+        self._values["METADATA_SERVICE_HOST"] = os.environ["METADATA_SERVICE_HOST"]
+        self._values["METADATA_SERVICE_PORT"] = int(os.getenv("METADATA_SERVICE_PORT", "16587"))
+        self.loaded = True
+
     def __getattr__(self, item):
         if not self.loaded:
             raise ImproperlyConfigured("The settings should be loaded before lookups")

@@ -6,6 +6,7 @@ dataclay.api package.
 
 import traceback
 
+from dataclay_common.clients.metadata_service_client import MDSClient
 from dataclay_common.managers.object_manager import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
@@ -23,14 +24,17 @@ UNDEFINED_LOCAL = object()
 
 class ClientRuntime(DataClayRuntime):
 
+    metadata_service = None
+    dataclay_heap_manager = None
+    dataclay_object_loader = None
     session = None
 
-    def __init__(self):
+    def __init__(self, metadata_service_host, metadata_service_port):
         DataClayRuntime.__init__(self)
-
-    def initialize_runtime_aux(self):
+        self.metadata_service = MDSClient(metadata_service_host, metadata_service_port)
         self.dataclay_heap_manager = ClientHeapManager(self)
         self.dataclay_object_loader = ClientObjectLoader(self)
+        self.dataclay_heap_manager.start()
 
     def is_client(self):
         return True
@@ -107,7 +111,7 @@ class ClientRuntime(DataClayRuntime):
                 # FIXME: The object registration should be done by execution environment.
                 # So if the serialization fails, it is not stored. The client maybe can use
                 # the update_object in order to change the alias or the is_read_only (to be decided)
-                # self.ready_clients["@MDS"].register_object(self.session.id, object_md)
+                # self.metadata_service.register_object(self.session.id, object_md)
 
             # === MAKE PERSISTENT === #
             self.logger.debug(
@@ -236,7 +240,7 @@ class ClientRuntime(DataClayRuntime):
 
     def close_session(self):
         self.logger.debug("** Closing session **")
-        self.ready_clients["@MDS"].close_session(self.session.id)
+        self.metadata_service.close_session(self.session.id)
         self.logger.debug(f"Closed session {self.session.id}")
 
     def get_hint(self):

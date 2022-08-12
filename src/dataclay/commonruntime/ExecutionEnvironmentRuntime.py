@@ -6,6 +6,7 @@ import threading
 import time
 import uuid
 
+from dataclay_mds.metadata_service import MetadataService
 from dataclay_common.managers.object_manager import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
@@ -28,11 +29,25 @@ current_milli_time = lambda: int(round(time.time() * 1000))
 
 
 class ExecutionEnvironmentRuntime(DataClayRuntime):
-    def __init__(self, theexec_env):
+
+    metadata_service = None
+    dataclay_heap_manager = None
+    dataclay_object_loader = None
+
+    def __init__(self, theexec_env, etcd_host, etcd_port):
+
         DataClayRuntime.__init__(self)
+
+        self.metadata_service = MetadataService(etcd_host, etcd_port)
+
+        self.dataclay_object_loader = ExecutionObjectLoader(self)
 
         """ Execution Environment using this runtime. """
         self.execution_environment = theexec_env
+
+        # Heap manager creates a new thread
+        self.dataclay_heap_manager = ExecutionEnvironmentHeapManager(self)
+        self.dataclay_heap_manager.start()
 
         """
         References hold by sessions. Resource note: Maximum size of this map is maximum number of objects allowed in EE x sessions.
@@ -63,10 +78,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
     @session.setter
     def session(self, value):
         self.thread_local_data.session = value
-
-    def initialize_runtime_aux(self):
-        self.dataclay_heap_manager = ExecutionEnvironmentHeapManager(self)
-        self.dataclay_object_loader = ExecutionObjectLoader(self)
 
     def is_exec_env(self):
         return True
@@ -165,7 +176,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                     [location],
                     LANG_PYTHON,
                 )
-                self.ready_clients["@MDS"].register_object(self.session.id, object_md)
+                self.metadata_service.register_object(self.session.id, object_md)
             else:
                 # Use case 2 and 3 - add new alias
                 instance.set_alias(alias)

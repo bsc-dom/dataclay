@@ -25,7 +25,6 @@ from concurrent import futures
 import grpc
 from dataclay_common.exceptions.exceptions import *
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from dataclay_mds.metadata_service import MetadataService
 
 from dataclay.commonruntime.Initializer import logger
 from dataclay.commonruntime.Settings import settings
@@ -80,11 +79,6 @@ class ExecutionEnvironmentSrv(object):
         lm_client = LMClient(settings.logicmodule_host, settings.logicmodule_port)
         self.execution_environment.runtime.ready_clients["@LM"] = lm_client
 
-        # Starting MetadataService
-        # Backends use the MetadataService class instead of calling a gRPC server
-        mds = MetadataService(settings.ETCD_HOST, settings.ETCD_PORT)
-        self.execution_environment.runtime.ready_clients["@MDS"] = mds
-
         return local_ip
 
     def start_autoregister(self, local_ip):
@@ -128,7 +122,7 @@ class ExecutionEnvironmentSrv(object):
                     retries += 1
 
         # Autoregister of ExecutionEnvironment to MetadataService
-        mds_client = self.execution_environment.runtime.ready_clients["@MDS"]
+        mds_client = self.execution_environment.runtime.metadata_service
         mds_client.autoregister_ee(
             execution_environment_id,
             local_ip,
@@ -208,7 +202,10 @@ class ExecutionEnvironmentSrv(object):
         sys.path.insert(1, settings.deploy_path_source)
 
         self.execution_environment = ExecutionEnvironment(
-            settings.dataservice_name, settings.server_listen_port
+            settings.dataservice_name,
+            settings.server_listen_port,
+            settings.ETCD_HOST,
+            settings.ETCD_PORT,
         )
 
         # 0 or undefined should become None, which becomes a default of 5x number of cores (see futures' docs)

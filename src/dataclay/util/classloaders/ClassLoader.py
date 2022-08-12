@@ -80,5 +80,5 @@ def load_metaclass_info(metaclass_id):
     :return: A tuple (class_name, namespace).
     """
 
-    metaclass = get_runtime().ready_clients["@MDS"].get_metaclass(metaclass_id)
+    metaclass = get_runtime().metadata_service.get_metaclass(metaclass_id)
     return metaclass.class_name, metaclass.namespace

@@ -75,7 +75,7 @@ def reinitialize_clients() -> None:
     }
 
 
-# TODO: Remove this function. Currently used by tool/functions
+# TODO: REFACTOR Remove this function. Currently used by tool/functions
 def init_connection(client_file) -> LMClient:
     """Initialize the connection client ==> LogicModule.
 
@@ -90,7 +90,8 @@ def init_connection(client_file) -> LMClient:
     global _connection_initialized
     logger.debug("Initializing dataClay connection with LM")
 
-    runtime = ClientRuntime()
+    settings.load_metadata_properties()
+    runtime = ClientRuntime(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
     set_runtime(runtime)
 
     if _connection_initialized:
@@ -263,16 +264,12 @@ def init():
     settings.load_session_properties()
 
     # Initialize ClientRuntime
-    runtime = ClientRuntime()
+    runtime = ClientRuntime(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
     set_runtime(runtime)
-    runtime.initialize_runtime()
 
-    # Create MDS Client and store it in a persistent way
-    client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
-    runtime.ready_clients["@MDS"] = client
-
+    # TODO: Do we need it for federation?
     # Get dataclay id and map it to Metadata Service client
-    runtime.ready_clients[client.get_dataclay_id()] = client
+    # runtime.ready_clients[runtime.metadata_service.get_dataclay_id()] = client
 
     # wait for 1 python backend
     # TODO: implement get_backends_info in MDS
@@ -291,7 +288,7 @@ def init():
     sys.path.insert(0, os.path.join(settings.STUBS_PATH, "sources"))
 
     # Create a new session
-    session = client.new_session(
+    session = runtime.metadata_service.new_session(
         settings.DC_USERNAME, settings.DC_PASSWORD, settings.DEFAULT_DATASET
     )
     runtime.session = session

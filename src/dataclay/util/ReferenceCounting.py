@@ -55,7 +55,7 @@ class ReferenceCounting(object):
             logger.trace("Found alias reference")
             self.external_references = self.external_references + 1
 
-        cur_dataclay_id = get_runtime().get_dataclay_id()
+        cur_dataclay_id = get_runtime().dataclay_id
         if dc_obj.get_replica_locations() is not None and len(dc_obj.get_replica_locations()) != 0:
             for replica_loc in dc_obj.get_replica_locations():
                 replica_dataclay_id = (
