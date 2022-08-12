@@ -111,14 +111,6 @@ def init_connection(client_file) -> LMClient:
 
     _connection_initialized = True
 
-    # TODO: Remove this setting, and use metadata service id
-    # settings.logicmodule_dc_instance_id = client.get_dataclay_id()
-
-    logger.debug(
-        "DataclayInstanceID is %s, storing client in cache", settings.logicmodule_dc_instance_id
-    )
-    runtime.ready_clients[settings.logicmodule_dc_instance_id] = runtime.ready_clients["@LM"]
-
     # TODO: Remove this call to LM
     # wait for 1 python backend
     # while len(get_backends_info()) < 1:
@@ -273,16 +265,14 @@ def init():
     # Initialize ClientRuntime
     runtime = ClientRuntime()
     set_runtime(runtime)
+    runtime.initialize_runtime()
 
     # Create MDS Client and store it in a persistent way
     client = MDSClient(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
     runtime.ready_clients["@MDS"] = client
 
     # Get dataclay id and map it to Metadata Service client
-    # TODO: Rename setting to a more meaningfull name
-    #       like metadata_id, dataclay_id, etc.
-    settings.logicmodule_dc_instance_id = client.get_dataclay_id()
-    runtime.ready_clients[settings.logicmodule_dc_instance_id] = client
+    runtime.ready_clients[client.get_dataclay_id()] = client
 
     # wait for 1 python backend
     # TODO: implement get_backends_info in MDS
@@ -300,25 +290,16 @@ def init():
     # Ensure stubs are in the path (high "priority")
     sys.path.insert(0, os.path.join(settings.STUBS_PATH, "sources"))
 
-    # Initialize runtime
-    get_runtime().initialize_runtime()
-
     # Create a new session
     session = client.new_session(
         settings.DC_USERNAME, settings.DC_PASSWORD, settings.DEFAULT_DATASET
     )
-    settings.current_session = session
-
-    # DEPRECATED
-    settings.current_session_id = session.id
-
-    # TODO: Remove it and use only DEFAULT_DATASET
-    settings.dataset_name = settings.DEFAULT_DATASET
+    runtime.session = session
 
     # Set LOCAL_BACKEND
     sl_name = settings.LOCAL_BACKEND
     if sl_name:
-        exec_envs = get_runtime().get_all_execution_environments_info()
+        exec_envs = runtime.get_all_execution_environments_info()
         for ee_id in exec_envs.keys():
             if exec_envs[ee_id].sl_name == sl_name:
                 global LOCAL
@@ -448,7 +429,6 @@ def finish():
     logger.info("Finishing dataClay API")
     finish_tracing()
     get_runtime().close_session()
-    logger.debug(f"Closed session {settings.current_session.id}")
     get_runtime().stop_runtime()
     # Unload stubs
     clean_babel_data()

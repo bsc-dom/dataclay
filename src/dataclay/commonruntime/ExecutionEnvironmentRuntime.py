@@ -426,12 +426,9 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         dc_obj.set_dirty(True)
 
     def close_session_in_ee(self, session_id):
-        """
-        @summary Close session in EE. Subtract session references for GC.
-        @param session_id ID of session closing.
-        """
+        """Close session in EE. Subtract session references for GC."""
 
-        logger.debug("[==DGC==] Closing session %s" % str(session_id))
+        logger.debug(f"[==DGC==] Closing session {session_id}")
 
         """ Closing session means set expiration date to now """
         self.session_expires_dates[session_id] = datetime.datetime.now()

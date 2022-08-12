@@ -11,8 +11,11 @@ Note that this code has been heavily inspired by the Django's conf module.
 import logging
 import os
 
-from dataclay.commonruntime.SettingsLoader import (AbstractLoader, AccountCredentialLoader,
-                                                   AccountIdLoader)
+from dataclay.commonruntime.SettingsLoader import (
+    AbstractLoader,
+    AccountCredentialLoader,
+    AccountIdLoader,
+)
 from dataclay.exceptions.exceptions import ImproperlyConfigured
 from dataclay.util import Configuration
 from dataclay.util.PropertiesFilesLoader import PropertyDict
@@ -64,7 +67,6 @@ class _SettingsHub(object):
             "logicmodule_host": "127.0.0.1",
             "logicmodule_port": "2127",
             "logicmodule_rmiport": "2127",
-            "logicmodule_dc_instance_id": None,
             "network_timeout": 7200,
             "local_backend_name": None,
             "admin_user": os.getenv("DATACLAY_ADMIN_USER", "admin"),
@@ -75,7 +77,6 @@ class _SettingsHub(object):
             "current_password": UNSET_FIELD,
             "current_id": AccountIdLoader(self, "current_user"),
             "current_credential": AccountCredentialLoader(self, "current_id", "current_password"),
-            "current_session_id": UNSET_FIELD,
             "stubs_folder": UNSET_FIELD,
             "datasets": UNSET_FIELD,
             "dataset_for_store": UNSET_FIELD,

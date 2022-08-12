@@ -22,12 +22,11 @@ UNDEFINED_LOCAL = object()
 
 
 class ClientRuntime(DataClayRuntime):
+
+    session = None
+
     def __init__(self):
         DataClayRuntime.__init__(self)
-
-    @property
-    def session(self):
-        return settings.current_session
 
     def initialize_runtime_aux(self):
         self.dataclay_heap_manager = ClientHeapManager(self)
@@ -238,6 +237,7 @@ class ClientRuntime(DataClayRuntime):
     def close_session(self):
         self.logger.debug("** Closing session **")
         self.ready_clients["@MDS"].close_session(self.session.id)
+        self.logger.debug(f"Closed session {self.session.id}")
 
     def get_hint(self):
         return None
