@@ -56,34 +56,34 @@ class ClientRuntime(DataClayRuntime):
             ID of the backend in which te object was persisted.
         """
 
-        self.logger.debug(
-            f"Starting make persistent object for instance with id {instance.get_object_id()}"
-        )
+        if instance.is_persistent():
+            raise RuntimeError("Instance is already persistent")
+        else:
+            self.logger.debug(f"Starting make persistent for object {instance.get_object_id()}")
 
-        if backend_id is UNDEFINED_LOCAL:
-            # This is a commonruntime end user pitfall,
-            # @abarcelo thinks that it is nice
-            # (and exceptionally detailed) error
-            raise RuntimeError(
-                """
-                You are trying to use dataclay.api.LOCAL but either:
-                  - dataClay has not been initialized properly
-                  - LOCAL has been wrongly imported.
-                
-                Be sure to use LOCAL with:
-                
-                from dataclay import api
-                
-                and reference it with `api.LOCAL`
-                
-                Refusing the temptation to guess."""
-            )
+            # TODO: Use a less error prone methodology for local backend
+            if backend_id is UNDEFINED_LOCAL:
+                # This is a commonruntime end user pitfall,
+                # @abarcelo thinks that it is nice
+                # (and exceptionally detailed) error
+                raise RuntimeError(
+                    """
+                    You are trying to use dataclay.api.LOCAL but either:
+                    - dataClay has not been initialized properly
+                    - LOCAL has been wrongly imported.
+                    
+                    Be sure to use LOCAL with:
+                    
+                    from dataclay import api
+                    
+                    and reference it with `api.LOCAL`
+                    
+                    Refusing the temptation to guess."""
+                )
 
-        # Get
-        location = instance.get_hint() or backend_id or self.choose_location(instance)
-        instance.set_hint(location)
+            location = instance.get_hint() or backend_id or self.choose_location(instance)
+            instance.set_hint(location)
 
-        if not instance.is_persistent():
             self.logger.debug(f"Sending object {instance.get_object_id()} to EE")
 
             # set the default master location
@@ -130,17 +130,18 @@ class ClientRuntime(DataClayRuntime):
             # remove volatiles under deserialization
             self.remove_volatiles_under_deserialization(serialized_objs.vol_objs.values())
 
-        metadata_info = MetaDataInfo(
-            instance.get_object_id(),
-            False,
-            instance.get_dataset_name(),
-            instance.get_class_extradata().class_id,
-            {location},
-            alias,
-            None,
-        )
-        self.metadata_cache[instance.get_object_id()] = metadata_info
-        return location
+            metadata_info = MetaDataInfo(
+                instance.get_object_id(),
+                False,
+                instance.get_dataset_name(),
+                instance.get_class_extradata().class_id,
+                {location},
+                alias,
+                None,
+            )
+
+            self.metadata_cache[instance.get_object_id()] = metadata_info
+            return location
 
     def add_session_reference(self, object_id):
         """
