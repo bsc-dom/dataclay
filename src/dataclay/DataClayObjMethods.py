@@ -15,14 +15,13 @@ logger = logging.getLogger(__name__)
 
 def _dclayMethod(f, self, *args, **kwargs):
     """Helper function for DataClayObject method decoration"""
-    logger.verbose("Calling function %s", f.__name__)
-    is_exec_env = get_runtime().is_exec_env()
+    logger.verbose(f"Calling function {f.__name__}")
     try:
         # If the object is not persistent executes the method locally,
         # else, executes the method within the execution environment
         if (
-            (is_exec_env and self.is_loaded())
-            or (not is_exec_env and not self.is_persistent())
+            (get_runtime().is_exec_env() and self.is_loaded())
+            or (get_runtime().is_client() and not self.is_persistent())
             or f._dclay_local
             or f.__name__ == "__setstate__"
             or f.__name__ == "__getstate__"
@@ -37,7 +36,7 @@ def _dclayMethod(f, self, *args, **kwargs):
 
 def _dclayEmptyMethod(f, self, *args, **kwargs):
     """Similar to dclayMethod, but without actual Python implementation."""
-    logger.verbose("Calling (languageless) function %s", f.__name__)
+    logger.verbose(f"Calling (languageless) function {f.__name__}")
 
     # Let it fail elsewhere, if the user hacks around into an invalid state
     # (like a loaded&local non-persistent instance with an dclayEmptyMethod,
@@ -84,7 +83,7 @@ class dclayMethod(object):
         # TODO: at the moment, this flag is ignored
         decorated_func._dclay_local = is_local
 
-        # ToDo: something more clever, or add the user-provided flag option at least
+        # TODO: something more clever, or add the user-provided flag option at least
         decorated_func._dclay_readonly = False
         return decorated_func
 
@@ -93,6 +92,6 @@ def dclayEmptyMethod(f):
     """Simple (parameter-less) decorator for languageless methods."""
     decorated_func = decorate(f, _dclayEmptyMethod)
     decorated_func._dclay_method = True
-    # ToDo: something more clever, or add the user-provided flag option at least
+    # TODO: something more clever, or add the user-provided flag option at least
     decorated_func._dclay_readonly = False
     return decorated_func
