@@ -4,7 +4,6 @@ import logging
 import traceback
 import uuid
 
-from dataclay_common.managers.object_manager import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
 from dataclay.commonruntime.ExecutionEnvironmentRuntime import ExecutionEnvironmentRuntime
@@ -262,16 +261,10 @@ class ExecutionEnvironment(object):
             settings.environment_id, object_id, obj_bytes
         )
 
-        # TODO: When the object metadat is updated synchronously, this should me removed
-        object_md = ObjectMetadata(
-            instance.get_object_id(),
-            instance.get_alias(),
-            instance.get_dataset_name(),
-            instance.get_class_extradata().class_id,
-            [settings.environment_id],
-            LANG_PYTHON,
+        # TODO: When the object metadata is updated synchronously, this should me removed
+        self.runtime.metadata_service.update_object(
+            instance.get_owner_session_id(), instance.get_metadata()
         )
-        self.runtime.metadata_service.update_object(instance.get_owner_session_id(), object_md)
 
         instance.set_pending_to_register(False)
 
@@ -316,14 +309,7 @@ class ExecutionEnvironment(object):
         objects = self.store_in_memory(session_id, objects_to_persist)
         for object in objects:
             # TODO: The location should be check (in the deserialization) that is the same as current ee, and reasign if not
-            object_md = ObjectMetadata(
-                object.get_object_id(),
-                object.get_alias(),
-                object.get_dataset_name(),
-                object.get_class_extradata().class_id,
-                [object.get_location()],
-                LANG_PYTHON,
-            )
+            object_md = object.get_metadata()
             self.runtime.metadata_service.register_object(session_id, object_md)
         logger.debug("Finished make persistent")
 

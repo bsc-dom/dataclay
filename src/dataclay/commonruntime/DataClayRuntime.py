@@ -766,7 +766,7 @@ class DataClayRuntime(ABC):
         return self.ready_clients["@LM"].get_external_dataclay_info(dataclay_id)
 
     def get_location(self, object_id):
-        self.logger.debug("Looking for location of object %s", str(object_id))
+        self.logger.debug(f"Looking for location of object {object_id}")
         try:
             obj = self.get_from_heap(object_id)
             if obj is not None:
@@ -776,11 +776,10 @@ class DataClayRuntime(ABC):
                     return hint
                 else:
                     raise DataClayException(
-                        "The object %s is not initialized well, hint missing or not exist"
-                        % object_id
+                        f"The object {object_id} is not initialized well, hint missing or not exist"
                     )
             else:
-                raise DataClayException("The object %s is not initialized" % object_id)
+                raise DataClayException(f"The object {object_id} is not initialized")
         except DataClayException as e:
             # If the object is not initialized well trying to obtain location from metadata
             metadata = self.get_metadata(object_id)
@@ -806,7 +805,7 @@ class DataClayRuntime(ABC):
             del self.metadata_cache[object_id]
 
     def get_all_locations(self, object_id):
-        self.logger.debug("Getting all locations of object %s", object_id)
+        self.logger.debug(f"Getting all locations of object {object_id}")
         locations = set()
         obj = self.get_from_heap(object_id)
         if obj is not None:
@@ -827,7 +826,7 @@ class DataClayRuntime(ABC):
 
             return locations
         except:
-            self.logger.debug("Object %s has no metadata", object_id)
+            self.logger.debug(f"Object {object_id} has no metadata")
             if obj is not None:
                 hint = obj.get_hint()
                 if hint is not None:
@@ -837,11 +836,10 @@ class DataClayRuntime(ABC):
                     return locations
                 else:
                     raise DataClayException(
-                        "The object %s is not initialized well, hint missing or not exist"
-                        % object_id
+                        f"The object {object_id} is not initialized well, hint missing or not exist"
                     )
             else:
-                raise DataClayException("The object %s is not initialized" % object_id)
+                raise DataClayException(f"The object {object_id} is not initialized")
 
     def get_all_execution_environments_info(self, force_update=False):
         if self.ee_info_map is None or self.ee_info_map is not None and force_update:
@@ -933,17 +931,10 @@ class DataClayRuntime(ABC):
         return exec_envs_names
 
     def choose_location(self, instance):
-        """Choose execution/make persistent location.
-        :param instance: Instance to use in call
-        :param alias: The alias of the instance
-        :returns: Location
-        :type instance: DataClayObject
-        :rtype: DataClayID
-        """
-
+        """Choose execution/make persistent location."""
         exec_env_id = self.get_object_location_by_id(instance.get_object_id())
         instance.set_hint(exec_env_id)
-        self.logger.verbose("ExecutionEnvironmentID obtained for execution = %s", exec_env_id)
+        self.logger.verbose(f"ExecutionEnvironmentID obtained for execution = {exec_env_id}")
         return exec_env_id
 
     def activate_tracing(self, initialize):

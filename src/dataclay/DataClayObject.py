@@ -14,6 +14,9 @@ import traceback
 import uuid
 from operator import attrgetter
 
+from dataclay_common.managers.object_manager import ObjectMetadata
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
+
 from dataclay.commonruntime.ExecutionGateway import (
     ExecutionGateway,
     class_extradata_cache_client,
@@ -366,13 +369,14 @@ class DataClayObject(object, metaclass=ExecutionGateway):
 
     def get_metadata(self):
         object_md = ObjectMetadata(
-            object.get_object_id(),
-            object.get_alias(),
-            object.get_dataset_name(),
-            object.get_class_extradata().class_id,
-            [object.get_location()],
+            self.get_object_id(),
+            self.get_alias(),
+            self.get_dataset_name(),
+            self.get_class_id(),
+            [self.get_hint()],
             LANG_PYTHON,
         )
+        return object_md
 
     def get_location(self):
         """Return a single (random) location of this object."""

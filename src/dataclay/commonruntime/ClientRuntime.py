@@ -7,7 +7,6 @@ dataclay.api package.
 import traceback
 
 from dataclay_common.clients.metadata_service_client import MDSClient
-from dataclay_common.managers.object_manager import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
 from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
@@ -46,17 +45,15 @@ class ClientRuntime(DataClayRuntime):
         """This method creates a new Persistent Object using the provided stub
         instance and, if indicated, all its associated objects also Logic module API used for communication
         This function is called from a stub/execution class
-        :param instance: Instance to make persistent
-        :param backend_id: Indicates which is the destination backend
-        :param recursive: Indicates if make persistent is recursive
-        :param alias: Alias for the object
-        :returns: ID of the backend in which te object was persisted.
-        :type instance: DataClayObject
-        :type backend_id: DataClayID
-        :type recursive: boolean
-        :type alias: string
-        :rtype: DataClayID
-        :raises RuntimeError: if backend id is UNDEFINED_LOCAL.
+
+        Args:
+            instance: Instance to make persistent
+            backend_id: Indicates which is the destination backend
+            recursive: Indicates if make persistent is recursive
+            alias: Alias for the object
+
+        Returns:
+            ID of the backend in which te object was persisted.
         """
 
         self.logger.debug(
@@ -81,45 +78,18 @@ class ClientRuntime(DataClayRuntime):
                 
                 Refusing the temptation to guess."""
             )
-        location = instance.get_hint()
-        if location is None:
-            location = backend_id
-            # Choose location if needed
-            # If object is already persistent -> it must have a Hint (location = hint here)
-            # If object is not persistent -> location is choosen (provided backend id or random, hash...).
-            if location is None:
-                location = self.choose_location(instance)
+
+        # Get
+        location = instance.get_hint() or backend_id or self.choose_location(instance)
+        instance.set_hint(location)
 
         if not instance.is_persistent():
-            if alias is not None:
-                # Add a new alias to an object.
-                # Use cases:
-                # 1 - object was persisted without alias and not yet registered -> we need to register it with new alias.
-                # 2 - object was persisted and it is already registered -> we only add a new alias
-                # 3 - object was persisted with an alias and it must be already registered -> we add a new alias.
+            self.logger.debug(f"Sending object {instance.get_object_id()} to EE")
 
-                # From client side, we cannot check if object is registered or not (we do not have isPendingToRegister like EE)
-                # Therefore, we call MetadataService with all information for registration.
-                object_md = ObjectMetadata(
-                    instance.get_object_id(),
-                    alias,
-                    instance.get_dataset_name(),
-                    instance.get_class_extradata().class_id,
-                    [location],
-                    LANG_PYTHON,
-                )
-                # FIXME: The object registration should be done by execution environment.
-                # So if the serialization fails, it is not stored. The client maybe can use
-                # the update_object in order to change the alias or the is_read_only (to be decided)
-                # self.metadata_service.register_object(self.session.id, object_md)
-
-            # === MAKE PERSISTENT === #
-            self.logger.debug(
-                "Instance with object ID %s being send to EE", instance.get_object_id()
-            )
             # set the default master location
             instance.set_master_location(location)
             instance.set_alias(alias)
+
             # We serialize objects like volatile parameters
             parameters = list()
             parameters.append(instance)
@@ -132,7 +102,7 @@ class ClientRuntime(DataClayRuntime):
                 iface_bitmaps=None,
                 params_spec=params_spec,
                 params_order=params_order,
-                hint_volatiles=location,
+                hint_volatiles=instance.get_hint(),
                 runtime=self,
                 recursive=recursive,
             )
@@ -144,24 +114,18 @@ class ClientRuntime(DataClayRuntime):
 
             # Get EE
             try:
-                execution_client = self.ready_clients[location]
+                execution_client = self.ready_clients[instance.get_hint()]
             except KeyError:
-                exec_env = self.get_execution_environment_info(location)
+                exec_env = self.get_execution_environment_info(instance.get_hint())
                 self.logger.debug(
-                    "Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
-                    location,
-                    exec_env.hostname,
-                    exec_env.port,
+                    f"ExecutionEnvironment {location} not found in cache! Starting it at {exec_env.hostname}:{exec_env.port}",
                 )
                 execution_client = EEClient(exec_env.hostname, exec_env.port)
                 self.ready_clients[location] = execution_client
 
             # Call Execution Environment
-            self.logger.verbose("Calling make persistent to EE %s ", location)
+            self.logger.verbose(f"Calling make persistent to EE {location}")
             execution_client.make_persistent(self.session.id, serialized_objs.vol_objs.values())
-
-            # update the hint with the location, and return it
-            instance.set_hint(location)
 
             # remove volatiles under deserialization
             self.remove_volatiles_under_deserialization(serialized_objs.vol_objs.values())

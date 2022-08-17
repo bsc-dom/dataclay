@@ -7,7 +7,6 @@ import time
 import uuid
 
 from dataclay_mds.metadata_service import MetadataService
-from dataclay_common.managers.object_manager import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
 from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
@@ -128,35 +127,24 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         self.internal_store(instance, make_persistent=False)
 
     def make_persistent(self, instance, alias, backend_id, recursive):
-        """This method creates a new Persistent Object using the provided stub
-        instance and, if indicated, all its associated objects also Logic module API used for communication
-        This function is called from a stub/execution class
-        :param instance: Instance to make persistent
-        :param backend_id: Indicates which is the destination backend
-        :param recursive: Indicates if make persistent is recursive
-        :param alias: Alias for the object
-        :returns: ID of the backend in which te object was persisted.
-        :type instance: DataClayExecutionObject
-        :type backend_id: DataClayID
-        :type recursive: boolean
-        :type alias: string
-        :rtype: DataClayID
-        :raises RuntimeError: if backend id is UNDEFINED_LOCAL.
-        """
-        self.logger.debug(
-            "Starting make persistent object for instance %s with id %s",
-            instance,
-            instance.get_object_id(),
-        )
+        """This method creates a new Persistent Object using the provided stub instance and,
+        if indicated, all its associated objects also Logic module API used for communication
 
-        location = instance.get_hint()
-        if location is None:
-            location = backend_id
-            # Choose location if needed
-            # If object is already persistent -> it must have a Hint (location = hint here)
-            # If object is not persistent -> location is choosen (provided backend id or random, hash...).
-            if location is None:
-                location = self.choose_location(instance)
+        This function is called from a stub/execution class
+
+        Args:
+            instance (DataClayExecutionObject): Instance to make persistent
+            backend_id: Indicates which is the destination backend
+            recursive: Indicates if make persistent is recursive
+            alias: Alias for the object
+
+        Returns:
+            ID of the backend in which te object was persisted.
+        """
+        self.logger.debug(f"Starting make persistent for instance {instance.get_object_id()}")
+
+        location = instance.get_hint() or backend_id or self.choose_location(instance)
+        instance.set_hint(location)
 
         if alias is not None:
             # Add a new alias to an object.
@@ -165,21 +153,10 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             # 1 - object was persisted without alias and not yet registered -> we need to register it with new alias.
             # 2 - object was persisted and it is already registered -> we only add a new alias
             # 3 - object was persisted with an alias and it must be already registered -> we add a new alias.
+            instance.set_alias(alias)
+
             if instance.is_pending_to_register():
-                # Use case 1
-                # TODO: Review if we use hint of the object or the hint of the runtime.
-                object_md = ObjectMetadata(
-                    instance.get_object_id(),
-                    alias,
-                    instance.get_dataset_name(),
-                    instance.get_class_extradata().class_id,
-                    [location],
-                    LANG_PYTHON,
-                )
-                self.metadata_service.register_object(self.session.id, object_md)
-            else:
-                # Use case 2 and 3 - add new alias
-                instance.set_alias(alias)
+                self.metadata_service.register_object(self.session.id, instance.get_metadata())
 
         return instance.get_location()
 
