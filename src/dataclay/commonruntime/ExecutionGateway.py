@@ -67,7 +67,7 @@ class ExecutionGateway(type):
             # return get_runtime().new_persistent_instance_aux(cls, args, kwargs)
         else:
             ret = object.__new__(cls)  # this defers the __call__ method
-            logger.debug("New regular dataClay instance of class `%s`", cls.__name__)
+            logger.debug(f"New regular dataClay instance of class {cls.__name__}")
 
             # The following will trigger the initialize_object,
             # which will take care of volatile (in Execution Environment, ofc)

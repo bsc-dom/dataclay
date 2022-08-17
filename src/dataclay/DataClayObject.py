@@ -6,24 +6,13 @@ Metaclass is responsible of Class (not object) instantiation.
 Note that this managers also includes most serialization/deserialization code
 related to classes and function call parameters.
 """
-import copy
 import inspect
 import logging
+import pickle
 import re
 import traceback
-from operator import attrgetter
-from uuid import UUID
-
-import six
-
-if six.PY2:
-    from cPickle import Pickler, Unpickler
-elif six.PY3:
-    from _pickle import Pickler, Unpickler
-
 import uuid
-
-import six
+from operator import attrgetter
 
 from dataclay.commonruntime.ExecutionGateway import (
     ExecutionGateway,
@@ -77,8 +66,7 @@ def _get_object_by_id_helper(object_id, class_id, hint):
     return get_runtime().get_object_by_id(object_id, class_id, hint)
 
 
-@six.add_metaclass(ExecutionGateway)
-class DataClayObject(object):
+class DataClayObject(object, metaclass=ExecutionGateway):
     """Main class for Persistent Objects.
 
     Objects that has to be made persistent should derive this class (either
@@ -347,7 +335,6 @@ class DataClayObject(object):
         )
 
         # Mix default values with the provided ones through kwargs
-        # TODO: Rename dataset_id to dataset_name
         fields = {
             "persistent_flag": False,
             "object_id": uuid.uuid4(),
@@ -377,6 +364,16 @@ class DataClayObject(object):
             """object created during executions is volatile."""
             self.initialize_object_as_volatile()
 
+    def get_metadata(self):
+        object_md = ObjectMetadata(
+            object.get_object_id(),
+            object.get_alias(),
+            object.get_dataset_name(),
+            object.get_class_extradata().class_id,
+            [object.get_location()],
+            LANG_PYTHON,
+        )
+
     def get_location(self):
         """Return a single (random) location of this object."""
         return get_runtime().get_location(self.__dclay_instance_extradata.object_id)
@@ -388,7 +385,7 @@ class DataClayObject(object):
     def set_master_location(self, eeid):
         """Set the master location of this object."""
         # Commented since now we are using string to represent uuid
-        # if not isinstance(eeid, UUID):
+        # if not isinstance(eeid, uuid.UUID):
         #     raise AttributeError("The master location should be the ExecutionEnvironmentID, "
         #                          "instead we received: %s" % eeid)
         self.__dclay_instance_extradata.master_location = eeid
@@ -772,11 +769,6 @@ class DataClayObject(object):
             dco_extradata.persistent_flag = False
 
             # Use pickle to the result of the serialization
-            if six.PY2:
-                import cPickle as pickle
-            elif six.PY3:
-                import _pickle as pickle
-
             state = pickle.dumps(self.__getstate__())
 
             # Leave the previous value, probably False & True`
@@ -820,7 +812,7 @@ class DataClayObject(object):
                             BooleanWrapper().write(io_file, False)
                     else:
                         BooleanWrapper().write(io_file, True)
-                        pck = Pickler(io_file, protocol=-1)
+                        pck = pickle.Pickler(io_file, protocol=-1)
                         pck.persistent_id = PersistentIdPicklerHelper(
                             cur_serialized_objs, pending_objs, reference_counting
                         )
@@ -868,16 +860,10 @@ class DataClayObject(object):
         if des_master_loc_str == "x":
             self.__dclay_instance_extradata.master_location = None
         else:
-            self.__dclay_instance_extradata.master_location = UUID(des_master_loc_str)
+            self.__dclay_instance_extradata.master_location = uuid.UUID(des_master_loc_str)
 
         if hasattr(self, "__setstate__"):
             # The object has a user-defined deserialization method.
-
-            # Use pickle, and use that method instead
-            if six.PY2:
-                import cPickle as pickle
-            elif six.PY3:
-                import _pickle as pickle
 
             state = pickle.loads(StringWrapper(mode="binary").read(io_file))
             self.__setstate__(state)
@@ -914,7 +900,7 @@ class DataClayObject(object):
                             logger.error("Failed to deserialize association", exc_info=True)
                     else:
                         try:
-                            upck = Unpickler(io_file)
+                            upck = pickle.Unpickler(io_file)
                             upck.persistent_load = PersistentLoadPicklerHelper(
                                 metadata, cur_deserialized_python_objs, get_runtime()
                             )
