@@ -79,12 +79,14 @@ class DataClayObject(object, metaclass=ExecutionGateway):
     # Extradata of the object. Private field.
     __dclay_instance_extradata = None
 
-    def initialize_object(self, new_object_id=None):
+    def initialize_object(self, deserializing=False, **kwargs):
         """Initializes the object"""
-        # TODO: remove this if once ExecutionGateway is not initializing object id twice
-        if new_object_id is not None:
-            self.set_object_id(new_object_id)
+        self._populate_internal_fields(**kwargs)
         get_runtime().add_to_heap(self)
+
+        if not deserializing:
+            """object created during executions is volatile."""
+            self.initialize_object_as_volatile()
 
     def initialize_object_as_persistent(self):
         """Initializes the object as a persistent
@@ -92,10 +94,10 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         Flags for "persistent" state might be different in EE and client.
         """
         # TODO: improve this using an specialization (dgasull)
+        self.set_persistent(True)
+
         if get_runtime().is_exec_env():
             # *** Execution Environment flags
-            self.set_persistent(True)
-
             # by default, loaded = true for volatiles created inside executions
             # this function (initialize as persistent) is used for objects being
             # deserialized and therefore they might be unloaded
@@ -103,15 +105,11 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             self.set_loaded(False)
             self.set_pending_to_register(False)
 
-        else:
-            # *** Client flags
-            self.set_persistent(True)
-
     def initialize_object_as_volatile(self):
-        """
-        @postcondition: Initialize object with state 'volatile' with proper flags. Usually, volatile state is created by a stub, app, exec
-        class,.. See same function in DataClayExecutionObject for a different initialization. This design is intended to be
-        clear with object state.
+        """Initialize object with state 'volatile' with proper flags.
+        Usually, volatile state is created by a stub, app, exec, class,..
+        See same function in DataClayExecutionObject for a different initialization.
+        This design is intended to be clear with object state.
         """
         # TODO: improve this using an specialization (dgasull)
         if get_runtime().is_exec_env():
@@ -332,10 +330,8 @@ class DataClayObject(object, metaclass=ExecutionGateway):
 
         return dc_ced
 
-    def _populate_internal_fields(self, deserializing=False, **kwargs):
-        logger.debug(
-            f"Populating internal fields for the class. Provided kwargs: {kwargs} deserializing={deserializing}"
-        )
+    def _populate_internal_fields(self, **kwargs):
+        logger.debug(f"Populating internal fields for the class. Provided kwargs: {kwargs}")
 
         # Mix default values with the provided ones through kwargs
         fields = {
@@ -360,12 +356,6 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         to be called. Please, use a better function for that. 
         """
         instance_dict["_dclay_class_extradata"] = self.get_class_extradata()
-
-        # Initialize object
-        self.initialize_object()
-        if not deserializing:
-            """object created during executions is volatile."""
-            self.initialize_object_as_volatile()
 
     def new_replica(self, backend_id=None, recursive=True):
         return get_runtime().new_replica(

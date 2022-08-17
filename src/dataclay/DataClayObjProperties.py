@@ -68,11 +68,9 @@ class DynamicProperty(property):
                 return object.__getattribute__(obj, "%s%s" % (DCLAY_PROPERTY_PREFIX, self.p_name))
             except AttributeError:
                 logger.warning(
-                    "Received AttributeError while accessing property %s on object %r",
-                    self.p_name,
-                    obj,
+                    f"Received AttributeError while accessing property {self.p_name} on object {obj}"
                 )
-                logger.debug("Internal dictionary of the object: %s", obj.__dict__)
+                logger.debug(f"Internal dictionary of the object: {obj.__dict__}")
                 raise
         else:
             return get_runtime().execute_implementation_aux(
@@ -84,7 +82,7 @@ class DynamicProperty(property):
 
         See the __get__ method for the basic behavioural explanation.
         """
-        logger.debug("Calling setter for property %s", self.p_name)
+        logger.debug(f"Calling setter for property {self.p_name}")
 
         is_exec_env = get_runtime().is_exec_env()
         if (is_exec_env and obj.is_loaded()) or (not is_exec_env and not obj.is_persistent()):

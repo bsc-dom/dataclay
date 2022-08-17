@@ -69,7 +69,7 @@ class ExecutionGateway(type):
 
             # The following will trigger the initialize_object,
             # which will take care of volatile (in Execution Environment, ofc)
-            ret._populate_internal_fields()
+            ret.initialize_object()
 
             # If there is a dclayMethod-decorated __init__, this will call that
             cls.__init__(ret, *args, **kwargs)
@@ -80,7 +80,7 @@ class ExecutionGateway(type):
         """Return a new instance, without calling to the class methods."""
         logger.debug("New dataClay instance (without __call__) of class `%s`", cls.__name__)
         ret = object.__new__(cls)  # this defers the __call__ method
-        ret._populate_internal_fields(deserializing=deserializing, **kwargs)
+        ret.initialize_object(deserializing=deserializing, **kwargs)
         return ret
 
     def _prepare_metaclass(cls, namespace, responsible_account):

@@ -126,7 +126,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
         self.internal_store(instance, make_persistent=False)
 
-    def make_persistent(self, instance, alias, backend_id, recursive):
+    def make_persistent(self, instance, alias, backend_id, recursive=None):
         """This method creates a new Persistent Object using the provided stub instance and,
         if indicated, all its associated objects also Logic module API used for communication
 
@@ -141,6 +141,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         Returns:
             ID of the backend in which te object was persisted.
         """
+        del recursive
         self.logger.debug(f"Starting make persistent for instance {instance.get_object_id()}")
 
         location = instance.get_hint() or backend_id or self.choose_location(instance)
