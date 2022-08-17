@@ -367,37 +367,6 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             """object created during executions is volatile."""
             self.initialize_object_as_volatile()
 
-    def get_metadata(self):
-        object_md = ObjectMetadata(
-            self.get_object_id(),
-            self.get_alias(),
-            self.get_dataset_name(),
-            self.get_class_id(),
-            [self.get_hint()],
-            LANG_PYTHON,
-        )
-        return object_md
-
-    def get_location(self):
-        """Return a single (random) location of this object."""
-        return get_runtime().get_location(self.__dclay_instance_extradata.object_id)
-
-    def get_master_location(self):
-        """Return the uuid relative to the master location of this object."""
-        return self.__dclay_instance_extradata.master_location
-
-    def set_master_location(self, eeid):
-        """Set the master location of this object."""
-        # Commented since now we are using string to represent uuid
-        # if not isinstance(eeid, uuid.UUID):
-        #     raise AttributeError("The master location should be the ExecutionEnvironmentID, "
-        #                          "instead we received: %s" % eeid)
-        self.__dclay_instance_extradata.master_location = eeid
-
-    def get_all_locations(self):
-        """Return all the locations of this object."""
-        return get_runtime().get_all_locations(self.__dclay_instance_extradata.object_id)
-
     def new_replica(self, backend_id=None, recursive=True):
         return get_runtime().new_replica(
             self.get_object_id(), self.get_hint(), backend_id, None, recursive
@@ -469,108 +438,6 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             value = getattr(from_object, p.name)
             setattr(self, p.name, value)
 
-    def get_object_id(self):
-        """
-        @postcondition: Return object id of the object
-        @return Object id
-        """
-        return self.__dclay_instance_extradata.object_id
-
-    def set_object_id(self, new_object_id):
-        """
-        @postcondition: Set object id of the object
-        @param new_object_id: object id
-        """
-        self.__dclay_instance_extradata.object_id = new_object_id
-
-    def get_alias(self):
-        return self.__dclay_instance_extradata.alias
-
-    def set_alias(self, new_alias):
-        self.__dclay_instance_extradata.alias = new_alias
-
-    def is_read_only(self):
-        return self.__dclay_instance_extradata.is_read_only
-
-    def set_read_only(self, new_read_only):
-        self.__dclay_instance_extradata.is_read_only = new_read_only
-
-    def get_original_object_id(self):
-        """
-        @postcondition: Return original object id of the object if any
-        @return Original Object id
-        """
-        return self.__dclay_instance_extradata.original_object_id
-
-    def set_original_object_id(self, new_original_object_id):
-        """
-        @postcondition: Set original object id of the object
-        @param new_original_object_id: original object id of the object
-        """
-        self.__dclay_instance_extradata.original_object_id = new_original_object_id
-
-    def get_root_location(self):
-        return self.__dclay_instance_extradata.root_location
-
-    def set_root_location(self, new_root_location):
-        self.__dclay_instance_extradata.root_location = new_root_location
-
-    def get_origin_location(self):
-        return self.__dclay_instance_extradata.origin_location
-
-    def set_origin_location(self, new_origin_location):
-        self.__dclay_instance_extradata.origin_location = new_origin_location
-
-    def get_replica_locations(self):
-        return self.__dclay_instance_extradata.replica_locations
-
-    def set_replica_locations(self, new_replica_locations):
-        self.__dclay_instance_extradata.replica_locations = new_replica_locations
-
-    def add_replica_location(self, new_replica_location):
-        replica_locations = self.__dclay_instance_extradata.replica_locations
-        if replica_locations is None:
-            replica_locations = list()
-            self.__dclay_instance_extradata.replica_locations = replica_locations
-        replica_locations.append(new_replica_location)
-
-    def remove_replica_location(self, new_replica_location):
-        replica_locations = self.__dclay_instance_extradata.replica_locations
-        replica_locations.remove(new_replica_location)
-
-    def clear_replica_locations(self):
-        replica_locations = self.__dclay_instance_extradata.replica_locations
-        if replica_locations is not None:
-            replica_locations.clear()
-
-    def get_memory_pinned(self):
-        """
-        @postcondition: Return the memory pinned flag of the object
-        @return Object id
-        """
-        return self.__dclay_instance_extradata.memory_pinned
-
-    def set_memory_pinned(self, new_memory_pinned):
-        """
-        @postcondition: Set memory pinned flag of the object
-        @param new_memory_pinned: memory pinned flag
-        """
-        self.__dclay_instance_extradata.memory_pinned = new_memory_pinned
-
-    def get_dataset_name(self):
-        """
-        @postcondition: Return dataset id of the object
-        @return Data set id
-        """
-        return self.__dclay_instance_extradata.dataset_name
-
-    def set_dataset_name(self, new_dataset_name):
-        """
-        @postcondition: Set dataset id of the object
-        @param new_dataset_name: dataset id
-        """
-        self.__dclay_instance_extradata.dataset_name = new_dataset_name
-
     def getID(self):
         """Return the string representation of the persistent object for COMPSs.
 
@@ -614,93 +481,147 @@ class DataClayObject(object, metaclass=ExecutionGateway):
     # def delete_alias(self):
     #     get_runtime().delete_alias(self)
 
+    def get_metadata(self):
+        object_md = ObjectMetadata(
+            self.get_object_id(),
+            self.get_alias(),
+            self.get_dataset_name(),
+            self.get_class_id(),
+            [self.get_hint()],
+            LANG_PYTHON,
+        )
+        return object_md
+
+    def get_all_locations(self):
+        """Return all the locations of this object."""
+        return get_runtime().get_all_locations(self.__dclay_instance_extradata.object_id)
+
+    def get_location(self):
+        """Return a single (random) location of this object."""
+        return get_runtime().get_location(self.__dclay_instance_extradata.object_id)
+
+    ##########################################
+    # Instance extradata getters and setters #
+    ##########################################
+
+    def get_object_id(self):
+        return self.__dclay_instance_extradata.object_id
+
+    def set_object_id(self, new_object_id):
+        self.__dclay_instance_extradata.object_id = new_object_id
+
+    def get_alias(self):
+        return self.__dclay_instance_extradata.alias
+
+    def set_alias(self, new_alias):
+        self.__dclay_instance_extradata.alias = new_alias
+
+    def is_read_only(self):
+        return self.__dclay_instance_extradata.is_read_only
+
+    def set_read_only(self, new_read_only):
+        self.__dclay_instance_extradata.is_read_only = new_read_only
+
+    def get_original_object_id(self):
+        return self.__dclay_instance_extradata.original_object_id
+
+    def set_original_object_id(self, new_original_object_id):
+        self.__dclay_instance_extradata.original_object_id = new_original_object_id
+
+    def get_root_location(self):
+        return self.__dclay_instance_extradata.root_location
+
+    def set_root_location(self, new_root_location):
+        self.__dclay_instance_extradata.root_location = new_root_location
+
+    def get_origin_location(self):
+        return self.__dclay_instance_extradata.origin_location
+
+    def set_origin_location(self, new_origin_location):
+        self.__dclay_instance_extradata.origin_location = new_origin_location
+
+    def get_replica_locations(self):
+        return self.__dclay_instance_extradata.replica_locations
+
+    def set_replica_locations(self, new_replica_locations):
+        self.__dclay_instance_extradata.replica_locations = new_replica_locations
+
+    def add_replica_location(self, new_replica_location):
+        replica_locations = self.__dclay_instance_extradata.replica_locations
+        if replica_locations is None:
+            replica_locations = list()
+            self.__dclay_instance_extradata.replica_locations = replica_locations
+        replica_locations.append(new_replica_location)
+
+    def remove_replica_location(self, old_replica_location):
+        replica_locations = self.__dclay_instance_extradata.replica_locations
+        replica_locations.remove(old_replica_location)
+
+    def clear_replica_locations(self):
+        replica_locations = self.__dclay_instance_extradata.replica_locations
+        if replica_locations is not None:
+            replica_locations.clear()
+
+    def get_master_location(self):
+        return self.__dclay_instance_extradata.master_location
+
+    def set_master_location(self, eeid):
+        self.__dclay_instance_extradata.master_location = eeid
+
+    def get_memory_pinned(self):
+        return self.__dclay_instance_extradata.memory_pinned
+
+    def set_memory_pinned(self, new_memory_pinned):
+        self.__dclay_instance_extradata.memory_pinned = new_memory_pinned
+
+    def get_dataset_name(self):
+        return self.__dclay_instance_extradata.dataset_name
+
+    def set_dataset_name(self, new_dataset_name):
+        self.__dclay_instance_extradata.dataset_name = new_dataset_name
+
     def set_persistent(self, ispersistent):
-        """
-        @postcondition: Set value of persistent flag in the object
-        @param ispersistent: value to set
-        """
         self.__dclay_instance_extradata.persistent_flag = ispersistent
 
     def set_loaded(self, isloaded):
-        """
-        @postcondition: Set value of loaded flag in the object
-        @param isloaded: value to set
-        """
-        logger.verbose("Setting loaded to `%s` for object %s", isloaded, self.get_object_id())
         self.__dclay_instance_extradata.loaded_flag = isloaded
 
     def is_persistent(self):
-        """
-        @postcondition: Return TRUE if object is persistent. FALSE otherwise.
-        @return is persistent flag
-        """
         return self.__dclay_instance_extradata.persistent_flag
 
     def is_loaded(self):
-        """
-        @postcondition: Return TRUE if object is loaded. FALSE otherwise.
-        @return is loaded flag
-        """
         return self.__dclay_instance_extradata.loaded_flag
 
     def get_class_id(self):
         return self.get_class_extradata().class_id
 
     def get_owner_session_id(self):
-        """
-        @postcondition: Get owner session id
-        @return Owner session id
-        """
         return self.__dclay_instance_extradata.owner_session_id
 
     def set_owner_session_id(self, the_owner_session_id):
-        """
-        @postcondition: Set ID of session of the owner of the object.
-        @param the_owner_session_id: owner session id
-        """
         self.__dclay_instance_extradata.owner_session_id = the_owner_session_id
 
     def is_pending_to_register(self):
-        """
-        @postcondition: Return TRUE if object is pending to register. FALSE otherwise.
-        @return is pending to register flag
-        """
         return self.__dclay_instance_extradata.pending_to_register_flag
 
     def set_pending_to_register(self, pending_to_register):
-        """
-        @postcondition: Set pending to register flag.
-        @param pending_to_register: The flag to set
-        """
         self.__dclay_instance_extradata.pending_to_register_flag = pending_to_register
 
     def is_dirty(self):
-        """
-        @postcondition: Return TRUE if object is dirty (it was modified). FALSE otherwise.
-        @return dirty flag
-        """
         return self.__dclay_instance_extradata.dirty_flag
 
     def set_dirty(self, dirty_value):
-        """
-        @postcondition: Set dirty flag.
-        @param dirty_value: The flag to set
-        """
         self.__dclay_instance_extradata.dirty_flag = dirty_value
 
     def get_hint(self):
-        """
-        @postcondition: Get hint
-        @return Hint
-        """
         return self.__dclay_instance_extradata.execenv_id
 
     def set_hint(self, new_hint):
-        """
-        @postcondition: Set hint
-        @param new_hint: value to set
-        """
         self.__dclay_instance_extradata.execenv_id = new_hint
+
+    ##############
+    # Federation #
+    ##############
 
     def federate_to_backend(self, ext_execution_env_id, recursive=True):
         get_runtime().federate_to_backend(self, ext_execution_env_id, recursive)
@@ -738,6 +659,10 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         :rtype: DataClayInstance
         """
         return get_runtime().get_external_dataclay_info(dataclay_id)
+
+    #################
+    # Serialization #
+    #################
 
     def serialize(
         self,
