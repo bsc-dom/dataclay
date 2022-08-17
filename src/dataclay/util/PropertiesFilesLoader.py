@@ -10,9 +10,7 @@ See PropertyFile class for some considerations about the implementation.
 """
 
 import re
-from abc import ABCMeta, abstractmethod
-
-import six
+from abc import ABC, abstractmethod
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
@@ -20,8 +18,7 @@ __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 """ Make this class abstract """
 
 
-@six.add_metaclass(ABCMeta)
-class PropertyFile(object):
+class PropertyFile(ABC):
     """Abstract property-holder class.
 
     All Property Files used in dataClay must have it own class, derived from

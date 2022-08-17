@@ -4,30 +4,20 @@
 
 import itertools
 import logging
-import sys
+import pickle
 import traceback
 from datetime import datetime
-
-import grpc
-import six
-
-if six.PY2:
-    import cPickle as pickle
-elif six.PY3:
-    import _pickle as pickle
-
 from time import sleep
 
 import dataclay_common.protos.common_messages_pb2 as CommonMessages
-from dataclay_common.protos import (common_messages_pb2, logicmodule_messages_pb2,
-                                    logicmodule_pb2_grpc)
-from grpc._cython.cygrpc import ChannelArgKey
-
+import grpc
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util import Configuration
 from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load
+from dataclay_common.protos import logicmodule_messages_pb2, logicmodule_pb2_grpc
+from grpc._cython.cygrpc import ChannelArgKey
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
 __copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
@@ -613,7 +603,7 @@ class LMClient(object):
             )
 
             # ToDo: check async
-            six.advance_iterator(async_req_send)
+            next(async_req_send)
 
             resp_future = self.lm_stub.setDataSetIDFromGarbageCollector.future.future(
                 request=request, metadata=self.metadata_call
@@ -621,7 +611,7 @@ class LMClient(object):
             resp_future.result()
 
             if resp_future.done():
-                six.advance_iterator(async_req_rec)
+                next(async_req_rec)
 
         except RuntimeError as e:
             raise e

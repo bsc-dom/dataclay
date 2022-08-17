@@ -2,10 +2,9 @@
 import importlib
 import logging
 import uuid
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from logging import TRACE
 
-import six
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.exceptions.exceptions import DataClayException
@@ -22,7 +21,6 @@ from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDat
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
 from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
-from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from grpc import RpcError
 from lru import LRU
@@ -34,8 +32,7 @@ class NULL_NAMESPACE:
     bytes = b""
 
 
-@six.add_metaclass(ABCMeta)
-class DataClayRuntime(object):
+class DataClayRuntime(ABC):
 
     """Logger"""
 
@@ -787,7 +784,7 @@ class DataClayRuntime(object):
         except DataClayException as e:
             # If the object is not initialized well trying to obtain location from metadata
             metadata = self.get_metadata(object_id)
-            return six.advance_iterator(iter(metadata.locations))
+            return next(iter(metadata.locations))
 
     # TODO: Use MetadataService and return ObjectMD
     def get_metadata(self, object_id):

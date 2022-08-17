@@ -2,17 +2,8 @@
 
 import logging
 import os
+import pickle
 import re
-import traceback
-
-import six
-
-if six.PY2:
-    import cPickle as pickle
-elif six.PY3:
-    import _pickle as pickle
-
-import six
 
 from dataclay.commonruntime.Initializer import size_tracking
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
@@ -190,10 +181,7 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
             return ret
 
         elif subtype == self.STR_SIGNATURE:
-            if six.PY2:
-                return StringWrapper("binary").read(io_file)
-            elif six.PY3:
-                return StringWrapper("utf-8").read(io_file)
+            return StringWrapper("utf-8").read(io_file)
         elif subtype == self.UNICODE_SIGNATURE:
             return StringWrapper("utf-16").read(io_file)
         elif subtype == self.BYTES_SIGNATURE:
@@ -317,10 +305,7 @@ class PyTypeWildcardWrapper(DataClayPythonWrapper):
                     value_type.write(io_file, v)
 
         elif subtype == self.STR_SIGNATURE:
-            if six.PY2:
-                StringWrapper("utf-8").write(io_file, value)
-            elif six.PY3:
-                StringWrapper("binary").write(io_file, value)
+            StringWrapper("binary").write(io_file, value)
         elif subtype == self.BYTES_SIGNATURE:
             StringWrapper("binary").write(io_file, value)
         elif subtype == self.UNICODE_SIGNATURE:

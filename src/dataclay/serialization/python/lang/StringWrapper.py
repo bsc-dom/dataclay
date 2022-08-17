@@ -2,8 +2,6 @@
 
 from io import BytesIO
 
-import six
-
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
@@ -60,10 +58,7 @@ class StringWrapper(DataClayPythonWrapper):
             elif isinstance(value, bytes):
                 ba = value
             elif isinstance(value, str):
-                if six.PY2:
-                    ba = bytes(value)
-                elif six.PY3:
-                    ba = bytes(value, "utf-8")
+                ba = bytes(value, "utf-8")
             else:
                 raise TypeError("Unable to manage object of type `%s`" % type(ba))
         else:

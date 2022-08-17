@@ -6,15 +6,12 @@ Created on 1 feb. 2018
 @author: dgasull
 """
 import logging
-from abc import ABCMeta, abstractmethod
-
-import six
+from abc import ABC, abstractmethod
 
 """ Make this class abstract """
 
 
-@six.add_metaclass(ABCMeta)
-class DataClayObjectLoader(object):
+class DataClayObjectLoader(ABC):
     """
     @summary: This class is responsible to create DataClayObjects and load them with data coming from different resources. All possible
     constructions of DataClayObject should be included here. All possible "filling instance" use-cases should be managed here.

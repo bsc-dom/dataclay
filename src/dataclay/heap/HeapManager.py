@@ -7,19 +7,15 @@ Created on Jan 25, 2018
 """
 import logging
 import threading
-from abc import ABCMeta, abstractmethod
-from uuid import UUID
+from abc import ABC, abstractmethod
 from weakref import WeakValueDictionary
-
-import six
 
 from dataclay.util import Configuration
 
 """ Make this class abstract """
 
 
-@six.add_metaclass(ABCMeta)
-class HeapManager(threading.Thread):
+class HeapManager(threading.Thread, ABC):
     """
     @summary: This class is intended to manage all dataClay objects in runtime's memory.
     """

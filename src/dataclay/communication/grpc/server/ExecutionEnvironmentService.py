@@ -3,30 +3,19 @@
 """gRPC ExecutionEnvironment Server code - StorageLocation/EE methods."""
 
 import logging
+import pickle
 import traceback
-from io import BytesIO
-
-import six
-
-if six.PY2:
-    import cPickle as pickle
-elif six.PY3:
-    import _pickle as pickle
-
-from dataclay_common.protos import common_messages_pb2, dataservice_messages_pb2
-from dataclay_common.protos import dataservice_pb2_grpc as ds
 
 from dataclay.commonruntime.Runtime import get_runtime
 from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.util.YamlParser import dataclay_yaml_load
+from dataclay_common.protos import common_messages_pb2, dataservice_messages_pb2
+from dataclay_common.protos import dataservice_pb2_grpc as ds
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
 __copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
 
 logger = logging.getLogger(__name__)
-
-_ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 
 class DataServiceEE(ds.DataServiceServicer):

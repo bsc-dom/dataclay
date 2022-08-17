@@ -2,12 +2,10 @@
 
 import logging
 
-import six
-from yaml import Dumper, Loader, dump, load
-
 from dataclay.commonruntime.Initializer import size_tracking
 from dataclay.serialization.DataClaySerializable import DataClaySerializable
 from dataclay.serialization.python.lang.StringWrapper import StringWrapper
+from yaml import Dumper, Loader, dump, load
 
 logger = logging.getLogger(__name__)
 
@@ -76,8 +74,7 @@ class ManagementMetaClass(type):
         return super(ManagementMetaClass, cls).__new__(cls, name, bases, dct)
 
 
-@six.add_metaclass(ManagementMetaClass)
-class ManagementObject(DataClaySerializable):
+class ManagementObject(DataClaySerializable, metaclass=ManagementMetaClass):
     _fields = list()
     _internal_fields = list()
     _typed_fields = dict()

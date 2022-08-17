@@ -4,25 +4,14 @@
 
 import logging
 import sys
-import traceback
-
-import grpc
-import six
-
-if six.PY2:
-    import cPickle as pickle
-elif six.PY3:
-    import _pickle as pickle
 
 import dataclay_common.protos.common_messages_pb2 as CommonMessages
-from dataclay_common.protos import dataservice_messages_pb2, dataservice_pb2_grpc
-from grpc._cython.cygrpc import ChannelArgKey
-
-from dataclay.commonruntime.Settings import settings
+import grpc
 from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util import Configuration
-from dataclay.util.YamlParser import dataclay_yaml_dump
+from dataclay_common.protos import dataservice_messages_pb2, dataservice_pb2_grpc
+from grpc._cython.cygrpc import ChannelArgKey
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
 __copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"

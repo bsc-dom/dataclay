@@ -8,8 +8,6 @@ This module can be executed with `python -m dataclay.tool <parameters>`.
 """
 import sys
 
-import six
-
 from . import functions
 
 if len(sys.argv) < 2:
@@ -17,16 +15,11 @@ if len(sys.argv) < 2:
     print("dataclay.tool requires at least the function parameter", file=sys.stderr)
     exit(1)
 
-if six.PY2:
-    func_name = sys.argv[1]
-    func = getattr(functions, func_name)
-
-elif six.PY3:
-    __name__ = sys.argv[1]
-    func = getattr(functions, __name__)
+__name__ = sys.argv[1]
+func = getattr(functions, __name__)
 
 if not func:
-    print("Unknown dataclay.tool function '%s'" % func_name, file=sys.stderr)
+    print(f"Unknown dataclay.tool function {func}", file=sys.stderr)
     exit(2)
 
 func(*sys.argv[2:])

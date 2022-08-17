@@ -1,6 +1,5 @@
 """ Class description goes here. """
 
-from six import int2byte
 
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 
@@ -27,7 +26,6 @@ class VLQIntegerWrapper(DataClayPythonWrapper):
             if (b & 0x80) == 0:
                 return value
 
-    # FIXME: Check with Python 2.7
     def write(self, io_file, value):
         if value == 0:
             io_file.write(b"\x00")
@@ -40,7 +38,7 @@ class VLQIntegerWrapper(DataClayPythonWrapper):
 
         # Values with continuation bit activated
         for b in reversed(values[1:]):
-            io_file.write(int2byte(0x80 | b))
+            io_file.write(bytes((0x80 | b,)))
 
         # Last value, no continuation bit
-        io_file.write(int2byte(values[0]))
+        io_file.write(bytes((values[0],)))

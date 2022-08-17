@@ -3,7 +3,6 @@
 import logging
 import traceback
 
-import six
 from decorator import decorate
 
 from dataclay.commonruntime.Runtime import get_runtime
@@ -71,14 +70,8 @@ class dclayMethod(object):
         self._method_args = kwargs
 
     def __call__(self, f):
-        if six.PY2:
-            logger.verbose(
-                "Preparing dataClay method `%s` with arguments: %s", f.func_name, self._method_args
-            )
-        elif six.PY3:
-            logger.verbose(
-                "Preparing dataClay method `%s` with arguments: %s", f.__name__, self._method_args
-            )
+
+        logger.verbose(f"Preparing dataClay method {f.__name__} with arguments {self._method_args}")
         decorated_func = decorate(f, _dclayMethod)
         decorated_func._dclay_entrypoint = f
         decorated_func._dclay_ret = self._method_args.pop("return_", None)

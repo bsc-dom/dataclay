@@ -9,9 +9,6 @@ related to classes and function call parameters.
 import inspect
 from logging import getLogger
 
-import six
-from decorator import getfullargspec
-
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util.management.classmgr.MetaClass import MetaClass
 from dataclay.util.management.classmgr.Operation import Operation
@@ -20,6 +17,7 @@ from dataclay.util.management.classmgr.python.PythonClassInfo import PythonClass
 from dataclay.util.management.classmgr.python.PythonImplementation import PythonImplementation
 from dataclay.util.management.classmgr.Type import Type
 from dataclay.util.management.classmgr.Utils import STATIC_ATTRIBUTE_FOR_EXTERNAL_INIT
+from decorator import getfullargspec
 
 # Publicly show the dataClay method decorators
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
@@ -120,7 +118,7 @@ class ExecutionGateway(type):
         ####################################################################
         # OPERATIONS
         ####################################################################
-        predicate = inspect.isfunction if six.PY3 else inspect.ismethod
+        predicate = inspect.isfunction
         for name, dataclay_func in inspect.getmembers(cls, predicate):
             # Consider only functions with _dclay_method
             if not getattr(dataclay_func, "_dclay_method", False):

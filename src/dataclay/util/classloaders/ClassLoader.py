@@ -15,12 +15,10 @@ requires some specific methods from here. But this may change in the future.
 
 import os.path
 
-import six
-from lru import LRU
-
 from dataclay.commonruntime.Runtime import get_runtime
 from dataclay.commonruntime.Settings import settings
 from dataclay.util.YamlParser import dataclay_yaml_load
+from lru import LRU
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
@@ -49,10 +47,7 @@ def deploy_metaclass_grpc(namespace, class_name, metaclass_yaml_str, metaclass):
 
     # Store in a file
     with open(os.path.join(namespace_path, class_name + ".mcs"), "wb") as f:
-        if six.PY2:
-            f.write(bytes(metaclass_yaml_str))
-        elif six.PY3:
-            f.write(bytes(metaclass_yaml_str, "utf-8"))
+        f.write(bytes(metaclass_yaml_str, "utf-8"))
 
     if settings.cache_on_deploy:
         cached_metaclasses[class_name] = metaclass

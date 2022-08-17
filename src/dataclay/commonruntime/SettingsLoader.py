@@ -5,17 +5,15 @@
 When certain unknown setting is asked (like account UUID), the classes defined
 here help to automatically populate them.
 """
-from abc import ABCMeta, abstractmethod
-
-__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
-__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
-import six
+from abc import ABC, abstractmethod
 
 from dataclay.commonruntime.Runtime import get_runtime
 
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
-@six.add_metaclass(ABCMeta)
-class AbstractLoader(object):
+
+class AbstractLoader(ABC):
     """An abstraction to allow lazy evaluation of settings fields.
 
     See dataclay.conf._SettingsHub to check the behaviour and purpose of this

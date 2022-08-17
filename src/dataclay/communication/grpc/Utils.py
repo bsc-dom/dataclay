@@ -15,7 +15,6 @@ import sys
 import traceback
 import uuid
 
-import six
 from dataclay_common.protos import common_messages_pb2 as common_messages
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
@@ -539,8 +538,5 @@ def prepare_bytes(varz):
     :param varx: variable to convert in bytes.
     :return: correct bytes of varz.
     """
-    if six.PY2:
-        v = bytes(varz)
-    elif six.PY3:
-        v = bytes(varz, "utf-8")
-    return v
+
+    return bytes(varz, "utf-8")
