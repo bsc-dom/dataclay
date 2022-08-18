@@ -107,6 +107,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
 
     def initialize_object_as_volatile(self):
         """Initialize object with state 'volatile' with proper flags.
+
         Usually, volatile state is created by a stub, app, exec, class,..
         See same function in DataClayExecutionObject for a different initialization.
         This design is intended to be clear with object state.
@@ -119,6 +120,31 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             self.set_pending_to_register(True)
             self.set_hint(get_runtime().get_hint())
             self.set_owner_session_id(get_runtime().session.id)
+
+    def _populate_internal_fields(self, **kwargs):
+        logger.debug(f"Populating internal fields for the class. Provided kwargs: {kwargs}")
+
+        # Mix default values with the provided ones through kwargs
+        fields = {
+            "persistent_flag": False,
+            "object_id": uuid.uuid4(),
+            "dataset_name": get_runtime().session.dataset_name,
+            "loaded_flag": True,
+            "pending_to_register_flag": False,
+            "dirty_flag": False,
+            "memory_pinned": False,
+        }
+        fields.update(kwargs)
+
+        # Store some extradata in the class
+        instance_dict = object.__getattribute__(self, "__dict__")
+        instance_dict["_DataClayObject__dclay_instance_extradata"] = DataClayInstanceExtraData(
+            **fields
+        )
+
+        # TODO: get_class_extradata function is adding DynamicProperties to class (not to instance!) so it is needed
+        # to be called. Please, use a better function for that.
+        instance_dict["_dclay_class_extradata"] = self.get_class_extradata()
 
     @classmethod
     def get_class_extradata(cls):
@@ -330,33 +356,6 @@ class DataClayObject(object, metaclass=ExecutionGateway):
 
         return dc_ced
 
-    def _populate_internal_fields(self, **kwargs):
-        logger.debug(f"Populating internal fields for the class. Provided kwargs: {kwargs}")
-
-        # Mix default values with the provided ones through kwargs
-        fields = {
-            "persistent_flag": False,
-            "object_id": uuid.uuid4(),
-            "dataset_name": get_runtime().session.dataset_name,
-            "loaded_flag": True,
-            "pending_to_register_flag": False,
-            "dirty_flag": False,
-            "memory_pinned": False,
-        }
-        fields.update(kwargs)
-
-        # Store some extradata in the class
-        instance_dict = object.__getattribute__(self, "__dict__")
-        instance_dict["_DataClayObject__dclay_instance_extradata"] = DataClayInstanceExtraData(
-            **fields
-        )
-
-        """
-        TODO: get_class_extradata function is adding DynamicProperties to class (not to instance!) so it is needed 
-        to be called. Please, use a better function for that. 
-        """
-        instance_dict["_dclay_class_extradata"] = self.get_class_extradata()
-
     def new_replica(self, backend_id=None, recursive=True):
         return get_runtime().new_replica(
             self.get_object_id(), self.get_hint(), backend_id, None, recursive
@@ -477,7 +476,8 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             self.get_alias(),
             self.get_dataset_name(),
             self.get_class_id(),
-            [self.get_hint()],
+            self.get_hint(),
+            self.get_replica_locations(),
             LANG_PYTHON,
         )
         return object_md

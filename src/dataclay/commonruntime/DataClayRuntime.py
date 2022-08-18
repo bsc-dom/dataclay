@@ -548,10 +548,10 @@ class DataClayRuntime(ABC):
         self.ready_clients["@LM"].import_models_from_external_dataclay(namespace, ext_dataclay_id)
 
     def get_by_alias(self, alias, dataset_name):
-        oid, class_id, hint = self.metadata_service.get_object_from_alias(
+        object_md = self.metadata_service.get_object_md_by_alias(
             self.session.id, alias, dataset_name
         )
-        return self.get_object_by_id(oid, class_id, hint)
+        return self.get_object_by_id(object_md.id, object_md.class_id, object_md.ee_id)
 
     def get_object_location_by_id(self, object_id):
         exec_envs = list(self.get_all_execution_environments_at_dataclay(self.dataclay_id))
