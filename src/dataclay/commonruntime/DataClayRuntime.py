@@ -787,18 +787,20 @@ class DataClayRuntime(ABC):
 
     # TODO: Use MetadataService and return ObjectMD
     def get_metadata(self, object_id):
-        if object_id in self.metadata_cache:
-            metadata = self.metadata_cache[object_id]
-            self.logger.debug(f"Object metadata found in cache: {metadata}")
-            return metadata
-        else:
-            metadata = self.ready_clients["@LM"].get_metadata_by_oid(self.session.id, object_id)
-            if metadata is None:
-                self.logger.debug("Object %s not registered", object_id)
-                raise DataClayException("The object %s is not registered" % object_id)
-            self.metadata_cache[object_id] = metadata
-            self.logger.debug(f"Obtained metadata: {metadata}")
-            return metadata
+        metadata = self.ready_clients["@LM"].get_metadata_by_oid(self.session.id, object_id)
+        if metadata is None:
+            self.logger.debug("Object %s not registered", object_id)
+            raise DataClayException("The object %s is not registered" % object_id)
+        self.metadata_cache[object_id] = metadata
+        self.logger.debug(f"Obtained metadata: {metadata}")
+        return metadata
+
+    def add_session_reference(self, object_id):
+        """reference associated to thread session
+
+        Only implemented in ExecutionEnvironmentRuntime
+        """
+        pass
 
     def remove_metadata_from_cache(self, object_id):
         if object_id in self.metadata_cache:

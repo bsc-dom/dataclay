@@ -4,10 +4,8 @@ The `init` and `finish` functions are availble through the
 dataclay.api package.
 """
 
+import logging
 import traceback
-
-from dataclay_common.clients.metadata_service_client import MDSClient
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
 from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
 from dataclay.commonruntime.Settings import settings
@@ -17,8 +15,12 @@ from dataclay.loader.ClientObjectLoader import ClientObjectLoader
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
 from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
+from dataclay_common.clients.metadata_service_client import MDSClient
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
 UNDEFINED_LOCAL = object()
+
+logger = logging.getLogger(__name__)
 
 
 class ClientRuntime(DataClayRuntime):
@@ -38,9 +40,6 @@ class ClientRuntime(DataClayRuntime):
     def is_client(self):
         return True
 
-    def store_object(self, instance):
-        raise RuntimeError("StoreObject can only be used from the ExecutionEnvironment")
-
     def make_persistent(self, instance, alias, backend_id, recursive):
         """This method creates a new Persistent Object using the provided stub
         instance and, if indicated, all its associated objects also Logic module API used for communication
@@ -59,77 +58,50 @@ class ClientRuntime(DataClayRuntime):
         if instance.is_persistent():
             raise RuntimeError("Instance is already persistent")
         else:
-            self.logger.debug(f"Starting make persistent for object {instance.get_object_id()}")
-
-            # TODO: Use a less error prone methodology for local backend
-            if backend_id is UNDEFINED_LOCAL:
-                # This is a commonruntime end user pitfall,
-                # @abarcelo thinks that it is nice
-                # (and exceptionally detailed) error
-                raise RuntimeError(
-                    """
-                    You are trying to use dataclay.api.LOCAL but either:
-                    - dataClay has not been initialized properly
-                    - LOCAL has been wrongly imported.
-                    
-                    Be sure to use LOCAL with:
-                    
-                    from dataclay import api
-                    
-                    and reference it with `api.LOCAL`
-                    
-                    Refusing the temptation to guess."""
-                )
+            logger.debug(f"Starting make persistent for object {instance.get_object_id()}")
 
             location = instance.get_hint() or backend_id or self.choose_location(instance)
             instance.set_hint(location)
 
-            self.logger.debug(f"Sending object {instance.get_object_id()} to EE")
+            logger.debug(f"Sending object {instance.get_object_id()} to EE")
 
-            # set the default master location
+            # sets the default master location
             instance.set_master_location(location)
             instance.set_alias(alias)
 
-            # We serialize objects like volatile parameters
-            parameters = list()
-            parameters.append(instance)
-            params_order = list()
-            params_order.append("object")
-            params_spec = dict()
-            params_spec["object"] = "DataClayObject"  # not used, see serialized_params_or_return
+            # serializes objects like volatile parameters
             serialized_objs = SerializationLibUtilsSingleton.serialize_params_or_return(
-                params=parameters,
+                params=[instance],
                 iface_bitmaps=None,
-                params_spec=params_spec,
-                params_order=params_order,
+                params_spec={"object": "DataClayObject"},
+                params_order=["object"],
                 hint_volatiles=instance.get_hint(),
                 runtime=self,
                 recursive=recursive,
             )
 
-            # Avoid some race-conditions in communication (make persistent + execute where
-            # execute arrives before).
+            # Avoid some race-conditions in communication (make persistent + execute where execute arrives before).
             # TODO: fix volatiles under deserialization support for __setstate__ and __getstate__
             self.add_volatiles_under_deserialization(serialized_objs.vol_objs.values())
 
-            # Get EE
+            # Gets EE Client
             try:
                 execution_client = self.ready_clients[instance.get_hint()]
             except KeyError:
                 exec_env = self.get_execution_environment_info(instance.get_hint())
-                self.logger.debug(
+                logger.debug(
                     f"ExecutionEnvironment {location} not found in cache! Starting it at {exec_env.hostname}:{exec_env.port}",
                 )
                 execution_client = EEClient(exec_env.hostname, exec_env.port)
                 self.ready_clients[location] = execution_client
 
-            # Call Execution Environment
-            self.logger.verbose(f"Calling make persistent to EE {location}")
+            logger.verbose(f"Calling make persistent to EE {location}")
             execution_client.make_persistent(self.session.id, serialized_objs.vol_objs.values())
 
-            # remove volatiles under deserialization
+            # removes volatiles under deserialization
             self.remove_volatiles_under_deserialization(serialized_objs.vol_objs.values())
 
+            # TODO: Use ObjectMD instead ?
             metadata_info = MetaDataInfo(
                 instance.get_object_id(),
                 False,
@@ -143,34 +115,18 @@ class ClientRuntime(DataClayRuntime):
             self.metadata_cache[instance.get_object_id()] = metadata_info
             return location
 
-    def add_session_reference(self, object_id):
-        """
-        @summary Add +1 reference associated to thread session
-        @param object_id ID of object.
-        """
-        pass
-
     def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):
-        stub_info = instance.get_class_extradata().stub_info
-        implementation_stub_infos = stub_info.implementations
         object_id = instance.get_object_id()
 
-        self.logger.verbose(
-            "Calling operation '%s' in object with ID %s", operation_name, object_id
-        )
-        self.logger.debug(
-            "Call is being done into object with ID %s with #%d parameters",
-            object_id,
-            len(parameters),
+        logger.debug(
+            f"Calling operation {operation_name} in object {object_id} with parameters {parameters}"
         )
 
-        using_hint = False
-        if instance.get_hint() is not None:
-            exec_env_id = instance.get_hint()
-            self.logger.verbose("Using hint = %s", exec_env_id)
-            using_hint = True
-        else:
+        using_hint = True
+        exec_env_id = instance.get_hint()
+        if exec_env_id is None:
             exec_env_id = next(iter(self.get_metadata(object_id).locations))
+            using_hint = False
 
         return self.call_execute_to_ds(
             instance, parameters, operation_name, exec_env_id, using_hint
@@ -204,9 +160,7 @@ class ClientRuntime(DataClayRuntime):
         dc_obj.set_alias(None)
 
     def close_session(self):
-        self.logger.debug("** Closing session **")
         self.metadata_service.close_session(self.session.id)
-        self.logger.debug(f"Closed session {self.session.id}")
 
     def get_hint(self):
         return None
@@ -264,7 +218,7 @@ class ClientRuntime(DataClayRuntime):
             execution_client = EEClient(exec_env.hostname, exec_env.port)
             self.ready_clients[exec_location_id] = execution_client
 
-        self.logger.debug(
+        logger.debug(
             "[==FederateObject==] Starting federation of object by %s calling EE %s with dest dataClay %s, and session %s",
             object_id,
             exec_location_id,
@@ -279,7 +233,7 @@ class ClientRuntime(DataClayRuntime):
         object_id = dc_obj.get_object_id()
         hint = dc_obj.get_hint()
         session_id = self.session.id
-        self.logger.debug(
+        logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",
             object_id,
             external_execution_environment_id,
