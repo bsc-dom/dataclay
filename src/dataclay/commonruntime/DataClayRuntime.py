@@ -454,20 +454,6 @@ class DataClayRuntime(ABC):
             LANG_PYTHON, from_backend=self.is_exec_env()
         )
 
-    def get_all_execution_environments_info(self, force_update=False):
-        if self.ee_infos is None or force_update:
-            self.ee_infos = self.metadata_service.get_all_execution_environments(
-                LANG_PYTHON, from_backend=self.is_exec_env()
-            )
-
-            if logger.isEnabledFor(TRACE):
-                n = len(self.ee_infos)
-                logger.trace(f"ExecutionEnvironmentsInfo returned #{n} values")
-                for i, (ee_id, ee_info) in enumerate(self.ee_infos.items(), 1):
-                    logger.trace(f"ExecutionEnvironments info (#{i}/{n}): {ee_id}\n{ee_info}")
-
-        return self.ee_infos
-
     def get_execution_environment_info(self, ee_id):
         try:
             return self.ee_infos[ee_id]

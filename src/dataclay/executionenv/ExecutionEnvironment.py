@@ -902,7 +902,7 @@ class ExecutionEnvironment(object):
                     "[==GetObjectsInOtherBackend==] Get from other location, objects: %s",
                     objects_to_get,
                 )
-                backend = self.runtime.get_all_execution_environments_info()[backend_id]
+                backend = self.runtime.ee_infos[backend_id]
                 try:
                     client_backend = self.runtime.ready_clients[backend_id]
                 except KeyError:
@@ -1228,7 +1228,7 @@ class ExecutionEnvironment(object):
             try:
                 sl_client = self.runtime.ready_clients[dest_backend_id]
             except KeyError:
-                st_loc = self.runtime.get_all_execution_environments_info()[dest_backend_id]
+                st_loc = self.runtime.ee_infos[dest_backend_id]
                 logger.debug(
                     "Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
                     dest_backend_id,

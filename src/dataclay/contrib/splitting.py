@@ -281,7 +281,7 @@ class SplittableCollectionMixin(object):
                 "I could not understand %s (of type %s)" % (split_class, type(split_class))
             )
 
-        unused_exec_envs = set(get_runtime().get_all_execution_environments_info().keys())
+        unused_exec_envs = set(get_runtime().ee_infos.keys())
 
         # FIXME: **********************************************************************************
         # FIXME: not using real split_class due to registration issues, but should be done that way
