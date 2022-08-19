@@ -142,7 +142,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             ID of the backend in which te object was persisted.
         """
         del recursive
-        self.logger.debug(f"Starting make persistent for instance {instance.get_object_id()}")
+        logger.debug(f"Starting make persistent for instance {instance.get_object_id()}")
 
         location = instance.get_hint() or backend_id or self.choose_location(instance)
         instance.set_hint(location)
@@ -563,7 +563,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
         object_id = dc_obj.get_object_id()
         session_id = self.session.id
-        self.logger.debug(
+        logger.debug(
             "[==FederateObject==] Starting federation of object by %s with dest dataClay %s, and session %s",
             object_id,
             external_execution_environment_id,
@@ -576,7 +576,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
     def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
         object_id = dc_obj.get_object_id()
         session_id = self.session.id
-        self.logger.debug(
+        logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",
             object_id,
             external_execution_environment_id,

@@ -146,6 +146,18 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         # to be called. Please, use a better function for that.
         instance_dict["_dclay_class_extradata"] = self.get_class_extradata()
 
+        # My test
+        # self.__metadata = ObjectMetadata(
+        #     id=uuid.uuid4(),
+        #     alias_name=None,
+        #     dataset_name=get_runtime().session.dataset_name,
+        #     class_id=self.get_class_extradata().class_id,
+        #     ee_id=get_runtime().get_hint(),
+        #     ee_replica_ids=None,
+        #     language=LANG_PYTHON,
+        #     is_read_only=False,
+        # )
+
     @classmethod
     def get_class_extradata(cls):
         classname = cls.__name__
@@ -382,7 +394,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         get_runtime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
     def get_execution_environments_info(self):
-        return get_runtime().get_all_execution_environments_info()
+        return get_runtime().ee_infos
 
     @classmethod
     def dc_clone_by_alias(cls, alias, recursive=False):
@@ -460,7 +472,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         # NOTE: "safe" was removed. The object_id cannot be obtained from alias string.
         # NOTE: The alias is unique for each dataset. dataset_name is added. If none,
         #       the default_dataset is used.
-        return get_runtime().get_by_alias(alias, dataset_name)
+        return get_runtime().get_object_by_alias(alias, dataset_name)
 
     @classmethod
     def delete_alias(cls, alias, dataset_name=None):
@@ -602,6 +614,12 @@ class DataClayObject(object, metaclass=ExecutionGateway):
 
     def set_dirty(self, dirty_value):
         self.__dclay_instance_extradata.dirty_flag = dirty_value
+
+    def get_ee_id(self):
+        return self.__dclay_instance_extradata.execenv_id
+
+    def set_ee_id(self, new_ee_id):
+        self.__dclay_instance_extradata.execenv_id = new_ee_id
 
     def get_hint(self):
         return self.__dclay_instance_extradata.execenv_id

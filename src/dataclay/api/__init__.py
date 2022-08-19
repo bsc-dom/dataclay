@@ -123,15 +123,16 @@ def init_connection(client_file) -> LMClient:
 
 def get_backends():
     """Return all the dataClay backend present in the system."""
-    result = get_runtime().get_execution_environments_names(force_update=True)
+    result = get_runtime().get_execution_environments_names()
     logger.debug("Got %i python backend/s", len(result))
     return result
 
 
 def get_backends_info():
     """Return all the dataClay BackendInfo present in the system."""
-    result = get_runtime().get_all_execution_environments_info(force_update=True)
-    logger.debug("Got %i python backend/s", len(result))
+    get_runtime().update_ee_infos()
+    result = get_runtime().ee_infos
+    logger.debug(f"Got {len(result)} python backend/s")
     return result
 
 
@@ -155,9 +156,9 @@ def get_external_backend_id_by_name(name, external_dataclay_id):
 
 def get_backend_id(hostname, port):
     """Return dataClay backend present in the system with name provided."""
-    all_backends = get_runtime().get_all_execution_environments_info(force_update=True)
-    for backend in all_backends.values():
-        if backend.hostname == hostname and backend.port == port:
+    host_ee_infos = get_runtime().get_all_execution_environments_at_host(hostname)
+    for backend in host_ee_infos.values():
+        if backend.port == port:
             return backend.id
     return None
 
@@ -296,14 +297,14 @@ def init():
     # Set LOCAL_BACKEND
     sl_name = settings.LOCAL_BACKEND
     if sl_name:
-        exec_envs = runtime.get_all_execution_environments_info()
-        for ee_id in exec_envs.keys():
-            if exec_envs[ee_id].sl_name == sl_name:
+        runtime.update_ee_infos()
+        for ee_id, ee_info in runtime.ee_infos.items():
+            if ee_info.sl_name == sl_name:
                 global LOCAL
                 LOCAL = ee_id
                 break
         else:
-            logger.warning("Backend with name '%s' not found, ignoring", sl_name)
+            logger.warning(f"Backend with name '{sl_name}' not found, ignoring")
 
     _initialized = True
     logger.debug(f"Started session {session.id}")
