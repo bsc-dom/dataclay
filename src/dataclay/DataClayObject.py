@@ -124,6 +124,18 @@ class DataClayObject(object, metaclass=ExecutionGateway):
     def _populate_internal_fields(self, **kwargs):
         logger.debug(f"Populating internal fields for the class. Provided kwargs: {kwargs}")
 
+        # My test
+        # self.__metadata = ObjectMetadata(
+        #     id=uuid.uuid4(),
+        #     alias_name=None,
+        #     dataset_name=get_runtime().session.dataset_name,
+        #     class_id=self.get_class_extradata().class_id,
+        #     ee_id=get_runtime().get_hint(),
+        #     ee_replica_ids=None,
+        #     language=LANG_PYTHON,
+        #     is_read_only=False,
+        # )
+
         # Mix default values with the provided ones through kwargs
         fields = {
             "persistent_flag": False,
@@ -145,18 +157,6 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         # TODO: get_class_extradata function is adding DynamicProperties to class (not to instance!) so it is needed
         # to be called. Please, use a better function for that.
         instance_dict["_dclay_class_extradata"] = self.get_class_extradata()
-
-        # My test
-        # self.__metadata = ObjectMetadata(
-        #     id=uuid.uuid4(),
-        #     alias_name=None,
-        #     dataset_name=get_runtime().session.dataset_name,
-        #     class_id=self.get_class_extradata().class_id,
-        #     ee_id=get_runtime().get_hint(),
-        #     ee_replica_ids=None,
-        #     language=LANG_PYTHON,
-        #     is_read_only=False,
-        # )
 
     @classmethod
     def get_class_extradata(cls):
@@ -482,7 +482,8 @@ class DataClayObject(object, metaclass=ExecutionGateway):
     # def delete_alias(self):
     #     get_runtime().delete_alias(self)
 
-    def get_metadata(self):
+    @property
+    def metadata(self):
         object_md = ObjectMetadata(
             self.get_object_id(),
             self.get_alias(),
@@ -503,7 +504,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         return get_runtime().get_location(self.__dclay_instance_extradata.object_id)
 
     ##########################################
-    # Instance extradata getters and setters #
+    # Metadata getters and setters #
     ##########################################
 
     def get_object_id(self):
@@ -518,11 +519,33 @@ class DataClayObject(object, metaclass=ExecutionGateway):
     def set_alias(self, new_alias):
         self.__dclay_instance_extradata.alias = new_alias
 
+    def get_ee_id(self):
+        return self.__dclay_instance_extradata.execenv_id
+
+    def set_ee_id(self, new_ee_id):
+        self.__dclay_instance_extradata.execenv_id = new_ee_id
+
+    def get_hint(self):
+        return self.__dclay_instance_extradata.execenv_id
+
+    def set_hint(self, new_hint):
+        self.__dclay_instance_extradata.execenv_id = new_hint
+
     def is_read_only(self):
         return self.__dclay_instance_extradata.is_read_only
 
     def set_read_only(self, new_read_only):
         self.__dclay_instance_extradata.is_read_only = new_read_only
+
+    def get_dataset_name(self):
+        return self.__dclay_instance_extradata.dataset_name
+
+    def set_dataset_name(self, new_dataset_name):
+        self.__dclay_instance_extradata.dataset_name = new_dataset_name
+
+    #################################
+    # Extradata getters and setters #
+    #################################
 
     def get_original_object_id(self):
         return self.__dclay_instance_extradata.original_object_id
@@ -576,12 +599,6 @@ class DataClayObject(object, metaclass=ExecutionGateway):
     def set_memory_pinned(self, new_memory_pinned):
         self.__dclay_instance_extradata.memory_pinned = new_memory_pinned
 
-    def get_dataset_name(self):
-        return self.__dclay_instance_extradata.dataset_name
-
-    def set_dataset_name(self, new_dataset_name):
-        self.__dclay_instance_extradata.dataset_name = new_dataset_name
-
     def set_persistent(self, ispersistent):
         self.__dclay_instance_extradata.persistent_flag = ispersistent
 
@@ -614,18 +631,6 @@ class DataClayObject(object, metaclass=ExecutionGateway):
 
     def set_dirty(self, dirty_value):
         self.__dclay_instance_extradata.dirty_flag = dirty_value
-
-    def get_ee_id(self):
-        return self.__dclay_instance_extradata.execenv_id
-
-    def set_ee_id(self, new_ee_id):
-        self.__dclay_instance_extradata.execenv_id = new_ee_id
-
-    def get_hint(self):
-        return self.__dclay_instance_extradata.execenv_id
-
-    def set_hint(self, new_hint):
-        self.__dclay_instance_extradata.execenv_id = new_hint
 
     ##############
     # Federation #
