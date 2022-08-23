@@ -130,8 +130,8 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         #     alias_name=None,
         #     dataset_name=get_runtime().session.dataset_name,
         #     class_id=self.get_class_extradata().class_id,
-        #     ee_id=get_runtime().get_hint(),
-        #     ee_replica_ids=None,
+        #     master_ee_id=get_runtime().get_hint(),
+        #     replica_ee_ids=None,
         #     language=LANG_PYTHON,
         #     is_read_only=False,
         # )
@@ -492,16 +492,29 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             self.get_hint(),
             self.get_replica_locations(),
             LANG_PYTHON,
+            self.is_read_only(),
         )
         return object_md
+
+    @metadata.setter
+    def metadata(self, object_md):
+        # self.__metadata = object_md
+        self.set_object_id(object_md.id)
+        self.set_alias(object_md.alias_name)
+        self.set_dataset_name(object_md.dataset_name)
+        self.set_hint(object_md.master_ee_id)
+        self.set_replica_locations(object_md.replica_ee_ids)
+        self.set_read_only(object_md.is_read_only)
 
     def get_all_locations(self):
         """Return all the locations of this object."""
         return get_runtime().get_all_locations(self.__dclay_instance_extradata.object_id)
 
+    # TODO: This function is redundant. Change it to get_random_backend(self), and implement it
     def get_location(self):
         """Return a single (random) location of this object."""
-        return get_runtime().get_location(self.__dclay_instance_extradata.object_id)
+        # return get_runtime().get_location(self.__dclay_instance_extradata.object_id)
+        return self.get_hint()
 
     ##########################################
     # Metadata getters and setters #
@@ -519,15 +532,11 @@ class DataClayObject(object, metaclass=ExecutionGateway):
     def set_alias(self, new_alias):
         self.__dclay_instance_extradata.alias = new_alias
 
-    def get_ee_id(self):
-        return self.__dclay_instance_extradata.execenv_id
-
-    def set_ee_id(self, new_ee_id):
-        self.__dclay_instance_extradata.execenv_id = new_ee_id
-
+    # TODO: Rename hint to backend? or master_backend?
     def get_hint(self):
         return self.__dclay_instance_extradata.execenv_id
 
+    # TODO: Rename hint to backend?
     def set_hint(self, new_hint):
         self.__dclay_instance_extradata.execenv_id = new_hint
 

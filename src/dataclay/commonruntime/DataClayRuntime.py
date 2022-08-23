@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 from logging import TRACE
 
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
-from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.heap.LockerPool import LockerPool
 from dataclay.paraver import (
@@ -199,7 +198,7 @@ class DataClayRuntime(ABC):
     def update_object(self, into_object, from_object):
         session_id = self.session.id
 
-        backend_id = into_object.get_location()
+        backend_id = into_object.get_hint()
         try:
             execution_client = self.ready_clients[backend_id]
         except KeyError:
@@ -319,13 +318,13 @@ class DataClayRuntime(ABC):
         instance = self.get_from_heap(object_md.id)
         if instance is None:
             instance = self.get_or_new_persistent_instance(
-                object_md.id, object_md.class_id, object_md.ee_id
+                object_md.id, object_md.class_id, object_md.master_ee_id
             )
         return instance
 
-    def get_object_location_by_id(self, object_id):
-        exec_envs = list(self.get_all_execution_environments_at_dataclay(self.dataclay_id))
-        return exec_envs[hash(object_id) % len(exec_envs)]
+    def get_backend_by_object_id(self, object_id):
+        ee_infos = list(self.get_all_execution_environments_at_dataclay(self.dataclay_id))
+        return ee_infos[hash(object_id) % len(ee_infos)]
 
     def delete_alias_in_dataclay(self, alias, dataset_name):
 
@@ -337,26 +336,6 @@ class DataClayRuntime(ABC):
     @abstractmethod
     def delete_alias(self, dc_obj):
         pass
-
-    def get_location(self, object_id):
-        logger.debug(f"Looking for location of object {object_id}")
-        try:
-            instance = self.get_from_heap(object_id)
-            if instance is not None:
-                hint = instance.get_hint()
-                if hint is not None:
-                    logger.debug("Returning hint from heap object")
-                    return hint
-                else:
-                    raise DataClayException(
-                        f"The object {object_id} is not initialized well, hint missing or not exist"
-                    )
-            else:
-                raise DataClayException(f"The object {object_id} is not initialized")
-        except DataClayException as e:
-            # If the object is not initialized well trying to obtain location from metadata
-            metadata = self.metadata_service.get_object_md_by_id(object_id)
-            return next(iter(metadata.locations))
 
     # TODO: Use MetadataService and return ObjectMD
     def get_metadata(self, object_id):
@@ -371,28 +350,28 @@ class DataClayRuntime(ABC):
     def get_all_locations(self, object_id):
         logger.debug(f"Getting all locations of object {object_id}")
         locations = set()
-        obj = self.get_from_heap(object_id)
-        if obj is not None:
-            replica_locs = obj.get_replica_locations()
+        instance = self.get_from_heap(object_id)
+        if instance is not None:
+            replica_locs = instance.get_replica_locations()
             if replica_locs is not None:
                 locations.update(replica_locs)
-            if obj.get_origin_location() is not None:
-                locations.add(obj.get_origin_location())
+            if instance.get_origin_location() is not None:
+                locations.add(instance.get_origin_location())
         try:
-            metadata = self.get_metadata(object_id)
+            metadata = self.metadata_service.get_object_md_by_id(object_id)
             for loc in metadata.locations:
                 locations.add(loc)
             # add hint location
-            if obj is not None:
-                hint = obj.get_hint()
+            if instance is not None:
+                hint = instance.get_hint()
                 if hint is not None:
                     locations.add(hint)
 
             return locations
         except:
             logger.debug(f"Object {object_id} has no metadata")
-            if obj is not None:
-                hint = obj.get_hint()
+            if instance is not None:
+                hint = instance.get_hint()
                 if hint is not None:
                     logger.debug("Returning list with hint from heap object")
                     locations = dict()
@@ -409,12 +388,9 @@ class DataClayRuntime(ABC):
         if object_id in self.metadata_cache:
             del self.metadata_cache[object_id]
 
-    def choose_location(self, instance):
-        """Choose execution/make persistent location."""
-        exec_env_id = self.get_object_location_by_id(instance.get_object_id())
-        instance.set_hint(exec_env_id)
-        logger.verbose(f"ExecutionEnvironmentID obtained for execution = {exec_env_id}")
-        return exec_env_id
+    def update_object_metadata(self, instance):
+        object_md = self.metadata_service.get_object_md_by_id(instance.get_object_id())
+        instance.metadata = object_md
 
     #####################
     # Dataclay Metadata #
@@ -677,7 +653,7 @@ class DataClayRuntime(ABC):
     def get_copy_of_object(self, from_object, recursive):
         session_id = self.session.id
 
-        backend_id = from_object.get_location()
+        backend_id = from_object.get_hint()
         try:
             execution_client = self.ready_clients[backend_id]
         except KeyError:
@@ -695,7 +671,7 @@ class DataClayRuntime(ABC):
         return result[0]
 
     def prepare_for_new_replica_version_consolidate(
-        self, object_id, object_hint, backend_id, backend_hostname, different_location
+        self, object_id, hint, backend_id, backend_hostname, different_location
     ):
         """Helper function to prepare information for new replica - version - consolidate algorithms
 
@@ -712,9 +688,11 @@ class DataClayRuntime(ABC):
                 some exec env in host provided or random exec env.
         """
 
-        backend_id_to_call = object_hint
-        if backend_id_to_call is None:
-            backend_id_to_call = self.get_location(object_id)
+        # NOTE ¿It should never happen?
+        if hint is None:
+            instance = self.get_from_heap(object_id)
+            self.update_object_metadata(instance)
+            hint = instance.get_hint()
 
         dest_backend_id = backend_id
         dest_backend = None
@@ -754,18 +732,18 @@ class DataClayRuntime(ABC):
                                     dest_backend = exec_env
                                     break
                 if dest_backend is None:
-                    dest_backend_id = object_hint
+                    dest_backend_id = hint
                     dest_backend = self.get_execution_environment_info(dest_backend_id)
 
         else:
             dest_backend = self.get_execution_environment_info(dest_backend_id)
 
         try:
-            execution_client = self.ready_clients[backend_id_to_call]
+            execution_client = self.ready_clients[hint]
         except KeyError:
-            backend_to_call = self.get_execution_environment_info(backend_id_to_call)
+            backend_to_call = self.get_execution_environment_info(hint)
             execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
-            self.ready_clients[backend_id_to_call] = execution_client
+            self.ready_clients[hint] = execution_client
         return execution_client, dest_backend
 
     def new_replica(self, object_id, hint, backend_id, backend_hostname, recursive):
@@ -812,23 +790,25 @@ class DataClayRuntime(ABC):
         logger.debug(f"Finished new version of {object_id}, created version {version_id}")
         return version_id, dest_backend_id
 
-    def consolidate_version(self, version_id, version_hint):
+    def consolidate_version(self, object_id, hint):
         # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
-        logger.debug(f"Starting consolidate version of {version_id}")
-        session_id = self.session.id
-        backend_id_to_call = version_hint
-        if backend_id_to_call is None:
-            backend_id_to_call = self.get_location(version_id)
+        logger.debug(f"Starting consolidate version of {object_id}")
+
+        # NOTE: ¿Can it happen?
+        if hint is None:
+            instance = self.get_from_heap(object_id)
+            self.update_object_metadata(instance)
+            hint = self.get_hint(object_id)
 
         try:
-            execution_client = self.ready_clients[backend_id_to_call]
+            execution_client = self.ready_clients[hint]
         except KeyError:
-            backend_to_call = self.get_execution_environment_info(backend_id_to_call)
+            backend_to_call = self.get_execution_environment_info(hint)
             execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
-            self.ready_clients[backend_id_to_call] = execution_client
+            self.ready_clients[hint] = execution_client
 
-        execution_client.consolidate_version(session_id, version_id)
-        logger.debug(f"Finished consolidate version of {version_id}")
+        execution_client.consolidate_version(self.session.id, object_id)
+        logger.debug(f"Finished consolidate version of {object_id}")
 
     def move_object(self, instance, source_backend_id, dest_backend_id, recursive):
 

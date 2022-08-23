@@ -144,8 +144,8 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         del recursive
         logger.debug(f"Starting make persistent for instance {instance.get_object_id()}")
 
-        location = instance.get_hint() or backend_id or self.choose_location(instance)
-        instance.set_hint(location)
+        if not instance.get_hint():
+            instance.set_hint(backend_id or self.get_backend_by_object_id(instance.get_object_id()))
 
         if alias is not None:
             # Add a new alias to an object.
@@ -157,9 +157,9 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             instance.set_alias(alias)
 
             if instance.is_pending_to_register():
-                self.metadata_service.register_object(self.session.id, instance.get_metadata())
+                self.metadata_service.register_object(self.session.id, instance.metadata)
 
-        return instance.get_location()
+        return instance.get_hint()
 
     def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):
 
@@ -407,12 +407,12 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             finally:
                 self.unlock(session_id)
 
-    def delete_alias(self, dc_obj):
-        alias = dc_obj.get_alias()
+    def delete_alias(self, instance):
+        alias = instance.get_alias()
         if alias is not None:
-            self.delete_alias_in_dataclay(alias, dc_obj.get_dataset_name())
-        dc_obj.set_alias(None)
-        dc_obj.set_dirty(True)
+            self.delete_alias_in_dataclay(alias, instance.get_dataset_name())
+        instance.set_alias(None)
+        instance.set_dirty(True)
 
     def close_session_in_ee(self, session_id):
         """Close session in EE. Subtract session references for GC."""
@@ -548,7 +548,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             session_id, object_id, implementation_id, serialized_params
         )
 
-    def detach_object_from_session(self, object_id, hint):
+    def detach_object_from_session(self, object_id, _):
         cur_session = self.session.id
         if object_id in self.references_hold_by_sessions:
             sessions_of_obj = self.references_hold_by_sessions.get(object_id)

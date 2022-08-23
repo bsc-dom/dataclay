@@ -263,7 +263,7 @@ class ExecutionEnvironment(object):
 
         # TODO: When the object metadata is updated synchronously, this should me removed
         self.runtime.metadata_service.update_object(
-            instance.get_owner_session_id(), instance.get_metadata()
+            instance.get_owner_session_id(), instance.metadata
         )
 
         instance.set_pending_to_register(False)
@@ -309,7 +309,7 @@ class ExecutionEnvironment(object):
         objects = self.store_in_memory(session_id, objects_to_persist)
         for object in objects:
             # TODO: The location should be check (in the deserialization) that is the same as current ee, and reasign if not
-            object_md = object.get_metadata()
+            object_md = object.metadata
             self.runtime.metadata_service.register_object(session_id, object_md)
         logger.debug("Finished make persistent")
 

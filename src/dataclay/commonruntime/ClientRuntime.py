@@ -60,13 +60,15 @@ class ClientRuntime(DataClayRuntime):
         else:
             logger.debug(f"Starting make persistent for object {instance.get_object_id()}")
 
-            location = instance.get_hint() or backend_id or self.choose_location(instance)
-            instance.set_hint(location)
+            if not instance.get_hint():
+                instance.set_hint(
+                    backend_id or self.get_backend_by_object_id(instance.get_object_id())
+                )
 
             logger.debug(f"Sending object {instance.get_object_id()} to EE")
 
             # sets the default master location
-            instance.set_master_location(location)
+            instance.set_master_location(instance.get_hint())
             instance.set_alias(alias)
 
             # serializes objects like volatile parameters
@@ -90,12 +92,12 @@ class ClientRuntime(DataClayRuntime):
             except KeyError:
                 exec_env = self.get_execution_environment_info(instance.get_hint())
                 logger.debug(
-                    f"ExecutionEnvironment {location} not found in cache! Starting it at {exec_env.hostname}:{exec_env.port}",
+                    f"ExecutionEnvironment {instance.get_hint()} not found in cache! Starting it at {exec_env.hostname}:{exec_env.port}",
                 )
                 execution_client = EEClient(exec_env.hostname, exec_env.port)
-                self.ready_clients[location] = execution_client
+                self.ready_clients[instance.get_hint()] = execution_client
 
-            logger.verbose(f"Calling make persistent to EE {location}")
+            logger.verbose(f"Calling make persistent to EE {instance.get_hint()}")
             execution_client.make_persistent(self.session.id, serialized_objs.vol_objs.values())
 
             # removes volatiles under deserialization
@@ -107,13 +109,13 @@ class ClientRuntime(DataClayRuntime):
                 False,
                 instance.get_dataset_name(),
                 instance.get_class_extradata().class_id,
-                {location},
+                {instance.get_hint()},
                 alias,
                 None,
             )
 
             self.metadata_cache[instance.get_object_id()] = metadata_info
-            return location
+            return instance.get_hint()
 
     def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):
         object_id = instance.get_object_id()
@@ -143,21 +145,23 @@ class ClientRuntime(DataClayRuntime):
         operation = self.get_operation_info(object_id, operation_name)
         return operation.remoteImplID
 
-    def delete_alias(self, dc_obj):
-        session_id = self.session.id
-        hint = dc_obj.get_hint()
-        object_id = dc_obj.get_object_id()
-        exec_location_id = hint
-        if exec_location_id is None:
-            exec_location_id = self.get_location(object_id)
+    # NOTE: This function may be removed.
+    # When an alias is removed without having the instance, the persistent object
+    # has to know it if we consult its alias, therefore, in all cases, the alias
+    # will have to be updated from the single source of truth i.e. the etcd metadata
+    def delete_alias(self, instance):
+        ee_id = instance.get_hint()
+        if not ee_id:
+            self.update_object_metadata(instance)
+            ee_id = self.get_hint()
         try:
-            execution_client = self.ready_clients[exec_location_id]
+            ee_client = self.ready_clients[ee_id]
         except KeyError:
-            backend_to_call = self.get_execution_environment_info(exec_location_id)
-            execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
-            self.ready_clients[exec_location_id] = execution_client
-        execution_client.delete_alias(session_id, object_id)
-        dc_obj.set_alias(None)
+            ee_info = self.get_execution_environment_info(ee_id)
+            ee_client = EEClient(ee_info.hostname, ee_info.port)
+            self.ready_clients[ee_id] = ee_client
+        ee_client.delete_alias(self.session.id, instance.get_object_id())
+        instance.set_alias(None)
 
     def close_session(self):
         self.metadata_service.close_session(self.session.id)
@@ -166,9 +170,7 @@ class ClientRuntime(DataClayRuntime):
         return None
 
     def synchronize(self, instance, operation_name, params):
-        session_id = self.session.id
-        object_id = instance.get_object_id()
-        dest_backend_id = self.get_location(instance.get_object_id())
+        dest_backend_id = self.get_hint()
         operation = self.get_operation_info(instance.get_object_id(), operation_name)
         implementation_id = self.get_implementation_id(instance.get_object_id(), operation_name)
         # === SERIALIZE PARAMETER ===
@@ -186,69 +188,67 @@ class ClientRuntime(DataClayRuntime):
             exec_env = self.get_execution_environment_info(dest_backend_id)
             execution_client = EEClient(exec_env.hostname, exec_env.port)
             self.ready_clients[dest_backend_id] = execution_client
-        execution_client.synchronize(session_id, object_id, implementation_id, serialized_params)
+        execution_client.synchronize(
+            self.session.id, instance.get_object_id(), implementation_id, serialized_params
+        )
 
     def detach_object_from_session(self, object_id, hint):
         try:
-            cur_session = self.session.id
-            exec_location_id = hint
-            if exec_location_id is None:
-                exec_location_id = self.get_location(object_id)
+            if hint is None:
+                instance = self.get_from_heap(object_id)
+                self.update_object_metadata(instance)
+                hint = instance.get_hint()
             try:
-                execution_client = self.ready_clients[exec_location_id]
+                ee_client = self.ready_clients[hint]
             except KeyError:
-                backend_to_call = self.get_execution_environment_info(exec_location_id)
-                execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
-                self.ready_clients[exec_location_id] = execution_client
-            execution_client.detach_object_from_session(object_id, cur_session)
+                ee_info = self.get_execution_environment_info(hint)
+                ee_client = EEClient(ee_info.hostname, ee_info.port)
+                self.ready_clients[hint] = ee_client
+            ee_client.detach_object_from_session(object_id, self.session.id)
         except:
             traceback.print_exc()
 
-    def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
-        object_id = dc_obj.get_object_id()
-        hint = dc_obj.get_hint()
-        session_id = self.session.id
-        exec_location_id = hint
-        if exec_location_id is None:
-            exec_location_id = self.get_location(object_id)
+    def federate_to_backend(self, instance, external_execution_environment_id, recursive):
+        hint = instance.get_hint()
+        if hint is None:
+            self.update_object_metadata(instance)
+            hint = self.get_hint()
         try:
-            execution_client = self.ready_clients[exec_location_id]
+            execution_client = self.ready_clients[hint]
         except KeyError:
-            exec_env = self.get_execution_environment_info(exec_location_id)
+            exec_env = self.get_execution_environment_info(hint)
             execution_client = EEClient(exec_env.hostname, exec_env.port)
-            self.ready_clients[exec_location_id] = execution_client
+            self.ready_clients[hint] = execution_client
 
         logger.debug(
             "[==FederateObject==] Starting federation of object by %s calling EE %s with dest dataClay %s, and session %s",
-            object_id,
-            exec_location_id,
+            instance.get_object_id(),
+            hint,
             external_execution_environment_id,
-            session_id,
+            self.session.id,
         )
         execution_client.federate(
-            session_id, object_id, external_execution_environment_id, recursive
+            self.session.id, instance.get_object_id(), external_execution_environment_id, recursive
         )
 
-    def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
-        object_id = dc_obj.get_object_id()
-        hint = dc_obj.get_hint()
-        session_id = self.session.id
+    def unfederate_from_backend(self, instance, external_execution_environment_id, recursive):
         logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",
-            object_id,
+            instance.get_object_id(),
             external_execution_environment_id,
-            session_id,
+            self.session.id,
         )
-        exec_location_id = hint
-        if exec_location_id is None:
-            exec_location_id = self.get_location(object_id)
+        hint = instance.get_hint()
+        if hint is None:
+            self.update_object_metadata(instance)
+            hint = self.get_hint()
         try:
-            execution_client = self.ready_clients[exec_location_id]
+            execution_client = self.ready_clients[hint]
         except KeyError:
-            exec_env = self.get_execution_environment_info(exec_location_id)
+            exec_env = self.get_execution_environment_info(hint)
             execution_client = EEClient(exec_env.hostname, exec_env.port)
-            self.ready_clients[exec_location_id] = execution_client
+            self.ready_clients[hint] = execution_client
 
         execution_client.unfederate(
-            session_id, object_id, external_execution_environment_id, recursive
+            self.session.id, instance.get_object_id(), external_execution_environment_id, recursive
         )
