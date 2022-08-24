@@ -1095,9 +1095,7 @@ class ExecutionEnvironment(object):
         # Now Call
         for backend_id, objects_to_update in objects_per_backend.items():
 
-            backend = self.runtime.ready_clients["@LM"].get_executionenvironment_info(
-                backend_id, from_backend=True
-            )
+            backend = self.runtime.get_execution_environment_info(backend_id)
 
             try:
                 client_backend = self.runtime.ready_clients[backend_id]
