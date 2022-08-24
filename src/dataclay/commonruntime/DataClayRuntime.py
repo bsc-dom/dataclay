@@ -343,7 +343,6 @@ class DataClayRuntime(ABC):
             instance = self.get_from_heap(object_id)
             locations.add(instance.get_hint())
             locations.update(instance.get_replica_locations())
-            return locations
         except Exception:
             object_md = self.metadata_service.get_object_md_by_id(object_id)
             locations.add(object_md.master_ee_id)
