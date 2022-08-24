@@ -185,13 +185,14 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         thisExecEnv = settings.environment_id
         using_hint = False
         if exec_env_id is None:
-            if instance.get_hint() is not None:
-                exec_env_id = instance.get_hint()
+            exec_env_id = instance.get_hint()
+            if exec_env_id is not None:
                 using_hint = True
-                logger.debug("Using hint %s for object id %s", exec_env_id, object_id)
+                logger.debug(f"Using hint {exec_env_id} for object id {object_id}")
             else:
-                logger.debug("Asking for EE of object with id %s", object_id)
-                exec_env_id = next(iter(self.get_metadata(object_id).locations))
+                logger.debug(f"Asking for EE of object with id {object_id}")
+                self.update_object_metadata(instance)
+                exec_env_id = instance.get_hint()
 
         if exec_env_id == thisExecEnv:
             logger.debug("Object execution is local")

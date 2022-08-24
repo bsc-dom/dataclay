@@ -133,7 +133,7 @@ class ExecutionEnvironment(object):
         """Get the MetaDataInfo for a certain object.
 
         If we have it available in the cache, return it. Otherwise, call the
-        LogicModule for it.
+        MetadataService for it.
 
         Args:
             object_id: The ID of the persistent object
@@ -143,7 +143,12 @@ class ExecutionEnvironment(object):
         """
 
         logger.info(f"Getting MetaData for object {object_id}")
-        return self.runtime.get_metadata(object_id)
+
+        try:
+            instance = self.runtime.get_from_heap(object_id)
+            return instance.metadata
+        except Exception:
+            return self.runtime.metadata_service.get_object_md_by_id(object_id)
 
     def get_local_instance(self, object_id, retry=True):
         return self.runtime.get_or_new_instance_from_db(object_id, retry)
@@ -867,31 +872,19 @@ class ExecutionEnvironment(object):
         objects_per_backend = dict()
 
         for curr_oid_and_hint in objects_in_other_backend:
-            curr_oid = curr_oid_and_hint[0]
-            curr_hint = curr_oid_and_hint[1]
+            object_id = curr_oid_and_hint[0]
+            hint = curr_oid_and_hint[1]
 
-            if curr_hint is not None:
-                location = curr_hint
-            else:
-
-                logger.debug("[==GetObjectsInOtherBackend==] Looking for metadata of %s", curr_oid)
-
-                metadata = self.get_object_metadata(curr_oid)
-                logger.info("metadata info are %s", metadata)
-
-                if metadata is None:
-                    raise Exception("!!! Object %s without hint and metadata not found" % curr_oid)
-
-                locations = metadata.locations
-                # TODO: Check why always obtain from the first location
-                location = next(iter(locations.keys()))
-
+            if hint is None:
+                logger.debug(f"[==GetObjectsInOtherBackend==] Looking for metadata of {object_id}")
+                object_md = self.get_object_metadata(object_id)
+                hint = object_md.master_ee_id
             try:
-                objects_in_backend = objects_per_backend[location]
+                objects_in_backend = objects_per_backend[hint]
             except KeyError:
                 objects_in_backend = set()
-                objects_per_backend[location] = objects_in_backend
-            objects_in_backend.add(curr_oid)
+                objects_per_backend[hint] = objects_in_backend
+            objects_in_backend.add(object_id)
 
         # Now Call
         for backend_id, objects_to_get in objects_per_backend.items():
@@ -1107,9 +1100,9 @@ class ExecutionEnvironment(object):
         objects_per_backend = dict()
         for curr_obj_with_ids in objects_in_other_backends:
 
-            curr_oid = curr_obj_with_ids[0]
-            locations = self.get_object_metadata(curr_oid).locations
-            location = next(iter(locations.keys()))
+            object_id = curr_obj_with_ids[0]
+            object_md = self.get_object_metadata(object_id)
+            location = object_md.master_ee_id
             # Update object at first location (NOT UPDATING REPLICAS!!!)
             try:
                 objects_in_backend = objects_per_backend[location]
@@ -1174,8 +1167,8 @@ class ExecutionEnvironment(object):
 
             for obj_found in serialized_objs:
                 logger.debug("[==MoveObjects==] Looking for metadata of %s", obj_found[0])
-                metadata = self.get_object_metadata(obj_found[0])
-                obj_location = list(metadata.locations.keys())[0]
+                object_md = self.get_object_metadata(obj_found[0])
+                obj_location = object_md.master_ee_id
 
                 if obj_location == dest_backend_id:
                     logger.debug(

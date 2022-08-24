@@ -118,21 +118,19 @@ class ClientRuntime(DataClayRuntime):
             return instance.get_hint()
 
     def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):
-        object_id = instance.get_object_id()
 
         logger.debug(
-            f"Calling operation {operation_name} in object {object_id} with parameters {parameters}"
+            f"Calling operation {operation_name} in object {instance.get_object_id()} with parameters {parameters}"
         )
 
         using_hint = True
-        exec_env_id = instance.get_hint()
-        if exec_env_id is None:
-            exec_env_id = next(iter(self.get_metadata(object_id).locations))
+        hint = instance.get_hint()
+        if hint is None:
+            self.update_object_metadata(instance)
+            hint = instance.get_hint()
             using_hint = False
 
-        return self.call_execute_to_ds(
-            instance, parameters, operation_name, exec_env_id, using_hint
-        )
+        return self.call_execute_to_ds(instance, parameters, operation_name, hint, using_hint)
 
     def get_operation_info(self, object_id, operation_name):
         dcc_extradata = self.get_object_by_id(object_id).get_class_extradata()

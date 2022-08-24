@@ -339,13 +339,11 @@ class DataClayRuntime(ABC):
 
     # TODO: Use MetadataService and return ObjectMD
     def get_metadata(self, object_id):
-        metadata = self.ready_clients["@LM"].get_metadata_by_oid(self.session.id, object_id)
-        if metadata is None:
-            logger.debug("Object %s not registered", object_id)
-            raise DataClayException("The object %s is not registered" % object_id)
-        self.metadata_cache[object_id] = metadata
-        logger.debug(f"Obtained metadata: {metadata}")
-        return metadata
+        try:
+            instance = self.get_from_heap(object_id)
+            return instance.metadata
+        except Exception:
+            return self.metadata_service.get_object_md_by_id(object_id)
 
     def get_all_locations(self, object_id):
         logger.debug(f"Getting all locations of object {object_id}")
@@ -576,10 +574,11 @@ class DataClayRuntime(ABC):
                     logger.debug("Exception dataclay during execution. Retrying...")
                     logger.debug(str(dce))
 
-                    locations = self.get_from_heap(object_id).get_replica_locations()
+                    locations = instance.get_replica_locations()
                     if locations is None or len(locations) == 0:
                         try:
-                            locations = self.get_metadata(object_id).locations
+                            self.update_object_metadata(instance)
+                            locations = instance.get_replica_locations()
                             new_location = False
                         except DataClayException:
                             locations = None
