@@ -244,18 +244,10 @@ class ExecutionEnvironment(object):
             moving: Indicates if store is done during a move
             ids_with_alias: IDs with alias
         """
-        try:
-            self.set_local_session(session_id)
-        except Exception as e:
-            # TODO: Maybe we need to set local session and dataset in some way
-            logger.debug(
-                "Trying to set_local_session during store of a federated object"
-                "in a federated dataclay ==> Provided dataclayID instead of sessionID"
-            )
-            pass
+        self.set_local_session(session_id)
 
         self.update_hints_to_current_ee(objects_data_to_store)
-        self.store_in_memory(session_id, objects_data_to_store)
+        self.store_in_memory(objects_data_to_store)
 
     def register_and_store_pending(self, instance, obj_bytes, sync):
 
@@ -273,7 +265,7 @@ class ExecutionEnvironment(object):
 
         instance.set_pending_to_register(False)
 
-    def store_in_memory(self, session_id, objects_to_store):
+    def store_in_memory(self, objects_to_store):
         """This function will deserialize objects into dataClay memory heap using the same design as for
         volatile parameters. Eventually, dataClay GC will collect them, and then they will be
         registered in LogicModule if needed (if objects were created with alias, they must
@@ -283,7 +275,6 @@ class ExecutionEnvironment(object):
             session_id: ID of session of make persistent call
             objects_to_store: objects to store.
         """
-        self.set_local_session(session_id)
 
         # No need to provide params specs or param order since objects are not language types
         vol_objs = dict()
@@ -311,7 +302,9 @@ class ExecutionEnvironment(object):
             objects_to_persist: objects to store.
         """
         logger.debug("Starting make persistent")
-        objects = self.store_in_memory(session_id, objects_to_persist)
+        self.set_local_session(session_id)
+
+        objects = self.store_in_memory(objects_to_persist)
         for object in objects:
             # TODO: The location should be check (in the deserialization) that is the same as current ee, and reasign if not
             object_md = object.metadata
@@ -349,34 +342,24 @@ class ExecutionEnvironment(object):
             session_id: ID of session of federation call
             objects_to_persist: [num_params, imm_objs, lang_objs, vol_params, pers_params]
         """
+
+        self.set_local_session(session_id)
+
         try:
             logger.debug("----> Notified federation")
-            ## Register objects with alias
-            reg_infos = list()
-            for serialized_obj in objects_to_persist:
-                object_id = serialized_obj.object_id
-                metadata = serialized_obj.metadata
-                if metadata.alias is not None and metadata.alias != "":
-                    class_id = serialized_obj.class_id
-                    # TODO objectID must not be replaced here by new one created by alias?
-                    # FIXME: Session notifying federation does not exist, sending none
-                    reg_info = RegistrationInfo(object_id, class_id, None, None, metadata.alias)
-                    reg_infos.append(reg_info)
-            # FIXME: remote session is retaining the object (set during deserialization) but external session is NOT closed
-            # TODO: add federation reference to object send ?? how is it working with replicas?
-            if len(reg_infos) != 0:
-                self.runtime.ready_clients["@LM"].register_objects(
-                    reg_infos, self.execution_environment_id, LANG_PYTHON
-                )
 
-            # TODO: Check that change in store_in_memory (num_params=i) dont break this.
-            #       Maybe add [0] at the end of store_in_memory call (to replicate previous logic) if it has sense
             # No need to provide params specs or param order since objects are not language types
-            federated_objs = self.store_in_memory(None, objects_to_persist)
+            federated_objs = self.store_in_memory(objects_to_persist)
+
+            # Register objects with alias (should we?)
+            for object in federated_objs:
+                if object.get_alias():
+                    self.runtime.metadata_service.register_object(session_id, object.metadata)
+
             for federated_obj in federated_objs:
                 try:
                     federated_obj.when_federated()
-                except:
+                except Exception:
                     # ignore if method is not implemented
                     pass
 
