@@ -803,27 +803,13 @@ class DataClayRuntime(ABC):
         )
         self.ready_clients["@LM"].import_models_from_external_dataclay(namespace, ext_dataclay_id)
 
-    def register_external_dataclay(self, exthostname, extport):
+    def register_external_dataclay(self, id, hostname, port):
         """Register external dataClay for federation
-        :param exthostname: external dataClay host name
-        :param extport: external dataClay port
-        :return: external dataClay ID registered
-        :type exthostname: string
-        :type extport: int
-        :rtype: UUID
+        Args:
+            exthostname: external dataClay host name
+            extport: external dataClay port
         """
-        return self.ready_clients["@LM"].register_external_dataclay(exthostname, extport)
-
-    def get_external_dataclay_id(self, exthostname, extport):
-        """Get external dataClay ID with host and port identified
-        :param exthostname: external dataClay host name
-        :param extport: external dataClay port
-        :return: None
-        :type exthostname: string
-        :type extport: int
-        :rtype: None
-        """
-        return self.ready_clients["@LM"].get_external_dataclay_id(exthostname, extport)
+        self.metadata_service.autoregister_mds(id, hostname, port)
 
     def get_external_dataclay_info(self, dataclay_id):
         """Get external dataClay information

@@ -659,9 +659,6 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         # FIXME: unfederate only from specific ext dataClay
         get_runtime().unfederate_object(self, ext_dataclay_id, recursive)
 
-    def get_external_dataclay_id(self, dcHost, dcPort):
-        return get_runtime().ready_clients["@LM"].get_external_dataclay_id(dcHost, dcPort)
-
     def synchronize(self, field_name, value):
         from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
 

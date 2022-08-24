@@ -122,8 +122,8 @@ class ExecutionEnvironmentSrv(object):
                     retries += 1
 
         # Autoregister of ExecutionEnvironment to MetadataService
-        mds_client = self.execution_environment.runtime.metadata_service
-        mds_client.autoregister_ee(
+        metadata_service = self.execution_environment.runtime.metadata_service
+        metadata_service.autoregister_ee(
             execution_environment_id,
             local_ip,
             settings.dataservice_port,
@@ -135,7 +135,7 @@ class ExecutionEnvironmentSrv(object):
         retries = 0
         while True:
             try:
-                storage_location = mds_client.get_storage_location(sl_name)
+                storage_location = metadata_service.get_storage_location(sl_name)
                 break
             except StorageLocationDoesNotExistError as e:
                 if retries == max_retries:

@@ -10,8 +10,6 @@ import sys
 import warnings
 from time import sleep
 
-from dataclay_common.clients.metadata_service_client import MDSClient
-
 from dataclay import get_runtime
 from dataclay.commonruntime.ClientRuntime import LANG_PYTHON
 from dataclay.commonruntime.ClientRuntime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
@@ -163,28 +161,18 @@ def get_backend_id(hostname, port):
     return None
 
 
-def register_dataclay(exthostname, extport):
+def register_dataclay(id, hostname, port):
     """Register external dataClay for federation
-    :param exthostname: external dataClay host name
-    :param extport: external dataClay port
-    :return: external dataClay ID registered
-    :type exthostname: string
-    :type extport: int
-    :rtype: UUID
+    Args:
+        hostname: external dataClay host name
+        port: external dataClay port
     """
-    return get_runtime().register_external_dataclay(exthostname, extport)
+    return get_runtime().register_external_dataclay(id, hostname, port)
 
 
-def get_dataclay_id(exthostname, extport):
-    """Get external dataClay ID with host and port identified
-    :param exthostname: external dataClay host name
-    :param extport: external dataClay port
-    :return: None
-    :type exthostname: string
-    :type extport: int
-    :rtype: None
-    """
-    return get_runtime().get_external_dataclay_id(exthostname, extport)
+def get_dataclay_id():
+    """Get dataClay ID"""
+    return get_runtime().dataclay_id
 
 
 def import_models_from_external_dataclay(namespace, ext_dataclay_id) -> None:
