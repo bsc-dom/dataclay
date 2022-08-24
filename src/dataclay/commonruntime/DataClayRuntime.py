@@ -351,11 +351,8 @@ class DataClayRuntime(ABC):
     # Dataclay Metadata #
     #####################
 
-    def exists_in_dataclay(self, object_id):
-        return self.ready_clients["@LM"].object_exists_in_dataclay(object_id)
-
     def get_num_objects(self):
-        return self.ready_clients["@LM"].get_num_objects()
+        return self.metadata_service.get_num_objects(LANG_PYTHON)
 
     #####################
     # Garbage collector #

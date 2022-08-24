@@ -232,14 +232,6 @@ def federate_all_objects(dest_dataclay_id):
     return get_runtime().federate_all_objects(dest_dataclay_id)
 
 
-def get_num_objects():
-    """Get number of objects in dataClay
-    :return: number of objects in dataClay
-    :rtype: int32
-    """
-    return get_runtime().get_num_objects()
-
-
 # DEPRECATED: Remove this function
 def pre_network_init(config_file):
     """Perform a partial initialization, with no network."""
