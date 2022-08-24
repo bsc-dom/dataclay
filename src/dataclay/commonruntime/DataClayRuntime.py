@@ -337,14 +337,6 @@ class DataClayRuntime(ABC):
     def delete_alias(self, dc_obj):
         pass
 
-    # TODO: Use MetadataService and return ObjectMD
-    def get_metadata(self, object_id):
-        try:
-            instance = self.get_from_heap(object_id)
-            return instance.metadata
-        except Exception:
-            return self.metadata_service.get_object_md_by_id(object_id)
-
     def get_all_locations(self, object_id):
         logger.debug(f"Getting all locations of object {object_id}")
         locations = set()
