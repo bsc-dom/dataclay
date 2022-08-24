@@ -227,24 +227,27 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
     def internal_store(self, instance, make_persistent=True):
         """Perform the storage (StoreObject call) for an instance.
 
-        :param instance: The DataClayObject willing to be stored.
-        :param make_persistent: Flag, True when DS_STORE_OBJECT should be called
-        and False when DS_UPSERT_OBJECT is the method to be called.
-        :return: A dictionary containing the classes for all stored objects.
-
         This function works for two main scenarios: the makePersistent one (in
         which the instance is not yet persistent) and the update (in which the
         instance is persistent).
 
         The return dictionary is the same in both cases, but note that the update
         should not use the provided instance for updating metadata to the LM.
+
+        Args:
+            instance: The DataClayObject willing to be stored.
+            make_persistent: Flag, True when DS_STORE_OBJECT should be called
+                and False when DS_UPSERT_OBJECT is the method to be called.
+        Returns:
+            A dictionary containing the classes for all stored objects.
         """
         client = self.ready_clients["@STORAGE"]
 
         pending_objs = [instance]
         stored_objects_classes = dict()
         serialized_objs = list()
-        reg_infos = list()
+        obj_to_register = []
+
         dataset_name = self.session.dataset_name
 
         while pending_objs:
@@ -264,15 +267,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                     if current_obj.is_persistent():
                         continue
 
-                    dcc_extradata = current_obj.get_class_extradata()
-                    infos = RegistrationInfo(
-                        object_id,
-                        dcc_extradata.class_id,
-                        self.session.id,
-                        dataset_name,
-                        None,
-                    )
-                    reg_infos.append(infos)
+                    obj_to_register.append(current_obj)
 
                 # This object will soon be persistent
                 current_obj.set_persistent(True)
@@ -282,16 +277,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                     "Setting loaded to true from internal store for object %s" % str(object_id)
                 )
                 current_obj.set_loaded(True)
-
-                # First store since others OIDs are recursively created while creating MetaData
-                if not object_id:
-                    if not make_persistent:
-                        raise DataClayException(
-                            "Objects should never be uuid-less for non-make_persistent use cases"
-                        )
-                    object_id = uuid.uuid4()
-                    current_obj.set_object_id(object_id)
-                    current_obj.set_dataset_name(dataset_name)
 
                 logger.debug(
                     "Ready to make persistent object {%s} of class %s {%s}"
@@ -310,8 +295,13 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                 self.unlock(current_obj_id)
 
         if make_persistent:
-            lm_client = self.ready_clients["@LM"]
-            lm_client.register_objects(reg_infos, settings.environment_id, LANG_PYTHON)
+
+            # TODO: It may create a lot of overhead. Better use a batch call to register
+            # all objects at once. Also, it may not be necessary to even register the
+            # objects at this point, since the metadata may be already registered.
+            for instance in obj_to_register:
+                self.metadata_service.register_object(self.session.id, instance.metadata)
+
             client.ds_store_objects(
                 self.session.id,
                 serialized_objs,

@@ -806,8 +806,8 @@ class DataClayRuntime(ABC):
     def register_external_dataclay(self, id, hostname, port):
         """Register external dataClay for federation
         Args:
-            exthostname: external dataClay host name
-            extport: external dataClay port
+            hostname: external dataClay host name
+            port: external dataClay port
         """
         self.metadata_service.autoregister_mds(id, hostname, port)
 
