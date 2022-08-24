@@ -220,6 +220,7 @@ class WorkMovingSplit(WorkStealingSplit):
         from dataclay.commonruntime.Runtime import get_runtime
         from dataclay.commonruntime.Settings import settings
 
+        # FIXME: Move_object was deleted from DataclayRuntime, use EE move_objects
         get_runtime().move_object(stolen_object, settings.storage_id)
         return stolen_object
 

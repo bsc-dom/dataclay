@@ -753,13 +753,6 @@ class DataClayRuntime(ABC):
         execution_client.consolidate_version(self.session.id, object_id)
         logger.debug(f"Finished consolidate version of {object_id}")
 
-    def move_object(self, instance, source_backend_id, dest_backend_id, recursive):
-
-        object_id = instance.get_object_id()
-        moved_objs = self.ready_clients["@LM"].move_object(
-            self.session.id, object_id, source_backend_id, dest_backend_id, recursive
-        )
-
     ##############
     # Federation #
     ##############
