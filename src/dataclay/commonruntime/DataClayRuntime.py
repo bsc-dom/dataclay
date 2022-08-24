@@ -338,41 +338,17 @@ class DataClayRuntime(ABC):
         pass
 
     def get_all_locations(self, object_id):
-        logger.debug(f"Getting all locations of object {object_id}")
         locations = set()
-        instance = self.get_from_heap(object_id)
-        if instance is not None:
-            replica_locs = instance.get_replica_locations()
-            if replica_locs is not None:
-                locations.update(replica_locs)
-            if instance.get_origin_location() is not None:
-                locations.add(instance.get_origin_location())
         try:
-            metadata = self.metadata_service.get_object_md_by_id(object_id)
-            for loc in metadata.locations:
-                locations.add(loc)
-            # add hint location
-            if instance is not None:
-                hint = instance.get_hint()
-                if hint is not None:
-                    locations.add(hint)
-
+            instance = self.get_from_heap(object_id)
+            locations.add(instance.get_hint())
+            locations.update(instance.get_replica_locations())
             return locations
-        except:
-            logger.debug(f"Object {object_id} has no metadata")
-            if instance is not None:
-                hint = instance.get_hint()
-                if hint is not None:
-                    logger.debug("Returning list with hint from heap object")
-                    locations = dict()
-                    locations[hint] = self.get_execution_environment_info(hint)
-                    return locations
-                else:
-                    raise DataClayException(
-                        f"The object {object_id} is not initialized well, hint missing or not exist"
-                    )
-            else:
-                raise DataClayException(f"The object {object_id} is not initialized")
+        except Exception:
+            object_md = self.metadata_service.get_object_md_by_id(object_id)
+            locations.add(object_md.master_ee_id)
+            locations.update(object_md.replica_ee_ids)
+        return locations
 
     def remove_metadata_from_cache(self, object_id):
         if object_id in self.metadata_cache:

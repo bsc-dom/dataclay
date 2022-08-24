@@ -145,6 +145,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             "pending_to_register_flag": False,
             "dirty_flag": False,
             "memory_pinned": False,
+            "replica_locations": [],
         }
         fields.update(kwargs)
 
