@@ -11,11 +11,7 @@ Note that this code has been heavily inspired by the Django's conf module.
 import logging
 import os
 
-from dataclay.commonruntime.SettingsLoader import (
-    AbstractLoader,
-    AccountCredentialLoader,
-    AccountIdLoader,
-)
+
 from dataclay.exceptions.exceptions import ImproperlyConfigured
 from dataclay.util import Configuration
 from dataclay.util.PropertiesFilesLoader import PropertyDict
@@ -71,16 +67,7 @@ class _SettingsHub(object):
             "local_backend_name": None,
             "admin_user": os.getenv("DATACLAY_ADMIN_USER", "admin"),
             "admin_password": os.getenv("DATACLAY_ADMIN_PASSWORD", "admin"),
-            "admin_id": AccountIdLoader(self, "admin_user"),
-            "admin_credential": AccountCredentialLoader(self, "admin_id", "admin_password"),
-            "current_user": UNSET_FIELD,
-            "current_password": UNSET_FIELD,
-            "current_id": AccountIdLoader(self, "current_user"),
-            "current_credential": AccountCredentialLoader(self, "current_id", "current_password"),
             "stubs_folder": UNSET_FIELD,
-            "datasets": UNSET_FIELD,
-            "dataset_for_store": UNSET_FIELD,
-            "dataset_name": UNSET_FIELD,  # This is the DataSetID for the dataset_for_store
             # Tracing
             "tracing_enabled": False,
             "extrae_starting_task_id": "0",
@@ -99,8 +86,6 @@ class _SettingsHub(object):
         logger.debug("Reading properties file %s", file_name)
 
         try:
-            self._values["current_user"] = getattr(d, FIELD_ACCOUNT)
-            self._values["current_password"] = getattr(d, FIELD_PASSWORD)
 
             # Note to developers: The following os.path.join usage works because of:
             #   > (...) If a component is an absolute path, all previous components
@@ -111,8 +96,6 @@ class _SettingsHub(object):
                 os.path.join(dirname, getattr(d, FIELD_STUBSFOLDER))
             )
             logger.debug("Stubs folder is %s", self._values["stubs_folder"])
-            self._values["datasets"] = getattr(d, FIELD_DATASETS).split(":")
-            self._values["dataset_for_store"] = getattr(d, FIELD_DATASETFORSTORE)
 
             try:
                 self._values["extrae_starting_task_id"] = int(
@@ -189,9 +172,6 @@ class _SettingsHub(object):
         self.loaded = True
 
     def load_session_properties(self):
-        self._values["METADATA_SERVICE_HOST"] = os.environ["METADATA_SERVICE_HOST"]
-        self._values["METADATA_SERVICE_PORT"] = int(os.getenv("METADATA_SERVICE_PORT", "16587"))
-
         self._values["DC_USERNAME"] = os.environ["DC_USERNAME"]
         self._values["DC_PASSWORD"] = os.environ["DC_PASSWORD"]
 
@@ -199,7 +179,6 @@ class _SettingsHub(object):
         self._values["DEFAULT_DATASET"] = os.environ["DEFAULT_DATASET"]
         self._values["LOCAL_BACKEND"] = os.getenv("LOCAL_BACKEND")
         self._values["STUBS_PATH"] = os.environ["STUBS_PATH"]
-
         self.loaded = True
 
     def load_metadata_properties(self):
@@ -219,13 +198,7 @@ class _SettingsHub(object):
         if ret is UNSET_FIELD:
             raise ImproperlyConfigured("The setting for '%s' has not been set" % item)
 
-        if isinstance(ret, AbstractLoader):
-            # if it is ready to be loaded, then load->store->return
-            loaded = ret.load_value()
-            self._values[item] = loaded
-            return loaded
-        else:
-            return ret
+        return ret
 
     def __setattr__(self, key, value):
         if key == "loaded":

@@ -242,6 +242,7 @@ def init():
         logger.warning("Already initialized --ignoring")
         return
 
+    settings.load_metadata_properties()
     settings.load_session_properties()
 
     # Initialize ClientRuntime
