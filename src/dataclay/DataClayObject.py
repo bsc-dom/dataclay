@@ -141,11 +141,12 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             "persistent_flag": False,
             "object_id": uuid.uuid4(),
             "dataset_name": get_runtime().session.dataset_name,
-            "loaded_flag": True,
+            "replica_locations": [],
+            "is_read_only": False,
             "pending_to_register_flag": False,
             "dirty_flag": False,
             "memory_pinned": False,
-            "replica_locations": [],
+            "loaded_flag": True,
         }
         fields.update(kwargs)
 
