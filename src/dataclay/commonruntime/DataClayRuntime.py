@@ -55,9 +55,6 @@ class DataClayRuntime(ABC):
         """ Indicates volatiles being send - to avoid race-conditions """
         self.volatile_parameters_being_send = set()
 
-        """ Cache of metadata """
-        self.metadata_cache = LRU(10000)
-
         """ Current dataClay ID """
         self._dataclay_id = None
 
@@ -348,10 +345,6 @@ class DataClayRuntime(ABC):
             locations.add(object_md.master_ee_id)
             locations.update(object_md.replica_ee_ids)
         return locations
-
-    def remove_metadata_from_cache(self, object_id):
-        if object_id in self.metadata_cache:
-            del self.metadata_cache[object_id]
 
     def update_object_metadata(self, instance):
         object_md = self.metadata_service.get_object_md_by_id(instance.get_object_id())
@@ -715,46 +708,36 @@ class DataClayRuntime(ABC):
     def new_replica(self, object_id, hint, backend_id, backend_hostname, recursive):
         logger.debug(f"Starting new replica of {object_id}")
         # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
-        session_id = self.session.id
 
-        execution_client, dest_backend = self.prepare_for_new_replica_version_consolidate(
+        ee_client, dest_backend = self.prepare_for_new_replica_version_consolidate(
             object_id, hint, backend_id, backend_hostname, True
         )
-        dest_backend_id = dest_backend.id
-        replicated_objs = execution_client.new_replica(
-            session_id, object_id, dest_backend_id, recursive
+        replicated_object_ids = ee_client.new_replica(
+            self.session.id, object_id, dest_backend.id, recursive
         )
-        logger.debug(f"Replicated: {replicated_objs} into {dest_backend_id}")
+        logger.debug(f"Replicated: {replicated_object_ids} into {dest_backend.id}")
         # Update replicated objects metadata
-        for replicated_obj_id in replicated_objs:
-            if replicated_obj_id in self.metadata_cache:
-                self.metadata_cache[replicated_obj_id].locations.add(dest_backend_id)
-            obj = self.get_from_heap(object_id)
-            obj.add_replica_location(dest_backend_id)
-            if obj.get_origin_location() is None:
-                # at client side there cannot be two replicas of same oid
-                obj.set_origin_location(hint)
-        return dest_backend_id
+        for replicated_object_id in replicated_object_ids:
+            # NOTE: If it fails, use object_id instead of replicated_object_id
+            instance = self.get_from_heap(replicated_object_id)
+            instance.add_replica_location(dest_backend.id)
+            if instance.get_origin_location() is None:
+                # NOTE: at client side there cannot be two replicas of same oid
+                instance.set_origin_location(hint)
+        return dest_backend.id
 
+    # NOTE: Why versions are used? Can be removed
     def new_version(
         self, object_id, hint, class_id, dataset_name, backend_id, backend_hostname, recursive
     ):
         # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
         logger.debug(f"Starting new version of {object_id}")
-        session_id = self.session.id
-        execution_client, dest_backend = self.prepare_for_new_replica_version_consolidate(
+        ee_client, dest_backend = self.prepare_for_new_replica_version_consolidate(
             object_id, hint, backend_id, backend_hostname, False
         )
-        dest_backend_id = dest_backend.id
-        version_id = execution_client.new_version(session_id, object_id, dest_backend_id)
-        locations = set()
-        locations.add(dest_backend_id)
-        metadata_info = MetaDataInfo(
-            version_id, False, dataset_name, class_id, locations, None, None
-        )
-        self.metadata_cache[object_id] = metadata_info
+        version_id = ee_client.new_version(self.session.id, object_id, dest_backend.id)
         logger.debug(f"Finished new version of {object_id}, created version {version_id}")
-        return version_id, dest_backend_id
+        return version_id, dest_backend.id
 
     def consolidate_version(self, object_id, hint):
         # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
@@ -782,9 +765,6 @@ class DataClayRuntime(ABC):
         moved_objs = self.ready_clients["@LM"].move_object(
             self.session.id, object_id, source_backend_id, dest_backend_id, recursive
         )
-        for oid in moved_objs:
-            if oid in self.metadata_cache:
-                del self.metadata_cache[oid]
 
     ##############
     # Federation #

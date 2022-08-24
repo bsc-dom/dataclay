@@ -103,18 +103,6 @@ class ClientRuntime(DataClayRuntime):
             # removes volatiles under deserialization
             self.remove_volatiles_under_deserialization(serialized_objs.vol_objs.values())
 
-            # TODO: Use ObjectMD instead ?
-            metadata_info = MetaDataInfo(
-                instance.get_object_id(),
-                False,
-                instance.get_dataset_name(),
-                instance.get_class_extradata().class_id,
-                {instance.get_hint()},
-                alias,
-                None,
-            )
-
-            self.metadata_cache[instance.get_object_id()] = metadata_info
             return instance.get_hint()
 
     def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):

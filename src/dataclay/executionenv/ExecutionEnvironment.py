@@ -551,10 +551,8 @@ class ExecutionEnvironment(object):
         """
         logger.debug("----> Starting new replica of %s to backend %s", object_id, dest_backend_id)
 
-        object_ids = set()
-        object_ids.add(object_id)
         serialized_objs = self.get_objects(
-            session_id, object_ids, set(), recursive, dest_backend_id, 1
+            session_id, {object_id}, set(), recursive, dest_backend_id, 1
         )
         client_backend = self.get_dest_ee_api(dest_backend_id)
         client_backend.ds_store_objects(session_id, serialized_objs, False, None)
