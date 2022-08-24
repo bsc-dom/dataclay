@@ -811,15 +811,6 @@ class DataClayRuntime(ABC):
         """
         self.metadata_service.autoregister_mds(id, hostname, port)
 
-    def get_external_dataclay_info(self, dataclay_id):
-        """Get external dataClay information
-        :param dataclay_id: external dataClay ID
-        :return: DataClayInstance information
-        :type dataclay_id: UUID
-        :rtype: DataClayInstance
-        """
-        return self.ready_clients["@LM"].get_external_dataclay_info(dataclay_id)
-
     ##################################
     # To deprecate                   #
     # Operations and implementations #

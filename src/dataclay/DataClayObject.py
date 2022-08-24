@@ -671,15 +671,6 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         """
         get_runtime().detach_object_from_session(self.get_object_id(), self.get_hint())
 
-    def get_external_dataclay_info(self, dataclay_id):
-        """Get external dataClay information
-        :param dataclay_id: external dataClay ID
-        :return: DataClayInstance information
-        :type dataclay_id: UUID
-        :rtype: DataClayInstance
-        """
-        return get_runtime().get_external_dataclay_info(dataclay_id)
-
     #################
     # Serialization #
     #################
