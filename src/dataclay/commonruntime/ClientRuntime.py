@@ -7,6 +7,8 @@ dataclay.api package.
 import logging
 import traceback
 
+from opentelemetry import trace
+
 from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
@@ -20,6 +22,7 @@ from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
 UNDEFINED_LOCAL = object()
 
+tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 
@@ -106,19 +109,22 @@ class ClientRuntime(DataClayRuntime):
             return instance.get_hint()
 
     def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):
+        with tracer.start_as_current_span(
+            "execute_implementation",
+            attributes={"operation_name": operation_name, "parameters": parameters},
+        ) as span:
+            logger.debug(
+                f"Calling operation {operation_name} in object {instance.get_object_id()} with parameters {parameters}"
+            )
 
-        logger.debug(
-            f"Calling operation {operation_name} in object {instance.get_object_id()} with parameters {parameters}"
-        )
-
-        using_hint = True
-        hint = instance.get_hint()
-        if hint is None:
-            self.update_object_metadata(instance)
+            using_hint = True
             hint = instance.get_hint()
-            using_hint = False
+            if hint is None:
+                self.update_object_metadata(instance)
+                hint = instance.get_hint()
+                using_hint = False
 
-        return self.call_execute_to_ds(instance, parameters, operation_name, hint, using_hint)
+            return self.call_execute_to_ds(instance, parameters, operation_name, hint, using_hint)
 
     def get_operation_info(self, object_id, operation_name):
         dcc_extradata = self.get_object_by_id(object_id).get_class_extradata()

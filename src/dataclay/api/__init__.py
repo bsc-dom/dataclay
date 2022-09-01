@@ -4,11 +4,17 @@ Runtime.
 Note that importing this module has a basic semantic: it prepares the dataClay
 core and sets the "client" mode for the library.
 """
+
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
+__all__ = ["init", "finish", "DataClayObject"]
+
 import logging.config
 import os
 import sys
 import warnings
 from time import sleep
+
+from opentelemetry import trace
 
 from dataclay import get_runtime
 from dataclay.commonruntime.ClientRuntime import LANG_PYTHON
@@ -30,9 +36,9 @@ from dataclay.util.StubUtils import clean_babel_data, track_local_available_clas
 # This will be populated during initialization
 LOCAL = _UNDEFINED_LOCAL
 
-__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
-__all__ = ["init", "finish", "DataClayObject"]
+tracer = trace.get_tracer(__name__)
 logger = logging.getLogger("dataclay.api")
+
 _connection_initialized = False
 _initialized = False
 
@@ -234,61 +240,70 @@ def init():
     a no-operation.
     """
 
-    logger.info("Initializing dataClay API")
+    with tracer.start_as_current_span("init") as init_span:
 
-    # Checks if dataclay is already initialized
-    global _initialized
-    if _initialized:
-        logger.warning("Already initialized --ignoring")
-        return
+        init_span.set_attribute("test.marcattribute", 77)
+        init_span.add_event("marcevent - starting init")
 
-    settings.load_metadata_properties()
-    settings.load_session_properties()
+        logger.info("Initializing dataClay API")
 
-    # Initialize ClientRuntime
-    runtime = ClientRuntime(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
-    set_runtime(runtime)
+        # Checks if dataclay is already initialized
+        global _initialized
+        if _initialized:
+            logger.warning("Already initialized --ignoring")
+            return
 
-    # TODO: Do we need it for federation?
-    # Get dataclay id and map it to Metadata Service client
-    # runtime.ready_clients[runtime.metadata_service.get_dataclay_id()] = client
+        settings.load_metadata_properties()
+        settings.load_session_properties()
 
-    # wait for 1 python backend
-    # TODO: implement get_backends_info in MDS
-    # while len(get_backends_info()) < 1:
-    #     logger.info("Waiting for any python backend to be ready ...")
-    #     sleep(2)
+        # Initialize ClientRuntime
+        runtime = ClientRuntime(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
+        set_runtime(runtime)
 
-    # In all cases, track (done through babelstubs YAML file)
-    contracts = track_local_available_classes()
-    if not contracts:
-        logger.warning(
-            "No contracts available. Calling new_session, but no classes will be available"
+        # TODO: Do we need it for federation?
+        # Get dataclay id and map it to Metadata Service client
+        # runtime.ready_clients[runtime.metadata_service.get_dataclay_id()] = client
+
+        # wait for 1 python backend
+        # TODO: implement get_backends_info in MDS
+        # while len(get_backends_info()) < 1:
+        #     logger.info("Waiting for any python backend to be ready ...")
+        #     sleep(2)
+
+        # In all cases, track (done through babelstubs YAML file)
+        contracts = track_local_available_classes()
+        if not contracts:
+            logger.warning(
+                "No contracts available. Calling new_session, but no classes will be available"
+            )
+
+        # Ensure stubs are in the path (high "priority")
+        sys.path.insert(0, os.path.join(settings.STUBS_PATH, "sources"))
+
+        # Create a new session
+        session = runtime.metadata_service.new_session(
+            settings.DC_USERNAME, settings.DC_PASSWORD, settings.DEFAULT_DATASET
         )
+        runtime.session = session
 
-    # Ensure stubs are in the path (high "priority")
-    sys.path.insert(0, os.path.join(settings.STUBS_PATH, "sources"))
+        init_span.add_event("marcevent - after new session")
 
-    # Create a new session
-    session = runtime.metadata_service.new_session(
-        settings.DC_USERNAME, settings.DC_PASSWORD, settings.DEFAULT_DATASET
-    )
-    runtime.session = session
+        # Set LOCAL_BACKEND
+        sl_name = settings.LOCAL_BACKEND
+        if sl_name:
+            runtime.update_ee_infos()
+            for ee_id, ee_info in runtime.ee_infos.items():
+                if ee_info.sl_name == sl_name:
+                    global LOCAL
+                    LOCAL = ee_id
+                    break
+            else:
+                logger.warning(f"Backend with name '{sl_name}' not found, ignoring")
 
-    # Set LOCAL_BACKEND
-    sl_name = settings.LOCAL_BACKEND
-    if sl_name:
-        runtime.update_ee_infos()
-        for ee_id, ee_info in runtime.ee_infos.items():
-            if ee_info.sl_name == sl_name:
-                global LOCAL
-                LOCAL = ee_id
-                break
-        else:
-            logger.warning(f"Backend with name '{sl_name}' not found, ignoring")
+        _initialized = True
+        logger.debug(f"Started session {session.id}")
 
-    _initialized = True
-    logger.debug(f"Started session {session.id}")
+        init_span.add_event("marcevent - ending init")
 
 
 # DEPRECATED: Remove this method
@@ -400,32 +415,33 @@ def finish_tracing():
 
 
 def finish():
-    global _initialized
-    if not _initialized:
-        logger.warning("Already finished --ignoring")
-        return
-    global _connection_initialized
-    logger.info("Finishing dataClay API")
-    finish_tracing()
-    get_runtime().close_session()
-    get_runtime().stop_runtime()
-    # Unload stubs
-    clean_babel_data()
-    sys.path.remove(os.path.join(settings.STUBS_PATH, "sources"))
-    # unload caches of stubs
-    from dataclay.commonruntime.ExecutionGateway import (
-        class_extradata_cache_client,
-        class_extradata_cache_exec_env,
-        loaded_classes,
-    )
+    with tracer.start_as_current_span("finish") as span:
+        global _initialized
+        if not _initialized:
+            logger.warning("Already finished --ignoring")
+            return
+        global _connection_initialized
+        logger.info("Finishing dataClay API")
+        finish_tracing()
+        get_runtime().close_session()
+        get_runtime().stop_runtime()
+        # Unload stubs
+        clean_babel_data()
+        sys.path.remove(os.path.join(settings.STUBS_PATH, "sources"))
+        # unload caches of stubs
+        from dataclay.commonruntime.ExecutionGateway import (
+            class_extradata_cache_client,
+            class_extradata_cache_exec_env,
+            loaded_classes,
+        )
 
-    loaded_classes.clear()
-    class_extradata_cache_exec_env.clear()
-    class_extradata_cache_client.clear()
-    # unload settings
-    unload_settings()
-    _initialized = False
-    _connection_initialized = False
+        loaded_classes.clear()
+        class_extradata_cache_exec_env.clear()
+        class_extradata_cache_client.clear()
+        # unload settings
+        unload_settings()
+        _initialized = False
+        _connection_initialized = False
 
 
 ######################################

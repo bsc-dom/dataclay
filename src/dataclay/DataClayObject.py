@@ -6,6 +6,10 @@ Metaclass is responsible of Class (not object) instantiation.
 Note that this managers also includes most serialization/deserialization code
 related to classes and function call parameters.
 """
+
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
+
 import inspect
 import logging
 import pickle
@@ -16,6 +20,7 @@ from operator import attrgetter
 
 from dataclay_common.managers.object_manager import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
+from opentelemetry import trace
 
 from dataclay.commonruntime.ExecutionGateway import (
     ExecutionGateway,
@@ -50,9 +55,8 @@ from dataclay.util.management.classmgr.UserType import UserType
 from dataclay.util.StubUtils import load_babel_data
 
 # Publicly show the dataClay method decorators
-__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
-__copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
 
+tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 # For efficiency purposes compile the folowing regular expressions:
@@ -391,9 +395,16 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         return get_runtime().consolidate_version(self.get_object_id(), self.get_hint())
 
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
-        if alias == "":
-            raise AttributeError("Alias cannot be empty")
-        get_runtime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
+
+        with tracer.start_as_current_span(
+            "make_persistent",
+            attributes={"alias": str(alias), "backend_id": str(backend_id), "recursive": recursive},
+        ) as span:
+            if alias == "":
+                raise AttributeError("Alias cannot be empty")
+            get_runtime().make_persistent(
+                self, alias=alias, backend_id=backend_id, recursive=recursive
+            )
 
     def get_execution_environments_info(self):
         return get_runtime().ee_infos
