@@ -623,6 +623,7 @@ class DataClayRuntime(ABC):
 
         return result[0]
 
+    # TODO: Change name to something like get_other_backend...
     def prepare_for_new_replica_version_consolidate(
         self, object_id, hint, backend_id, backend_hostname, different_location
     ):
@@ -720,7 +721,7 @@ class DataClayRuntime(ABC):
                 instance.set_origin_location(hint)
         return dest_backend.id
 
-    # NOTE: Why versions are used? Can be removed
+    # NOTE: Used for compss
     def new_version(
         self, object_id, hint, class_id, dataset_name, backend_id, backend_hostname, recursive
     ):
