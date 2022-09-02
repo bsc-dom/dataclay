@@ -1,12 +1,13 @@
 """ Class description goes here. """
-import sys
-from weakref import WeakValueDictionary
 
 """
 Created on 26 ene. 2018
 
 @author: dgasull
 """
+
+import sys
+from weakref import WeakValueDictionary
 import gc
 import logging
 import time

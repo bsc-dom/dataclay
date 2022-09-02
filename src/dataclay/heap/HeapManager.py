@@ -10,6 +10,8 @@ import threading
 from abc import ABC, abstractmethod
 from weakref import WeakValueDictionary
 
+
+from dataclay_common import utils
 from dataclay.util import Configuration
 
 """ Make this class abstract """
@@ -34,7 +36,7 @@ class HeapManager(threading.Thread, ABC):
         self._finished = threading.Event()
         """ Runtime being monitorized. Java uses abstract functions to get the field in the proper type (EE or client) due to type-check. Not needed here. """
         self.runtime = theruntime
-        self.logger = logging.getLogger(__name__)
+        self.logger = utils.LoggerEvent(logging.getLogger(__name__))
         self.daemon = True
         self.logger.debug("HEAP MANAGER created.")
 

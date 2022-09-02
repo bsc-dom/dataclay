@@ -4,7 +4,9 @@ import logging
 import traceback
 import uuid
 
+from dataclay_common import utils
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
+from opentelemetry import trace
 
 from dataclay.commonruntime.ExecutionEnvironmentRuntime import ExecutionEnvironmentRuntime
 from dataclay.commonruntime.Runtime import get_runtime, set_runtime
@@ -38,7 +40,8 @@ __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
 
-logger = logging.getLogger(__name__)
+tracer = trace.get_tracer(__name__)
+logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
 class ExecutionEnvironment(object):
@@ -290,6 +293,7 @@ class ExecutionEnvironment(object):
             self.runtime,
         )
 
+    @tracer.start_as_current_span("EE: make_persistent")
     def make_persistent(self, session_id, objects_to_persist):
         """This function will deserialize make persistent "parameters" (i.e. object to persist
         and subobjects if needed) into dataClay memory heap using the same design as for
