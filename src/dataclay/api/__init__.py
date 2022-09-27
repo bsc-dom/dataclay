@@ -102,16 +102,7 @@ def init_connection(client_file) -> LMClient:
         logger.warning("Runtime already has a client with the LogicModule, reusing that")
         return runtime.ready_clients["@LM"]
 
-    if client_file:
-        settings.load_connection(client_file)
-
-    # Once the properties are load, we can prepare the LM client
-    logger.debug(
-        "Initializing dataClay connection with LM %s:%s",
-        settings.logicmodule_host,
-        settings.logicmodule_port,
-    )
-    client = LMClient(settings.logicmodule_host, settings.logicmodule_port)
+    client = LMClient(os.environ["LOGICMODULE_HOST"], os.getenv("LOGICMODULE_PORT_TCP", 11034))
     runtime.ready_clients["@LM"] = client
 
     _connection_initialized = True
