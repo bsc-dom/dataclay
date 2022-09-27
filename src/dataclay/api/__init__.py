@@ -242,9 +242,6 @@ def init():
 
     with tracer.start_as_current_span("init") as init_span:
 
-        init_span.set_attribute("test.marcattribute", 77)
-        init_span.add_event("marcevent - starting init")
-
         logger.info("Initializing dataClay API")
 
         # Checks if dataclay is already initialized
