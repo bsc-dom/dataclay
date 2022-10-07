@@ -6,7 +6,7 @@ import threading
 import time
 import uuid
 
-from dataclay_mds.metadata_service import MetadataService
+from dataclay_common.metadata_service import MetadataService
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
 from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
