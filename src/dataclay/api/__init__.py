@@ -276,17 +276,21 @@ def init():
 
         init_span.add_event("marcevent - after new session")
 
+        # Cache the execution environment infos
+        runtime.update_ee_infos()
+
+        # Cache the dataclay_id, to avoid later request
+        runtime.dataclay_id
+
         # Set LOCAL_BACKEND
-        sl_name = settings.LOCAL_BACKEND
-        if sl_name:
-            runtime.update_ee_infos()
+        if settings.LOCAL_BACKEND:
             for ee_id, ee_info in runtime.ee_infos.items():
-                if ee_info.sl_name == sl_name:
+                if ee_info.sl_name == settings.LOCAL_BACKEND:
                     global LOCAL
                     LOCAL = ee_id
                     break
             else:
-                logger.warning(f"Backend with name '{sl_name}' not found, ignoring")
+                logger.warning(f"Backend with name '{settings.LOCAL_BACKEND}' not found, ignoring")
 
         _initialized = True
         logger.debug(f"Started session {session.id}")
