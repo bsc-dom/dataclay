@@ -104,9 +104,17 @@ To generate development images use the following tag:
 For example:
 
 ```bash
-docker buildx build --platform linux/amd64,linux/arm64 -t bscdataclay/dev20220612-py3.10-bullseye \
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:dev20220612-py3.10-bullseye \
 --build-arg PYTHON_VERSION=3.10-bullseye --push .
 ```
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 \
+-t bscdataclay/dspython:edge \
+--build-arg PYTHON_VERSION=3.10-bullseye --push .
+```
+
 
 To use buildx for different architectures you may need to install `QEMU` binaries. You can install them with:
 
