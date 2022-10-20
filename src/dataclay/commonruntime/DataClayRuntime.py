@@ -10,8 +10,13 @@ from grpc import RpcError
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.heap.LockerPool import LockerPool
-from dataclay.paraver import (extrae_tracing_is_enabled, finish_tracing,
-                              get_current_available_task_id, get_task_id, initialize_extrae)
+from dataclay.paraver import (
+    extrae_tracing_is_enabled,
+    finish_tracing,
+    get_current_available_task_id,
+    get_task_id,
+    initialize_extrae,
+)
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
@@ -190,11 +195,11 @@ class DataClayRuntime(ABC):
 
         backend_id = into_object.get_hint()
         try:
-            execution_client = self.ready_clients[backend_id]
+            ee_client = self.ready_clients[backend_id]
         except KeyError:
             exec_env = self.get_execution_environment_info(backend_id)
-            execution_client = EEClient(exec_env.hostname, exec_env.port)
-            self.ready_clients[backend_id] = execution_client
+            ee_client = EEClient(exec_env.hostname, exec_env.port)
+            self.ready_clients[backend_id] = ee_client
 
         # We serialize objects like volatile parameters
         parameters = list()
@@ -245,9 +250,7 @@ class DataClayRuntime(ABC):
                         except KeyError:
                             pass
 
-        execution_client.ds_update_object(
-            session_id, into_object.get_object_id(), serialized_params
-        )
+        ee_client.ds_update_object(session_id, into_object.get_object_id(), serialized_params)
 
     #################
     # Lock & unlock #
@@ -437,11 +440,11 @@ class DataClayRuntime(ABC):
         implementation_id = self.get_implementation_id(object_id, operation_name)
 
         try:
-            execution_client = self.ready_clients[backend_id]
+            ee_client = self.ready_clients[backend_id]
         except KeyError:
             exec_env = self.get_execution_environment_info(backend_id)
-            execution_client = EEClient(exec_env.hostname, exec_env.port)
-            self.ready_clients[backend_id] = execution_client
+            ee_client = EEClient(exec_env.hostname, exec_env.port)
+            self.ready_clients[backend_id] = ee_client
 
         operation = self.get_operation_info(object_id, operation_name)
         serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
@@ -453,7 +456,7 @@ class DataClayRuntime(ABC):
             runtime=self,
         )
 
-        ret = execution_client.ds_execute_implementation(
+        ret = ee_client.ds_execute_implementation(
             object_id, implementation_id, session_id, serialized_params
         )
 
@@ -490,7 +493,7 @@ class DataClayRuntime(ABC):
         for _ in range(max_retry):
             try:
                 logger.verbose("Obtaining API for remote execution in %s ", exec_env_id)
-                execution_client = self.ready_clients[exec_env_id]
+                ee_client = self.ready_clients[exec_env_id]
             except KeyError:
                 exec_env = self.get_execution_environment_info(exec_env_id)
                 logger.debug(
@@ -499,12 +502,12 @@ class DataClayRuntime(ABC):
                     exec_env.hostname,
                     exec_env.port,
                 )
-                execution_client = EEClient(exec_env.hostname, exec_env.port)
-                self.ready_clients[exec_env_id] = execution_client
+                ee_client = EEClient(exec_env.hostname, exec_env.port)
+                self.ready_clients[exec_env_id] = ee_client
 
             try:
                 logger.verbose("Calling remote EE %s ", exec_env_id)
-                ret = execution_client.ds_execute_implementation(
+                ret = ee_client.ds_execute_implementation(
                     object_id, implementation_id, session_id, serialized_params
                 )
                 executed = True
@@ -604,13 +607,13 @@ class DataClayRuntime(ABC):
 
         backend_id = from_object.get_hint()
         try:
-            execution_client = self.ready_clients[backend_id]
+            ee_client = self.ready_clients[backend_id]
         except KeyError:
             exec_env = self.get_execution_environment_info(backend_id)
-            execution_client = EEClient(exec_env.hostname, exec_env.port)
-            self.ready_clients[backend_id] = execution_client
+            ee_client = EEClient(exec_env.hostname, exec_env.port)
+            self.ready_clients[backend_id] = ee_client
 
-        copiedObject = execution_client.ds_get_copy_of_object(
+        copiedObject = ee_client.ds_get_copy_of_object(
             session_id, from_object.get_object_id(), recursive
         )
         result = DeserializationLibUtilsSingleton.deserialize_params_or_return(
@@ -689,12 +692,12 @@ class DataClayRuntime(ABC):
             dest_backend = self.get_execution_environment_info(dest_backend_id)
 
         try:
-            execution_client = self.ready_clients[hint]
+            ee_client = self.ready_clients[hint]
         except KeyError:
             backend_to_call = self.get_execution_environment_info(hint)
-            execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
-            self.ready_clients[hint] = execution_client
-        return execution_client, dest_backend
+            ee_client = EEClient(backend_to_call.hostname, backend_to_call.port)
+            self.ready_clients[hint] = ee_client
+        return ee_client, dest_backend
 
     def new_replica(self, object_id, hint, backend_id, backend_hostname, recursive):
         logger.debug(f"Starting new replica of {object_id}")
@@ -741,13 +744,13 @@ class DataClayRuntime(ABC):
             hint = self.get_hint(object_id)
 
         try:
-            execution_client = self.ready_clients[hint]
+            ee_client = self.ready_clients[hint]
         except KeyError:
             backend_to_call = self.get_execution_environment_info(hint)
-            execution_client = EEClient(backend_to_call.hostname, backend_to_call.port)
-            self.ready_clients[hint] = execution_client
+            ee_client = EEClient(backend_to_call.hostname, backend_to_call.port)
+            self.ready_clients[hint] = ee_client
 
-        execution_client.consolidate_version(self.session.id, object_id)
+        ee_client.consolidate_version(self.session.id, object_id)
         logger.debug(f"Finished consolidate version of {object_id}")
 
     ##############

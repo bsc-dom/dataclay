@@ -91,17 +91,17 @@ class ClientRuntime(DataClayRuntime):
 
             # Gets EE Client
             try:
-                execution_client = self.ready_clients[instance.get_hint()]
+                ee_client = self.ready_clients[instance.get_hint()]
             except KeyError:
                 exec_env = self.get_execution_environment_info(instance.get_hint())
                 logger.debug(
                     f"ExecutionEnvironment {instance.get_hint()} not found in cache! Starting it at {exec_env.hostname}:{exec_env.port}",
                 )
-                execution_client = EEClient(exec_env.hostname, exec_env.port)
-                self.ready_clients[instance.get_hint()] = execution_client
+                ee_client = EEClient(exec_env.hostname, exec_env.port)
+                self.ready_clients[instance.get_hint()] = ee_client
 
             logger.verbose(f"Calling make persistent to EE {instance.get_hint()}")
-            execution_client.make_persistent(self.session.id, serialized_objs.vol_objs.values())
+            ee_client.make_persistent(self.session.id, serialized_objs.vol_objs.values())
 
             # removes volatiles under deserialization
             self.remove_volatiles_under_deserialization(serialized_objs.vol_objs.values())
@@ -175,12 +175,12 @@ class ClientRuntime(DataClayRuntime):
             runtime=self,
         )
         try:
-            execution_client = self.ready_clients[dest_backend_id]
+            ee_client = self.ready_clients[dest_backend_id]
         except KeyError:
             exec_env = self.get_execution_environment_info(dest_backend_id)
-            execution_client = EEClient(exec_env.hostname, exec_env.port)
-            self.ready_clients[dest_backend_id] = execution_client
-        execution_client.synchronize(
+            ee_client = EEClient(exec_env.hostname, exec_env.port)
+            self.ready_clients[dest_backend_id] = ee_client
+        ee_client.synchronize(
             self.session.id, instance.get_object_id(), implementation_id, serialized_params
         )
 
@@ -206,11 +206,11 @@ class ClientRuntime(DataClayRuntime):
             self.update_object_metadata(instance)
             hint = self.get_hint()
         try:
-            execution_client = self.ready_clients[hint]
+            ee_client = self.ready_clients[hint]
         except KeyError:
             exec_env = self.get_execution_environment_info(hint)
-            execution_client = EEClient(exec_env.hostname, exec_env.port)
-            self.ready_clients[hint] = execution_client
+            ee_client = EEClient(exec_env.hostname, exec_env.port)
+            self.ready_clients[hint] = ee_client
 
         logger.debug(
             "[==FederateObject==] Starting federation of object by %s calling EE %s with dest dataClay %s, and session %s",
@@ -219,7 +219,7 @@ class ClientRuntime(DataClayRuntime):
             external_execution_environment_id,
             self.session.id,
         )
-        execution_client.federate(
+        ee_client.federate(
             self.session.id, instance.get_object_id(), external_execution_environment_id, recursive
         )
 
@@ -235,12 +235,12 @@ class ClientRuntime(DataClayRuntime):
             self.update_object_metadata(instance)
             hint = self.get_hint()
         try:
-            execution_client = self.ready_clients[hint]
+            ee_client = self.ready_clients[hint]
         except KeyError:
             exec_env = self.get_execution_environment_info(hint)
-            execution_client = EEClient(exec_env.hostname, exec_env.port)
-            self.ready_clients[hint] = execution_client
+            ee_client = EEClient(exec_env.hostname, exec_env.port)
+            self.ready_clients[hint] = ee_client
 
-        execution_client.unfederate(
+        ee_client.unfederate(
             self.session.id, instance.get_object_id(), external_execution_environment_id, recursive
         )
