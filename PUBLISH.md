@@ -61,60 +61,51 @@ python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-u
 **Release images:**
 
 ``` bash
+
+VERSION=3.0.0-alpha.1
+
 # Python 3.10 bullseye
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:2.8-py3.10-bullseye \
--t bscdataclay/dspython:2.8 \
+-t bscdataclay/dspython:$VERSION-py3.10-bullseye \
+-t bscdataclay/dspython:$VERSION \
 -t bscdataclay/dspython:latest \
 --build-arg PYTHON_VERSION=3.10-bullseye --push .
 
 # Python 3.8 bullseye
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:2.8-py3.8-bullseye \
+-t bscdataclay/dspython:$VERSION-py3.8-bullseye \
 --build-arg PYTHON_VERSION=3.8-bullseye --push .
 ```
 
 <!-- NOT SUPPORTED```bash
 # Python 3.10 alpine
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:2.8-py3.10-alpine \
+-t bscdataclay/dspython:$VERSION-py3.10-alpine \
 --build-arg PYTHON_VERSION=3.10-alpine --push .
 
 # Python 3.10 slim
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:2.8-py3.10-slim \
+-t bscdataclay/dspython:$VERSION-py3.10-slim \
 --build-arg PYTHON_VERSION=3.10-slim --push .
 
 # Python 3.8 alpine
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:2.8-py3.8-alpine \
+-t bscdataclay/dspython:$VERSION-py3.8-alpine \
 --build-arg PYTHON_VERSION=3.8-alpine --push .
 
 # Python 3.8 slim
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:2.8-py3.8-slim \
+-t bscdataclay/dspython:$VERSION-py3.8-slim \
 --build-arg PYTHON_VERSION=3.8-slim --push .
 ``` -->
 
 **Development images:**
-
-To generate development images use the following tag:  
-*devYYYYMMDD-py{version}-bullseye*
-
-For example:
-
-```bash
-docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:dev20220612-py3.10-bullseye \
---build-arg PYTHON_VERSION=3.10-bullseye --push .
-```
 
 ```bash
 docker buildx build --platform linux/amd64,linux/arm64 \
 -t bscdataclay/dspython:edge \
 --build-arg PYTHON_VERSION=3.10-bullseye --push .
 ```
-
 
 To use buildx for different architectures you may need to install `QEMU` binaries. You can install them with:
 
@@ -126,7 +117,6 @@ sudo apt install qemu-user-static
 
 - Create a new branch from `main` called **release-{release_version}**.
 - Remove **dev** from setup.cfg version.
-- Change **pyclay.deploy.build** to **{release_version}.build** from `deploy.yml` and `test.yml` version.
 - Merge branch to `main` with a pull request.
 - Create a tag to the merge commit with `git tag -a {VERSION} -m "Release {VERSION}"`
 - Publish tag with `git push origin {VERSION}`
@@ -136,7 +126,5 @@ sudo apt install qemu-user-static
 
 - Create a new branch from `main` called **prepare-{new_version}-dev**
 - setup.cfg: Update version to **{new_version}-dev**
-- VERSION.txt: Set new version
 - PUBLISH.md: Update docker build instructions with the new version
-- Change version tag from `deploy.yml` and `test.yml` to **pyclay.deploy.build**.
 - Merge branch to `main` with a pull request.
