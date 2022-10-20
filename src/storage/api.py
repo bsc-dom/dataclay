@@ -6,9 +6,11 @@ import uuid
 from distutils.util import strtobool
 
 import dataclay.api
+
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
 from dataclay.commonruntime.Runtime import get_runtime
+
 # Also "publish" the split method
 from dataclay.contrib.splitting import split
 

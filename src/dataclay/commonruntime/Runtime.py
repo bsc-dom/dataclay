@@ -43,7 +43,8 @@ def get_runtime():
 
 
 # Those need the commonruntime
-from dataclay.DataClayObject import \
-    DataClayObject  # Import after runtime to avoid circular-imports (runtime is already defined here)
+from dataclay.DataClayObject import (
+    DataClayObject,
+)  # Import after runtime to avoid circular-imports (runtime is already defined here)
 
 StorageObject = DataClayObject  # Redundant alias
