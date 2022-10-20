@@ -117,7 +117,7 @@ sudo apt install qemu-user-static
 
 - Create a new branch from `main` called **release-{release_version}**.
 - Remove **dev** from setup.cfg version.
-- Autoformat with black `black -l 100 .`
+- Autoformat with black `black -l 100 .` and isort `isort -l 100 .`
 - Merge branch to `main` with a pull request.
 - Create a tag to the merge commit with `git tag -a {VERSION} -m "Release {VERSION}"`
 - Publish tag with `git push origin {VERSION}`

@@ -22,29 +22,18 @@ from dataclay_common.managers.object_manager import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from opentelemetry import trace
 
-from dataclay.commonruntime.ExecutionGateway import (
-    ExecutionGateway,
-    class_extradata_cache_client,
-    class_extradata_cache_exec_env,
-)
+from dataclay.commonruntime.ExecutionGateway import (ExecutionGateway, class_extradata_cache_client,
+                                                     class_extradata_cache_exec_env)
 from dataclay.commonruntime.Runtime import get_runtime
 from dataclay.DataClayObjectExtraData import DataClayClassExtraData, DataClayInstanceExtraData
 from dataclay.DataClayObjMethods import dclayMethod
-from dataclay.DataClayObjProperties import (
-    DCLAY_PROPERTY_PREFIX,
-    DynamicProperty,
-    PreprocessedProperty,
-    ReplicatedDynamicProperty,
-)
+from dataclay.DataClayObjProperties import (DCLAY_PROPERTY_PREFIX, DynamicProperty,
+                                            PreprocessedProperty, ReplicatedDynamicProperty)
 from dataclay.exceptions.exceptions import DataClayException, ImproperlyConfigured
-from dataclay.serialization.lib.DeserializationLibUtils import (
-    DeserializationLibUtilsSingleton,
-    PersistentLoadPicklerHelper,
-)
-from dataclay.serialization.lib.SerializationLibUtils import (
-    PersistentIdPicklerHelper,
-    SerializationLibUtilsSingleton,
-)
+from dataclay.serialization.lib.DeserializationLibUtils import (DeserializationLibUtilsSingleton,
+                                                                PersistentLoadPicklerHelper)
+from dataclay.serialization.lib.SerializationLibUtils import (PersistentIdPicklerHelper,
+                                                              SerializationLibUtilsSingleton)
 from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
 from dataclay.serialization.python.lang.DCIDWrapper import DCIDWrapper
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper

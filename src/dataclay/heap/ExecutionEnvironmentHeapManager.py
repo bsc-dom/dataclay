@@ -6,12 +6,12 @@ Created on 26 ene. 2018
 @author: dgasull
 """
 
-import sys
-from weakref import WeakValueDictionary
 import gc
 import logging
+import sys
 import time
 import traceback
+from weakref import WeakValueDictionary
 
 try:
     import tracemalloc

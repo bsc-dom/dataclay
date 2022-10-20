@@ -10,8 +10,8 @@ import threading
 from abc import ABC, abstractmethod
 from weakref import WeakValueDictionary
 
-
 from dataclay_common import utils
+
 from dataclay.util import Configuration
 
 """ Make this class abstract """

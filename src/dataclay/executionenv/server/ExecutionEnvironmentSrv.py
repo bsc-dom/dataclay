@@ -33,9 +33,8 @@ from dataclay.communication.grpc.clients.StorageLocationGrpcClient import SLClie
 from dataclay.communication.grpc.server.ExecutionEnvironmentService import DataServiceEE
 from dataclay.executionenv.ExecutionEnvironment import ExecutionEnvironment
 from dataclay.util import Configuration
-from dataclay.util.classloaders import (
-    ClassLoader,
-)  # Import after DataClayRuntime to avoid circular imports
+from dataclay.util.classloaders import \
+    ClassLoader  # Import after DataClayRuntime to avoid circular imports
 from dataclay.util.config.CfgExecEnv import set_defaults
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

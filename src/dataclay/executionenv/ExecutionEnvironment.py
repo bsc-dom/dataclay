@@ -13,19 +13,11 @@ from dataclay.commonruntime.Runtime import get_runtime, set_runtime
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.DataClayObject import DataClayObject
-from dataclay.DataClayObjProperties import (
-    DCLAY_GETTER_PREFIX,
-    DCLAY_PROPERTY_PREFIX,
-    DCLAY_SETTER_PREFIX,
-)
+from dataclay.DataClayObjProperties import (DCLAY_GETTER_PREFIX, DCLAY_PROPERTY_PREFIX,
+                                            DCLAY_SETTER_PREFIX)
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.paraver import (
-    extrae_tracing_is_enabled,
-    finish_tracing,
-    get_traces,
-    initialize_extrae,
-    set_current_available_task_id,
-)
+from dataclay.paraver import (extrae_tracing_is_enabled, finish_tracing, get_traces,
+                              initialize_extrae, set_current_available_task_id)
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton

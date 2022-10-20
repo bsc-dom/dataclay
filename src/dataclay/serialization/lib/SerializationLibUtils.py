@@ -16,10 +16,8 @@ from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDat
 from dataclay.serialization.lib.PersistentParamOrReturn import PersistentParamOrReturn
 from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
 from dataclay.serialization.python.lang.VLQIntegerWrapper import VLQIntegerWrapper
-from dataclay.serialization.python.util.PyTypeWildcardWrapper import (
-    PyTypeWildcardWrapper,
-    safe_wait_if_compss_future,
-)
+from dataclay.serialization.python.util.PyTypeWildcardWrapper import (PyTypeWildcardWrapper,
+                                                                      safe_wait_if_compss_future)
 from dataclay.util.DataClayObjectMetaData import DataClayObjectMetaData
 from dataclay.util.IdentityDict import IdentityDict
 from dataclay.util.ReferenceCounting import ReferenceCounting

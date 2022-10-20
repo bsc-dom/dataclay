@@ -25,12 +25,8 @@ from dataclay.commonruntime.Runtime import set_runtime
 from dataclay.commonruntime.Settings import unload_settings
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.DataClayObject import DataClayObject
-from dataclay.paraver import (
-    TRACE_ENABLED,
-    extrae_tracing_is_enabled,
-    get_task_id,
-    set_current_available_task_id,
-)
+from dataclay.paraver import (TRACE_ENABLED, extrae_tracing_is_enabled, get_task_id,
+                              set_current_available_task_id)
 from dataclay.util.StubUtils import clean_babel_data, track_local_available_classes
 
 # This will be populated during initialization
@@ -421,11 +417,9 @@ def finish():
         clean_babel_data()
         sys.path.remove(os.path.join(settings.STUBS_PATH, "sources"))
         # unload caches of stubs
-        from dataclay.commonruntime.ExecutionGateway import (
-            class_extradata_cache_client,
-            class_extradata_cache_exec_env,
-            loaded_classes,
-        )
+        from dataclay.commonruntime.ExecutionGateway import (class_extradata_cache_client,
+                                                             class_extradata_cache_exec_env,
+                                                             loaded_classes)
 
         loaded_classes.clear()
         class_extradata_cache_exec_env.clear()

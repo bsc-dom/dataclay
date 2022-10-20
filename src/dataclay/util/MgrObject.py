@@ -2,10 +2,11 @@
 
 import logging
 
+from yaml import Dumper, Loader, dump, load
+
 from dataclay.commonruntime.Initializer import size_tracking
 from dataclay.serialization.DataClaySerializable import DataClaySerializable
 from dataclay.serialization.python.lang.StringWrapper import StringWrapper
-from yaml import Dumper, Loader, dump, load
 
 logger = logging.getLogger(__name__)
 

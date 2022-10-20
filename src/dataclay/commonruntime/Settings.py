@@ -11,7 +11,6 @@ Note that this code has been heavily inspired by the Django's conf module.
 import logging
 import os
 
-
 from dataclay.exceptions.exceptions import ImproperlyConfigured
 from dataclay.util import Configuration
 from dataclay.util.PropertiesFilesLoader import PropertyDict

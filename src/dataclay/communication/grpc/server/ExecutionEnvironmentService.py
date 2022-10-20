@@ -6,11 +6,12 @@ import logging
 import pickle
 import traceback
 
+from dataclay_common.protos import common_messages_pb2, dataservice_messages_pb2
+from dataclay_common.protos import dataservice_pb2_grpc as ds
+
 from dataclay.commonruntime.Runtime import get_runtime
 from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay_common.protos import common_messages_pb2, dataservice_messages_pb2
-from dataclay_common.protos import dataservice_pb2_grpc as ds
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
 __copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
