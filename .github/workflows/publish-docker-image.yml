@@ -14,7 +14,6 @@ on:
   push:
     branches:
       - main
-      - microservices
 
 jobs:
   push_to_registry:
@@ -46,8 +45,8 @@ jobs:
         with:
           images: bscdataclay/dspython
           tags: |
-            type=edge,suffix=-py${{ matrix.python-version }},branch=microservices
-            type=edge,enable=${{ matrix.python-version == '3.10' }},branch=microservices
+            type=edge,suffix=-py${{ matrix.python-version }},branch=main
+            type=edge,enable=${{ matrix.python-version == '3.10' }},branch=main
       
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
