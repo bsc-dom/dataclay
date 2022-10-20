@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 """dataClay Tool code for Python.
 
 The code in this package is intended to be used by the "dataClay Tool", for all
@@ -7,24 +8,24 @@ the Python specific stuff.
 
 # TODO The below code should be deprecated as soon as the dclayTool.sh is done
 
-from dataclay.api import init_connection, finish
-from dataclay.commonruntime.ExecutionGateway import ExecutionGateway
-import grpc
-from importlib import import_module
-from jinja2 import Template
 import os
 import sys
+from importlib import import_module
 from uuid import UUID
 
-from dataclay.commonruntime.Runtime import getRuntime
-from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
-from dataclay.util.StubUtils import deploy_stubs
-from dataclay.util.StubUtils import prepare_storage
+import grpc
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
+from jinja2 import Template
+
+from dataclay.api import finish, init_connection
+from dataclay.commonruntime.ExecutionGateway import ExecutionGateway
+from dataclay.commonruntime.Runtime import get_runtime
+from dataclay.util.StubUtils import deploy_stubs, prepare_storage
 from dataclay.util.tools.python.PythonMetaClassFactory import MetaClassFactory
 from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2017 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
 
 USAGE_TEXT = """
 Current commands:
@@ -69,7 +70,7 @@ access those classes.
 
 
 def _execute_from_command_line(argv=None):
-    client = getRuntime().ready_clients["@LM"]
+    client = get_runtime().ready_clients["@LM"]
 
     if len(argv) < 2:
         print("You should provide a command to the tool.", file=sys.stderr)
@@ -86,23 +87,23 @@ def _execute_from_command_line(argv=None):
         username = argv[4]
         password = argv[5]
 
-        yaml_request_template = Template("""
+        yaml_request_template = Template(
+            """
 ---
  - !!es.bsc.dataclay.util.management.accountmgr.Account
    username: {{ username }}
    credential: !!es.bsc.dataclay.util.management.accountmgr.PasswordCredential
      password: {{ password }}
    role: NORMAL_ROLE
-""")
+"""
+        )
 
         yaml_request = yaml_request_template.render(
             username=username,
             password=password,
         )
 
-        client.perform_set_of_new_accounts(admin_id,
-                                           admin_credential,
-                                           yaml_request)
+        client.perform_set_of_new_accounts(admin_id, admin_credential, yaml_request)
 
     elif argv[1] == "registertodataclaypubliccontract":
         username = argv[2]
@@ -122,9 +123,9 @@ def _execute_from_command_line(argv=None):
     providerAccountName: {consumer_name}
     name: {namespace_name}
     language: LANG_PYTHON
-""".format(consumer_name=username,
-           namespace="dc_classes",
-           namespace_name="dc_classes")
+""".format(
+                consumer_name=username, namespace="dc_classes", namespace_name="dc_classes"
+            )
 
             yaml_response = client.perform_set_of_operations(user_id, credential, yaml_request)
             response = dataclay_yaml_load(yaml_response)
@@ -134,10 +135,10 @@ def _execute_from_command_line(argv=None):
         #########################################################################
         # Then we prepare the classes
         from dataclay import contrib
+
         modules = contrib.MODULES_TO_REGISTER
 
-        mfc = MetaClassFactory(namespace="dc_classes",
-                               responsible_account=username)
+        mfc = MetaClassFactory(namespace="dc_classes", responsible_account=username)
 
         for m_str in modules:
             m = import_module("dataclay.contrib.%s" % m_str)
@@ -145,13 +146,14 @@ def _execute_from_command_line(argv=None):
             for c_str in getattr(m, "CLASSES_TO_REGISTER"):
                 mfc.add_class(getattr(m, c_str))
 
-        client = getRuntime().ready_clients["@LM"]
+        client = get_runtime().ready_clients["@LM"]
         result = client.new_class(user_id, LANG_PYTHON, mfc.classes)
 
         if not result:
             raise RuntimeError("No classes successfully registered --cannot continue")
 
-        class_interface_template = Template("""
+        class_interface_template = Template(
+            """
 {{ brief_name }}interface: &{{ brief_name }}iface !!es.bsc.dataclay.util.management.interfacemgr.Interface
   providerAccountName: {{ username }}
   namespace: dc_classes
@@ -165,9 +167,11 @@ def _execute_from_command_line(argv=None):
   {% for operation in class_info.operations %}
     ? {{ operation.nameAndDescriptor }}
   {% endfor %}
-""")
+"""
+        )
 
-        class_interface_in_contract_template = Template("""
+        class_interface_in_contract_template = Template(
+            """
     - !!es.bsc.dataclay.util.management.contractmgr.InterfaceInContract
       iface: *{{ brief_name }}iface
       implementationsSpecPerOperation: !!set {% if class_info.operations|length == 0 %} { } {% endif %}
@@ -177,22 +181,29 @@ def _execute_from_command_line(argv=None):
             numLocalImpl: 0
             numRemoteImpl: 0
         {% endfor %}
-    """)
+    """
+        )
 
         classes_render = list()
         incontract_render = list()
         for class_name, class_info in result.items():
             brief_name = class_name.rsplit(".", 1)[-1].lower()
-            classes_render.append(class_interface_template.render(
-                username=username,
-                brief_name=brief_name,
-                class_name=class_name,
-                class_info=class_info))
-            incontract_render.append(class_interface_in_contract_template.render(
-                brief_name=brief_name, class_info=class_info
-            ))
+            classes_render.append(
+                class_interface_template.render(
+                    username=username,
+                    brief_name=brief_name,
+                    class_name=class_name,
+                    class_info=class_info,
+                )
+            )
+            incontract_render.append(
+                class_interface_in_contract_template.render(
+                    brief_name=brief_name, class_info=class_info
+                )
+            )
 
-        yaml_request_template = Template("""
+        yaml_request_template = Template(
+            """
 ---
 {% for class_iface in class_interfaces %}
 {{ class_iface }}
@@ -209,11 +220,10 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
     {{ contract }}
     {% endfor %}
   publicAvailable: True
-""")
+"""
+        )
         yaml_request = yaml_request_template.render(
-            user_id=user_id,
-            class_interfaces=classes_render,
-            contracts=incontract_render
+            user_id=user_id, class_interfaces=classes_render, contracts=incontract_render
         )
 
         yaml_response = client.perform_set_of_operations(user_id, credential, yaml_request)
@@ -234,17 +244,16 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
         credential = (None, password)
         user_id = client.get_account_id(username)
 
-        yaml_request_template = Template("""
+        yaml_request_template = Template(
+            """
 ---
 {{ namespace }}: !!es.bsc.dataclay.util.management.namespacemgr.Namespace
   providerAccountName: {{ username }}
   name: {{ namespace }}
   language: LANG_PYTHON
-""")
-        yaml_request = yaml_request_template.render(
-            namespace=namespace,
-            username=username
+"""
         )
+        yaml_request = yaml_request_template.render(namespace=namespace, username=username)
 
         try:
             client.perform_set_of_operations(user_id, credential, yaml_request)
@@ -254,10 +263,10 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
 
         # Then use the new register_model shiny stuff
         from .functions import register_model
-        register_model(namespace=namespace,
-                       python_path=python_path,
-                       username=username,
-                       password=password)
+
+        register_model(
+            namespace=namespace, python_path=python_path, username=username, password=password
+        )
 
     elif argv[1] == "registermodule":
         namespace = argv[2]
@@ -267,17 +276,16 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
 
         user_id = client.get_account_id(username)
 
-        yaml_request_template = Template("""
+        yaml_request_template = Template(
+            """
 ---
 {{ namespace }}: !!es.bsc.dataclay.util.management.namespacemgr.Namespace
   providerAccountName: {{ username }}
   name: {{ namespace }}
   language: LANG_PYTHON
-""")
-        yaml_request = yaml_request_template.render(
-            namespace=namespace,
-            username=username
+"""
         )
+        yaml_request = yaml_request_template.render(namespace=namespace, username=username)
 
         try:
             client.perform_set_of_operations(user_id, credential, yaml_request)
@@ -285,8 +293,7 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
             # We assume that the namespace already exists
             pass
 
-        mfc = MetaClassFactory(namespace=namespace,
-                               responsible_account=username)
+        mfc = MetaClassFactory(namespace=namespace, responsible_account=username)
 
         # Scrap the classes in the module
         registered_classes = list()
@@ -299,9 +306,11 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
 
             # Thing seems to be a DataClayObject class
             if thing.__module__ != module_name:
-                print("The module for %s is %s, ignoring because it does not equals %s" % (
-                    thing, thing.__module__, module_name
-                    ), file=sys.stderr)
+                print(
+                    "The module for %s is %s, ignoring because it does not equals %s"
+                    % (thing, thing.__module__, module_name),
+                    file=sys.stderr,
+                )
                 continue
 
             # Ok, that's a valid class
@@ -309,13 +318,13 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
             registered_classes.append(thing.__name__)
 
         registrator_id = client.get_account_id(username)
-        result = client.new_class(registrator_id,
-                                  credential,
-                                  LANG_PYTHON,
-                                  mfc.classes)
-        
-        print("Was gonna register: %s\nEventually registered: %s" % (
-            registered_classes, result.keys()), file=sys.stderr)
+        result = client.new_class(registrator_id, credential, LANG_PYTHON, mfc.classes)
+
+        print(
+            "Was gonna register: %s\nEventually registered: %s"
+            % (registered_classes, result.keys()),
+            file=sys.stderr,
+        )
 
         if len(result.keys()) == 0:
             print("No classes registered, exiting", file=sys.stderr)
@@ -325,9 +334,11 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
         interfaces_in_contract = list()
 
         for class_name, class_info in result.items():
-            ref_class_name = class_name.replace('.', '')
+            ref_class_name = class_name.replace(".", "")
 
-            interfaces.append(Template("""
+            interfaces.append(
+                Template(
+                    """
 {{ class_name }}interface: &{{ ref_class_name }}iface !!es.bsc.dataclay.util.management.interfacemgr.Interface
   providerAccountName: {{ username }}
   namespace: {{ namespace }}
@@ -341,14 +352,19 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
   {% for operation in class_info.operations %} 
     ? {{ operation.nameAndDescriptor }}
   {% endfor %}
-""").render(
-                class_name=ref_class_name,
-                reg_class_name=class_name,
-                username=username,
-                namespace=namespace,
-                class_info=class_info))
+"""
+                ).render(
+                    class_name=ref_class_name,
+                    reg_class_name=class_name,
+                    username=username,
+                    namespace=namespace,
+                    class_info=class_info,
+                )
+            )
 
-            interfaces_in_contract.append(Template("""
+            interfaces_in_contract.append(
+                Template(
+                    """
     - !!es.bsc.dataclay.util.management.contractmgr.InterfaceInContract
       iface: *{{ class_name }}iface
       implementationsSpecPerOperation: !!set {% if class_info.operations|length == 0 %} { } {% endif %}
@@ -358,11 +374,12 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
             numLocalImpl: 0
             numRemoteImpl: 0
         {% endfor %}
-""").render(
-                class_name=ref_class_name,
-                class_info=class_info))
+"""
+                ).render(class_name=ref_class_name, class_info=class_info)
+            )
 
-        contract = Template("""
+        contract = Template(
+            """
 {{ namespace }}contract: !!es.bsc.dataclay.util.management.contractmgr.Contract
   beginDate: 1980-01-01T00:00:01
   endDate: 2055-12-31T23:59:58
@@ -373,10 +390,11 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
   interfacesInContractSpecs:
 {{ interfaces_in_contract }}
   publicAvailable: True
-""").render(
+"""
+        ).render(
             namespace=namespace,
             username=username,
-            interfaces_in_contract="\n".join(interfaces_in_contract)
+            interfaces_in_contract="\n".join(interfaces_in_contract),
         )
 
         yaml_request = "\n".join(interfaces) + contract
@@ -395,7 +413,8 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
 
         user_id = client.get_account_id(username)
 
-        yaml_request_template = Template("""
+        yaml_request_template = Template(
+            """
 {{ dataset }}: !!es.bsc.dataclay.util.management.datasetmgr.DataSet
   dataClayID: {{ 11111111-00000000-00000000-00000000-00000000 }}
   providerAccountID: {{ 00000000-00000000-00000000-00000000-00000000 }}
@@ -409,20 +428,18 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
   applicantsNames:
     ? {{ username }}
   publicAvailable: True
-""")
-        yaml_request = yaml_request_template.render(
-            dataset=dataset,
-            username=username
+"""
         )
+        yaml_request = yaml_request_template.render(dataset=dataset, username=username)
 
         try:
             client.perform_set_of_operations(user_id, credential, yaml_request)
         except grpc.RpcError as e:
-            print("Tried to do that operation and received: %s" % e , file=sys.stderr)
+            print("Tried to do that operation and received: %s" % e, file=sys.stderr)
 
     elif argv[1] == "getstubs":
         # TODO: If this part is still used, check that contract_ids should be a list.
-        contract_ids = map(UUID, argv[2].split(','))
+        contract_ids = map(UUID, argv[2].split(","))
         path = argv[3]
         username = argv[4]
         credential = (None, argv[5])
@@ -431,25 +448,21 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
 
         prepare_storage(path)
 
-        babel_data = client.get_babel_stubs(user_id,
-                                            credential,
-                                            contract_ids)
+        babel_data = client.get_babel_stubs(user_id, credential, contract_ids)
 
-        with open(os.path.join(path, "babelstubs.yml"), 'wb') as f:
+        with open(os.path.join(path, "babelstubs.yml"), "wb") as f:
             f.write(babel_data)
 
-        all_stubs = client.get_stubs(user_id, credential,
-                                     LANG_PYTHON,
-                                     contract_ids)
+        all_stubs = client.get_stubs(user_id, credential, LANG_PYTHON, contract_ids)
 
         for key, value in all_stubs.items():
-            with open(os.path.join(path, key), 'wb') as f:
+            with open(os.path.join(path, key), "wb") as f:
                 f.write(value)
 
         deploy_stubs(path)
     else:
-        print("Unknown command." , file=sys.stderr)
-        print(USAGE_TEXT , file=sys.stderr)
+        print("Unknown command.", file=sys.stderr)
+        print(USAGE_TEXT, file=sys.stderr)
         return
 
 
@@ -461,7 +474,9 @@ def execute_from_command_line(argv=None):
     """
     # Perform implicit initialization of connections (client.properties only, no storage.properties)
     client_properties_path = os.getenv("DATACLAYCLIENTCONFIG", "./cfgfiles/client.properties")
-    assert client_properties_path, "dataclay.tool module can only be called with DATACLAYCLIENTCONFIG set"
+    assert (
+        client_properties_path
+    ), "dataclay.tool module can only be called with DATACLAYCLIENTCONFIG set"
     init_connection(client_properties_path)
 
     _execute_from_command_line(argv)

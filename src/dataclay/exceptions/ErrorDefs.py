@@ -1,12 +1,11 @@
-
 """ Class description goes here. """
 
 import os.path
 
 from dataclay.util.PropertiesFilesLoader import PropertyFile
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 
 class ErrorCodes(PropertyFile):

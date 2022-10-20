@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 """Global constants holder and discover.
@@ -14,8 +13,8 @@ from dataclay.util.management.classmgr.PythonTypeSignatures import PythonTypeSig
 
 from . import properties
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 PROPERTIES_DIR = properties.__path__[0]
 

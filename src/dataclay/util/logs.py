@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 import json
@@ -7,6 +6,7 @@ import logging
 
 class JSONFormatter(logging.Formatter):
     """Simple JSON formatter for the logging facility."""
+
     def format(self, obj):
         """Note that obj is a LogRecord instance."""
         # Copy the dictionary

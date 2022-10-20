@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 """Generic GRPC paraver interceptor mechanisms.

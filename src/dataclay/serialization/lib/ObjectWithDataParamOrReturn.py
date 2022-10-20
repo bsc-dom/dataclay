@@ -1,6 +1,4 @@
 class ObjectWithDataParamOrReturn(object):
-
-
     def __init__(self, object_id, class_id, metadata, obj_bytes):
         """
         Create object with data params or return
@@ -13,6 +11,3 @@ class ObjectWithDataParamOrReturn(object):
         self.class_id = class_id
         self.metadata = metadata
         self.obj_bytes = obj_bytes
-
-
-

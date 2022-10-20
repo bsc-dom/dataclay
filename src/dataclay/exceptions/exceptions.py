@@ -1,19 +1,20 @@
-
 """ Class description goes here. """
 
 from dataclay.exceptions.ErrorDefs import ErrorCodes
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 
 class DataClayException(Exception):
     """Base class for exceptions in this module."""
+
     pass
 
 
 class ImproperlyConfigured(DataClayException):
     """Raised when the settings are not well-formed."""
+
     # def __init__(self, msg):
     #     self.msg = msg
     pass
@@ -21,11 +22,13 @@ class ImproperlyConfigured(DataClayException):
 
 class IdentifierNotFound(DataClayException):
     """Raised when a certain identifier (UUID, name...) has not been found."""
+
     pass
 
 
 class InvalidPythonSignature(DataClayException):
     """Raised when trying to use a not recognizable Python-signature."""
+
     pass
 
 
@@ -39,8 +42,11 @@ class RemoteException(RuntimeError):
             self.error_name = ErrorCodes.error_codes[error_code]
         except KeyError:
             self.error_name = "UNDEFINED".format(error_code)
-        super(RuntimeError, self).__init__("Error [{}: {}]. Server response: {}".format(
-            self.error_code, self.error_name, self.error_string))
+        super(RuntimeError, self).__init__(
+            "Error [{}: {}]. Server response: {}".format(
+                self.error_code, self.error_name, self.error_string
+            )
+        )
 
 
 class NetworkError(RuntimeError):

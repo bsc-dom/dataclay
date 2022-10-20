@@ -17,7 +17,7 @@ class StorageList(DataClayObject):
     @dclayMethod(return_="int")
     def __len__(self):
         return len(self._list)
-    
+
     @dclayMethod(item="anything", return_="bool")
     def __contains__(self, item):
         return item in self._list

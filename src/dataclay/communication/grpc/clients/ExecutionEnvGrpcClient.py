@@ -1,56 +1,53 @@
-
 """ Class description goes here. """
 
 """gRPC ExecutionEnvironment Client code - StorageLocation/EE methods."""
 
 import logging
+import pickle
 import sys
 import traceback
-import six
+
 import grpc
-
-if six.PY2:
-    import cPickle as pickle
-elif six.PY3:
-    import _pickle as pickle
-
+from dataclay_common.protos import common_messages_pb2 as CommonMessages
+from dataclay_common.protos import dataservice_messages_pb2, dataservice_pb2_grpc
 from grpc._cython.cygrpc import ChannelArgKey
+
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc import Utils
-from dataclay.communication.grpc.generated.dataservice import dataservice_pb2_grpc
-from dataclay.communication.grpc.messages.dataservice import dataservice_messages_pb2
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.util.YamlParser import dataclay_yaml_dump
-import dataclay.communication.grpc.messages.common.common_messages_pb2 as CommonMessages
 from dataclay.util import Configuration
+from dataclay.util.YamlParser import dataclay_yaml_dump
 
-__author__ = 'Enrico La Sala <enrico.lasala@bsc.es>'
-__copyright__ = '2017 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
+__copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
 
 logger = logging.getLogger(__name__)
 
 
 class EEClient(object):
-
     def __init__(self, hostname, port):
         """Create the stub and the channel at the address passed by the server."""
         self.address = str(hostname) + ":" + str(port)
-        options = [(ChannelArgKey.max_send_message_length, -1),
-                   (ChannelArgKey.max_receive_message_length, -1)]
+        options = [
+            (ChannelArgKey.max_send_message_length, -1),
+            (ChannelArgKey.max_receive_message_length, -1),
+        ]
         self.metadata_call = []
-        if Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != "" or \
-                Configuration.SSL_CLIENT_CERTIFICATE != "" or \
-                Configuration.SSL_CLIENT_KEY != "":
+        if (
+            Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != ""
+            or Configuration.SSL_CLIENT_CERTIFICATE != ""
+            or Configuration.SSL_CLIENT_KEY != ""
+        ):
             # read in certificates
-            options.append(('grpc.ssl_target_name_override', Configuration.SSL_TARGET_AUTHORITY))
+            options.append(("grpc.ssl_target_name_override", Configuration.SSL_TARGET_AUTHORITY))
             if port != 443:
                 service_alias = str(port)
-                self.metadata_call.append(('service-alias', service_alias))
+                self.metadata_call.append(("service-alias", service_alias))
                 self.address = f"{hostname}:443"
                 logger.info(f"SSL configured: changed address {hostname}:{port} to {hostname}:443")
                 logger.info("SSL configured: using service-alias  " + service_alias)
             else:
-                self.metadata_call.append(('service-alias', Configuration.SSL_TARGET_EE_ALIAS))
+                self.metadata_call.append(("service-alias", Configuration.SSL_TARGET_EE_ALIAS))
 
             try:
                 if Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != "":
@@ -64,22 +61,33 @@ class EEClient(object):
                     with open(Configuration.SSL_CLIENT_KEY, "rb") as f:
                         client_key = f.read()
             except Exception as e:
-                logger.error('failed-to-read-cert-keys', reason=e)
+                logger.error("failed-to-read-cert-keys", reason=e)
 
             # create credentials
             if trusted_certs is not None:
-                credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs,
-                                                           private_key=client_key,
-                                                           certificate_chain=client_cert)
+                credentials = grpc.ssl_channel_credentials(
+                    root_certificates=trusted_certs,
+                    private_key=client_key,
+                    certificate_chain=client_cert,
+                )
             else:
-                credentials = grpc.ssl_channel_credentials(private_key=client_key,
-                                                           certificate_chain=client_cert)
+                credentials = grpc.ssl_channel_credentials(
+                    private_key=client_key, certificate_chain=client_cert
+                )
 
             self.channel = grpc.secure_channel(self.address, credentials, options)
 
-            logger.info("SSL configured: using SSL_CLIENT_TRUSTED_CERTIFICATES located at " + Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES)
-            logger.info("SSL configured: using SSL_CLIENT_CERTIFICATE located at " + Configuration.SSL_CLIENT_CERTIFICATE)
-            logger.info("SSL configured: using SSL_CLIENT_KEY located at " + Configuration.SSL_CLIENT_KEY)
+            logger.info(
+                "SSL configured: using SSL_CLIENT_TRUSTED_CERTIFICATES located at "
+                + Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES
+            )
+            logger.info(
+                "SSL configured: using SSL_CLIENT_CERTIFICATE located at "
+                + Configuration.SSL_CLIENT_CERTIFICATE
+            )
+            logger.info(
+                "SSL configured: using SSL_CLIENT_KEY located at " + Configuration.SSL_CLIENT_KEY
+            )
             logger.info("SSL configured: using authority  " + Configuration.SSL_TARGET_AUTHORITY)
 
         else:
@@ -87,9 +95,11 @@ class EEClient(object):
             logger.info("SSL not configured")
 
         try:
-            grpc.channel_ready_future(self.channel).result(timeout=Configuration.GRPC_CHECK_ALIVE_TIMEOUT)
+            grpc.channel_ready_future(self.channel).result(
+                timeout=Configuration.GRPC_CHECK_ALIVE_TIMEOUT
+            )
         except Exception as e:
-            sys.exit('Error connecting to server %s' % self.address)
+            sys.exit("Error connecting to server %s" % self.address)
         else:
             self.ds_stub = dataservice_pb2_grpc.DataServiceStub(self.channel)
 
@@ -107,8 +117,7 @@ class EEClient(object):
             deployment_pack_dict[k] = dataclay_yaml_dump(v)
 
         request = dataservice_messages_pb2.DeployMetaClassesRequest(
-            namespace=namespace_name,
-            deploymentPack=deployment_pack_dict
+            namespace=namespace_name, deploymentPack=deployment_pack_dict
         )
 
         try:
@@ -120,10 +129,13 @@ class EEClient(object):
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    def ds_new_persistent_instance(self, session_id, class_id, implementation_id, i_face_bitmaps, params):
+    def ds_new_persistent_instance(
+        self, session_id, class_id, implementation_id, i_face_bitmaps, params
+    ):
 
-        logger.debug("Ready to call to a DS to build a new persistent instance for class {%s}",
-                     class_id)
+        logger.debug(
+            "Ready to call to a DS to build a new persistent instance for class {%s}", class_id
+        )
         temp_iface_b = dict()
         temp_param = None
 
@@ -139,7 +151,7 @@ class EEClient(object):
             classID=Utils.get_msg_id(class_id),
             implementationID=Utils.get_msg_id(implementation_id),
             ifaceBitMaps=temp_iface_b,
-            params=temp_param
+            params=temp_param,
         )
 
         try:
@@ -152,7 +164,7 @@ class EEClient(object):
             raise DataClayException(response.excInfo.exceptionMessage)
 
         return Utils.get_id(response.objectID)
-    
+
     def ds_store_objects(self, session_id, objects, moving, ids_with_alias):
 
         obj_list = []
@@ -170,7 +182,7 @@ class EEClient(object):
             sessionID=Utils.get_msg_id(session_id),
             objects=obj_list,
             moving=moving,
-            idsWithAlias=id_with_alias_list
+            idsWithAlias=id_with_alias_list,
         )
 
         try:
@@ -183,14 +195,13 @@ class EEClient(object):
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-
     def ds_get_copy_of_object(self, session_id, object_id, recursive):
         request = dataservice_messages_pb2.GetCopyOfObjectRequest(
             sessionID=Utils.get_msg_id(session_id),
             objectID=Utils.get_msg_id(object_id),
             recursive=recursive,
         )
-        
+
         try:
             response = self.ds_stub.getCopyOfObject(request, metadata=self.metadata_call)
 
@@ -199,18 +210,18 @@ class EEClient(object):
 
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
-        
+
         serialized_obj = Utils.get_param_or_return(response.ret)
-        
+
         return serialized_obj
-        
+
     def ds_update_object(self, session_id, into_object_id, from_object):
         request = dataservice_messages_pb2.UpdateObjectRequest(
             sessionID=Utils.get_msg_id(session_id),
             intoObjectID=Utils.get_msg_id(into_object_id),
-            fromObject=Utils.get_param_or_return(from_object)
+            fromObject=Utils.get_param_or_return(from_object),
         )
-        
+
         try:
             response = self.ds_stub.updateObject(request, metadata=self.metadata_call)
 
@@ -220,7 +231,15 @@ class EEClient(object):
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    def ds_get_objects(self, session_id, object_ids, already_obtained_obs, recursive, dest_backend_id, update_replica_locs):
+    def ds_get_objects(
+        self,
+        session_id,
+        object_ids,
+        already_obtained_obs,
+        recursive,
+        dest_backend_id,
+        update_replica_locs,
+    ):
 
         object_ids_list = []
         for oid in object_ids:
@@ -235,7 +254,7 @@ class EEClient(object):
             alreadyObtainedObjects=already_obtained_objects,
             recursive=recursive,
             destBackendID=Utils.get_msg_id(dest_backend_id),
-            updateReplicaLocs=update_replica_locs
+            updateReplicaLocs=update_replica_locs,
         )
 
         try:
@@ -246,18 +265,18 @@ class EEClient(object):
 
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
-        
-        serialized_objs = list() 
+
+        serialized_objs = list()
         for obj_with_data in response.objects:
             serialized_objs.append(Utils.get_obj_with_data_param_or_return(obj_with_data))
-        
+
         return serialized_objs
 
     def new_version(self, session_id, object_id, dest_backend_id):
         request = dataservice_messages_pb2.NewVersionRequest(
             sessionID=Utils.get_msg_id(session_id),
             objectID=Utils.get_msg_id(object_id),
-            destBackendID=Utils.get_msg_id(dest_backend_id)
+            destBackendID=Utils.get_msg_id(dest_backend_id),
         )
         try:
             response = self.ds_stub.newVersion(request, metadata=self.metadata_call)
@@ -268,7 +287,6 @@ class EEClient(object):
             raise DataClayException(response.excInfo.exceptionMessage)
 
         return Utils.get_id(response.objectID)
-
 
     def consolidate_version(self, session_id, version_object_id):
         request = dataservice_messages_pb2.ConsolidateVersionRequest(
@@ -291,8 +309,8 @@ class EEClient(object):
             obj_byt_list.append(Utils.get_obj_with_data_param_or_return(entry))
 
         request = dataservice_messages_pb2.UpsertObjectsRequest(
-                sessionID=Utils.get_msg_id(session_id),
-                bytesUpdate=obj_byt_list)
+            sessionID=Utils.get_msg_id(session_id), bytesUpdate=obj_byt_list
+        )
 
         try:
             response = self.ds_stub.upsertObjects(request, metadata=self.metadata_call)
@@ -318,7 +336,7 @@ class EEClient(object):
             response = self.ds_stub.makePersistent(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
-            logger.error('Failed to make persistent', exc_info=True)
+            logger.error("Failed to make persistent", exc_info=True)
             raise e
 
         if response.isException:
@@ -330,12 +348,12 @@ class EEClient(object):
                 sessionID=Utils.get_msg_id(session_id),
                 objectID=Utils.get_msg_id(object_id),
                 externalExecutionEnvironmentID=Utils.get_msg_id(external_execution_env_id),
-                recursive=recursive
+                recursive=recursive,
             )
             response = self.ds_stub.federate(request, metadata=self.metadata_call)
         except RuntimeError as e:
             traceback.print_exc()
-            logger.error('Failed to federate', exc_info=True)
+            logger.error("Failed to federate", exc_info=True)
             raise e
         if response.isException:
             raise DataClayException(response.exceptionMessage)
@@ -346,12 +364,12 @@ class EEClient(object):
             sessionID=Utils.get_msg_id(session_id),
             objectID=Utils.get_msg_id(object_id),
             externalExecutionEnvironmentID=Utils.get_msg_id(external_execution_env_id),
-            recursive=recursive
+            recursive=recursive,
         )
         try:
             response = self.ds_stub.unfederate(request, metadata=self.metadata_call)
         except RuntimeError as e:
-            logger.error('Failed to unfederate', exc_info=True)
+            logger.error("Failed to unfederate", exc_info=True)
             raise e
         if response.isException:
             raise DataClayException(response.exceptionMessage)
@@ -370,7 +388,7 @@ class EEClient(object):
             response = self.ds_stub.notifyFederation(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
-            logger.error('Failed to federate', exc_info=True)
+            logger.error("Failed to federate", exc_info=True)
             raise e
 
         if response.isException:
@@ -390,7 +408,7 @@ class EEClient(object):
             response = self.ds_stub.notifyUnfederation(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
-            logger.error('Failed to federate', exc_info=True)
+            logger.error("Failed to federate", exc_info=True)
             raise e
 
         if response.isException:
@@ -403,14 +421,14 @@ class EEClient(object):
             sessionID=Utils.get_msg_id(session_id),
             implementationID=Utils.get_msg_id(implementation_id),
             params=Utils.get_param_or_return(params),
-            objectID=Utils.get_msg_id(object_id)
+            objectID=Utils.get_msg_id(object_id),
         )
 
         try:
             response = self.ds_stub.executeImplementation(request, metadata=self.metadata_call)
 
         except RuntimeError as e:
-            logger.error('Failed to execute implementation', exc_info=True)
+            logger.error("Failed to execute implementation", exc_info=True)
             raise e
 
         if response.excInfo.isException:
@@ -432,7 +450,7 @@ class EEClient(object):
             objectID=Utils.get_msg_id(object_id),
             implementationID=Utils.get_msg_id(implementation_id),
             params=Utils.get_param_or_return(params),
-            callingBackendID=Utils.get_msg_id(calling_backend_id)
+            callingBackendID=Utils.get_msg_id(calling_backend_id),
         )
         try:
             response = self.ds_stub.synchronize(request, metadata=self.metadata_call)
@@ -440,14 +458,14 @@ class EEClient(object):
             raise e
         if response.isException:
             raise DataClayException(response.exceptionMessage)
-        
+
     def new_replica(self, session_id, object_id, dest_backend_id, recursive):
 
         request = dataservice_messages_pb2.NewReplicaRequest(
             sessionID=Utils.get_msg_id(session_id),
             objectID=Utils.get_msg_id(object_id),
             destBackendID=Utils.get_msg_id(dest_backend_id),
-            recursive=recursive
+            recursive=recursive,
         )
 
         try:
@@ -472,7 +490,7 @@ class EEClient(object):
             sessionID=Utils.get_msg_id(session_id),
             objectID=Utils.get_msg_id(object_id),
             destLocID=Utils.get_msg_id(dest_st_location),
-            recursive=recursive
+            recursive=recursive,
         )
 
         try:
@@ -502,7 +520,7 @@ class EEClient(object):
             objectIDs=obj_ids_list,
             recursive=recursive,
             moving=moving,
-            newHint=Utils.get_msg_id(new_hint)
+            newHint=Utils.get_msg_id(new_hint),
         )
 
         try:
@@ -528,9 +546,7 @@ class EEClient(object):
         for k, v in back_ends.items():
             back_ends_dict[k] = Utils.get_storage_location(v)
 
-        request = dataservice_messages_pb2.MigrateObjectsRequest(
-            destStorageLocs=back_ends_dict
-        )
+        request = dataservice_messages_pb2.MigrateObjectsRequest(destStorageLocs=back_ends_dict)
 
         try:
             response = self.ds_stub.migrateObjectsToBackends(request, metadata=self.metadata_call)
@@ -563,8 +579,7 @@ class EEClient(object):
 
     def delete_alias(self, session_id, object_id):
         request = dataservice_messages_pb2.DeleteAliasRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objectID=Utils.get_msg_id(object_id)
+            sessionID=Utils.get_msg_id(session_id), objectID=Utils.get_msg_id(object_id)
         )
         try:
             response = self.ds_stub.deleteAlias(request, metadata=self.metadata_call)
@@ -575,8 +590,7 @@ class EEClient(object):
 
     def detach_object_from_session(self, object_id, session_id):
         request = dataservice_messages_pb2.DetachObjectFromSessionRequest(
-            objectID=Utils.get_msg_id(object_id),
-            sessionID=Utils.get_msg_id(session_id)
+            objectID=Utils.get_msg_id(object_id), sessionID=Utils.get_msg_id(session_id)
         )
         try:
             response = self.ds_stub.detachObjectFromSession(request, metadata=self.metadata_call)
@@ -586,41 +600,43 @@ class EEClient(object):
             raise DataClayException(response.exceptionMessage)
 
     def activate_tracing(self, task_id):
-        request = dataservice_messages_pb2.ActivateTracingRequest(
-            taskid=task_id
-        )
-        
+        request = dataservice_messages_pb2.ActivateTracingRequest(taskid=task_id)
+
         try:
             response = self.ds_stub.activateTracing(request, metadata=self.metadata_call)
-        
+
         except RuntimeError as e:
             raise e
-        
+
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
     def deactivate_tracing(self):
         try:
-            response = self.ds_stub.deactivateTracing(CommonMessages.EmptyMessage(), metadata=self.metadata_call)
-        
+            response = self.ds_stub.deactivateTracing(
+                CommonMessages.EmptyMessage(), metadata=self.metadata_call
+            )
+
         except RuntimeError as e:
             raise e
-        
+
         if response.isException:
             raise DataClayException(response.exceptionMessage)
-        
+
     def get_traces(self):
         try:
-            response = self.ds_stub.getTraces(CommonMessages.EmptyMessage(), metadata=self.metadata_call)
+            response = self.ds_stub.getTraces(
+                CommonMessages.EmptyMessage(), metadata=self.metadata_call
+            )
         except RuntimeError as e:
             raise e
-        
+
         result = dict()
         for k, v in response.stubs.items():
             result[k] = v
 
         return result
-        
+
     ################## EXTRAE IGNORED FUNCTIONS ###########################
     deactivate_tracing.do_not_trace = True
     activate_tracing.do_not_trace = True

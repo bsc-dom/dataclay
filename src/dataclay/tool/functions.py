@@ -1,21 +1,22 @@
 from __future__ import print_function
+
 """Functions that can be called from the command line (dataClay tool related).
 
 See the __main__.py entrypoint for more information on the scenarios in which
 the functions here are called.
 """
 import atexit
-from dataclay.api import init_connection
-from jinja2 import Template
 import os
 import sys
 from uuid import UUID
 
-from dataclay.communication.grpc.messages.common.common_messages_pb2 import LANG_PYTHON
-from dataclay.util.StubUtils import deploy_stubs
-from dataclay.util.StubUtils import prepare_storage
-from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
+from jinja2 import Template
+
+from dataclay.api import init_connection
+from dataclay.util.StubUtils import deploy_stubs, prepare_storage
 from dataclay.util.tools.python.PythonMetaClassFactory import MetaClassFactory
+from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load
 
 
 def _establish_client():
@@ -31,8 +32,7 @@ def register_model(username, password, namespace, python_path):
     credential = (None, password)
     user_id = client.get_account_id(username)
 
-    mfc = MetaClassFactory(namespace=namespace,
-                           responsible_account=username)
+    mfc = MetaClassFactory(namespace=namespace, responsible_account=username)
 
     full_python_path = os.path.abspath(python_path)
 
@@ -46,9 +46,7 @@ def register_model(username, password, namespace, python_path):
     n_base_skip = len(full_python_path.split(os.sep))
 
     for dirpath, dirnames, filenames in os.walk(full_python_path):
-        base_import = ".".join(
-            dirpath.split(os.sep)[n_base_skip:]
-        )
+        base_import = ".".join(dirpath.split(os.sep)[n_base_skip:])
 
         for f in filenames:
             if not f.endswith(".py"):
@@ -56,7 +54,10 @@ def register_model(username, password, namespace, python_path):
 
             if f == "__init__.py":
                 if not base_import:
-                    print("Ignoring `__init__.py` at the root of the model folder (do not put classes there!)", file=sys.stderr)
+                    print(
+                        "Ignoring `__init__.py` at the root of the model folder (do not put classes there!)",
+                        file=sys.stderr,
+                    )
                     continue
                 import_str = base_import
             else:
@@ -68,12 +69,12 @@ def register_model(username, password, namespace, python_path):
             # Try to import
             mfc.import_and_add(import_str)
 
-    result = client.new_class(user_id,
-                              credential,
-                              LANG_PYTHON,
-                              mfc.classes)
-    
-    print("Was gonna register: %s\nEventually registered: %s" % (mfc.classes, result.keys()), file=sys.stderr)
+    result = client.new_class(user_id, credential, LANG_PYTHON, mfc.classes)
+
+    print(
+        "Was gonna register: %s\nEventually registered: %s" % (mfc.classes, result.keys()),
+        file=sys.stderr,
+    )
 
     if len(result.keys()) == 0:
         print("No classes registered, exiting", file=sys.stderr)
@@ -82,9 +83,11 @@ def register_model(username, password, namespace, python_path):
     interfaces = list()
     interfaces_in_contract = list()
     for class_name, class_info in result.items():
-        ref_class_name = class_name.replace('.', '')
+        ref_class_name = class_name.replace(".", "")
 
-        interfaces.append(Template("""
+        interfaces.append(
+            Template(
+                """
 {{ class_name }}interface: &{{ ref_class_name }}iface !!es.bsc.dataclay.util.management.interfacemgr.Interface
   providerAccountName: {{ username }}
   namespace: {{ namespace }}
@@ -98,14 +101,19 @@ def register_model(username, password, namespace, python_path):
   {% for operation in class_info.operations %} 
     ? {{ operation.nameAndDescriptor }}
   {% endfor %}
-""").render(
-            class_name=class_name,
-            ref_class_name=ref_class_name,
-            username=username,
-            namespace=namespace,
-            class_info=class_info))
+"""
+            ).render(
+                class_name=class_name,
+                ref_class_name=ref_class_name,
+                username=username,
+                namespace=namespace,
+                class_info=class_info,
+            )
+        )
 
-        interfaces_in_contract.append(Template("""
+        interfaces_in_contract.append(
+            Template(
+                """
     - !!es.bsc.dataclay.util.management.contractmgr.InterfaceInContract
       iface: *{{ ref_class_name }}iface
       implementationsSpecPerOperation: !!set {% if class_info.operations|length == 0 %} { } {% endif %}
@@ -115,12 +123,12 @@ def register_model(username, password, namespace, python_path):
             numLocalImpl: 0
             numRemoteImpl: 0
         {% endfor %}
-""").render(
-            class_name=class_name,
-            ref_class_name=ref_class_name,
-            class_info=class_info))
+"""
+            ).render(class_name=class_name, ref_class_name=ref_class_name, class_info=class_info)
+        )
 
-    contract = Template("""
+    contract = Template(
+        """
 {{ namespace }}contract: !!es.bsc.dataclay.util.management.contractmgr.Contract
   beginDate: 1980-01-01T00:00:01
   endDate: 2055-12-31T23:59:58
@@ -131,10 +139,11 @@ def register_model(username, password, namespace, python_path):
   interfacesInContractSpecs:
 {{ interfaces_in_contract }}
   publicAvailable: True
-""").render(
+"""
+    ).render(
         user_id=user_id,
         namespace=namespace,
-        interfaces_in_contract="\n".join(interfaces_in_contract)
+        interfaces_in_contract="\n".join(interfaces_in_contract),
     )
 
     yaml_request = "\n".join(interfaces) + contract
@@ -144,11 +153,11 @@ def register_model(username, password, namespace, python_path):
 
     print(" ===> The ContractID for the registered classes is:", file=sys.stderr)
     print(response["contracts"]["%scontract" % namespace])
-    
+
     # Remove from sys.path the model
     if added_to_path:
         sys.path.remove(full_python_path)
-    
+
     return str(response["contracts"]["%scontract" % namespace])  # For mock testing
 
 
@@ -156,7 +165,7 @@ def get_stubs(username, password, contract_ids_str, path):
     client = _establish_client()
 
     try:
-        contracts = list(map(UUID, contract_ids_str.split(',')))
+        contracts = list(map(UUID, contract_ids_str.split(",")))
     except ValueError:
         raise ValueError("This is not a valid list of contracts: %s" % contract_ids_str)
     credential = (None, password)
@@ -164,33 +173,25 @@ def get_stubs(username, password, contract_ids_str, path):
     user_id = client.get_account_id(username)
     prepare_storage(path)
 
-    babel_data = client.get_babel_stubs(
-        user_id, credential, contracts)
+    babel_data = client.get_babel_stubs(user_id, credential, contracts)
 
-    with open(os.path.join(path, "babelstubs.yml"), 'wb') as f:
+    with open(os.path.join(path, "babelstubs.yml"), "wb") as f:
         f.write(babel_data)
 
-    all_stubs = client.get_stubs(
-        user_id, credential, LANG_PYTHON, contracts)
+    all_stubs = client.get_stubs(user_id, credential, LANG_PYTHON, contracts)
 
     for key, value in all_stubs.items():
-        with open(os.path.join(path, key), 'wb') as f:
+        with open(os.path.join(path, key), "wb") as f:
             f.write(value)
 
     deploy_stubs(path)
 
 
-def import_models_from_external_dataclay(exthostname, extport, namespace) -> None:
-    """ Import models in namespace specified from an external dataClay
-    :param exthostname: external dataClay host
-    :param extport: external dataClay port
-    :param namespace: external dataClay namespace to get
-    :return: None
-    :type exthostname: str
-    :type extport: str
-    :type namespace: str
-    :rtype: None
+def import_models_from_external_dataclay(ext_dataclay_id, namespace) -> None:
+    """Import models in namespace specified from an external dataClay
+    Args:
+        ext_dataclay_id: external dataClay id
+        namespace: external dataClay namespace to get
     """
     client = _establish_client()
-    ext_dataclay_id = client.get_external_dataclay_id(exthostname, int(extport))
-    return client.import_models_from_external_dataclay(namespace, ext_dataclay_id)
+    client.import_models_from_external_dataclay(namespace, ext_dataclay_id)

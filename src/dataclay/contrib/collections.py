@@ -1,17 +1,15 @@
 from __future__ import absolute_import
+
 """ Class description goes here. """
 
-from dataclay import StorageObject
-from dataclay import dclayMethod
+from dataclay import StorageObject, dclayMethod
 
 from .splitting import SplittableCollectionMixin
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2017 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
 
-CLASSES_TO_REGISTER = (
-    "StorageList", "ListChunk", "StorageDict", "DictChunk"
-)
+CLASSES_TO_REGISTER = ("StorageList", "ListChunk", "StorageDict", "DictChunk")
 
 
 class ListChunk(StorageObject):
@@ -88,6 +86,7 @@ class StorageList(StorageObject, SplittableCollectionMixin):
     @dclayMethod(_local=True)
     def __iter__(self):
         from itertools import chain
+
         return chain(*self.chunks)
 
     @dclayMethod(return_="anything", idx=int)
@@ -183,6 +182,7 @@ class StorageDict(StorageObject, SplittableCollectionMixin):
     def __iter__(self):
         # Note that the following cannot be serialized, hence the `_local` flag.
         from itertools import chain
+
         return chain(iter(c) for c in self.chunks)
 
     # FIXME: CHECK AND TEST IT (Should change without iter)
@@ -190,18 +190,21 @@ class StorageDict(StorageObject, SplittableCollectionMixin):
     def iteritems(self):
         # Note that the following cannot be serialized, hence the `_local` flag.
         from itertools import chain
+
         return chain(c.items() for c in self.chunks)
 
     @dclayMethod(return_="anything", _local=True)
     def iterkeys(self):
         # Note that the following cannot be serialized, hence the `_local` flag.
         from itertools import chain
+
         return chain(c.keys() for c in self.chunks)
 
     @dclayMethod(return_="anything", _local=True)
     def itervalues(self):
         # Note that the following cannot be serialized, hence the `_local` flag.
         from itertools import chain
+
         return chain(c.values() for c in self.chunks)
 
     @dclayMethod(key="anything", return_="storageobject")
@@ -231,14 +234,17 @@ class StorageDict(StorageObject, SplittableCollectionMixin):
     @dclayMethod(return_="list<anything>")
     def keys(self):
         from itertools import chain
+
         return list(chain(c.keys() for c in self.chunks))
 
     @dclayMethod(return_="list<anything>")
     def items(self):
         from itertools import chain
+
         return list(chain(c.items() for c in self.chunks))
 
     @dclayMethod(return_="list<storageobject>")
     def values(self):
         from itertools import chain
+
         return list(chain(c.values() for c in self.chunks))

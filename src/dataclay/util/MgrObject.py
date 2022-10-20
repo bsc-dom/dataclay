@@ -1,23 +1,21 @@
-
 """ Class description goes here. """
 
 import logging
-from yaml import load, dump, Loader, Dumper
+
+from yaml import Dumper, Loader, dump, load
 
 from dataclay.commonruntime.Initializer import size_tracking
 from dataclay.serialization.DataClaySerializable import DataClaySerializable
 from dataclay.serialization.python.lang.StringWrapper import StringWrapper
-import six
 
 logger = logging.getLogger(__name__)
 
 
 class ManagementMetaClass(type):
-
     def __init__(cls, name, bases, kwds):
         """This overlaps quite a bit with YAMLObjectMetaclass."""
         if name != "ManagementObject":
-            yaml_tag = u"tag:yaml.org,2002:es.bsc.%s" % (cls.__module__)
+            yaml_tag = "tag:yaml.org,2002:es.bsc.%s" % (cls.__module__)
             cls.yaml_loader = Loader
             cls.yaml_tag = yaml_tag  # used by `ManagementObject.to_yaml`
             logger.trace("YAML TAG : %s", yaml_tag)
@@ -77,8 +75,7 @@ class ManagementMetaClass(type):
         return super(ManagementMetaClass, cls).__new__(cls, name, bases, dct)
 
 
-@six.add_metaclass(ManagementMetaClass)
-class ManagementObject(DataClaySerializable):
+class ManagementObject(DataClaySerializable, metaclass=ManagementMetaClass):
     _fields = list()
     _internal_fields = list()
     _typed_fields = dict()
@@ -107,8 +104,7 @@ class ManagementObject(DataClaySerializable):
         ret = {k: getattr(self, k, None) for k in self._fields}
 
         # Include all internal fields which are present (even if they are None)
-        ret.update({k: getattr(self, k) for k in self._internal_fields
-                    if hasattr(self, k)})
+        ret.update({k: getattr(self, k) for k in self._internal_fields if hasattr(self, k)})
         return ret
 
     def __setstate__(self, state):
@@ -133,12 +129,17 @@ class ManagementObject(DataClaySerializable):
         missed_fields = set(self._fields) - setted_attrs
 
         if len(missed_fields) != 0:
-            logger.error("WARNING -- __setstate__ on class %s called without this fields: %s" 
-            , self.__class__, list(missed_fields))
+            logger.error(
+                "WARNING -- __setstate__ on class %s called without this fields: %s",
+                self.__class__,
+                list(missed_fields),
+            )
         if len(unsetted_attrs) > 0:
-            logger.error("WARNING -- Attributes %s are not setted -- Fields missing on class %s"
-            , unsetted_attrs, self.__class__)
-
+            logger.error(
+                "WARNING -- Attributes %s are not setted -- Fields missing on class %s",
+                unsetted_attrs,
+                self.__class__,
+            )
 
     def __str__(self):
         lines = ["ManagementObject: %s" % self.__class__.__name__]
@@ -151,13 +152,12 @@ class ManagementObject(DataClaySerializable):
 
         return "\n".join(lines)
 
-
     def serialize(self, io_file):
         """Serialize this instance into a IO like (file, StringIO...)."""
         # This is roughly equivalent to write into a string
         # and perform a Str().write, but with less memory copies
         with size_tracking(io_file):
-            dump(self, io_file, encoding='utf-16-be', Dumper=Dumper)
+            dump(self, io_file, encoding="utf-16-be", Dumper=Dumper)
 
     @classmethod
     def deserialize(cls, io_file):
@@ -169,9 +169,12 @@ class ManagementObject(DataClaySerializable):
 
     @classmethod
     def write(cls, io_file, value):
-        assert isinstance(value, cls), \
-            "Called `write` on class '%s' with an object of class '%s'" % (
-                cls.__name__, type(value).__name__)
+        assert isinstance(
+            value, cls
+        ), "Called `write` on class '%s' with an object of class '%s'" % (
+            cls.__name__,
+            type(value).__name__,
+        )
         value.serialize(io_file)
 
     @staticmethod

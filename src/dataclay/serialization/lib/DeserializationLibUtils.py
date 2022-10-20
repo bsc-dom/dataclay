@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 
@@ -9,31 +8,34 @@ implemented in the Java package client.CommonLib. Specifically, the deserialize*
 functions are more or less adapted here.
 """
 
-from io import BytesIO
 import logging
+from io import BytesIO
 
+import dataclay_common.protos.common_messages_pb2 as common_messages
+
+from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.exceptions.exceptions import InvalidPythonSignature
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
 from dataclay.serialization.python.lang.VLQIntegerWrapper import VLQIntegerWrapper
 from dataclay.serialization.python.util.PyTypeWildcardWrapper import PyTypeWildcardWrapper
-import dataclay.communication.grpc.messages.common.common_messages_pb2 as common_messages
-from dataclay.communication.grpc.Utils import get_metadata
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 logger = logging.getLogger(__name__)
 
+
 class DeserializationLibUtils(object):
-    def deserialize_params(self, serialized_params_or_return, iface_bitmaps,
-            param_specs, params_order, runtime):
-        return self.deserialize_params_or_return(serialized_params_or_return,
-                            iface_bitmaps,
-                            param_specs,
-                            params_order, runtime)
+    def deserialize_params(
+        self, serialized_params_or_return, iface_bitmaps, param_specs, params_order, runtime
+    ):
+        return self.deserialize_params_or_return(
+            serialized_params_or_return, iface_bitmaps, param_specs, params_order, runtime
+        )
 
-
-    def _create_buffer_and_deserialize(self, io_file, instance, ifacebitmaps, metadata, cur_deser_python_objs):
+    def _create_buffer_and_deserialize(
+        self, io_file, instance, ifacebitmaps, metadata, cur_deser_python_objs
+    ):
         """
         @postcondition: Create buffer and deserialize
         @param obj_bytes: bytes to deserialize
@@ -46,7 +48,6 @@ class DeserializationLibUtils(object):
         # TODO: obj_bytes is an io_file, use a buffer instead
         instance.deserialize(io_file, ifacebitmaps, metadata, cur_deser_python_objs)
 
-
     def deserialize_grpc_message_from_db(self, obj_bytes):
         """
         @postcondition: Deserialize grpc message from DB
@@ -56,7 +57,6 @@ class DeserializationLibUtils(object):
         msg = common_messages.PersistentObjectInDB()
         msg.ParseFromString(obj_bytes)
         return msg
-
 
     def deserialize_object_from_db(self, object_to_fill, object_bytes, runtime):
         """
@@ -69,7 +69,6 @@ class DeserializationLibUtils(object):
         msg = self.deserialize_grpc_message_from_db(object_bytes)
         metadata = get_metadata(msg.metadata)
         self.deserialize_object_from_db_bytes_aux(object_to_fill, metadata, msg.data, runtime)
-
 
     def deserialize_object_from_db_bytes_aux(self, object_to_fill, metadata, data, runtime):
         """
@@ -88,7 +87,10 @@ class DeserializationLibUtils(object):
         object_to_fill.set_root_location(metadata.root_location)
         object_to_fill.set_replica_locations(metadata.replica_locations)
         object_to_fill.set_alias(metadata.alias)
-        self._create_buffer_and_deserialize(io_file, object_to_fill, None, metadata, cur_deser_python_objs)
+        object_to_fill.set_dataset_name(metadata.dataset_name)
+        self._create_buffer_and_deserialize(
+            io_file, object_to_fill, None, metadata, cur_deser_python_objs
+        )
         io_file.close()
         """
         GARBAGE COLLECTOR RACE CONDITION
@@ -120,8 +122,9 @@ class DeserializationLibUtils(object):
 
         logger.debug("METADATA %s and METADATA CLASS_ID %s", metadata, metadata[1][0])
 
-        return ObjectWithDataParamOrReturn(object_id, metadata.tags_to_class_ids[0], metadata, obj_bytes)
-
+        return ObjectWithDataParamOrReturn(
+            object_id, metadata.tags_to_class_ids[0], metadata, obj_bytes
+        )
 
     def deserialize_metadata_from_db(self, obj_bytes_from_db):
         """
@@ -134,8 +137,9 @@ class DeserializationLibUtils(object):
         metadata = get_metadata(msg.metadata)
         return metadata
 
-
-    def deserialize_object_with_data_in_client(self, param_or_ret, instance, ifacebitmpas, runtime, owner_session_id):
+    def deserialize_object_with_data_in_client(
+        self, param_or_ret, instance, ifacebitmpas, runtime, owner_session_id
+    ):
         """
         @postcondition: Deserialize object into a memory instance. ALSO called from executeImplementation in case of 'executions during
         deserialization'. THIS FUNCTION SHOULD NEVER BE CALLED FROM CLIENT SIDE.
@@ -152,7 +156,9 @@ class DeserializationLibUtils(object):
             metadata = param_or_ret.metadata
             io_file = BytesIO(param_or_ret.obj_bytes)
             cur_deser_python_objs = dict()
-            self._create_buffer_and_deserialize(io_file, instance, None, metadata, cur_deser_python_objs)
+            self._create_buffer_and_deserialize(
+                io_file, instance, None, metadata, cur_deser_python_objs
+            )
             io_file.close()
             instance.set_persistent(False)
             instance.set_hint(None)
@@ -161,11 +167,13 @@ class DeserializationLibUtils(object):
             instance.set_root_location(metadata.root_location)
             instance.set_replica_locations(metadata.replica_locations)
             instance.set_alias(metadata.alias)
+            instance.set_dataset_name(metadata.dataset_name)
         finally:
             runtime.unlock(instance.get_object_id())
 
-
-    def deserialize_object_with_data(self, param_or_ret, instance, ifacebitmpas, runtime, owner_session_id, force_deserialization):
+    def deserialize_object_with_data(
+        self, param_or_ret, instance, ifacebitmpas, runtime, owner_session_id, force_deserialization
+    ):
         """
         @postcondition: Deserialize object into a memory instance. ALSO called from executeImplementation in case of 'executions during
         deserialization'. THIS FUNCTION SHOULD NEVER BE CALLED FROM CLIENT SIDE.
@@ -190,11 +198,13 @@ class DeserializationLibUtils(object):
         runtime.lock(instance.get_object_id())
         try:
             if force_deserialization or not instance.is_loaded():
-                """ TODO: improve GRPC messages """
+                """TODO: improve GRPC messages"""
                 metadata = param_or_ret.metadata
                 io_file = BytesIO(param_or_ret.obj_bytes)
                 cur_deser_python_objs = dict()
-                self._create_buffer_and_deserialize(io_file, instance, None, metadata, cur_deser_python_objs)
+                self._create_buffer_and_deserialize(
+                    io_file, instance, None, metadata, cur_deser_python_objs
+                )
                 io_file.close()
                 instance.set_loaded(True)
                 instance.set_persistent(True)
@@ -204,25 +214,24 @@ class DeserializationLibUtils(object):
                 instance.set_replica_locations(metadata.replica_locations)
                 instance.set_alias(metadata.alias)
                 if owner_session_id is not None:
-                        instance.set_owner_session_id(owner_session_id)
+                    instance.set_owner_session_id(owner_session_id)
+                instance.set_dataset_name(metadata.dataset_name)
 
         finally:
             runtime.unlock(instance.get_object_id())
-
 
     def deserialize_return(self, serialized_params_or_return, iface_bitmaps, return_type, runtime):
 
         if serialized_params_or_return.num_params == 0:
             logger.verbose("No return to deserialize: returning None")
             return None
-        return self.deserialize_params_or_return(serialized_params_or_return,
-                            iface_bitmaps,
-                            {"0": return_type},
-                            ["0"], runtime)[0]
+        return self.deserialize_params_or_return(
+            serialized_params_or_return, iface_bitmaps, {"0": return_type}, ["0"], runtime
+        )[0]
 
-
-    def deserialize_params_or_return(self, serialized_params_or_return,
-            iface_bitmaps, param_specs, params_order, runtime):
+    def deserialize_params_or_return(
+        self, serialized_params_or_return, iface_bitmaps, param_specs, params_order, runtime
+    ):
         """
         Deserialize parameters or return of an execution
         :param serialized_params_or_return: serialized parameters or return
@@ -242,11 +251,14 @@ class DeserializationLibUtils(object):
             logger.verbose("Deserializing volatile with object ID %s" % str(object_id))
 
             if first_volatile:
-                runtime.add_volatiles_under_deserialization(serialized_params_or_return.vol_objs.values())
+                runtime.add_volatiles_under_deserialization(
+                    serialized_params_or_return.vol_objs.values()
+                )
                 first_volatile = False
 
-            deserialized_param = runtime.get_or_new_volatile_instance_and_load(object_id, class_id, runtime.get_hint(),
-                                                                               serialized_param, iface_bitmaps)
+            deserialized_param = runtime.get_or_new_volatile_instance_and_load(
+                object_id, class_id, runtime.get_hint(), serialized_param, iface_bitmaps
+            )
 
             # For makePersistent or federate methods, we must know that there is a session using the object which
             # is the one that persisted/federated. Normally, we know a client is using an object if we serialize
@@ -288,12 +300,14 @@ class DeserializationLibUtils(object):
                 # Set hint in metadata (ToDo: create general getOrNewInstance)
 
         if not first_volatile:
-            runtime.remove_volatiles_under_deserialization(serialized_params_or_return.vol_objs.values())
+            runtime.remove_volatiles_under_deserialization(
+                serialized_params_or_return.vol_objs.values()
+            )
         return params
 
-
-    def deserialize_association(self, io_file, iface_bitmaps,
-            metadata, cur_deserialized_objs, runtime):
+    def deserialize_association(
+        self, io_file, iface_bitmaps, metadata, cur_deserialized_objs, runtime
+    ):
         """
         @postcondition: deserialize association
         @param io_file: bytes of the object containing the association
@@ -316,27 +330,25 @@ class DeserializationLibUtils(object):
         cur_deserialized_objs[tag] = obj
         return obj
 
-
     def deserialize_immutable(self, io_file, type_):
         # Well, if it is a primitive type we already have them...
         try:
             ptw = PyTypeWildcardWrapper(type_.signature)
         except InvalidPythonSignature:
-            raise NotImplementedError("Only Java primitive types are "
-                                          "understood in Python.")
+            raise NotImplementedError("Only Java primitive types are " "understood in Python.")
         return ptw.read(io_file)
-
 
     def deserialize_language(self, io_file, type_):
         # Well, if it is a primitive type we already have them...
         try:
             ptw = PyTypeWildcardWrapper(type_.signature)
         except InvalidPythonSignature:
-            raise NotImplementedError("In fact, InvalidPythonSignature was "
-                                          "not even implemented, seems somebody is "
-                                          "raising it without implementing logic.")
+            raise NotImplementedError(
+                "In fact, InvalidPythonSignature was "
+                "not even implemented, seems somebody is "
+                "raising it without implementing logic."
+            )
         return ptw.read(io_file)
-
 
     def extract_reference_counting(self, io_bytes):
         io_file = BytesIO(io_bytes)
@@ -348,7 +360,9 @@ class DeserializationLibUtils(object):
         io_file.close()
         return ref_bytes
 
+
 DeserializationLibUtilsSingleton = DeserializationLibUtils()
+
 
 class PersistentLoadPicklerHelper(object):
     """Helper to solve deserialization of associations inside Pickled structures.

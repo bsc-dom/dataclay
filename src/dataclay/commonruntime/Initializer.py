@@ -7,19 +7,20 @@ Environment.
 The "client" version is available at `dataclay` package, which works as en entry
 point for all the commonruntime user-friendly functions.
 """
-from contextlib import contextmanager
-from distutils.util import strtobool
 import logging
 import logging.config
 import os
+from contextlib import contextmanager
+from distutils.util import strtobool
+
 import yaml
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 # Manually forcing the dataclay root logger here
 logger = logging.getLogger("dataclay")
-LOGGING_FORMAT = '%(asctime)s %(levelname)s [%(threadName)s:%(module)s:%(lineno)d] %(message)s'
+LOGGING_FORMAT = "%(asctime)s %(levelname)s [%(threadName)s:%(module)s:%(lineno)d] %(message)s"
 
 ###################################################################
 # We like to have a little bit more of finesse wrt debug levels
@@ -58,12 +59,12 @@ def _get_logging_dict_config():
     This function provides either a sensible default (generated here) or loads
     a YAML file provided through the environment variable called
     "DATACLAY_LOGGING_CONFIG".
-    
+
     :return: A dictionary that can be used with logging.dictConfig
     """
-    file_config = os.getenv('DATACLAY_LOGGING_CONFIG')
+    file_config = os.getenv("DATACLAY_LOGGING_CONFIG")
     if file_config:
-        dict_config = yaml.load(open(file_config, 'r'))
+        dict_config = yaml.load(open(file_config, "r"))
 
         handlers = dict_config.get("handlers", tuple())
         for h in handlers:
@@ -73,8 +74,9 @@ def _get_logging_dict_config():
                 pass
             else:
                 new_filename = template.format(PID=os.getpid(), **os.environ)
-                logger.debug("Handler %s is using `%s`, formatter from `%s`",
-                             h, new_filename, template)
+                logger.debug(
+                    "Handler %s is using `%s`, formatter from `%s`", h, new_filename, template
+                )
                 # Ensure that folder exists
                 try:
                     os.makedirs(os.path.dirname(new_filename))
@@ -84,8 +86,8 @@ def _get_logging_dict_config():
                 handlers[h]["filename"] = new_filename
         return dict_config
     else:
-        debug = strtobool(os.getenv('DEBUG', "False"))
-        level_name = os.getenv('LOGLEVEL')
+        debug = strtobool(os.getenv("DEBUG", "False"))
+        level_name = os.getenv("LOGLEVEL")
 
         # Note that the priority between DEBUG and LOGLEVEL is not random, albeit arbitrary
         if level_name == "VERBOSE":
@@ -122,9 +124,9 @@ def _get_logging_dict_config():
                     "level": level,
                     "handlers": [
                         "dclay_console",
-                    ]
+                    ],
                 }
-            }
+            },
         }
 
 
@@ -141,7 +143,7 @@ def initialize():
     logger.verbose("Starting dataClay library")
     logger.verbose("Debug output seems to be enabled")
 
-        
+
 @contextmanager
 def size_tracking(io_file):
     """Track the bytes written into a certain seekable I/O file.

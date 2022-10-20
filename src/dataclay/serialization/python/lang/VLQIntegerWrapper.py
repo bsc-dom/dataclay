@@ -1,14 +1,15 @@
-
 """ Class description goes here. """
 
-from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
-from six import int2byte
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
+
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
+
 
 class VLQIntegerWrapper(DataClayPythonWrapper):
     """Variable Length Quantity."""
+
     __slots__ = ()
 
     def __init__(self):
@@ -25,10 +26,9 @@ class VLQIntegerWrapper(DataClayPythonWrapper):
             if (b & 0x80) == 0:
                 return value
 
-    # FIXME: Check with Python 2.7
     def write(self, io_file, value):
         if value == 0:
-            io_file.write(b'\x00')
+            io_file.write(b"\x00")
             return
         values = []
         while value > 0:
@@ -38,7 +38,7 @@ class VLQIntegerWrapper(DataClayPythonWrapper):
 
         # Values with continuation bit activated
         for b in reversed(values[1:]):
-            io_file.write(int2byte(0x80 | b))
+            io_file.write(bytes((0x80 | b,)))
 
         # Last value, no continuation bit
-        io_file.write(int2byte(values[0]))
+        io_file.write(bytes((values[0],)))

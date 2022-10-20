@@ -1,31 +1,34 @@
-
 """ Class description goes here. """
 
-from decorator import decorate
 import logging
-import six
 import traceback
-from dataclay.commonruntime.Runtime import getRuntime
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2016 Barcelona Supercomputing Center (BSC-CNS)'
+from decorator import decorate
+
+from dataclay.commonruntime.Runtime import get_runtime
+
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
 
 logger = logging.getLogger(__name__)
 
 
 def _dclayMethod(f, self, *args, **kwargs):
     """Helper function for DataClayObject method decoration"""
-    logger.verbose("Calling function %s", f.__name__)
-    is_exec_env = getRuntime().is_exec_env()
+    logger.verbose(f"Calling function {f.__name__}")
     try:
-        if (is_exec_env and self.is_loaded()) \
-                or (not is_exec_env and not self.is_persistent())\
-                or f._dclay_local \
-                or f.__name__ == "__setstate__"\
-                or f.__name__ == "__getstate__":
+        # If the object is not persistent executes the method locally,
+        # else, executes the method within the execution environment
+        if (
+            (get_runtime().is_exec_env() and self.is_loaded())
+            or (get_runtime().is_client() and not self.is_persistent())
+            or f._dclay_local
+            or f.__name__ == "__setstate__"
+            or f.__name__ == "__getstate__"
+        ):
             return f(self, *args, **kwargs)
         else:
-            return getRuntime().execute_implementation_aux(f.__name__, self, args, self.get_hint())
+            return get_runtime().execute_implementation_aux(f.__name__, self, args, self.get_hint())
     except Exception:
         traceback.print_exc()
         raise
@@ -33,12 +36,12 @@ def _dclayMethod(f, self, *args, **kwargs):
 
 def _dclayEmptyMethod(f, self, *args, **kwargs):
     """Similar to dclayMethod, but without actual Python implementation."""
-    logger.verbose("Calling (languageless) function %s", f.__name__)
+    logger.verbose(f"Calling (languageless) function {f.__name__}")
 
     # Let it fail elsewhere, if the user hacks around into an invalid state
     # (like a loaded&local non-persistent instance with an dclayEmptyMethod,
     #  something that should not happen normally)
-    return getRuntime().execute_implementation_aux(f.__name__, self, args, self.get_hint())
+    return get_runtime().execute_implementation_aux(f.__name__, self, args, self.get_hint())
 
 
 class dclayMethod(object):
@@ -66,12 +69,8 @@ class dclayMethod(object):
         self._method_args = kwargs
 
     def __call__(self, f):
-        if six.PY2:
-            logger.verbose('Preparing dataClay method `%s` with arguments: %s',
-                     f.func_name, self._method_args)
-        elif six.PY3:
-            logger.verbose('Preparing dataClay method `%s` with arguments: %s',
-                     f.__name__, self._method_args)
+
+        logger.verbose(f"Preparing dataClay method {f.__name__} with arguments {self._method_args}")
         decorated_func = decorate(f, _dclayMethod)
         decorated_func._dclay_entrypoint = f
         decorated_func._dclay_ret = self._method_args.pop("return_", None)
@@ -84,7 +83,7 @@ class dclayMethod(object):
         # TODO: at the moment, this flag is ignored
         decorated_func._dclay_local = is_local
 
-        # ToDo: something more clever, or add the user-provided flag option at least
+        # TODO: something more clever, or add the user-provided flag option at least
         decorated_func._dclay_readonly = False
         return decorated_func
 
@@ -93,6 +92,6 @@ def dclayEmptyMethod(f):
     """Simple (parameter-less) decorator for languageless methods."""
     decorated_func = decorate(f, _dclayEmptyMethod)
     decorated_func._dclay_method = True
-    # ToDo: something more clever, or add the user-provided flag option at least
+    # TODO: something more clever, or add the user-provided flag option at least
     decorated_func._dclay_readonly = False
     return decorated_func

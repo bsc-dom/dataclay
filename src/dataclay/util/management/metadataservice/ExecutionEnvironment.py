@@ -1,5 +1,4 @@
 class ExecutionEnvironment(object):
-
     def __init__(self, id, hostname, name, port, lang, dataclay_instance_id):
         self.id = id
         self.hostname = hostname

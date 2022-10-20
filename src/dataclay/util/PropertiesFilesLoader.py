@@ -1,4 +1,3 @@
-
 """ Class description goes here. """
 
 """Java `properties` parser.
@@ -10,18 +9,16 @@ files.
 See PropertyFile class for some considerations about the implementation.
 """
 
-from abc import ABCMeta, abstractmethod
 import re
-import six
+from abc import ABC, abstractmethod
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 """ Make this class abstract """
 
 
-@six.add_metaclass(ABCMeta)
-class PropertyFile(object):
+class PropertyFile(ABC):
     """Abstract property-holder class.
 
     All Property Files used in dataClay must have it own class, derived from
@@ -46,7 +43,7 @@ class PropertyFile(object):
         :param file_object: An object-like (stream) for the ".properties" file.
         :return:
         """
-        with open(file_name, 'r') as file_object:
+        with open(file_name, "r") as file_object:
             for line in file_object:
                 if not self._prop_comment.match(line):
                     m = self._prop_regular_line.match(line)

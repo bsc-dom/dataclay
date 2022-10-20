@@ -1,11 +1,11 @@
+import uuid
 from unittest import TestCase
 from unittest.mock import Mock
+
 from dataclay.heap.ClientHeapManager import ClientHeapManager
-import uuid
 
 
 class TestClientHeapManager(TestCase):
-
     def test_add_to_heap(self):
         runtime = Mock()
         dc_object = Mock()
@@ -18,8 +18,8 @@ class TestClientHeapManager(TestCase):
 
     def test_flush_all(self):
         pass
-        #self.fail()
+        # self.fail()
 
     def test_run_task(self):
         pass
-        #self.fail()
+        # self.fail()

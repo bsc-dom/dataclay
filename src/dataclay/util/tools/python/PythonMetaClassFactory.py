@@ -1,16 +1,16 @@
-
 """ Class description goes here. """
 
-from dataclay import DataClayObject
-from importlib import import_module
 import logging
-
-from dataclay.commonruntime.ExecutionGateway import loaded_classes
-from dataclay.util.management.classmgr.UserType import UserType
-from dataclay.exceptions.exceptions import DataClayException
 import traceback
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es'
-__copyright__ = '2016 Barcelona Supercomputing Center (BSC-CNS)'
+from importlib import import_module
+
+from dataclay import DataClayObject
+from dataclay.commonruntime.ExecutionGateway import loaded_classes
+from dataclay.exceptions.exceptions import DataClayException
+from dataclay.util.management.classmgr.UserType import UserType
+
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es"
+__copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
 
 logger = logging.getLogger(__name__)
 
@@ -78,20 +78,19 @@ class MetaClassFactory(object):
             raise DataClayException("Can only use DataClayObject classes")
 
         logger.verbose("Adding class %s to the MetaClassFactory", klass)
-        class_container = klass._prepare_metaclass(
-            self._namespace, self._responsible_account)
+        class_container = klass._prepare_metaclass(self._namespace, self._responsible_account)
 
         # Save to the list, and bookmark the MetaClass
         # (for valid recursive behaviour, e.g. cycles)
         complete_name = class_container.name
-        logger.debug("[add_class] Using `%s` as `name` field of Type",
-                     complete_name)
+        logger.debug("[add_class] Using `%s` as `name` field of Type", complete_name)
         if complete_name not in self.types:
             self.types[complete_name] = UserType(
                 signature="L{};".format(complete_name).replace(".", "/"),
                 includes=[],
                 namespace=self._namespace,
-                typeName=complete_name)
+                typeName=complete_name,
+            )
         self.classes.append(class_container)
 
         parent = klass.__bases__[0]

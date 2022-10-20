@@ -12,5 +12,4 @@
 !README.md
 !MANIFEST.in
 !requirements.txt
-!VERSION.txt
 .dockerignore

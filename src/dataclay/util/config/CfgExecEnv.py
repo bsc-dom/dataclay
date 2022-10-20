@@ -1,12 +1,12 @@
-
 """ Class description goes here. """
 
-import os
 import logging
+import os
+
 from dataclay.commonruntime.Settings import settings
 
-__author__ = 'Alex Barcelo <alex.barcelo@bsc.es>'
-__copyright__ = '2015 Barcelona Supercomputing Center (BSC-CNS)'
+__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
+__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 logger = logging.getLogger(__name__)
 
 
@@ -32,13 +32,14 @@ def set_defaults():
     settings.cache_on_deploy = True
 
     # ToDo: This is a dangerous default, used in Docker but... useless everywhere else.
-        
+
     deploy_path = os.getenv("DEPLOY_PATH", "/dataclay/deploy")
     settings.deploy_path = deploy_path
-    settings.deploy_path_source = os.getenv("DEPLOY_PATH_SRC",
-                                            os.path.join(deploy_path, "source"))
+    settings.deploy_path_source = os.getenv("DEPLOY_PATH_SRC", os.path.join(deploy_path, "source"))
     # Retain the IDs associated to this server
-    settings.storage_id = None  # The Java, which is both StorageLocation and Java ExecutionEnvironment
+    settings.storage_id = (
+        None  # The Java, which is both StorageLocation and Java ExecutionEnvironment
+    )
     settings.environment_id = None  # This is (should be) ourselves
 
     ###########################################################################
@@ -54,6 +55,14 @@ def set_defaults():
     settings.logicmodule_host = os.getenv("LOGICMODULE_HOST", "127.0.0.1")
     settings.logicmodule_rmiport = int(os.getenv("LOGICMODULE_PORT_RMI", "1024"))
     settings.logicmodule_port = int(os.getenv("LOGICMODULE_PORT_TCP", "1034"))
+
+    ###########################################################################
+
+    settings.METADATA_SERVICE_HOST = os.environ["METADATA_SERVICE_HOST"]
+    settings.METADATA_SERVICE_PORT = int(os.getenv("METADATA_SERVICE_PORT", "16587"))
+
+    settings.ETCD_HOST = os.environ["ETCD_HOST"]
+    settings.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
 
     # Setting defaults is considered loading settings
     settings.loaded = True

@@ -20,3 +20,8 @@
 - /venv/
 - .dockerignore
 - .pylintrc
+- .git
+- .gitmodules
+- .readthedocs.yml
+- .appveyor
+- .github
