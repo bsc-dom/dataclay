@@ -1,6 +1,7 @@
 """ Class description goes here. """
 
 import logging
+import pickle
 import traceback
 import uuid
 
@@ -292,6 +293,23 @@ class ExecutionEnvironment(object):
             self.runtime,
         )
 
+    def new_make_persistent(self, session_id, pickled_obj):
+        self.set_local_session(session_id)
+        instance = pickle.loads(pickled_obj)
+        print("*** unpickled_obj:", type(instance))
+        print("*** unpickled_obj:", instance.get_object_id())
+        print("*** unpickled_obj:", instance.__dict__)
+
+        # NOTE: When make persistent, the object should not be already persisted.
+        if self.runtime.get_from_heap(instance.get_object_id()) is not None:
+            raise
+
+        self.runtime.add_to_heap(instance)
+        # volatile_obj.initialize_object_as_volatile()
+
+        self.runtime.metadata_service.register_object(session_id, instance.metadata)
+
+    # TODO: Deprecate it, and steal name for new_make_persistent
     @tracer.start_as_current_span("EE: make_persistent")
     def make_persistent(self, session_id, objects_to_persist):
         """This function will deserialize make persistent "parameters" (i.e. object to persist

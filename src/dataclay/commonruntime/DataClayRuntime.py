@@ -4,10 +4,6 @@ import uuid
 from abc import ABC, abstractmethod
 from logging import TRACE
 
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from grpc import RpcError
-
-from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.heap.LockerPool import LockerPool
 from dataclay.paraver import (

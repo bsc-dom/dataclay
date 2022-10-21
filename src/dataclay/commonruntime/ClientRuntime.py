@@ -5,11 +5,8 @@ dataclay.api package.
 """
 
 import logging
+import pickle
 import traceback
-
-from dataclay_common.clients.metadata_service_client import MDSClient
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from opentelemetry import trace
 
 from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
 from dataclay.commonruntime.Settings import settings
@@ -77,22 +74,7 @@ class ClientRuntime(DataClayRuntime):
             instance.set_master_location(instance.get_hint())
             instance.set_alias(alias)
 
-            # serializes objects like volatile parameters
-            serialized_objs = SerializationLibUtilsSingleton.serialize_params_or_return(
-                params=[instance],
-                iface_bitmaps=None,
-                params_spec={"object": "DataClayObject"},
-                params_order=["object"],
-                hint_volatiles=instance.get_hint(),
-                runtime=self,
-                recursive=recursive,
-            )
-
-            # Avoid some race-conditions in communication (make persistent + execute where execute arrives before).
-            # TODO: fix volatiles under deserialization support for __setstate__ and __getstate__
-            self.add_volatiles_under_deserialization(serialized_objs.vol_objs.values())
-
-            # Gets EE Client
+            # Gets Execution Environment client
             try:
                 ee_client = self.ready_clients[instance.get_hint()]
             except KeyError:
@@ -103,11 +85,37 @@ class ClientRuntime(DataClayRuntime):
                 ee_client = EEClient(exec_env.hostname, exec_env.port)
                 self.ready_clients[instance.get_hint()] = ee_client
 
-            logger.verbose(f"Calling make persistent to EE {instance.get_hint()}")
-            ee_client.make_persistent(self.session.id, serialized_objs.vol_objs.values())
+            # TODO: Serialize instance with Pickle
+            pickled_obj = pickle.dumps(instance)
+            print("**instance_id:", instance.get_object_id())
+            print("**instance dict:", instance.__dict__)
+            ee_client.new_make_persistent(self.session.id, pickled_obj)
 
-            # removes volatiles under deserialization
-            self.remove_volatiles_under_deserialization(serialized_objs.vol_objs.values())
+            ###
+            # NOTE: Previous make persistent (without Pickle)
+            ###
+
+            # # serializes objects like volatile parameters
+            # serialized_objs = SerializationLibUtilsSingleton.serialize_params_or_return(
+            #     params=[instance],
+            #     iface_bitmaps=None,
+            #     params_spec={"object": "DataClayObject"},
+            #     params_order=["object"],
+            #     hint_volatiles=instance.get_hint(),
+            #     runtime=self,
+            #     recursive=recursive,
+            # )
+            # # Avoid some race-conditions in communication (make persistent + execute where execute arrives before).
+            # # TODO: fix volatiles under deserialization support for __setstate__ and __getstate__
+            # self.add_volatiles_under_deserialization(serialized_objs.vol_objs.values())
+            # ee_client.make_persistent(self.session.id, serialized_objs.vol_objs.values())
+
+            # # removes volatiles under deserialization
+            # self.remove_volatiles_under_deserialization(serialized_objs.vol_objs.values())
+
+            #####
+            # END Previous implementation
+            #####
 
             return instance.get_hint()
 

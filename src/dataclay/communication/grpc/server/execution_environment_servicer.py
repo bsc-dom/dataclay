@@ -5,13 +5,15 @@
 import logging
 import pickle
 import traceback
+from uuid import UUID
 
-from dataclay_common.protos import common_messages_pb2, dataservice_messages_pb2
-from dataclay_common.protos import dataservice_pb2_grpc as ds
-
+import grpc
 from dataclay.commonruntime.Runtime import get_runtime
 from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException
+from dataclay_common.protos import common_messages_pb2, dataservice_messages_pb2
+from dataclay_common.protos import dataservice_pb2_grpc as ds
+from google.protobuf.empty_pb2 import Empty
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
 __copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
@@ -116,7 +118,16 @@ class DataServiceEE(ds.DataServiceServicer):
             return self.get_exception_info(ex)
 
     def MakePersistent(self, request, context):
-        pass
+        try:
+            self.execution_environment.new_make_persistent(
+                UUID(request.session_id), request.pickled_obj
+            )
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+        return Empty()
 
     # TODO: Deprecate it
     def makePersistent(self, request, context):
