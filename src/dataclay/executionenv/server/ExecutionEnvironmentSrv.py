@@ -30,11 +30,12 @@ from dataclay.commonruntime.Initializer import logger
 from dataclay.commonruntime.Settings import settings
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.communication.grpc.clients.StorageLocationGrpcClient import SLClient
-from dataclay.communication.grpc.server.ExecutionEnvironmentService import DataServiceEE
+from dataclay.communication.grpc.server.execution_environment_servicer import DataServiceEE
 from dataclay.executionenv.ExecutionEnvironment import ExecutionEnvironment
 from dataclay.util import Configuration
-from dataclay.util.classloaders import \
-    ClassLoader  # Import after DataClayRuntime to avoid circular imports
+from dataclay.util.classloaders import (
+    ClassLoader,
+)  # Import after DataClayRuntime to avoid circular imports
 from dataclay.util.config.CfgExecEnv import set_defaults
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

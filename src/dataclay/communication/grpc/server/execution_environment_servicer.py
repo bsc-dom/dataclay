@@ -115,6 +115,10 @@ class DataServiceEE(ds.DataServiceServicer):
         except Exception as ex:
             return self.get_exception_info(ex)
 
+    def MakePersistent(self, request, context):
+        pass
+
+    # TODO: Deprecate it
     def makePersistent(self, request, context):
         try:
 
