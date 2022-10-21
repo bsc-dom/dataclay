@@ -4,20 +4,24 @@ import logging
 import traceback
 import uuid
 
-from dataclay_common import utils
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from opentelemetry import trace
-
 from dataclay.commonruntime.ExecutionEnvironmentRuntime import ExecutionEnvironmentRuntime
 from dataclay.commonruntime.Runtime import get_runtime, set_runtime
 from dataclay.commonruntime.Settings import settings
-from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
+from dataclay_common.clients.execution_environment_client import EEClient
 from dataclay.DataClayObject import DataClayObject
-from dataclay.DataClayObjProperties import (DCLAY_GETTER_PREFIX, DCLAY_PROPERTY_PREFIX,
-                                            DCLAY_SETTER_PREFIX)
+from dataclay.DataClayObjProperties import (
+    DCLAY_GETTER_PREFIX,
+    DCLAY_PROPERTY_PREFIX,
+    DCLAY_SETTER_PREFIX,
+)
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.paraver import (extrae_tracing_is_enabled, finish_tracing, get_traces,
-                              initialize_extrae, set_current_available_task_id)
+from dataclay.paraver import (
+    extrae_tracing_is_enabled,
+    finish_tracing,
+    get_traces,
+    initialize_extrae,
+    set_current_available_task_id,
+)
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
@@ -26,6 +30,9 @@ from dataclay.util import Configuration
 from dataclay.util.classloaders import ClassLoader
 from dataclay.util.FileUtils import deploy_class
 from dataclay.util.YamlParser import dataclay_yaml_load
+from dataclay_common import utils
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
+from opentelemetry import trace
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"

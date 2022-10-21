@@ -13,12 +13,15 @@ from opentelemetry import trace
 
 from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
 from dataclay.commonruntime.Settings import settings
-from dataclay.communication.grpc.clients.ExecutionEnvGrpcClient import EEClient
 from dataclay.heap.ClientHeapManager import ClientHeapManager
 from dataclay.loader.ClientObjectLoader import ClientObjectLoader
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
 from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
+from dataclay_common.clients.execution_environment_client import EEClient
+from dataclay_common.clients.metadata_service_client import MDSClient
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
+from opentelemetry import trace
 
 UNDEFINED_LOCAL = object()
 
