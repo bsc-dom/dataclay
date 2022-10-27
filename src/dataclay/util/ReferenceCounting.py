@@ -12,7 +12,7 @@ from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
 from dataclay.serialization.python.lang.StringWrapper import StringWrapper
 
 logger = logging.getLogger("ReferenceCounting")
-from dataclay.commonruntime.Runtime import get_runtime
+from dataclay.runtime.Runtime import get_runtime
 
 
 class ReferenceCounting(object):

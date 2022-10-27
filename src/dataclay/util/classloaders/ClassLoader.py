@@ -17,8 +17,8 @@ import os.path
 
 from lru import LRU
 
-from dataclay.commonruntime.Runtime import get_runtime
-from dataclay.commonruntime.Settings import settings
+from dataclay.runtime.Runtime import get_runtime
+from dataclay.runtime.Settings import settings
 from dataclay.util.YamlParser import dataclay_yaml_load
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

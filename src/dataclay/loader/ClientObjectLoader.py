@@ -7,7 +7,7 @@ Created on 1 feb. 2018
 """
 import importlib
 
-from dataclay.commonruntime.ExecutionGateway import ExecutionGateway
+from dataclay.runtime.ExecutionGateway import ExecutionGateway
 from dataclay.loader.DataClayObjectLoader import DataClayObjectLoader
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 

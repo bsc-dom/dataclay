@@ -3,7 +3,7 @@
 import logging
 from collections import namedtuple
 
-from dataclay.commonruntime.Runtime import get_runtime
+from dataclay.runtime.Runtime import get_runtime
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"

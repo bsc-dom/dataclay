@@ -8,8 +8,8 @@ import logging
 import pickle
 import traceback
 
-from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
-from dataclay.commonruntime.Settings import settings
+from dataclay.runtime.DataClayRuntime import DataClayRuntime
+from dataclay.runtime.Settings import settings
 from dataclay.heap.ClientHeapManager import ClientHeapManager
 from dataclay.loader.ClientObjectLoader import ClientObjectLoader
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
@@ -55,7 +55,7 @@ class ClientRuntime(DataClayRuntime):
             alias: Alias for the object
 
         Returns:
-            ID of the backend in which te object was persisted.
+            ID of the backend in which the object was persisted.
         """
 
         if instance._is_persistent:
@@ -66,9 +66,6 @@ class ClientRuntime(DataClayRuntime):
             instance._master_ee_id = backend_id or self.get_backend_by_object_id(
                 instance._object_id
             )
-
-            logger.debug(f"Sending object {instance._object_id} to EE")
-
             instance._alias = alias
 
             # Gets Execution Environment client

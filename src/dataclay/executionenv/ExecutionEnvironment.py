@@ -5,9 +5,9 @@ import pickle
 import traceback
 import uuid
 
-from dataclay.commonruntime.ExecutionEnvironmentRuntime import ExecutionEnvironmentRuntime
-from dataclay.commonruntime.Runtime import get_runtime, set_runtime
-from dataclay.commonruntime.Settings import settings
+from dataclay.runtime.ExecutionEnvironmentRuntime import ExecutionEnvironmentRuntime
+from dataclay.runtime.Runtime import get_runtime, set_runtime
+from dataclay.runtime.Settings import settings
 from dataclay.DataClayObject import DataClayObject
 from dataclay.DataClayObjProperties import (
     DCLAY_GETTER_PREFIX,

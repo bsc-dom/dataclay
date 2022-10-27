@@ -9,8 +9,8 @@ import uuid
 from dataclay_common.metadata_service import MetadataService
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
-from dataclay.commonruntime.DataClayRuntime import DataClayRuntime
-from dataclay.commonruntime.Settings import settings
+from dataclay.runtime.DataClayRuntime import DataClayRuntime
+from dataclay.runtime.Settings import settings
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.heap.ExecutionEnvironmentHeapManager import ExecutionEnvironmentHeapManager
 from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader

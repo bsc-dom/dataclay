@@ -5,7 +5,7 @@ import traceback
 from importlib import import_module
 
 from dataclay import DataClayObject
-from dataclay.commonruntime.ExecutionGateway import loaded_classes
+from dataclay.runtime.ExecutionGateway import loaded_classes
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util.management.classmgr.UserType import UserType
 

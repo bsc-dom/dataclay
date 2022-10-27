@@ -26,8 +26,8 @@ import grpc
 from dataclay_common.exceptions.exceptions import *
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
-from dataclay.commonruntime.Initializer import logger
-from dataclay.commonruntime.Settings import settings
+from dataclay.runtime.Initializer import logger
+from dataclay.runtime.Settings import settings
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.communication.grpc.clients.StorageLocationGrpcClient import SLClient
 from dataclay.communication.grpc.server.execution_environment_servicer import DataServiceEE

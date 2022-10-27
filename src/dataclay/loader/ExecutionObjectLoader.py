@@ -10,8 +10,8 @@ import logging
 import time
 import traceback
 
-from dataclay.commonruntime.ExecutionGateway import ExecutionGateway
-from dataclay.commonruntime.Runtime import get_runtime
+from dataclay.runtime.ExecutionGateway import ExecutionGateway
+from dataclay.runtime.Runtime import get_runtime
 from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.loader.DataClayObjectLoader import DataClayObjectLoader
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton

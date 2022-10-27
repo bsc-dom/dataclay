@@ -17,12 +17,12 @@ from time import sleep
 from opentelemetry import trace
 
 from dataclay import get_runtime
-from dataclay.commonruntime.ClientRuntime import LANG_PYTHON
-from dataclay.commonruntime.ClientRuntime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
-from dataclay.commonruntime.ClientRuntime import ClientRuntime, settings
-from dataclay.commonruntime.Initializer import _get_logging_dict_config, initialize
-from dataclay.commonruntime.Runtime import set_runtime
-from dataclay.commonruntime.Settings import unload_settings
+from dataclay.runtime.ClientRuntime import LANG_PYTHON
+from dataclay.runtime.ClientRuntime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
+from dataclay.runtime.ClientRuntime import ClientRuntime, settings
+from dataclay.runtime.Initializer import _get_logging_dict_config, initialize
+from dataclay.runtime.Runtime import set_runtime
+from dataclay.runtime.Settings import unload_settings
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.DataClayObject import DataClayObject
 from dataclay.paraver import (TRACE_ENABLED, extrae_tracing_is_enabled, get_task_id,
@@ -417,7 +417,7 @@ def finish():
         clean_babel_data()
         sys.path.remove(os.path.join(settings.STUBS_PATH, "sources"))
         # unload caches of stubs
-        from dataclay.commonruntime.ExecutionGateway import (class_extradata_cache_client,
+        from dataclay.runtime.ExecutionGateway import (class_extradata_cache_client,
                                                              class_extradata_cache_exec_env,
                                                              loaded_classes)
 

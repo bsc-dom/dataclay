@@ -5,8 +5,8 @@ import os
 
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
-from dataclay.commonruntime.Runtime import get_runtime
-from dataclay.commonruntime.Settings import settings
+from dataclay.runtime.Runtime import get_runtime
+from dataclay.runtime.Settings import settings
 from dataclay.util.FileUtils import deploy_class
 from dataclay.util.YamlParser import Loader, dataclay_yaml_load
 
