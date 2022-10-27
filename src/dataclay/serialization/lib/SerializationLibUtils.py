@@ -16,8 +16,10 @@ from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDat
 from dataclay.serialization.lib.PersistentParamOrReturn import PersistentParamOrReturn
 from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
 from dataclay.serialization.python.lang.VLQIntegerWrapper import VLQIntegerWrapper
-from dataclay.serialization.python.util.PyTypeWildcardWrapper import (PyTypeWildcardWrapper,
-                                                                      safe_wait_if_compss_future)
+from dataclay.serialization.python.util.PyTypeWildcardWrapper import (
+    PyTypeWildcardWrapper,
+    safe_wait_if_compss_future,
+)
 from dataclay.util.DataClayObjectMetaData import DataClayObjectMetaData
 from dataclay.util.IdentityDict import IdentityDict
 from dataclay.util.ReferenceCounting import ReferenceCounting
@@ -67,16 +69,16 @@ class SerializationLibUtils(object):
             instance.get_original_object_id(),
             instance.get_root_location(),
             instance.get_origin_location(),
-            instance.get_replica_locations(),
-            instance.get_alias(),
-            instance.is_read_only(),
-            instance.get_dataset_name(),
+            instance._replica_ee_ids,
+            instance._alias,
+            instance._is_read_only,
+            instance._dataset_name,
         )
         dcc_extradata = instance.get_class_extradata()
         byte_array = buffer.getvalue()
         buffer.close()
         return ObjectWithDataParamOrReturn(
-            instance.get_object_id(), dcc_extradata.class_id, metadata, byte_array
+            instance._object_id, dcc_extradata.class_id, metadata, byte_array
         )
 
     def serialize_association(
@@ -90,15 +92,15 @@ class SerializationLibUtils(object):
         try:
             tag = cur_serialized_objs[element]
         except KeyError:
-            logger.debug("Adding object %s to pending_objects", element.get_object_id())
+            logger.debug("Adding object %s to pending_objects", element._object_id)
 
             pending_objs.append(element)
             tag = len(cur_serialized_objs)
             cur_serialized_objs[element] = tag
 
         """ update reference counting """
-        associated_oid = element.get_object_id()
-        hint = element.get_hint()
+        associated_oid = element._object_id
+        hint = element._master_ee_id
         reference_counting.increment_reference_counting(associated_oid, hint)
 
         """ write tag """
@@ -146,15 +148,15 @@ class SerializationLibUtils(object):
                     param = safe_wait_if_compss_future(param)
 
                     try:
-                        oid = param.get_object_id()
+                        oid = param._object_id
 
                         runtime.add_session_reference(oid)
 
-                        if param.is_persistent():
+                        if param._is_persistent:
                             logger.debug("Serializing persistent parameter/return with oid %s", oid)
 
                             class_id = param.get_class_extradata().class_id
-                            hint = param.get_hint()
+                            hint = param._master_ee_id
 
                             pers_param = PersistentParamOrReturn(oid, hint, class_id)
                             pers_params[i] = pers_param
@@ -200,18 +202,18 @@ class SerializationLibUtils(object):
                 while pending_objects:
                     # Note that pending objects are *only* DataClay Objects)
                     pending_obj = pending_objects.pop()
-                    oid = pending_obj.get_object_id()
+                    oid = pending_obj._object_id
 
                     if oid in already_serialized_params:
                         continue
 
-                    if pending_obj.is_persistent():
+                    if pending_obj._is_persistent:
                         logger.debug(
                             "Serializing sub-object persistent parameter/return with oid %s", oid
                         )
 
                         class_id = param.get_class_extradata().class_id
-                        hint = param.get_hint()
+                        hint = param._master_ee_id
 
                         pers_param = PersistentParamOrReturn(oid, hint, class_id)
                         pers_params[i] = pers_param
@@ -272,7 +274,7 @@ class SerializationLibUtils(object):
         """
 
         object_with_data = None
-        object_id = dc_object.get_object_id()
+        object_id = dc_object._object_id
         runtime.lock(object_id)
         try:
             cur_serialized_objs = IdentityDict()
@@ -283,8 +285,8 @@ class SerializationLibUtils(object):
             # is for associated objects that are not persistent yet (currently being persisted)
             # This algorithm can be improved in both languages, Python and Java.
             if for_update is False:
-                dc_object.set_hint(hint)
-                dc_object.set_persistent(True)
+                dc_object._master_ee_id = hint
+                dc_object._is_persistent = True
 
             object_with_data = self._create_buffer_and_serialize(
                 dc_object,
@@ -296,7 +298,7 @@ class SerializationLibUtils(object):
             )
 
             if force_pending_to_register:
-                dc_object.set_pending_to_register(True)
+                dc_object._is_pending_to_register = True
 
         finally:
             runtime.unlock(object_id)
@@ -330,8 +332,8 @@ class SerializationLibUtils(object):
                 obj = k
                 tag = v
                 class_id = obj.get_class_extradata().class_id
-                object_id = obj.get_object_id()
-                hint = obj.get_hint()
+                object_id = obj._object_id
+                hint = obj._master_ee_id
 
                 tags_to_oids[tag] = object_id
                 tags_to_class_id[tag] = class_id
@@ -415,7 +417,7 @@ class SerializationLibUtils(object):
             if obj_data == None:
                 return None
         return self.serialize_for_db(
-            instance.get_object_id(), obj_data.metadata, obj_data.obj_bytes, False
+            instance._object_id, obj_data.metadata, obj_data.obj_bytes, False
         )
 
     def serialize_for_db_gc_not_dirty(
@@ -478,8 +480,8 @@ class PersistentIdPicklerHelper(object):
                 self._cur_serialized_objs[obj] = tag
 
             """ update reference counting """
-            associated_oid = obj.get_object_id()
-            hint = obj.get_hint()
+            associated_oid = obj._object_id
+            hint = obj._master_ee_id
             self._reference_counting.increment_reference_counting(associated_oid, hint)
 
             return str(tag)

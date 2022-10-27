@@ -51,13 +51,13 @@ class ReferenceCounting(object):
         @param reference_counting: Reference counting to serialize
         """
         self.external_references = 0
-        if dc_obj.get_alias() is not None and dc_obj.get_alias() != "":
+        if dc_obj._alias is not None and dc_obj._alias != "":
             logger.trace("Found alias reference")
             self.external_references = self.external_references + 1
 
         cur_dataclay_id = get_runtime().dataclay_id
-        if dc_obj.get_replica_locations() is not None and len(dc_obj.get_replica_locations()) != 0:
-            for replica_loc in dc_obj.get_replica_locations():
+        if dc_obj._replica_ee_ids is not None and len(dc_obj._replica_ee_ids) != 0:
+            for replica_loc in dc_obj._replica_ee_ids:
                 replica_dataclay_id = (
                     get_runtime().get_execution_environment_info(replica_loc).dataclay_instance_id
                 )

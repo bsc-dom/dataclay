@@ -111,8 +111,8 @@ class DataClayRuntime(ABC):
 
     def update_object_id(self, instance, new_object_id):
         """Update the object id in both DataClayObject and HeapManager"""
-        old_object_id = instance.get_object_id()
-        instance.set_object_id(new_object_id)
+        old_object_id = instance._object_id
+        instance._object_id = new_object_id
         self.dataclay_heap_manager.remove_from_heap(old_object_id)
         self.dataclay_heap_manager._add_to_inmemory_map(instance)
 
@@ -192,7 +192,7 @@ class DataClayRuntime(ABC):
     def update_object(self, into_object, from_object):
         session_id = self.session.id
 
-        backend_id = into_object.get_hint()
+        backend_id = into_object._master_ee_id
         try:
             ee_client = self.ready_clients[backend_id]
         except KeyError:
@@ -226,8 +226,8 @@ class DataClayRuntime(ABC):
             for tag in vol_objects:
                 cur_oid = serialized_params.vol_objs[tag].object_id
                 if cur_oid not in new_ids:
-                    if cur_oid == from_object.get_object_id():
-                        new_ids[cur_oid] = into_object.get_object_id()
+                    if cur_oid == from_object._object_id:
+                        new_ids[cur_oid] = into_object._object_id
                     else:
                         new_ids[cur_oid] = uuid.uuid4()
 
@@ -249,7 +249,7 @@ class DataClayRuntime(ABC):
                         except KeyError:
                             pass
 
-        ee_client.ds_update_object(session_id, into_object.get_object_id(), serialized_params)
+        ee_client.ds_update_object(session_id, into_object._object_id, serialized_params)
 
     #################
     # Lock & unlock #
@@ -333,8 +333,8 @@ class DataClayRuntime(ABC):
         locations = set()
         try:
             instance = self.get_from_heap(object_id)
-            locations.add(instance.get_hint())
-            locations.update(instance.get_replica_locations())
+            locations.add(instance._master_ee_id)
+            locations.update(instance._replica_ee_ids)
         except Exception:
             object_md = self.metadata_service.get_object_md_by_id(object_id)
             locations.add(object_md.master_ee_id)
@@ -342,7 +342,7 @@ class DataClayRuntime(ABC):
         return locations
 
     def update_object_metadata(self, instance):
-        object_md = self.metadata_service.get_object_md_by_id(instance.get_object_id())
+        object_md = self.metadata_service.get_object_md_by_id(instance._object_id)
         instance.metadata = object_md
 
     #####################
@@ -466,7 +466,7 @@ class DataClayRuntime(ABC):
 
     def call_execute_to_ds(self, instance, parameters, operation_name, exec_env_id, using_hint):
 
-        object_id = instance.get_object_id()
+        object_id = instance._object_id
         operation = self.get_operation_info(object_id, operation_name)
         session_id = self.session.id
         implementation_id = self.get_implementation_id(object_id, operation_name)
@@ -526,11 +526,11 @@ class DataClayRuntime(ABC):
                     logger.debug("Exception dataclay during execution. Retrying...")
                     logger.debug(str(dce))
 
-                    locations = instance.get_replica_locations()
+                    locations = instance._replica_ee_ids
                     if locations is None or len(locations) == 0:
                         try:
                             self.update_object_metadata(instance)
-                            locations = instance.get_replica_locations()
+                            locations = instance._replica_ee_ids
                             new_location = False
                         except DataClayException:
                             locations = None
@@ -552,10 +552,10 @@ class DataClayRuntime(ABC):
                     if not new_location:
                         exec_env_id = next(iter(locations))
                     if using_hint:
-                        instance.set_hint(exec_env_id)
+                        instance._master_ee_id = exec_env_id
                     logger.debug(
                         "[==Miss Jump==] MISS. The object %s was not in the exec.location %s. Retrying execution."
-                        % (instance.get_object_id(), str(exec_env_id))
+                        % (instance._object_id, str(exec_env_id))
                     )
 
         if serialized_params is not None and serialized_params.vol_objs is not None:
@@ -571,7 +571,7 @@ class DataClayRuntime(ABC):
                     # in the same location as the object with the method to execute
                     # ===========================================================
                     param_instance = self.get_from_heap(param.object_id)
-                    param_instance.set_hint(exec_env_id)
+                    param_instance._master_ee_id = exec_env_id
                 self.volatile_parameters_being_send.remove(param.object_id)
 
         if not executed:
@@ -604,7 +604,7 @@ class DataClayRuntime(ABC):
     def get_copy_of_object(self, from_object, recursive):
         session_id = self.session.id
 
-        backend_id = from_object.get_hint()
+        backend_id = from_object._master_ee_id
         try:
             ee_client = self.ready_clients[backend_id]
         except KeyError:
@@ -613,7 +613,7 @@ class DataClayRuntime(ABC):
             self.ready_clients[backend_id] = ee_client
 
         copiedObject = ee_client.ds_get_copy_of_object(
-            session_id, from_object.get_object_id(), recursive
+            session_id, from_object._object_id, recursive
         )
         result = DeserializationLibUtilsSingleton.deserialize_params_or_return(
             copiedObject, None, None, None, self
@@ -644,7 +644,7 @@ class DataClayRuntime(ABC):
         if hint is None:
             instance = self.get_from_heap(object_id)
             self.update_object_metadata(instance)
-            hint = instance.get_hint()
+            hint = instance._master_ee_id
 
         dest_backend_id = backend_id
         dest_backend = None

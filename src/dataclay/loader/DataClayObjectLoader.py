@@ -50,7 +50,7 @@ class DataClayObjectLoader(ABC):
         obj = self.new_instance(class_id, object_id)
         if hint is not None:
             """set hint if not none. If none do not set it to avoid overriding!"""
-            obj.set_hint(hint)
+            obj._master_ee_id = hint
 
         return obj
 

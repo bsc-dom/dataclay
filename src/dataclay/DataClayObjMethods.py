@@ -20,15 +20,17 @@ def _dclayMethod(f, self, *args, **kwargs):
         # If the object is not persistent executes the method locally,
         # else, executes the method within the execution environment
         if (
-            (get_runtime().is_exec_env() and self.is_loaded())
-            or (get_runtime().is_client() and not self.is_persistent())
+            (get_runtime().is_exec_env() and self._is_loaded)
+            or (get_runtime().is_client() and not self._is_persistent)
             or f._dclay_local
             or f.__name__ == "__setstate__"
             or f.__name__ == "__getstate__"
         ):
             return f(self, *args, **kwargs)
         else:
-            return get_runtime().execute_implementation_aux(f.__name__, self, args, self.get_hint())
+            return get_runtime().execute_implementation_aux(
+                f.__name__, self, args, self._master_ee_id
+            )
     except Exception:
         traceback.print_exc()
         raise
@@ -41,7 +43,7 @@ def _dclayEmptyMethod(f, self, *args, **kwargs):
     # Let it fail elsewhere, if the user hacks around into an invalid state
     # (like a loaded&local non-persistent instance with an dclayEmptyMethod,
     #  something that should not happen normally)
-    return get_runtime().execute_implementation_aux(f.__name__, self, args, self.get_hint())
+    return get_runtime().execute_implementation_aux(f.__name__, self, args, self._master_ee_id)
 
 
 class dclayMethod(object):

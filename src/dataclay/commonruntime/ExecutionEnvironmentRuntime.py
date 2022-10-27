@@ -118,7 +118,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         return self.execution_environment
 
     def store_object(self, instance):
-        if not instance.is_persistent():
+        if not instance._is_persistent:
             raise RuntimeError(
                 "StoreObject should only be called on Persistent Objects. "
                 "Ensure to call make_persistent first"
@@ -142,10 +142,14 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             ID of the backend in which te object was persisted.
         """
         del recursive
-        logger.debug(f"Starting make persistent for instance {instance.get_object_id()}")
+        logger.debug(f"Starting make persistent for instance {instance._object_id}")
 
-        if not instance.get_hint():
-            instance.set_hint(backend_id or self.get_backend_by_object_id(instance.get_object_id()))
+        # It should always have a master location, since all objects intantiated
+        # in a ee, get the ee as the master location
+        # if not _master_ee_id:
+        #     instance._master_ee_id = backend_id or self.get_backend_by_object_id(
+        #         instance._object_id
+        #     )
 
         if alias is not None:
             # Add a new alias to an object.
@@ -154,16 +158,16 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             # 1 - object was persisted without alias and not yet registered -> we need to register it with new alias.
             # 2 - object was persisted and it is already registered -> we only add a new alias
             # 3 - object was persisted with an alias and it must be already registered -> we add a new alias.
-            instance.set_alias(alias)
+            instance._alias = alias
 
-            if instance.is_pending_to_register():
+            if instance._is_pending_to_register:
                 self.metadata_service.register_object(self.session.id, instance.metadata)
 
-        return instance.get_hint()
+        return instance._master_ee_id
 
     def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):
 
-        object_id = instance.get_object_id()
+        object_id = instance._object_id
 
         logger.debug(
             "Calling execute_implementation inside EE for operation %s and object id %s",
@@ -185,14 +189,14 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         thisExecEnv = settings.environment_id
         using_hint = False
         if exec_env_id is None:
-            exec_env_id = instance.get_hint()
+            exec_env_id = instance._master_ee_id
             if exec_env_id is not None:
                 using_hint = True
                 logger.debug(f"Using hint {exec_env_id} for object id {object_id}")
             else:
                 logger.debug(f"Asking for EE of object with id {object_id}")
                 self.update_object_metadata(instance)
-                exec_env_id = instance.get_hint()
+                exec_env_id = instance._master_ee_id
 
         if exec_env_id == thisExecEnv:
             logger.debug("Object execution is local")
@@ -215,7 +219,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                 )
         else:
             logger.debug("Object execution is not local")
-            object_id = instance.get_object_id()
+            object_id = instance._object_id
             return self.call_execute_to_ds(
                 instance, parameters, operation_name, exec_env_id, using_hint
             )
@@ -253,30 +257,30 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         while pending_objs:
             current_obj = pending_objs.pop()
             # Lock and make sure it is loaded
-            current_obj_id = current_obj.get_object_id()
+            current_obj_id = current_obj._object_id
             self.lock(current_obj_id)  # Avoid GC clean object while storing it
             try:
-                if not current_obj.is_loaded():
+                if not current_obj._is_loaded:
                     current_obj = self.get_or_new_instance_from_db(current_obj_id, False)
 
                 dcc_extradata = current_obj.get_class_extradata()
-                object_id = current_obj.get_object_id()
+                object_id = current_obj._object_id
 
                 if make_persistent:
                     # Ignore already persistent objects
-                    if current_obj.is_persistent():
+                    if current_obj._is_persistent:
                         continue
 
                     obj_to_register.append(current_obj)
 
                 # This object will soon be persistent
-                current_obj.set_persistent(True)
-                current_obj.set_hint(settings.environment_id)
+                current_obj._is_persistent = True
+                current_obj._master_ee_id = settings.environment_id
                 # Just in case (should have been loaded already)
                 logger.debug(
                     "Setting loaded to true from internal store for object %s" % str(object_id)
                 )
-                current_obj.set_loaded(True)
+                current_obj._is_loaded = True
 
                 logger.debug(
                     "Ready to make persistent object {%s} of class %s {%s}"
@@ -331,7 +335,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         :rtype: boolean
         """
 
-        object_id = volatile_obj.get_object_id()
+        object_id = volatile_obj._object_id
         if hasattr(self.thread_local_data, "volatiles_under_deserialization"):
             if self.thread_local_data.volatiles_under_deserialization is not None:
                 for obj_with_data in self.thread_local_data.volatiles_under_deserialization:
@@ -344,7 +348,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                             return True
                         # deserialize it
                         metaclass_id = volatile_obj.get_class_extradata().class_id
-                        hint = volatile_obj.get_hint()
+                        hint = volatile_obj._master_ee_id
                         self.get_or_new_volatile_instance_and_load(
                             object_id, metaclass_id, hint, obj_with_data, ifacebitmaps
                         )
@@ -399,11 +403,11 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                 self.unlock(session_id)
 
     def delete_alias(self, instance):
-        alias = instance.get_alias()
+        alias = instance._alias
         if alias is not None:
-            self.delete_alias_in_dataclay(alias, instance.get_dataset_name())
-        instance.set_alias(None)
-        instance.set_dirty(True)
+            self.delete_alias_in_dataclay(alias, instance._dataset_name)
+        instance._alias = None
+        instance._is_dirty = True
 
     def close_session_in_ee(self, session_id):
         """Close session in EE. Subtract session references for GC."""
@@ -523,16 +527,16 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
     def synchronize(self, instance, operation_name, params):
         session_id = self.session.id
-        object_id = instance.get_object_id()
-        operation = self.get_operation_info(instance.get_object_id(), operation_name)
-        implementation_id = self.get_implementation_id(instance.get_object_id(), operation_name)
+        object_id = instance._object_id
+        operation = self.get_operation_info(instance._object_id, operation_name)
+        implementation_id = self.get_implementation_id(instance._object_id, operation_name)
         # === SERIALIZE PARAMETERS ===
         serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
             params=[params],
             iface_bitmaps=None,
             params_spec=operation.params,
             params_order=operation.paramsOrder,
-            hint_volatiles=instance.get_hint(),
+            hint_volatiles=instance._master_ee_id,
             runtime=self,
         )
         self.execution_environment.synchronize(
@@ -552,7 +556,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                     del self.references_hold_by_sessions[object_id]
 
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
-        object_id = dc_obj.get_object_id()
+        object_id = dc_obj._object_id
         session_id = self.session.id
         logger.debug(
             "[==FederateObject==] Starting federation of object by %s with dest dataClay %s, and session %s",
@@ -565,7 +569,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         )
 
     def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
-        object_id = dc_obj.get_object_id()
+        object_id = dc_obj._object_id
         session_id = self.session.id
         logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",

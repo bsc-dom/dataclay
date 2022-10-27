@@ -7,9 +7,8 @@ Note that this managers also includes most serialization/deserialization code
 related to classes and function call parameters.
 """
 import inspect
+import uuid
 from logging import getLogger
-
-from decorator import getfullargspec
 
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util.management.classmgr.MetaClass import MetaClass
@@ -19,6 +18,7 @@ from dataclay.util.management.classmgr.python.PythonClassInfo import PythonClass
 from dataclay.util.management.classmgr.python.PythonImplementation import PythonImplementation
 from dataclay.util.management.classmgr.Type import Type
 from dataclay.util.management.classmgr.Utils import STATIC_ATTRIBUTE_FOR_EXTERNAL_INIT
+from decorator import getfullargspec
 
 # Publicly show the dataClay method decorators
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
@@ -77,11 +77,11 @@ class ExecutionGateway(type):
 
             return ret
 
-    def new_dataclay_instance(cls, deserializing, **kwargs):
+    def new_dataclay_instance(cls, deserializing: bool, object_id: uuid.UUID = None):
         """Return a new instance, without calling to the class methods."""
         logger.debug("New dataClay instance (without __call__) of class `%s`", cls.__name__)
         ret = object.__new__(cls)  # this defers the __call__ method
-        ret.initialize_object(deserializing=deserializing, **kwargs)
+        ret.initialize_object(deserializing=deserializing, object_id=object_id)
         return ret
 
     def _prepare_metaclass(cls, namespace, responsible_account):

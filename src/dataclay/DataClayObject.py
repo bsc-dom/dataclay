@@ -80,16 +80,40 @@ class DataClayObject(object, metaclass=ExecutionGateway):
     directly, through the StorageObject alias, or through a derived class).
     """
 
-    # Extradata of the object. Private field.
-    __dclay_instance_extradata = None
-
-    def initialize_object(self, deserializing=False, **kwargs):
+    def initialize_object(self, deserializing=False, object_id: uuid.UUID = None):
         """Initializes the object"""
-        self._populate_internal_fields(**kwargs)
+
+        # Populate internal fields
+        if object_id:
+            self._object_id = uuid.UUID(str(object_id))
+        else:
+            self._object_id = uuid.uuid4()
+        self._alias = (None,)
+        self._dataset_name = get_runtime().session.dataset_name
+        self._class = self.__class__
+        self._is_persistent = False
+        self._master_ee_id = (
+            get_runtime().get_hint()
+        )  # May be replaced if instantiating a thing object from different ee
+        self._replica_ee_ids = []
+        self._language = LANG_PYTHON
+        self._is_read_only = False
+        self._is_dirty = False
+        self._is_pending_to_register = False
+        self._is_loaded = False
+        self._owner_session_id = (
+            get_runtime().session.id
+        )  # May be removed to instantiate dc object without init()
+
+        # TODO: get_class_extradata function is adding DynamicProperties to class
+        # (not to instance!) so it is needed to be called. Please, use a better function for that.
+        self.get_class_extradata()
+
+        # Add instance to heap
         get_runtime().add_to_heap(self)
 
         if not deserializing:
-            """object created during executions is volatile."""
+            # object created during executions is volatile.
             self.initialize_object_as_volatile()
 
     def initialize_object_as_persistent(self):
@@ -98,7 +122,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         Flags for "persistent" state might be different in EE and client.
         """
         # TODO: improve this using an specialization (dgasull)
-        self.set_persistent(True)
+        self._is_persistent = True
 
         if get_runtime().is_exec_env():
             # *** Execution Environment flags
@@ -106,8 +130,8 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             # this function (initialize as persistent) is used for objects being
             # deserialized and therefore they might be unloaded
             # same happens for pending to register flag.
-            self.set_loaded(False)
-            self.set_pending_to_register(False)
+            self._is_loaded = False
+            self._is_pending_to_register = False
 
     def initialize_object_as_volatile(self):
         """Initialize object with state 'volatile' with proper flags.
@@ -119,50 +143,10 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         # TODO: improve this using an specialization (dgasull)
         if get_runtime().is_exec_env():
             # *** Execution Environment flags
-            self.set_persistent(True)  # All objects in the EE are persistent
-            self.set_loaded(True)
-            self.set_pending_to_register(True)
-            self.set_hint(get_runtime().get_hint())
-            self.set_owner_session_id(get_runtime().session.id)
-
-    def _populate_internal_fields(self, **kwargs):
-        logger.debug(f"Populating internal fields for the class. Provided kwargs: {kwargs}")
-
-        # My test
-        # self.__metadata = ObjectMetadata(
-        #     id=uuid.uuid4(),
-        #     alias_name=None,
-        #     dataset_name=get_runtime().session.dataset_name,
-        #     class_id=self.get_class_extradata().class_id,
-        #     master_ee_id=get_runtime().get_hint(),
-        #     replica_ee_ids=None,
-        #     language=LANG_PYTHON,
-        #     is_read_only=False,
-        # )
-
-        # Mix default values with the provided ones through kwargs
-        fields = {
-            "persistent_flag": False,
-            "object_id": uuid.uuid4(),
-            "dataset_name": get_runtime().session.dataset_name,
-            "replica_locations": [],
-            "is_read_only": False,
-            "pending_to_register_flag": False,
-            "dirty_flag": False,
-            "memory_pinned": False,
-            "loaded_flag": True,
-        }
-        fields.update(kwargs)
-
-        # Store some extradata in the class
-        instance_dict = object.__getattribute__(self, "__dict__")
-        instance_dict["_DataClayObject__dclay_instance_extradata"] = DataClayInstanceExtraData(
-            **fields
-        )
-
-        # TODO: get_class_extradata function is adding DynamicProperties to class (not to instance!) so it is needed
-        # to be called. Please, use a better function for that.
-        instance_dict["_dclay_class_extradata"] = self.get_class_extradata()
+            self._is_persistent = True  # All objects in the EE are persistent
+            self._is_loaded = True
+            self._is_pending_to_register = True
+            # self._master_ee_id = get_runtime().get_hint()
 
     @classmethod
     def get_class_extradata(cls):
@@ -376,15 +360,15 @@ class DataClayObject(object, metaclass=ExecutionGateway):
 
     def new_replica(self, backend_id=None, recursive=True):
         return get_runtime().new_replica(
-            self.get_object_id(), self.get_hint(), backend_id, None, recursive
+            self._object_id, self._master_ee_id, backend_id, None, recursive
         )
 
     def new_version(self, backend_id=None, recursive=True):
         return get_runtime().new_version(
-            self.get_object_id(),
-            self.get_hint(),
+            self._object_id,
+            self._master_ee_id,
             self.get_class_id(),
-            self.get_dataset_name(),
+            self._dataset_name,
             backend_id,
             None,
             recursive,
@@ -392,7 +376,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
 
     def consolidate_version(self):
         """Consolidate: copy contents of current version object to original object"""
-        return get_runtime().consolidate_version(self.get_object_id(), self.get_hint())
+        return get_runtime().consolidate_version(self._object_id, self._master_ee_id)
 
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
 
@@ -446,7 +430,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             self.get_class_extradata().properties.values(), key=attrgetter("position")
         )
 
-        logger.verbose("Set all properties from object %s", from_object.get_object_id())
+        logger.verbose("Set all properties from object %s", from_object._object_id)
 
         for p in properties:
             value = getattr(from_object, p.name)
@@ -465,11 +449,11 @@ class DataClayObject(object, metaclass=ExecutionGateway):
 
         If the object is NOT persistent, then this method returns None.
         """
-        if self.is_persistent():
-            hint = self.__dclay_instance_extradata.execenv_id or ""
+        if self._is_persistent:
+            hint = self._master_ee_id or ""
 
             return "%s:%s:%s" % (
-                self.__dclay_instance_extradata.object_id,
+                self._object_id,
                 hint,
                 self.get_class_extradata().class_id,
             )
@@ -498,161 +482,90 @@ class DataClayObject(object, metaclass=ExecutionGateway):
     @property
     def metadata(self):
         object_md = ObjectMetadata(
-            self.get_object_id(),
-            self.get_alias(),
-            self.get_dataset_name(),
+            self._object_id,
+            self._alias,
+            self._dataset_name,
             self.get_class_id(),
-            self.get_hint(),
-            self.get_replica_locations(),
+            self._master_ee_id,
+            self._replica_ee_ids,
             LANG_PYTHON,
-            self.is_read_only(),
+            self._is_read_only,
         )
         return object_md
 
     @metadata.setter
     def metadata(self, object_md):
         # self.__metadata = object_md
-        self.set_object_id(object_md.id)
-        self.set_alias(object_md.alias_name)
-        self.set_dataset_name(object_md.dataset_name)
-        self.set_hint(object_md.master_ee_id)
-        self.set_replica_locations(object_md.replica_ee_ids)
-        self.set_read_only(object_md.is_read_only)
+        self._object_id = object_md.id
+        self._alias = object_md.alias_name
+        self._dataset_name = object_md.dataset_name
+        self._master_ee_id = object_md.master_ee_id
+        self._replica_ee_ids = object_md.replica_ee_ids
+        self._is_read_only = object_md.is_read_only
 
     def get_all_locations(self):
         """Return all the locations of this object."""
-        return get_runtime().get_all_locations(self.__dclay_instance_extradata.object_id)
+        return get_runtime().get_all_locations(self._object_id)
 
     # TODO: This function is redundant. Change it to get_random_backend(self), and implement it
     def get_location(self):
         """Return a single (random) location of this object."""
         # return get_runtime().get_location(self.__dclay_instance_extradata.object_id)
-        return self.get_hint()
-
-    ##########################################
-    # Metadata getters and setters #
-    ##########################################
-
-    def get_object_id(self):
-        return self.__dclay_instance_extradata.object_id
-
-    def set_object_id(self, new_object_id):
-        self.__dclay_instance_extradata.object_id = new_object_id
-
-    def get_alias(self):
-        return self.__dclay_instance_extradata.alias
-
-    def set_alias(self, new_alias):
-        self.__dclay_instance_extradata.alias = new_alias
-
-    # TODO: Rename hint to backend? or master_backend?
-    def get_hint(self):
-        return self.__dclay_instance_extradata.execenv_id
-
-    # TODO: Rename hint to backend?
-    def set_hint(self, new_hint):
-        self.__dclay_instance_extradata.execenv_id = new_hint
-
-    def is_read_only(self):
-        return self.__dclay_instance_extradata.is_read_only
-
-    def set_read_only(self, new_read_only):
-        self.__dclay_instance_extradata.is_read_only = new_read_only
-
-    def get_dataset_name(self):
-        return self.__dclay_instance_extradata.dataset_name
-
-    def set_dataset_name(self, new_dataset_name):
-        self.__dclay_instance_extradata.dataset_name = new_dataset_name
+        return self._master_ee_id
 
     #################################
     # Extradata getters and setters #
     #################################
 
+    # DEPRECATED
     def get_original_object_id(self):
-        return self.__dclay_instance_extradata.original_object_id
+        # return self.__dclay_instance_extradata.original_object_id
+        return self._object_id
 
+    # DEPRECATED
     def set_original_object_id(self, new_original_object_id):
-        self.__dclay_instance_extradata.original_object_id = new_original_object_id
+        # self.__dclay_instance_extradata.original_object_id = new_original_object_id
+        pass
 
+    # DEPRECATED
     def get_root_location(self):
-        return self.__dclay_instance_extradata.root_location
+        # return self.__dclay_instance_extradata.root_location
+        return self._master_ee_id
 
+    # DEPRECATED
     def set_root_location(self, new_root_location):
-        self.__dclay_instance_extradata.root_location = new_root_location
+        # self.__dclay_instance_extradata.root_location = new_root_location
+        pass
 
+    # DEPRECATED
     def get_origin_location(self):
-        return self.__dclay_instance_extradata.origin_location
+        # return self.__dclay_instance_extradata.origin_location
+        return self._master_ee_id
 
+    # DEPRECATED
     def set_origin_location(self, new_origin_location):
-        self.__dclay_instance_extradata.origin_location = new_origin_location
-
-    def get_replica_locations(self):
-        return self.__dclay_instance_extradata.replica_locations
-
-    def set_replica_locations(self, new_replica_locations):
-        self.__dclay_instance_extradata.replica_locations = new_replica_locations
+        # self.__dclay_instance_extradata.origin_location = new_origin_location
+        pass
 
     def add_replica_location(self, new_replica_location):
-        replica_locations = self.__dclay_instance_extradata.replica_locations
+        replica_locations = self._replica_ee_ids
         if replica_locations is None:
             replica_locations = list()
-            self.__dclay_instance_extradata.replica_locations = replica_locations
+            self._replica_ee_ids = replica_locations
         replica_locations.append(new_replica_location)
 
     def remove_replica_location(self, old_replica_location):
-        replica_locations = self.__dclay_instance_extradata.replica_locations
+        replica_locations = self._replica_ee_ids
         replica_locations.remove(old_replica_location)
 
     def clear_replica_locations(self):
-        replica_locations = self.__dclay_instance_extradata.replica_locations
+        replica_locations = self._replica_ee_ids
         if replica_locations is not None:
             replica_locations.clear()
 
-    def get_master_location(self):
-        return self.__dclay_instance_extradata.master_location
-
-    def set_master_location(self, eeid):
-        self.__dclay_instance_extradata.master_location = eeid
-
-    def get_memory_pinned(self):
-        return self.__dclay_instance_extradata.memory_pinned
-
-    def set_memory_pinned(self, new_memory_pinned):
-        self.__dclay_instance_extradata.memory_pinned = new_memory_pinned
-
-    def set_persistent(self, ispersistent):
-        self.__dclay_instance_extradata.persistent_flag = ispersistent
-
-    def set_loaded(self, isloaded):
-        self.__dclay_instance_extradata.loaded_flag = isloaded
-
-    def is_persistent(self):
-        return self.__dclay_instance_extradata.persistent_flag
-
-    def is_loaded(self):
-        return self.__dclay_instance_extradata.loaded_flag
-
+    # Deprecated
     def get_class_id(self):
         return self.get_class_extradata().class_id
-
-    def get_owner_session_id(self):
-        return self.__dclay_instance_extradata.owner_session_id
-
-    def set_owner_session_id(self, the_owner_session_id):
-        self.__dclay_instance_extradata.owner_session_id = the_owner_session_id
-
-    def is_pending_to_register(self):
-        return self.__dclay_instance_extradata.pending_to_register_flag
-
-    def set_pending_to_register(self, pending_to_register):
-        self.__dclay_instance_extradata.pending_to_register_flag = pending_to_register
-
-    def is_dirty(self):
-        return self.__dclay_instance_extradata.dirty_flag
-
-    def set_dirty(self, dirty_value):
-        self.__dclay_instance_extradata.dirty_flag = dirty_value
 
     ##############
     # Federation #
@@ -681,7 +594,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         Detach object from session, i.e. remove reference from current session provided to current object,
             'dear garbage-collector, the current session is not using this object anymore'
         """
-        get_runtime().detach_object_from_session(self.get_object_id(), self.get_hint())
+        get_runtime().detach_object_from_session(self._object_id, self._master_ee_id)
 
     #################
     # Serialization #
@@ -705,7 +618,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         # TODO: use padding instead once new serialization is implemented
         IntegerWrapper().write(io_file, 0)
 
-        cur_master_loc = self.get_master_location()
+        cur_master_loc = self._master_ee_id
         if cur_master_loc is not None:
             StringWrapper().write(io_file, str(cur_master_loc))
         else:
@@ -714,18 +627,18 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         if hasattr(self, "__getstate__"):
             # The object has a user-defined serialization method.
             # Use that
-            dco_extradata = self.__dclay_instance_extradata
-            last_loaded_flag = dco_extradata.loaded_flag
-            last_persistent_flag = dco_extradata.persistent_flag
-            dco_extradata.loaded_flag = True
-            dco_extradata.persistent_flag = False
+            last_loaded_flag = self._is_loaded
+            last_persistent_flag = self._is_persistent
+
+            self._is_loaded = True
+            self._is_persistent = False
 
             # Use pickle to the result of the serialization
             state = pickle.dumps(self.__getstate__())
 
             # Leave the previous value, probably False & True`
-            dco_extradata.loaded_flag = last_loaded_flag
-            dco_extradata.persistent_flag = last_persistent_flag
+            self._is_loaded = last_loaded_flag
+            self._is_persistent = last_persistent_flag
 
             StringWrapper(mode="binary").write(io_file, state)
 
@@ -782,7 +695,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
 
     def deserialize(self, io_file, iface_bitmaps, metadata, cur_deserialized_python_objs):
         """Reciprocal to serialize."""
-        logger.verbose("Deserializing object %s", str(self.get_object_id()))
+        logger.verbose("Deserializing object %s", str(self._object_id))
 
         # Put slow debugging info inside here:
         #
@@ -810,9 +723,9 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         """ deserialize master_location """
         des_master_loc_str = StringWrapper().read(io_file)
         if des_master_loc_str == "x":
-            self.__dclay_instance_extradata.master_location = None
+            self._master_ee_id = None
         else:
-            self.__dclay_instance_extradata.master_location = uuid.UUID(des_master_loc_str)
+            self._master_ee_id = uuid.UUID(des_master_loc_str)
 
         if hasattr(self, "__setstate__"):
             # The object has a user-defined deserialization method.
@@ -888,48 +801,39 @@ class DataClayObject(object, metaclass=ExecutionGateway):
     #         self.make_persistent()
 
     #     return _get_object_by_id_helper, (
-    #         self.get_object_id(),
+    #         self._object_id,
     #         self.get_class_extradata().class_id,
-    #         self.get_hint(),
+    #         _master_ee_id,
     #     )
 
     def __repr__(self):
-        dco_extradata = self.__dclay_instance_extradata
         dcc_extradata = self.get_class_extradata()
 
-        if dco_extradata.persistent_flag:
+        if self._is_persistent:
             return "<%s (ClassID=%s) instance with ObjectID=%s>" % (
                 dcc_extradata.classname,
                 dcc_extradata.class_id,
-                dco_extradata.object_id,
+                self._object_id,
             )
         else:
             return "<%s (ClassID=%s) volatile instance with ObjectID=%s>" % (
                 dcc_extradata.classname,
                 dcc_extradata.class_id,
-                dco_extradata.object_id,
+                self._object_id,
             )
 
     def __eq__(self, other):
         if not isinstance(other, DataClayObject):
             return False
 
-        self_extradata = self.__dclay_instance_extradata
-        other_extradata = other.__dclay_instance_extradata
-
-        if not self_extradata.persistent_flag or not other_extradata.persistent_flag:
+        if not self._is_persistent or not other._is_persistent:
             return False
 
-        return (
-            self_extradata.object_id
-            and other_extradata.object_id
-            and self_extradata.object_id == other_extradata.object_id
-        )
+        return self._object_id and other._object_id and self._object_id == other._object_id
 
     # FIXME: Think another solution, the user may want to override the method
     def __hash__(self):
-        self_extradata = self.__dclay_instance_extradata
-        return hash(self_extradata.object_id)
+        return hash(self._object_id)
 
     @dclayMethod(
         obj="anything", property_name="str", value="anything", beforeUpdate="str", afterUpdate="str"

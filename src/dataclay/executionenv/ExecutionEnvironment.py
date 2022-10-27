@@ -8,7 +8,6 @@ import uuid
 from dataclay.commonruntime.ExecutionEnvironmentRuntime import ExecutionEnvironmentRuntime
 from dataclay.commonruntime.Runtime import get_runtime, set_runtime
 from dataclay.commonruntime.Settings import settings
-from dataclay_common.clients.execution_environment_client import EEClient
 from dataclay.DataClayObject import DataClayObject
 from dataclay.DataClayObjProperties import (
     DCLAY_GETTER_PREFIX,
@@ -32,6 +31,7 @@ from dataclay.util.classloaders import ClassLoader
 from dataclay.util.FileUtils import deploy_class
 from dataclay.util.YamlParser import dataclay_yaml_load
 from dataclay_common import utils
+from dataclay_common.clients.execution_environment_client import EEClient
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from opentelemetry import trace
 
@@ -173,7 +173,7 @@ class ExecutionEnvironment(object):
         It is possible that a property is set to None by the GC before we 'execute' it. It should be solve by always 
         checking if loaded before returning value. Check race conditions with GC. 
         """
-        if not instance.is_loaded():
+        if not instance._is_loaded:
             self.runtime.load_object_from_db(instance, True)
 
         if implementation_name.startswith(DCLAY_GETTER_PREFIX):
@@ -183,7 +183,7 @@ class ExecutionEnvironment(object):
             # FIXME: this function could be used during deserialization
             # logger.debug("Getter: for property %s returned %r", prop_name, ret_value)
             if not isinstance(ret_value, DataClayObject):
-                instance.set_dirty(True)
+                instance._is_dirty = True
 
         elif implementation_name.startswith(DCLAY_SETTER_PREFIX):
             prop_name = implementation_name[len(DCLAY_SETTER_PREFIX) :]
@@ -192,7 +192,7 @@ class ExecutionEnvironment(object):
             # logger.debug("Setter: for property %s (value: %r)", prop_name, params[0])
             setattr(instance, DCLAY_PROPERTY_PREFIX + prop_name, params[0])
             ret_value = None
-            instance.set_dirty(True)
+            instance._is_dirty = True
 
         else:
             logger.debug("Call: %s", implementation_name)
@@ -201,7 +201,7 @@ class ExecutionEnvironment(object):
 
         return ret_value
 
-    def set_local_session(self, session_id):
+    def set_local_session(self, session_id: uuid.UUID):
         """Check and set the session to thread_local_data.
 
         Args:
@@ -254,7 +254,7 @@ class ExecutionEnvironment(object):
 
     def register_and_store_pending(self, instance, obj_bytes, sync):
 
-        object_id = instance.get_object_id()
+        object_id = instance._object_id
 
         # NOTE: we are doing *two* remote calls, and wishlist => they work as a transaction
         self.runtime.ready_clients["@STORAGE"].store_to_db(
@@ -262,11 +262,9 @@ class ExecutionEnvironment(object):
         )
 
         # TODO: When the object metadata is updated synchronously, this should me removed
-        self.runtime.metadata_service.update_object(
-            instance.get_owner_session_id(), instance.metadata
-        )
+        self.runtime.metadata_service.update_object(instance._owner_session_id, instance.metadata)
 
-        instance.set_pending_to_register(False)
+        instance._is_pending_to_register = False
 
     def store_in_memory(self, objects_to_store):
         """This function will deserialize objects into dataClay memory heap using the same design as for
@@ -293,18 +291,35 @@ class ExecutionEnvironment(object):
             self.runtime,
         )
 
-    def new_make_persistent(self, session_id, pickled_obj):
+    def new_make_persistent(self, session_id: uuid.UUID, serialized_dict: bytes):
         self.set_local_session(session_id)
-        instance = pickle.loads(pickled_obj)
+
+        # Deserialize __dict__
+        dict = pickle.loads(serialized_dict)
+
+        # Instantiate new object
+        instance = dict["_class"].__new__(dict["_class"])
+        instance.__dict__.update(dict)
+
+        # Update object extradata
+        instance._is_loaded = True
+        instance._is_persistent = True
+
+        try:
+            self.runtime.dataclay_heap_manager.inmemory_objects[
+                instance._object_id
+            ].__dict__.update(dict)
+        except KeyError:
+            # self.runtime.dataclay_heap_manager.inmemory_objects[instance._object_id] = instance
+            self.runtime.add_to_heap(instance)
+
         print("*** unpickled_obj:", type(instance))
-        print("*** unpickled_obj:", instance.get_object_id())
+        print("*** unpickled_obj:", instance._object_id)
         print("*** unpickled_obj:", instance.__dict__)
 
         # NOTE: When make persistent, the object should not be already persisted.
-        if self.runtime.get_from_heap(instance.get_object_id()) is not None:
-            raise
+        # assert self.runtime.get_from_heap(instance._object_id) is None
 
-        self.runtime.add_to_heap(instance)
         # volatile_obj.initialize_object_as_volatile()
 
         self.runtime.metadata_service.register_object(session_id, instance.metadata)
@@ -374,7 +389,7 @@ class ExecutionEnvironment(object):
 
             # Register objects with alias (should we?)
             for object in federated_objs:
-                if object.get_alias():
+                if object._alias:
                     self.runtime.metadata_service.register_object(session_id, object.metadata)
 
             for federated_obj in federated_objs:
@@ -458,8 +473,8 @@ class ExecutionEnvironment(object):
                 instance.set_origin_location(None)
                 try:
 
-                    if instance.get_alias() is not None and instance.get_alias() != "":
-                        logger.debug(f"Removing alias {instance.get_alias()}")
+                    if instance._alias is not None and instance._alias != "":
+                        logger.debug(f"Removing alias {instance._alias}")
                         self.self.runtime.delete_alias(instance)
 
                 except Exception as ex:
@@ -594,7 +609,7 @@ class ExecutionEnvironment(object):
                     calling_backend_id=self.execution_environment_id,
                 )
 
-        replica_locations = instance.get_replica_locations()
+        replica_locations = instance._replica_ee_ids
         if replica_locations is not None:
             logger.debug(f"Found replica locations {replica_locations}")
             for replica_location in replica_locations:
@@ -684,7 +699,7 @@ class ExecutionEnvironment(object):
         logger.debug(
             "[==PutObject==] Updated object %s from object %s",
             into_object_id,
-            object_from.get_object_id(),
+            object_from._object_id,
         )
 
     def get_objects(
@@ -818,27 +833,27 @@ class ExecutionEnvironment(object):
 
             # update_replica_locs = 1 means new replica/federation
             if dest_replica_backend_id is not None and update_replica_locs == 1:
-                if current_obj.get_replica_locations() is not None:
-                    if dest_replica_backend_id in current_obj.get_replica_locations():
+                if current_obj._replica_ee_ids is not None:
+                    if dest_replica_backend_id in current_obj._replica_ee_ids:
                         # already replicated
                         logger.debug(f"WARNING: Found already replicated object {oid}. Skipping")
                         return None
 
             # Add object to result and obtained_objs for return and recursive
             obj_with_data = SerializationLibUtilsSingleton.serialize_dcobj_with_data(
-                current_obj, pending_objs, False, current_obj.get_hint(), self.runtime, False
+                current_obj, pending_objs, False, current_obj._master_ee_id, self.runtime, False
             )
 
             if dest_replica_backend_id is not None and update_replica_locs == 1:
                 current_obj.add_replica_location(dest_replica_backend_id)
-                current_obj.set_dirty(True)
+                current_obj._is_dirty = True
                 obj_with_data.metadata.origin_location = self.execution_environment_id
             elif update_replica_locs == 2:
                 if dest_replica_backend_id is not None:
                     current_obj.remove_replica_location(dest_replica_backend_id)
                 else:
                     current_obj.clear_replica_locations()
-                current_obj.set_dirty(True)
+                current_obj._is_dirty = True
 
         finally:
             self.runtime.unlock(oid)
@@ -1074,7 +1089,7 @@ class ExecutionEnvironment(object):
                         True,
                     )
 
-                    instance.set_dirty(True)
+                    instance._is_dirty = True
                     updated_objects_here.append(cur_entry)
                 except Exception:
                     # Get in other backend
@@ -1280,7 +1295,7 @@ class ExecutionEnvironment(object):
             in_heap = self.runtime.exists(object_id)
             if in_heap:
                 obj = self.runtime.get_from_heap(object_id)
-                return obj.is_loaded()
+                return obj._is_loaded
             else:
                 return False
         finally:

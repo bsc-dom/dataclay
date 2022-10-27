@@ -53,7 +53,8 @@ class HeapManager(threading.Thread, ABC):
 
     def run(self):
         """Overrides run function"""
-        gc_check_time_interval_seconds = Configuration.MEMMGMT_CHECK_TIME_INTERVAL / 1000.0
+        # gc_check_time_interval_seconds = Configuration.MEMMGMT_CHECK_TIME_INTERVAL / 1000.0
+        gc_check_time_interval_seconds = 120
         while True:
             logger.debug("HEAP MANAGER THREAD is awake...")
             if self._finished.is_set():
@@ -68,7 +69,7 @@ class HeapManager(threading.Thread, ABC):
 
     def _add_to_inmemory_map(self, dc_object):
         """add object to inmemory map"""
-        oid = dc_object.get_object_id()
+        oid = dc_object._object_id
         self.inmemory_objects[oid] = dc_object
 
     def remove_from_heap(self, object_id):
@@ -103,7 +104,7 @@ class HeapManager(threading.Thread, ABC):
     def count_loaded_objs(self):
         num_loaded_objs = 0
         for obj in self.inmemory_objects.values():
-            if obj.is_loaded():
+            if obj._is_loaded:
                 num_loaded_objs = num_loaded_objs + 1
         return num_loaded_objs
 

@@ -58,38 +58,40 @@ class ClientRuntime(DataClayRuntime):
             ID of the backend in which te object was persisted.
         """
 
-        if instance.is_persistent():
+        if instance._is_persistent:
             raise RuntimeError("Instance is already persistent")
         else:
-            logger.debug(f"Starting make persistent for object {instance.get_object_id()}")
+            logger.debug(f"Starting make persistent for object {instance._object_id}")
 
-            if not instance.get_hint():
-                instance.set_hint(
-                    backend_id or self.get_backend_by_object_id(instance.get_object_id())
-                )
+            instance._master_ee_id = backend_id or self.get_backend_by_object_id(
+                instance._object_id
+            )
 
-            logger.debug(f"Sending object {instance.get_object_id()} to EE")
+            logger.debug(f"Sending object {instance._object_id} to EE")
 
-            # sets the default master location
-            instance.set_master_location(instance.get_hint())
-            instance.set_alias(alias)
+            instance._alias = alias
 
             # Gets Execution Environment client
             try:
-                ee_client = self.ready_clients[instance.get_hint()]
+                ee_client = self.ready_clients[instance._master_ee_id]
             except KeyError:
-                exec_env = self.get_execution_environment_info(instance.get_hint())
+                exec_env = self.get_execution_environment_info(instance._master_ee_id)
                 logger.debug(
-                    f"ExecutionEnvironment {instance.get_hint()} not found in cache! Starting it at {exec_env.hostname}:{exec_env.port}",
+                    f"ExecutionEnvironment {instance._master_ee_id} not found in cache! Starting it at {exec_env.hostname}:{exec_env.port}",
                 )
                 ee_client = EEClient(exec_env.hostname, exec_env.port)
-                self.ready_clients[instance.get_hint()] = ee_client
+                self.ready_clients[instance._master_ee_id] = ee_client
 
+            ######################################
             # TODO: Serialize instance with Pickle
-            pickled_obj = pickle.dumps(instance)
-            print("**instance_id:", instance.get_object_id())
+            ######################################
+
+            instance._is_persistent = True
+
+            serialized_dict = pickle.dumps(instance.__dict__)
+            print("**instance_id:", instance._object_id)
             print("**instance dict:", instance.__dict__)
-            ee_client.new_make_persistent(self.session.id, pickled_obj)
+            ee_client.new_make_persistent(self.session.id, serialized_dict)
 
             ###
             # NOTE: Previous make persistent (without Pickle)
@@ -101,7 +103,7 @@ class ClientRuntime(DataClayRuntime):
             #     iface_bitmaps=None,
             #     params_spec={"object": "DataClayObject"},
             #     params_order=["object"],
-            #     hint_volatiles=instance.get_hint(),
+            #     hint_volatiles=instance._master_ee_id,
             #     runtime=self,
             #     recursive=recursive,
             # )
@@ -117,7 +119,7 @@ class ClientRuntime(DataClayRuntime):
             # END Previous implementation
             #####
 
-            return instance.get_hint()
+            return instance._master_ee_id
 
     def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):
         with tracer.start_as_current_span(
@@ -125,14 +127,14 @@ class ClientRuntime(DataClayRuntime):
             attributes={"operation_name": operation_name, "parameters": parameters},
         ) as span:
             logger.debug(
-                f"Calling operation {operation_name} in object {instance.get_object_id()} with parameters {parameters}"
+                f"Calling operation {operation_name} in object {instance._object_id} with parameters {parameters}"
             )
 
             using_hint = True
-            hint = instance.get_hint()
+            hint = instance._master_ee_id
             if hint is None:
                 self.update_object_metadata(instance)
-                hint = instance.get_hint()
+                hint = instance._master_ee_id
                 using_hint = False
 
             return self.call_execute_to_ds(instance, parameters, operation_name, hint, using_hint)
@@ -153,7 +155,7 @@ class ClientRuntime(DataClayRuntime):
     # has to know it if we consult its alias, therefore, in all cases, the alias
     # will have to be updated from the single source of truth i.e. the etcd metadata
     def delete_alias(self, instance):
-        ee_id = instance.get_hint()
+        ee_id = instance._master_ee_id
         if not ee_id:
             self.update_object_metadata(instance)
             ee_id = self.get_hint()
@@ -163,8 +165,8 @@ class ClientRuntime(DataClayRuntime):
             ee_info = self.get_execution_environment_info(ee_id)
             ee_client = EEClient(ee_info.hostname, ee_info.port)
             self.ready_clients[ee_id] = ee_client
-        ee_client.delete_alias(self.session.id, instance.get_object_id())
-        instance.set_alias(None)
+        ee_client.delete_alias(self.session.id, instance._object_id)
+        instance._alias = None
 
     def close_session(self):
         self.metadata_service.close_session(self.session.id)
@@ -174,15 +176,15 @@ class ClientRuntime(DataClayRuntime):
 
     def synchronize(self, instance, operation_name, params):
         dest_backend_id = self.get_hint()
-        operation = self.get_operation_info(instance.get_object_id(), operation_name)
-        implementation_id = self.get_implementation_id(instance.get_object_id(), operation_name)
+        operation = self.get_operation_info(instance._object_id, operation_name)
+        implementation_id = self.get_implementation_id(instance._object_id, operation_name)
         # === SERIALIZE PARAMETER ===
         serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
             params=[params],
             iface_bitmaps=None,
             params_spec=operation.params,
             params_order=operation.paramsOrder,
-            hint_volatiles=instance.get_hint(),
+            hint_volatiles=instance._master_ee_id,
             runtime=self,
         )
         try:
@@ -192,7 +194,7 @@ class ClientRuntime(DataClayRuntime):
             ee_client = EEClient(exec_env.hostname, exec_env.port)
             self.ready_clients[dest_backend_id] = ee_client
         ee_client.synchronize(
-            self.session.id, instance.get_object_id(), implementation_id, serialized_params
+            self.session.id, instance._object_id, implementation_id, serialized_params
         )
 
     def detach_object_from_session(self, object_id, hint):
@@ -200,7 +202,7 @@ class ClientRuntime(DataClayRuntime):
             if hint is None:
                 instance = self.get_from_heap(object_id)
                 self.update_object_metadata(instance)
-                hint = instance.get_hint()
+                hint = instance._master_ee_id
             try:
                 ee_client = self.ready_clients[hint]
             except KeyError:
@@ -212,7 +214,7 @@ class ClientRuntime(DataClayRuntime):
             traceback.print_exc()
 
     def federate_to_backend(self, instance, external_execution_environment_id, recursive):
-        hint = instance.get_hint()
+        hint = instance._master_ee_id
         if hint is None:
             self.update_object_metadata(instance)
             hint = self.get_hint()
@@ -225,23 +227,23 @@ class ClientRuntime(DataClayRuntime):
 
         logger.debug(
             "[==FederateObject==] Starting federation of object by %s calling EE %s with dest dataClay %s, and session %s",
-            instance.get_object_id(),
+            instance._object_id,
             hint,
             external_execution_environment_id,
             self.session.id,
         )
         ee_client.federate(
-            self.session.id, instance.get_object_id(), external_execution_environment_id, recursive
+            self.session.id, instance._object_id, external_execution_environment_id, recursive
         )
 
     def unfederate_from_backend(self, instance, external_execution_environment_id, recursive):
         logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",
-            instance.get_object_id(),
+            instance._object_id,
             external_execution_environment_id,
             self.session.id,
         )
-        hint = instance.get_hint()
+        hint = instance._master_ee_id
         if hint is None:
             self.update_object_metadata(instance)
             hint = self.get_hint()
@@ -253,5 +255,5 @@ class ClientRuntime(DataClayRuntime):
             self.ready_clients[hint] = ee_client
 
         ee_client.unfederate(
-            self.session.id, instance.get_object_id(), external_execution_environment_id, recursive
+            self.session.id, instance._object_id, external_execution_environment_id, recursive
         )

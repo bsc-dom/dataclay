@@ -98,13 +98,13 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         @postcondition: Get from DB and deserialize into instance
         @param object_to_fill: Instance to fill
         """
-        object_id = object_to_fill.get_object_id()
+        object_id = object_to_fill._object_id
         self.logger.debug("Object %s being loaded from DB", object_id)
         obj_bytes = self.runtime.get_from_sl(object_id)
         DeserializationLibUtilsSingleton.deserialize_object_from_db(
             object_to_fill, obj_bytes, self.runtime
         )
-        object_to_fill.set_hint(self.runtime.get_hint())
+        object_to_fill._master_ee_id = self.runtime.get_hint()
         self.logger.debug("Object %s loaded from DB", object_id)
 
     def get_or_new_instance_from_db(self, object_id, retry):
@@ -147,10 +147,10 @@ class ExecutionObjectLoader(DataClayObjectLoader):
                     DeserializationLibUtilsSingleton.deserialize_object_from_db_bytes_aux(
                         instance, metadata, msg.data, self.runtime
                     )
-                    instance.set_hint(self.runtime.get_hint())
+                    instance._master_ee_id = self.runtime.get_hint()
                     self.logger.debug("Object %s deserialized", object_id)
 
-                if not instance.is_loaded():
+                if not instance._is_loaded:
                     self._get_from_db_and_fill(instance)
 
                 obtained = True
@@ -176,7 +176,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         @param retry: Indicates retry loading in case it is not in db.
         """
 
-        object_id = instance.get_object_id()
+        object_id = instance._object_id
         loaded = False
         wait_time = 0
         sleep_time = Configuration.SLEEP_WAIT_REGISTERED / 1000
@@ -184,7 +184,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
             self.runtime.lock(object_id)
             try:
                 """double check for race-conditions"""
-                if not instance.is_loaded():
+                if not instance._is_loaded:
                     self._get_from_db_and_fill(instance)
                 loaded = True
             except Exception as ex:
