@@ -7,7 +7,7 @@ import uuid
 
 from dataclay.runtime import set_runtime, settings
 from dataclay.runtime.execution_environment_runtime import ExecutionEnvironmentRuntime
-from dataclay.DataClayObject import DataClayObject
+from dataclay.dataclay_object import DataClayObject
 from dataclay.DataClayObjProperties import (
     DCLAY_GETTER_PREFIX,
     DCLAY_PROPERTY_PREFIX,

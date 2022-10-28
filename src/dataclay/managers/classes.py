@@ -12,5 +12,5 @@ WARNING: THIS CLASS IS MANTAINED ONLY BECAUSE MF2C DEMO IS IMPORTING MODULES FRO
 
 """
 
-from dataclay.DataClayObject import DataClayObject
+from dataclay.dataclay_object import DataClayObject
 from dataclay.DataClayObjMethods import dclayMethod

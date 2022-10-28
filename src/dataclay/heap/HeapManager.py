@@ -54,7 +54,7 @@ class HeapManager(threading.Thread, ABC):
     def run(self):
         """Overrides run function"""
         # gc_check_time_interval_seconds = Configuration.MEMMGMT_CHECK_TIME_INTERVAL / 1000.0
-        gc_check_time_interval_seconds = 120
+        gc_check_time_interval_seconds = 1200
         while True:
             logger.debug("HEAP MANAGER THREAD is awake...")
             if self._finished.is_set():

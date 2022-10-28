@@ -15,7 +15,7 @@ import warnings
 from time import sleep
 
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
-from dataclay.DataClayObject import DataClayObject
+from dataclay.dataclay_object import DataClayObject
 from dataclay.paraver import (
     TRACE_ENABLED,
     extrae_tracing_is_enabled,
