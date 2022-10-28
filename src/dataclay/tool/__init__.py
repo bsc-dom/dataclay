@@ -19,7 +19,7 @@ from jinja2 import Template
 
 from dataclay.api import finish, init_connection
 from dataclay.runtime.ExecutionGateway import ExecutionGateway
-from dataclay.runtime.Runtime import get_runtime
+from dataclay.runtime import get_runtime
 from dataclay.util.StubUtils import deploy_stubs, prepare_storage
 from dataclay.util.tools.python.PythonMetaClassFactory import MetaClassFactory
 from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load

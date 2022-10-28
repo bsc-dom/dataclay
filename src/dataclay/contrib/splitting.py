@@ -217,8 +217,7 @@ class WorkMovingSplit(WorkStealingSplit):
     def _post_stealing(self, stolen_object):
         """Once an object has been stolen, perform the movement."""
         # FIXME: We should not assume that this is server-side
-        from dataclay.runtime.Runtime import get_runtime
-        from dataclay.runtime.settings import settings
+        from dataclay.runtime import get_runtime, settings
 
         # FIXME: Move_object was deleted from DataclayRuntime, use EE move_objects
         get_runtime().move_object(stolen_object, settings.storage_id)
@@ -253,7 +252,7 @@ class SplittableCollectionMixin(object):
     @dclayMethod(return_="list<storageobject>", split_class="anything", _local=True)
     def split(self, split_class=None):
         # TODO: this could be improved, library could cache stuff, or a joint call could be added
-        from dataclay.runtime.Runtime import get_runtime
+        from dataclay.runtime import get_runtime
 
         location_chunks = sorted(
             (

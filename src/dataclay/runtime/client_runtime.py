@@ -8,16 +8,12 @@ import logging
 import pickle
 import traceback
 
-from dataclay.runtime import DataClayRuntime
-from dataclay.runtime.settings import settings
 from dataclay.heap.ClientHeapManager import ClientHeapManager
 from dataclay.loader.ClientObjectLoader import ClientObjectLoader
+from dataclay.runtime.dataclay_runtime import DataClayRuntime
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
-from dataclay.util.management.metadataservice.MetaDataInfo import MetaDataInfo
-from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
 from dataclay_common.clients.execution_environment_client import EEClient
 from dataclay_common.clients.metadata_service_client import MDSClient
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from opentelemetry import trace
 
 UNDEFINED_LOCAL = object()

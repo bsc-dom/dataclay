@@ -1,6 +1,12 @@
-from dataclay.runtime.dataclay_runtime import DataClayRuntime
-from dataclay.runtime.client_runtime import ClientRuntime
-from dataclay.runtime.execution_environment_runtime import ExecutionEnvironmentRuntime
-from dataclay.runtime.settings import settings, unload_settings
+from dataclay.runtime.settings_hub import settings, unload_settings
 
 current_runtime = None
+
+
+def get_runtime():
+    return current_runtime
+
+
+def set_runtime(new_runtime):
+    global current_runtime
+    current_runtime = new_runtime

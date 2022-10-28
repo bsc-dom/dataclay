@@ -4,23 +4,17 @@ import datetime
 import logging
 import threading
 import time
-import uuid
 
-from dataclay_common.metadata_service import MetadataService
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-
-from dataclay.runtime.dataclay_runtime import DataClayRuntime
-from dataclay.runtime.settings import settings
-from dataclay.exceptions.exceptions import DataClayException
 from dataclay.heap.ExecutionEnvironmentHeapManager import ExecutionEnvironmentHeapManager
 from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader
+from dataclay.runtime.dataclay_runtime import DataClayRuntime
+from dataclay.runtime import settings
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
+from dataclay_common.metadata_service import MetadataService
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
-
-from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
 
 logger = logging.getLogger(__name__)
 

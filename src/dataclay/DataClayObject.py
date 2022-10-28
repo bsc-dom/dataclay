@@ -22,15 +22,6 @@ from dataclay_common.managers.object_manager import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from opentelemetry import trace
 
-from dataclay.runtime.ExecutionGateway import (
-    ExecutionGateway,
-    class_extradata_cache_client,
-    class_extradata_cache_exec_env,
-)
-from dataclay.runtime.Runtime import get_runtime
-from dataclay.runtime import current_runtime as runtime
-from dataclay import get_runtime
-
 from dataclay.DataClayObjectExtraData import DataClayClassExtraData, DataClayInstanceExtraData
 from dataclay.DataClayObjMethods import dclayMethod
 from dataclay.DataClayObjProperties import (
@@ -40,6 +31,12 @@ from dataclay.DataClayObjProperties import (
     ReplicatedDynamicProperty,
 )
 from dataclay.exceptions.exceptions import DataClayException, ImproperlyConfigured
+from dataclay.runtime import get_runtime
+from dataclay.runtime.ExecutionGateway import (
+    ExecutionGateway,
+    class_extradata_cache_client,
+    class_extradata_cache_exec_env,
+)
 from dataclay.serialization.lib.DeserializationLibUtils import (
     DeserializationLibUtilsSingleton,
     PersistentLoadPicklerHelper,

@@ -8,7 +8,7 @@ import traceback
 from uuid import UUID
 
 import grpc
-from dataclay.runtime.Runtime import get_runtime
+from dataclay.runtime import get_runtime
 from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay_common.protos import common_messages_pb2, dataservice_messages_pb2

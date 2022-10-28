@@ -14,7 +14,6 @@ import sys
 import warnings
 from time import sleep
 
-from dataclay import get_runtime
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.DataClayObject import DataClayObject
 from dataclay.paraver import (
@@ -23,10 +22,10 @@ from dataclay.paraver import (
     get_task_id,
     set_current_available_task_id,
 )
-from dataclay.runtime import ClientRuntime, settings, unload_settings
+from dataclay.runtime import get_runtime, set_runtime, settings, unload_settings
+from dataclay.runtime.client_runtime import ClientRuntime
 from dataclay.runtime.client_runtime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
 from dataclay.runtime.Initializer import _get_logging_dict_config, initialize
-from dataclay.runtime.Runtime import set_runtime
 from dataclay.util.StubUtils import clean_babel_data, track_local_available_classes
 from opentelemetry import trace
 
