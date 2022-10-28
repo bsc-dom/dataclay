@@ -781,30 +781,29 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         """ reference counting bytes here """
         """ TODO: discard bytes? """
 
-    # def __reduce__(self):
-    #     """Support for pickle protocol.
+    def __reduce__(self):
+        """Support for pickle protocol.
 
-    #     Take into account that internal Pickle usage should be used with help
-    #     of PersistentIdPicklerHelper and PersistentLoadPicklerHelper --for
-    #     further information on the inner working look at the modules
-    #     [Des|S]erializationLibUtils and both the serialize and deserialize
-    #     methods of this class.
+        Take into account that internal Pickle usage should be used with help
+        of PersistentIdPicklerHelper and PersistentLoadPicklerHelper --for
+        further information on the inner working look at the modules
+        [Des|S]erializationLibUtils and both the serialize and deserialize
+        methods of this class.
 
-    #     This method is left here as a courtesy to end users that may need or
-    #     want to Pickle DataClayObjects manually or through other extensions.
-    #     """
-    #     logger.verbose("Proceeding to `__reduce__` (Pickle-related) on a DataClayObject")
-    #     dco_extradata = self.__dclay_instance_extradata
+        This method is left here as a courtesy to end users that may need or
+        want to Pickle DataClayObjects manually or through other extensions.
+        """
+        logger.debug("Proceeding to `__reduce__` (Pickle-related) on a DataClayObject")
 
-    #     if not dco_extradata.persistent_flag:
-    #         logger.verbose("Pickling of object is causing a make_persistent")
-    #         self.make_persistent()
+        if not self._is_persistent:
+            logger.debug("Pickling of object is causing a make_persistent")
+            self.make_persistent()
 
-    #     return _get_object_by_id_helper, (
-    #         self._object_id,
-    #         self.get_class_extradata().class_id,
-    #         _master_ee_id,
-    #     )
+        return _get_object_by_id_helper, (
+            self._object_id,
+            self.get_class_extradata().class_id,
+            self._master_ee_id,
+        )
 
     def __repr__(self):
         dcc_extradata = self.get_class_extradata()

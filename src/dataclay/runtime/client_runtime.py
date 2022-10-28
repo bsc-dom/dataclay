@@ -73,14 +73,16 @@ class ClientRuntime(DataClayRuntime):
                 self.ready_clients[instance._master_ee_id] = ee_client
 
             ######################################
-            # TODO: Serialize instance with Pickle
+            # Serialize instance with Pickle
             ######################################
 
+            # TODO: Improve it with a single make_persistent call to ee of all
+            # dc objects, instead of one call per object
+
+            # Must be set to True before pickle.dumps to avoid infinit recursion
             instance._is_persistent = True
 
             serialized_dict = pickle.dumps(instance.__dict__)
-            print("**instance_id:", instance._object_id)
-            print("**instance dict:", instance.__dict__)
             ee_client.new_make_persistent(self.session.id, serialized_dict)
 
             ###

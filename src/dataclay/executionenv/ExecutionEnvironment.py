@@ -302,7 +302,7 @@ class ExecutionEnvironment(object):
 
         # Update object extradata
         instance._is_loaded = True
-        instance._is_persistent = True
+        instance._is_persistent = True  # Need??
 
         try:
             self.runtime.dataclay_heap_manager.inmemory_objects[
@@ -312,9 +312,9 @@ class ExecutionEnvironment(object):
             # self.runtime.dataclay_heap_manager.inmemory_objects[instance._object_id] = instance
             self.runtime.add_to_heap(instance)
 
-        print("*** unpickled_obj:", type(instance))
+        print("\n*** unpickled_obj:", type(instance))
         print("*** unpickled_obj:", instance._object_id)
-        print("*** unpickled_obj:", instance.__dict__)
+        print("*** unpickled_obj:", instance.__dict__, end="\n\n")
 
         # NOTE: When make persistent, the object should not be already persisted.
         # assert self.runtime.get_from_heap(instance._object_id) is None
