@@ -31,50 +31,38 @@ logger = logging.getLogger(__name__)
 
 
 class DataClayRuntime(ABC):
+    def __init__(self, metadata_service, heap_manager, object_loader):
 
-    """Logger"""
-
-    def __init__(self):
-
-        """Cache of EE info"""
+        # Cache of EE info
         self.ee_infos = dict()
 
-        """ GRPC clients """
+        # GRPC clients
         self.ready_clients = dict()
 
-        """ Cache of classes. TODO: is it used? -> Yes, in StubUtils and ClientObjectLoader"""
+        # Cache of classes. TODO: is it used? -> Yes, in StubUtils and ClientObjectLoader
         self.local_available_classes = dict()
 
-        """  Locker Pool in runtime. This pool is used to provide thread-safe implementations in dataClay. """
+        # Locker Pool in runtime. This pool is used to provide thread-safe implementations in dataClay.
         self.locker_pool = LockerPool()
 
-        """ Indicates volatiles being send - to avoid race-conditions """
+        # Indicates volatiles being send - to avoid race-conditions
         self.volatile_parameters_being_send = set()
 
-        """ Current dataClay ID """
+        # Current dataClay ID
         self._dataclay_id = None
 
-        """ volatiles currently under deserialization """
+        # volatiles currently under deserialization
         self.volatiles_under_deserialization = dict()
+
+        self.metadata_service = metadata_service
+        self.dataclay_heap_manager = heap_manager
+        self.dataclay_object_loader = object_loader
+
+        self.dataclay_heap_manager.start()
 
     ##############
     # Properties #
     ##############
-
-    @property
-    @abstractmethod
-    def metadata_service(self):
-        pass
-
-    @property
-    @abstractmethod
-    def dataclay_heap_manager(self):
-        pass
-
-    @property
-    @abstractmethod
-    def dataclay_object_loader(self):
-        pass
 
     @property
     @abstractmethod

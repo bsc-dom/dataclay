@@ -22,44 +22,30 @@ current_milli_time = lambda: int(round(time.time() * 1000))
 
 
 class ExecutionEnvironmentRuntime(DataClayRuntime):
-
-    metadata_service = None
-    dataclay_heap_manager = None
-    dataclay_object_loader = None
-
     def __init__(self, theexec_env, etcd_host, etcd_port):
 
-        DataClayRuntime.__init__(self)
-
-        self.metadata_service = MetadataService(etcd_host, etcd_port)
-
-        self.dataclay_object_loader = ExecutionObjectLoader(self)
-
-        """ Execution Environment using this runtime. """
+        # Execution Environment using this runtime.
         self.execution_environment = theexec_env
 
-        # Heap manager creates a new thread
-        self.dataclay_heap_manager = ExecutionEnvironmentHeapManager(self)
-        self.dataclay_heap_manager.start()
+        # Initialize parent
+        metadata_service = MetadataService(etcd_host, etcd_port)
+        dataclay_object_loader = ExecutionObjectLoader(self)
+        dataclay_heap_manager = ExecutionEnvironmentHeapManager(self)
 
-        """
-        References hold by sessions. Resource note: Maximum size of this map is maximum number of objects allowed in EE x sessions.
-        Also, important to think what happens if one single session is associated to two client threads? use case? 
-        should we allow that?
-        Must be thread-safe.
-        """
+        super().__init__(metadata_service, dataclay_heap_manager, dataclay_object_loader)
+
+        # References hold by sessions. Resource note: Maximum size of this map is maximum number of objects allowed in EE x sessions.
+        # Also, important to think what happens if one single session is associated to two client threads? use case?
+        # should we allow that?
+        # Must be thread-safe.
         self.references_hold_by_sessions = dict()
 
-        """
-        Sessions in quarantine. note: maximum size of this map is max number of sessions per EE: This map is needed to solve a race
-        condition in Global Garbage collection (@see getReferenceCounting). 
-        """
+        # Sessions in quarantine. note: maximum size of this map is max number of sessions per EE: This map is needed to solve a race
+        # condition in Global Garbage collection (@see getReferenceCounting).
         self.quarantine_sessions = set()
 
-        """
-        Per each session, it's expiration date. This is used to control 'retained' objects from sessions in Garbage collection.
-        Must be thread-safe.
-        """
+        # Per each session, it's expiration date. This is used to control 'retained' objects from sessions in Garbage collection.
+        # Must be thread-safe.
         self.session_expires_dates = dict()
 
         self.thread_local_data = threading.local()
@@ -104,12 +90,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         @postcondition: Flush all objects in memory to disk.
         """
         self.dataclay_heap_manager.flush_all()
-
-    def get_execution_environment(self):
-        """
-        @return: Return execution environment using this runtime
-        """
-        return self.execution_environment
 
     def store_object(self, instance):
         if not instance._is_persistent:

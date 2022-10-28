@@ -38,7 +38,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         self.MAX_TIME_WAIT_FOR_GC_TO_FINISH = 60
 
         # Execution Environment being managed
-        self.exec_env = theruntime.get_execution_environment()
+        self.exec_env = theruntime.execution_environment
 
         # Retained objects so they cannot be GC by PythonGC.
         # It is very important to be a sorted list, so first elements to arrive are cleaned before,

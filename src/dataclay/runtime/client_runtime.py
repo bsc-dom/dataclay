@@ -24,17 +24,14 @@ logger = logging.getLogger(__name__)
 
 class ClientRuntime(DataClayRuntime):
 
-    metadata_service = None
-    dataclay_heap_manager = None
-    dataclay_object_loader = None
     session = None
 
     def __init__(self, metadata_service_host, metadata_service_port):
-        DataClayRuntime.__init__(self)
-        self.metadata_service = MDSClient(metadata_service_host, metadata_service_port)
-        self.dataclay_heap_manager = ClientHeapManager(self)
-        self.dataclay_object_loader = ClientObjectLoader(self)
-        self.dataclay_heap_manager.start()
+        # Initialize parent
+        metadata_service = MDSClient(metadata_service_host, metadata_service_port)
+        dataclay_heap_manager = ClientHeapManager(self)
+        dataclay_object_loader = ClientObjectLoader(self)
+        super().__init__(metadata_service, dataclay_heap_manager, dataclay_object_loader)
 
     def is_client(self):
         return True
