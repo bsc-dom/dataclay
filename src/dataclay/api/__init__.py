@@ -14,20 +14,21 @@ import sys
 import warnings
 from time import sleep
 
-from opentelemetry import trace
-
 from dataclay import get_runtime
-from dataclay.runtime.ClientRuntime import LANG_PYTHON
-from dataclay.runtime.ClientRuntime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
-from dataclay.runtime.ClientRuntime import ClientRuntime, settings
-from dataclay.runtime.Initializer import _get_logging_dict_config, initialize
-from dataclay.runtime.Runtime import set_runtime
-from dataclay.runtime.Settings import unload_settings
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.DataClayObject import DataClayObject
-from dataclay.paraver import (TRACE_ENABLED, extrae_tracing_is_enabled, get_task_id,
-                              set_current_available_task_id)
+from dataclay.paraver import (
+    TRACE_ENABLED,
+    extrae_tracing_is_enabled,
+    get_task_id,
+    set_current_available_task_id,
+)
+from dataclay.runtime import ClientRuntime, settings, unload_settings
+from dataclay.runtime.client_runtime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
+from dataclay.runtime.Initializer import _get_logging_dict_config, initialize
+from dataclay.runtime.Runtime import set_runtime
 from dataclay.util.StubUtils import clean_babel_data, track_local_available_classes
+from opentelemetry import trace
 
 # This will be populated during initialization
 LOCAL = _UNDEFINED_LOCAL
@@ -417,9 +418,11 @@ def finish():
         clean_babel_data()
         sys.path.remove(os.path.join(settings.STUBS_PATH, "sources"))
         # unload caches of stubs
-        from dataclay.runtime.ExecutionGateway import (class_extradata_cache_client,
-                                                             class_extradata_cache_exec_env,
-                                                             loaded_classes)
+        from dataclay.runtime.ExecutionGateway import (
+            class_extradata_cache_client,
+            class_extradata_cache_exec_env,
+            loaded_classes,
+        )
 
         loaded_classes.clear()
         class_extradata_cache_exec_env.clear()

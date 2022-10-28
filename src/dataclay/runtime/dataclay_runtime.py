@@ -2,7 +2,6 @@
 import logging
 import uuid
 from abc import ABC, abstractmethod
-from logging import TRACE
 
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.heap.LockerPool import LockerPool

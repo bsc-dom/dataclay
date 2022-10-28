@@ -19,7 +19,7 @@ from ctypes import cdll
 from distutils.util import strtobool
 from functools import wraps
 
-from dataclay.runtime.Settings import settings
+from dataclay.runtime.settings import settings
 from dataclay.contrib.dummy_pycompss import task
 from dataclay.util import Configuration
 

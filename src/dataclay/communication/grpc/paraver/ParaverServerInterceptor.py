@@ -9,7 +9,7 @@ from decorator import decorate, decorator
 from grpc import ServerInterceptor
 
 from dataclay import PrvManager
-from dataclay.runtime.Settings import settings
+from dataclay.runtime.settings import settings
 from dataclay.paraver.prv_traces import TraceType
 
 from . import HEADER_MESSAGEID

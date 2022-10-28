@@ -28,6 +28,9 @@ from dataclay.runtime.ExecutionGateway import (
     class_extradata_cache_exec_env,
 )
 from dataclay.runtime.Runtime import get_runtime
+from dataclay.runtime import current_runtime as runtime
+from dataclay import get_runtime
+
 from dataclay.DataClayObjectExtraData import DataClayClassExtraData, DataClayInstanceExtraData
 from dataclay.DataClayObjMethods import dclayMethod
 from dataclay.DataClayObjProperties import (

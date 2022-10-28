@@ -3,7 +3,7 @@
 import logging
 import os
 
-from dataclay.runtime.Settings import settings
+from dataclay.runtime.settings import settings
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"

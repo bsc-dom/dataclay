@@ -218,7 +218,7 @@ class WorkMovingSplit(WorkStealingSplit):
         """Once an object has been stolen, perform the movement."""
         # FIXME: We should not assume that this is server-side
         from dataclay.runtime.Runtime import get_runtime
-        from dataclay.runtime.Settings import settings
+        from dataclay.runtime.settings import settings
 
         # FIXME: Move_object was deleted from DataclayRuntime, use EE move_objects
         get_runtime().move_object(stolen_object, settings.storage_id)

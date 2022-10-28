@@ -14,7 +14,7 @@ import grpc
 from dataclay_common.protos import logicmodule_messages_pb2, logicmodule_pb2_grpc
 from grpc._cython.cygrpc import ChannelArgKey
 
-from dataclay.runtime.Settings import settings
+from dataclay.runtime.settings import settings
 from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util import Configuration
