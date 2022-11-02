@@ -65,10 +65,8 @@ class ClientRuntime(DataClayRuntime):
             try:
                 ee_client = self.ready_clients[instance._master_ee_id]
             except KeyError:
+                logger.debug(f"Client {instance._master_ee_id} not found in cache!")
                 exec_env = self.get_execution_environment_info(instance._master_ee_id)
-                logger.debug(
-                    f"ExecutionEnvironment {instance._master_ee_id} not found in cache! Starting it at {exec_env.hostname}:{exec_env.port}",
-                )
                 ee_client = EEClient(exec_env.hostname, exec_env.port)
                 self.ready_clients[instance._master_ee_id] = ee_client
 
@@ -78,6 +76,9 @@ class ClientRuntime(DataClayRuntime):
 
             # TODO: Improve it with a single make_persistent call to ee of all
             # dc objects, instead of one call per object
+            # TODO: Avoid some race-conditions in communication
+            # (make persistent + execute where execute arrives before).
+            # add_volatiles_under_deserialization and remove_volatiles_under_deserialization
 
             # Must be set to True before pickle.dumps to avoid infinit recursion
             instance._is_persistent = True
@@ -85,51 +86,26 @@ class ClientRuntime(DataClayRuntime):
             serialized_dict = pickle.dumps(instance.__dict__)
             ee_client.new_make_persistent(self.session.id, serialized_dict)
 
-            ###
-            # NOTE: Previous make persistent (without Pickle)
-            ###
-
-            # # serializes objects like volatile parameters
-            # serialized_objs = SerializationLibUtilsSingleton.serialize_params_or_return(
-            #     params=[instance],
-            #     iface_bitmaps=None,
-            #     params_spec={"object": "DataClayObject"},
-            #     params_order=["object"],
-            #     hint_volatiles=instance._master_ee_id,
-            #     runtime=self,
-            #     recursive=recursive,
-            # )
-            # # Avoid some race-conditions in communication (make persistent + execute where execute arrives before).
-            # # TODO: fix volatiles under deserialization support for __setstate__ and __getstate__
-            # self.add_volatiles_under_deserialization(serialized_objs.vol_objs.values())
-            # ee_client.make_persistent(self.session.id, serialized_objs.vol_objs.values())
-
-            # # removes volatiles under deserialization
-            # self.remove_volatiles_under_deserialization(serialized_objs.vol_objs.values())
-
-            #####
-            # END Previous implementation
-            #####
-
             return instance._master_ee_id
 
+    # TODO: Deprecate it and call to call_active_method(..) instead
+    @tracer.start_as_current_span("execute_implementation")
     def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):
-        with tracer.start_as_current_span(
-            "execute_implementation",
-            attributes={"operation_name": operation_name, "parameters": parameters},
-        ) as span:
-            logger.debug(
-                f"Calling operation {operation_name} in object {instance._object_id} with parameters {parameters}"
-            )
+        logger.debug(
+            f"Calling operation {operation_name} in object {instance._object_id} with parameters {parameters}"
+        )
 
-            using_hint = True
+        # TODO: Check if the below code is ever executed
+        # I think persistent objects should always have a _master_ee_id (@marc)
+        using_hint = True
+        hint = instance._master_ee_id
+        if hint is None:
+            self.update_object_metadata(instance)
             hint = instance._master_ee_id
-            if hint is None:
-                self.update_object_metadata(instance)
-                hint = instance._master_ee_id
-                using_hint = False
+            using_hint = False
 
-            return self.call_execute_to_ds(instance, parameters, operation_name, hint, using_hint)
+        return self.call_active_method(instance, operation_name, parameters, hint)
+        # return self.call_execute_to_ds(instance, parameters, operation_name, hint, using_hint)
 
     def get_operation_info(self, object_id, operation_name):
         dcc_extradata = self.get_object_by_id(object_id).get_class_extradata()

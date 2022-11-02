@@ -8,12 +8,14 @@ import traceback
 from uuid import UUID
 
 import grpc
+from dataclay.executionenv.ExecutionEnvironment import ExecutionEnvironment
 from dataclay.runtime import get_runtime
 from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay_common.protos import common_messages_pb2, dataservice_messages_pb2
 from dataclay_common.protos import dataservice_pb2_grpc as ds
 from google.protobuf.empty_pb2 import Empty
+from google.protobuf.wrappers_pb2 import BytesValue
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
 __copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
@@ -25,7 +27,7 @@ class DataServiceEE(ds.DataServiceServicer):
 
     interceptor = None
 
-    def __init__(self, theexec_env, interceptor=None):
+    def __init__(self, theexec_env: ExecutionEnvironment, interceptor=None):
         """Execution environment being managed"""
         self.execution_environment = theexec_env
         DataServiceEE.interceptor = interceptor
@@ -129,7 +131,7 @@ class DataServiceEE(ds.DataServiceServicer):
             return Empty()
         return Empty()
 
-    # TODO: Deprecate it
+    # TODO: Deprecate it, use MakePersistent
     def makePersistent(self, request, context):
         try:
 
@@ -206,6 +208,22 @@ class DataServiceEE(ds.DataServiceServicer):
             traceback.print_exc()
             return self.get_exception_info(ex)
 
+    def CallActiveMethod(self, request, context):
+        try:
+            returned_value = self.execution_environment.call_active_method(
+                UUID(request.session_id),
+                UUID(request.object_id),
+                request.method,
+                request.parameters,
+            )
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return BytesValue()
+        return BytesValue(value=returned_value)
+
+    # TODO: Depreacte it. Use CallActiveMethod
     def executeImplementation(self, request, context):
         logger.debug("Starting ExecuteImplementation handling")
 

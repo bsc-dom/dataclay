@@ -1,6 +1,7 @@
 """ Class description goes here. """
 import logging
 import uuid
+from uuid import UUID
 from abc import ABC, abstractmethod
 
 from dataclay.exceptions.exceptions import DataClayException
@@ -34,7 +35,7 @@ class DataClayRuntime(ABC):
     def __init__(self, metadata_service, heap_manager, object_loader):
 
         # Cache of EE info
-        self.ee_infos = dict()
+        self.ee_infos: dict[UUID, EEClient] = dict()
 
         # GRPC clients
         self.ready_clients = dict()
@@ -451,12 +452,30 @@ class DataClayRuntime(ABC):
                 ret, None, operation.returnType, self
             )
 
+    def call_active_method(self, instance, method, parameters, exec_env_id):
+        import pickle
+
+        serialized_params = pickle.dumps(parameters)
+
+        ee_client = self.ready_clients[exec_env_id]
+
+        returned_value = ee_client.call_active_method(
+            self.session.id, instance._object_id, method, serialized_params
+        )
+        if returned_value:
+            unserialized_response = pickle.loads(returned_value)
+            return unserialized_response
+
+    # DEPRECATED: Use call_active_method
     def call_execute_to_ds(self, instance, parameters, operation_name, exec_env_id, using_hint):
 
         object_id = instance._object_id
         operation = self.get_operation_info(object_id, operation_name)
         session_id = self.session.id
         implementation_id = self.get_implementation_id(object_id, operation_name)
+
+        print("----", locals())
+        print("----", dir())
 
         # // === SERIALIZE PARAMETERS === //
         serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(

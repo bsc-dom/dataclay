@@ -493,6 +493,47 @@ class ExecutionEnvironment(object):
             raise e
         logger.debug("<--- Finished notification of unfederation")
 
+    def call_active_method(self, session_id, object_id, method_name, parameters):
+        self.set_local_session(session_id)
+
+        instance = self.get_local_instance(object_id, True)
+        parameters = pickle.loads(parameters)
+
+        ###
+        # NOTE: Code copied from internal_exec_impl(...)
+        ###
+        if not instance._is_loaded:
+            self.runtime.load_object_from_db(instance, True)
+
+        if method_name.startswith(DCLAY_GETTER_PREFIX):
+            prop_name = method_name[len(DCLAY_GETTER_PREFIX) :]
+            ret_value = getattr(instance, DCLAY_PROPERTY_PREFIX + prop_name)
+            # FIXME: printing value can cause __str__ call (even if __repr__ is defined)
+            # FIXME: this function could be used during deserialization
+            # logger.debug("Getter: for property %s returned %r", prop_name, ret_value)
+            if not isinstance(ret_value, DataClayObject):
+                instance._is_dirty = True
+
+        elif method_name.startswith(DCLAY_SETTER_PREFIX):
+            prop_name = method_name[len(DCLAY_SETTER_PREFIX) :]
+            # FIXME: printing value can cause __str__ call (even if __repr__ is defined)
+            # FIXME: this function could be used during deserialization
+            # logger.debug("Setter: for property %s (value: %r)", prop_name, params[0])
+            setattr(instance, DCLAY_PROPERTY_PREFIX + prop_name, parameters[0])
+            ret_value = None
+            instance._is_dirty = True
+
+        else:
+            logger.debug("Call: %s", method_name)
+            dataclay_decorated_func = getattr(instance, method_name)
+            ret_value = dataclay_decorated_func._dclay_entrypoint(instance, *parameters)
+
+        if ret_value is not None:
+            return pickle.dumps(ret_value)
+
+        ### End copied code
+
+    # TODO: Deprecate it and use call_active_method
     def ds_exec_impl(self, object_id, implementation_id, serialized_params_grpc_msg, session_id):
         """Perform a Remote Execute Implementation.
 
