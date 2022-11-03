@@ -135,7 +135,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             instance._alias = alias
 
             if instance._is_pending_to_register:
-                self.metadata_service.register_object(self.session.id, instance.metadata)
+                self.metadata_service.register_object(instance.metadata)
 
         return instance._master_ee_id
 
@@ -278,7 +278,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             # all objects at once. Also, it may not be necessary to even register the
             # objects at this point, since the metadata may be already registered.
             for instance in obj_to_register:
-                self.metadata_service.register_object(self.session.id, instance.metadata)
+                self.metadata_service.register_object(instance.metadata)
 
             client.ds_store_objects(
                 self.session.id,

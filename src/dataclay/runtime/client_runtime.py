@@ -56,10 +56,10 @@ class ClientRuntime(DataClayRuntime):
         else:
             logger.debug(f"Starting make persistent for object {instance._object_id}")
 
+            instance._alias = alias
             instance._master_ee_id = backend_id or self.get_backend_by_object_id(
                 instance._object_id
             )
-            instance._alias = alias
 
             # Gets Execution Environment client
             try:
@@ -79,6 +79,7 @@ class ClientRuntime(DataClayRuntime):
             # TODO: Avoid some race-conditions in communication
             # (make persistent + execute where execute arrives before).
             # add_volatiles_under_deserialization and remove_volatiles_under_deserialization
+            # TODO: Check if we can make a use of the recursive parameter
 
             # Must be set to True before pickle.dumps to avoid infinit recursion
             instance._is_persistent = True

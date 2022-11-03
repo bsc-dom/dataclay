@@ -261,7 +261,7 @@ class ExecutionEnvironment(object):
         )
 
         # TODO: When the object metadata is updated synchronously, this should me removed
-        self.runtime.metadata_service.update_object(instance._owner_session_id, instance.metadata)
+        self.runtime.metadata_service.update_object(instance.metadata)
 
         instance._is_pending_to_register = False
 
@@ -321,7 +321,7 @@ class ExecutionEnvironment(object):
 
         # volatile_obj.initialize_object_as_volatile()
 
-        self.runtime.metadata_service.register_object(session_id, instance.metadata)
+        self.runtime.metadata_service.register_object(instance.metadata)
 
     # TODO: Deprecate it, and steal name for new_make_persistent
     @tracer.start_as_current_span("EE: make_persistent")
@@ -343,7 +343,7 @@ class ExecutionEnvironment(object):
         for object in objects:
             # TODO: The location should be check (in the deserialization) that is the same as current ee, and reasign if not
             object_md = object.metadata
-            self.runtime.metadata_service.register_object(session_id, object_md)
+            self.runtime.metadata_service.register_object(object_md)
         logger.debug("Finished make persistent")
 
     def federate(self, session_id, object_id, external_execution_env_id, recursive):
@@ -389,7 +389,7 @@ class ExecutionEnvironment(object):
             # Register objects with alias (should we?)
             for object in federated_objs:
                 if object._alias:
-                    self.runtime.metadata_service.register_object(session_id, object.metadata)
+                    self.runtime.metadata_service.register_object(object.metadata)
 
             for federated_obj in federated_objs:
                 try:

@@ -20,6 +20,8 @@ from dataclay.util import Configuration
 from dataclay_common.clients.execution_environment_client import EEClient
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from grpc import RpcError
+from dataclay_common.metadata_service import MetadataService
+from dataclay_common.clients.metadata_service_client import MDSClient
 
 
 class NULL_NAMESPACE:
@@ -55,7 +57,7 @@ class DataClayRuntime(ABC):
         # volatiles currently under deserialization
         self.volatiles_under_deserialization = dict()
 
-        self.metadata_service = metadata_service
+        self.metadata_service: MetadataService | MDSClient = metadata_service
         self.dataclay_heap_manager = heap_manager
         self.dataclay_object_loader = object_loader
 
@@ -292,7 +294,7 @@ class DataClayRuntime(ABC):
             dataset_name = self.session.dataset_name
 
         object_md = self.metadata_service.get_object_md_by_alias(
-            self.session.id, alias, dataset_name
+            alias, dataset_name, self.session.id
         )
 
         instance = self.get_from_heap(object_md.id)
@@ -311,7 +313,7 @@ class DataClayRuntime(ABC):
         if dataset_name is None:
             dataset_name = self.session.dataset_name
 
-        self.metadata_service.delete_alias(self.session.id, alias, dataset_name)
+        self.metadata_service.delete_alias(alias, dataset_name, self.session.id)
 
     @abstractmethod
     def delete_alias(self, dc_obj):
@@ -452,7 +454,7 @@ class DataClayRuntime(ABC):
                 ret, None, operation.returnType, self
             )
 
-    def call_active_method(self, instance, method, parameters, exec_env_id):
+    def call_active_method(self, instance, method_name, parameters, exec_env_id):
         import pickle
 
         serialized_params = pickle.dumps(parameters)
@@ -460,7 +462,7 @@ class DataClayRuntime(ABC):
         ee_client = self.ready_clients[exec_env_id]
 
         returned_value = ee_client.call_active_method(
-            self.session.id, instance._object_id, method, serialized_params
+            self.session.id, instance._object_id, method_name, serialized_params
         )
         if returned_value:
             unserialized_response = pickle.loads(returned_value)

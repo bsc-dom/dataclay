@@ -213,7 +213,7 @@ class DataServiceEE(ds.DataServiceServicer):
             returned_value = self.execution_environment.call_active_method(
                 UUID(request.session_id),
                 UUID(request.object_id),
-                request.method,
+                request.method_name,
                 request.parameters,
             )
         except Exception as e:
