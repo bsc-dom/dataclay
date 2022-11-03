@@ -62,7 +62,7 @@ class ExecutionEnvironment(object):
     # TODO: Instead of notifying, just delete the EE entry in ETCD using MetadataService
     def notify_execution_environment_shutdown(self):
         """Notify LM current node left"""
-        lm_client = self.runtime.ready_clients["@LM"]
+        lm_client = self.runtime.backend_clients["@LM"]
         lm_client.notify_execution_environment_shutdown(self.execution_environment_id)
 
     # TODO: Deprecate or refactor when stubs are removed
@@ -256,7 +256,7 @@ class ExecutionEnvironment(object):
         object_id = instance._object_id
 
         # NOTE: we are doing *two* remote calls, and wishlist => they work as a transaction
-        self.runtime.ready_clients["@STORAGE"].store_to_db(
+        self.runtime.backend_clients["@STORAGE"].store_to_db(
             settings.environment_id, object_id, obj_bytes
         )
 
@@ -587,7 +587,7 @@ class ExecutionEnvironment(object):
         """
         backend = self.runtime.get_execution_environment_info(dest_backend_id)
         try:
-            client_backend = self.runtime.ready_clients[dest_backend_id]
+            client_backend = self.runtime.backend_clients[dest_backend_id]
         except KeyError:
             logger.verbose(
                 "Not found Client to ExecutionEnvironment {%s}!" " Starting it at %s:%d",
@@ -596,7 +596,7 @@ class ExecutionEnvironment(object):
                 backend.port,
             )
             client_backend = EEClient(backend.hostname, backend.port)
-            self.runtime.ready_clients[dest_backend_id] = client_backend
+            self.runtime.backend_clients[dest_backend_id] = client_backend
         return client_backend
 
     def new_replica(self, session_id, object_id, dest_backend_id, recursive):
@@ -954,7 +954,7 @@ class ExecutionEnvironment(object):
                 )
                 backend = self.runtime.ee_infos[backend_id]
                 try:
-                    client_backend = self.runtime.ready_clients[backend_id]
+                    client_backend = self.runtime.backend_clients[backend_id]
                 except KeyError:
                     logger.verbose(
                         "[==GetObjectsInOtherBackend==] Not found Client to ExecutionEnvironment {%s}!"
@@ -965,7 +965,7 @@ class ExecutionEnvironment(object):
                     )
 
                     client_backend = EEClient(backend.hostname, backend.port)
-                    self.runtime.ready_clients[backend_id] = client_backend
+                    self.runtime.backend_clients[backend_id] = client_backend
 
                 cur_result = client_backend.ds_get_objects(
                     session_id,
@@ -1174,7 +1174,7 @@ class ExecutionEnvironment(object):
             backend = self.runtime.get_execution_environment_info(backend_id)
 
             try:
-                client_backend = self.runtime.ready_clients[backend_id]
+                client_backend = self.runtime.backend_clients[backend_id]
             except KeyError:
                 logger.verbose(
                     "[==GetObjectsInOtherBackend==] Not found Client to ExecutionEnvironment {%s}!"
@@ -1185,7 +1185,7 @@ class ExecutionEnvironment(object):
                 )
 
                 client_backend = EEClient(backend.hostname, backend.port)
-                self.runtime.ready_clients[backend_id] = client_backend
+                self.runtime.backend_clients[backend_id] = client_backend
 
             client_backend.ds_upsert_objects(session_id, objects_to_update)
 
@@ -1274,7 +1274,7 @@ class ExecutionEnvironment(object):
             logger.debug("[==MoveObjects==] Finally moving OBJECTS: %s", objects_to_remove)
 
             try:
-                sl_client = self.runtime.ready_clients[dest_backend_id]
+                sl_client = self.runtime.backend_clients[dest_backend_id]
             except KeyError:
                 st_loc = self.runtime.ee_infos[dest_backend_id]
                 logger.debug(
@@ -1284,7 +1284,7 @@ class ExecutionEnvironment(object):
                     st_loc.port,
                 )
                 sl_client = EEClient(st_loc.hostname, st_loc.port)
-                self.runtime.ready_clients[dest_backend_id] = sl_client
+                self.runtime.backend_clients[dest_backend_id] = sl_client
 
             sl_client.ds_store_objects(session_id, objects_to_move, True, None)
 
@@ -1292,7 +1292,7 @@ class ExecutionEnvironment(object):
             # Remove after store in order to avoid wrong executions during the movement :)
             # Remove all objects in all source locations different to dest. location
             # TODO: Check that remove is not necessary (G.C. Should do it?)
-            # self.runtime.ready_clients["@STORAGE"].ds_remove_objects(session_id, object_ids, recursive, True, dest_backend_id)
+            # self.runtime.backend_clients["@STORAGE"].ds_remove_objects(session_id, object_ids, recursive, True, dest_backend_id)
 
             for oid in objects_to_remove:
                 self.runtime.remove_metadata_from_cache(oid)
@@ -1305,7 +1305,7 @@ class ExecutionEnvironment(object):
 
     def update_refs(self, ref_counting):
         """forward to SL"""
-        self.runtime.ready_clients["@STORAGE"].update_refs(ref_counting)
+        self.runtime.backend_clients["@STORAGE"].update_refs(ref_counting)
 
     def get_retained_references(self):
         return self.runtime.get_retained_references()

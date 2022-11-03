@@ -13,6 +13,9 @@ logger = logging.getLogger("dataclay.api")
 class Configuration(object):
     """Configuration management static-ish class."""
 
+    # Number of seconds to wait for grpc channel to be ready
+    TIMEOUT_CHANNEL_READY = 5
+
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
     # Session control

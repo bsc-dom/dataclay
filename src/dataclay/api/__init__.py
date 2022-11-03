@@ -68,9 +68,9 @@ def reinitialize_clients() -> None:
     runtime = get_runtime()
     logger.verbose(
         "Performing reinitialization of clients, removing #%d cached ones and recreating LMClient",
-        len(runtime.ready_clients),
+        len(runtime.backend_clients),
     )
-    runtime.ready_clients = {
+    runtime.backend_clients = {
         "@LM": LMClient(settings.logicmodule_host, settings.logicmodule_port),
     }
 
@@ -85,7 +85,7 @@ def init_connection(client_file) -> LMClient:
     :param client_file: The path to the `client.properties` file. If set to None,
     then this function assumes that the connection settings are already loaded.
     :return: The LogicModule client (also accessible through the global
-    commonruntime.ready_clients["@LM"]
+    commonruntime.backend_clients["@LM"]
     """
     global _connection_initialized
     logger.debug("Initializing dataClay connection with LM")
@@ -96,10 +96,10 @@ def init_connection(client_file) -> LMClient:
 
     if _connection_initialized:
         logger.warning("Runtime already has a client with the LogicModule, reusing that")
-        return runtime.ready_clients["@LM"]
+        return runtime.backend_clients["@LM"]
 
     client = LMClient(os.environ["LOGICMODULE_HOST"], os.getenv("LOGICMODULE_PORT_TCP", 11034))
-    runtime.ready_clients["@LM"] = client
+    runtime.backend_clients["@LM"] = client
 
     _connection_initialized = True
 
@@ -246,7 +246,7 @@ def init():
 
         # TODO: Do we need it for federation?
         # Get dataclay id and map it to Metadata Service client
-        # runtime.ready_clients[runtime.metadata_service.get_dataclay_id()] = client
+        # runtime.backend_clients[runtime.metadata_service.get_dataclay_id()] = client
 
         # wait for 1 python backend
         # TODO: implement get_backends_info in MDS
@@ -273,7 +273,7 @@ def init():
         init_span.add_event("marcevent - after new session")
 
         # Cache the execution environment infos
-        runtime.update_ee_infos()
+        runtime.update_backend_clients()
 
         # Cache the dataclay_id, to avoid later request
         runtime.dataclay_id

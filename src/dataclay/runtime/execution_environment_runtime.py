@@ -121,7 +121,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         # It should always have a master location, since all objects intantiated
         # in a ee, get the ee as the master location
         # if not _master_ee_id:
-        #     instance._master_ee_id = backend_id or self.get_backend_by_object_id(
+        #     instance._master_ee_id = backend_id or self.get_backend_id_by_object_id(
         #         instance._object_id
         #     )
 
@@ -219,7 +219,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         Returns:
             A dictionary containing the classes for all stored objects.
         """
-        client = self.ready_clients["@STORAGE"]
+        client = self.backend_clients["@STORAGE"]
 
         pending_objs = [instance]
         stored_objects_classes = dict()
@@ -482,7 +482,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         :returns: Bytes of object
         :rtype: Byte array
         """
-        return self.ready_clients["@STORAGE"].get_from_db(settings.environment_id, object_id)
+        return self.backend_clients["@STORAGE"].get_from_db(settings.environment_id, object_id)
 
     def update_to_sl(self, object_id, obj_bytes, dirty):
         """Update to SL associated to this EE.
@@ -495,7 +495,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         :type dirty: Boolean
         :rtype: None
         """
-        return self.ready_clients["@STORAGE"].update_to_db(
+        return self.backend_clients["@STORAGE"].update_to_db(
             settings.environment_id, object_id, obj_bytes, dirty
         )
 

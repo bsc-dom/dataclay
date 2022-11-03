@@ -1,8 +1,10 @@
 """ Class description goes here. """
+from builtins import Exception
 import logging
 import uuid
 from uuid import UUID
 from abc import ABC, abstractmethod
+import grpc
 
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.heap.LockerPool import LockerPool
@@ -37,10 +39,10 @@ class DataClayRuntime(ABC):
     def __init__(self, metadata_service, heap_manager, object_loader):
 
         # Cache of EE info
-        self.ee_infos: dict[UUID, EEClient] = dict()
+        self.ee_infos = dict()
 
         # GRPC clients
-        self.ready_clients = dict()
+        self.backend_clients: dict[UUID, EEClient] = dict()
 
         # Cache of classes. TODO: is it used? -> Yes, in StubUtils and ClientObjectLoader
         self.local_available_classes = dict()
@@ -184,11 +186,11 @@ class DataClayRuntime(ABC):
 
         backend_id = into_object._master_ee_id
         try:
-            ee_client = self.ready_clients[backend_id]
+            ee_client = self.backend_clients[backend_id]
         except KeyError:
             exec_env = self.get_execution_environment_info(backend_id)
             ee_client = EEClient(exec_env.hostname, exec_env.port)
-            self.ready_clients[backend_id] = ee_client
+            self.backend_clients[backend_id] = ee_client
 
         # We serialize objects like volatile parameters
         parameters = list()
@@ -278,7 +280,7 @@ class DataClayRuntime(ABC):
             object_md = self.metadata_service.get_object_md_by_id(object_id)
             class_id = object_md.class_id
             # DEPRECATED: It may be usefull when removing stubs and identifying class by name (not id)
-            # full_name, namespace = self.ready_clients["@LM"].get_object_info(self.session.id, object_id)
+            # full_name, namespace = self.backend_clients["@LM"].get_object_info(self.session.id, object_id)
             # prefix, class_name = (f"{namespace}.{full_name}").rsplit(".", 1)
             # m = importlib.import_module(prefix)
             # klass = getattr(m, class_name)
@@ -304,9 +306,9 @@ class DataClayRuntime(ABC):
             )
         return instance
 
-    def get_backend_by_object_id(self, object_id):
-        ee_infos = list(self.get_all_execution_environments_at_dataclay(self.dataclay_id))
-        return ee_infos[hash(object_id) % len(ee_infos)]
+    def get_backend_id_by_object_id(self, object_id):
+        backend_ids = list(self.get_all_execution_environments_at_dataclay(self.dataclay_id))
+        return backend_ids[hash(object_id) % len(backend_ids)]
 
     def delete_alias_in_dataclay(self, alias, dataset_name):
 
@@ -364,6 +366,37 @@ class DataClayRuntime(ABC):
     ##########################
     # Execution Environments #
     ##########################
+
+    def get_backend_client(self, backend_id: UUID) -> EEClient:
+        try:
+            return self.backend_clients[backend_id]
+        except KeyError:
+            self.update_backend_clients()
+            return self.backend_clients[backend_id]
+
+    def update_backend_clients(self):
+        self.ee_infos = self.metadata_service.get_all_execution_environments(
+            LANG_PYTHON, from_backend=self.is_exec_env()
+        )
+        new_backend_clients = {}
+
+        # TODO: Update backend_clients using multithreading
+        for id, info in self.ee_infos.items():
+            if id in self.backend_clients:
+                if self.backend_clients[id].is_ready(Configuration.TIMEOUT_CHANNEL_READY):
+                    new_backend_clients[id] = self.backend_clients[id]
+                    continue
+
+            backend_client = EEClient(info.hostname, info.port)
+            if backend_client.is_ready():
+                new_backend_clients[id] = backend_client
+            else:
+                del self.ee_infos[id]
+
+        self.backend_clients = new_backend_clients
+
+    # TODO: Remove self.ee_infos and only use self.backend_clients with
+    # attributes containing the ones in ee_infos
 
     def update_ee_infos(self):
         self.ee_infos = self.metadata_service.get_all_execution_environments(
@@ -429,11 +462,11 @@ class DataClayRuntime(ABC):
         implementation_id = self.get_implementation_id(object_id, operation_name)
 
         try:
-            ee_client = self.ready_clients[backend_id]
+            ee_client = self.backend_clients[backend_id]
         except KeyError:
             exec_env = self.get_execution_environment_info(backend_id)
             ee_client = EEClient(exec_env.hostname, exec_env.port)
-            self.ready_clients[backend_id] = ee_client
+            self.backend_clients[backend_id] = ee_client
 
         operation = self.get_operation_info(object_id, operation_name)
         serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
@@ -458,8 +491,11 @@ class DataClayRuntime(ABC):
         import pickle
 
         serialized_params = pickle.dumps(parameters)
+        # TODO: Add serialized volatile objects to
+        # self.volatile_parameters_being_send to avoid race conditon.
+        # May be necessary a custom pickle.Pickler
 
-        ee_client = self.ready_clients[exec_env_id]
+        ee_client = self.get_backend_client(exec_env_id)
 
         returned_value = ee_client.call_active_method(
             self.session.id, instance._object_id, method_name, serialized_params
@@ -500,7 +536,7 @@ class DataClayRuntime(ABC):
         for _ in range(max_retry):
             try:
                 logger.verbose("Obtaining API for remote execution in %s ", exec_env_id)
-                ee_client = self.ready_clients[exec_env_id]
+                ee_client = self.backend_clients[exec_env_id]
             except KeyError:
                 exec_env = self.get_execution_environment_info(exec_env_id)
                 logger.debug(
@@ -510,7 +546,7 @@ class DataClayRuntime(ABC):
                     exec_env.port,
                 )
                 ee_client = EEClient(exec_env.hostname, exec_env.port)
-                self.ready_clients[exec_env_id] = ee_client
+                self.backend_clients[exec_env_id] = ee_client
 
             try:
                 logger.verbose("Calling remote EE %s ", exec_env_id)
@@ -614,11 +650,11 @@ class DataClayRuntime(ABC):
 
         backend_id = from_object._master_ee_id
         try:
-            ee_client = self.ready_clients[backend_id]
+            ee_client = self.backend_clients[backend_id]
         except KeyError:
             exec_env = self.get_execution_environment_info(backend_id)
             ee_client = EEClient(exec_env.hostname, exec_env.port)
-            self.ready_clients[backend_id] = ee_client
+            self.backend_clients[backend_id] = ee_client
 
         copiedObject = ee_client.ds_get_copy_of_object(
             session_id, from_object._object_id, recursive
@@ -699,11 +735,11 @@ class DataClayRuntime(ABC):
             dest_backend = self.get_execution_environment_info(dest_backend_id)
 
         try:
-            ee_client = self.ready_clients[hint]
+            ee_client = self.backend_clients[hint]
         except KeyError:
             backend_to_call = self.get_execution_environment_info(hint)
             ee_client = EEClient(backend_to_call.hostname, backend_to_call.port)
-            self.ready_clients[hint] = ee_client
+            self.backend_clients[hint] = ee_client
         return ee_client, dest_backend
 
     def new_replica(self, object_id, hint, backend_id, backend_hostname, recursive):
@@ -751,11 +787,11 @@ class DataClayRuntime(ABC):
             hint = self.get_hint(object_id)
 
         try:
-            ee_client = self.ready_clients[hint]
+            ee_client = self.backend_clients[hint]
         except KeyError:
             backend_to_call = self.get_execution_environment_info(hint)
             ee_client = EEClient(backend_to_call.hostname, backend_to_call.port)
-            self.ready_clients[hint] = ee_client
+            self.backend_clients[hint] = ee_client
 
         ee_client.consolidate_version(self.session.id, object_id)
         logger.debug(f"Finished consolidate version of {object_id}")
@@ -808,7 +844,7 @@ class DataClayRuntime(ABC):
         logger.debug(
             f"[==Import_models_from_external_dataclay==] Registering namespace {namespace} from {ext_dataclay_id}"
         )
-        self.ready_clients["@LM"].import_models_from_external_dataclay(namespace, ext_dataclay_id)
+        self.backend_clients["@LM"].import_models_from_external_dataclay(namespace, ext_dataclay_id)
 
     def register_external_dataclay(self, id, hostname, port):
         """Register external dataClay for federation
@@ -848,16 +884,16 @@ class DataClayRuntime(ABC):
     def activate_tracing_in_dataclay_services(self):
         """Activate the traces in LM (That activate also the DS)"""
         if extrae_tracing_is_enabled():
-            self.ready_clients["@LM"].activate_tracing(get_current_available_task_id())
+            self.backend_clients["@LM"].activate_tracing(get_current_available_task_id())
 
     def deactivate_tracing_in_dataclay_services(self):
         """Deactivate the traces in LM and DSs"""
         if extrae_tracing_is_enabled():
-            self.ready_clients["@LM"].deactivate_tracing()
+            self.backend_clients["@LM"].deactivate_tracing()
 
     def get_traces_in_dataclay_services(self):
         """Get temporary traces from LM and DSs and store it in current workspace"""
-        traces = self.ready_clients["@LM"].get_traces()
+        traces = self.backend_clients["@LM"].get_traces()
         traces_dir = Configuration.TRACES_DEST_PATH
         if len(traces) > 0:
             set_path = Configuration.TRACES_DEST_PATH + "/set-0"
@@ -895,11 +931,11 @@ class DataClayRuntime(ABC):
 
         logger.verbose("** Stopping runtime **")
 
-        for name, client in self.ready_clients.items():
+        for name, client in self.backend_clients.items():
             logger.verbose("Closing client connection to %s", name)
             client.close()
 
-        self.ready_clients = {}
+        self.backend_clients = {}
 
         # Stop HeapManager
         self.stop_gc()

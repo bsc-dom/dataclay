@@ -33,7 +33,7 @@ class DataServiceEE(ds.DataServiceServicer):
         DataServiceEE.interceptor = interceptor
 
     def ass_client(self):
-        self.client = get_runtime().ready_clients["@STORAGE"]
+        self.client = get_runtime().backend_clients["@STORAGE"]
 
     def get_exception_info(self, ex):
         ex_message = None

@@ -77,7 +77,7 @@ class ExecutionEnvironmentSrv(object):
 
         # TODO: Remove LogicModule client. Needed for getting stubs.
         lm_client = LMClient(settings.logicmodule_host, settings.logicmodule_port)
-        self.execution_environment.runtime.ready_clients["@LM"] = lm_client
+        self.execution_environment.runtime.backend_clients["@LM"] = lm_client
 
         return local_ip
 
@@ -98,7 +98,7 @@ class ExecutionEnvironmentSrv(object):
         # Autoregister of ExecutionEnvironment to LogicModule
         # NOTE: Needed to get registered classes from LogicModule
         # TODO: Should be removed when LogicModule is replaced by MetadataService
-        lm_client = self.execution_environment.runtime.ready_clients["@LM"]
+        lm_client = self.execution_environment.runtime.backend_clients["@LM"]
         retries = 0
         while True:
             try:
@@ -174,7 +174,7 @@ class ExecutionEnvironmentSrv(object):
         logger.info(f"Connected to StorageLocation {sl_name}!")
 
         # Makes the StorageLocation client globally available
-        self.execution_environment.runtime.ready_clients["@STORAGE"] = storage_client
+        self.execution_environment.runtime.backend_clients["@STORAGE"] = storage_client
         storage_client.associate_execution_environment(execution_environment_id)
 
     def start(self):

@@ -30,11 +30,11 @@ class Test(TestCase):
     def test_reinitialize_clients(self):
         api.settings.logicmodule_host = "logicmodule"
         api.settings.logicmodule_port = "1024"
-        result_ready_clients = {
+        result_backend_clients = {
             "@LM": api.LMClient(api.settings.logicmodule_host, api.settings.logicmodule_port),
         }
         api.reinitialize_clients()
-        self.assertEqual(result_ready_clients, api.get_runtime().ready_clients)
+        self.assertEqual(result_backend_clients, api.get_runtime().backend_clients)
 
     def test_init_connection(self):
         pass
