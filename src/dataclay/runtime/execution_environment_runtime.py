@@ -12,6 +12,12 @@ from dataclay.runtime import settings
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
 from dataclay_common.metadata_service import MetadataService
+from dataclay.dataclay_object import DataClayObject
+from dataclay.DataClayObjProperties import (
+    DCLAY_GETTER_PREFIX,
+    DCLAY_PROPERTY_PREFIX,
+    DCLAY_SETTER_PREFIX,
+)
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
@@ -25,6 +31,8 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
     def __init__(self, theexec_env, etcd_host, etcd_port):
 
         # Execution Environment using this runtime.
+        # TODO: This is a bad design that could produce circular imports
+        # Remove it and think a better desing.
         self.execution_environment = theexec_env
 
         # Initialize parent
@@ -139,64 +147,68 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
         return instance._master_ee_id
 
-    def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):
+    def internal_exec_impl(self, instance, method_name, parameters):
+        """Internal (network-agnostic) execute implementation behaviour.
 
-        object_id = instance._object_id
+        Args:
+            instance: The object in which execution will be performed.
+            method_name: Name of the implementation (may also be some dataClay specific $$get)
+            parameters: The parameters (args)
 
-        logger.debug(
-            "Calling execute_implementation inside EE for operation %s and object id %s",
-            operation_name,
-            object_id,
-        )
+        Returns:
+            The return value of the function being executed.
+        """
 
-        # # ============================== PARAMS/RETURNS ========================== //
-        # # Check if object is being deserialized (params/returns)
-        under_deserialization = self.check_and_fill_volatile_under_deserialization(instance, None)
+        """
+        TODO: use better design for this (dgasull)
+        It is possible that a property is set to None by the GC before we 'execute' it. It should be solve by always
+        checking if loaded before returning value. Check race conditions with GC.
+        """
+        if not instance._is_loaded:
+            self.runtime.load_object_from_db(instance, True)
 
-        if under_deserialization:
-            logger.debug("Object %s is a volatile under deserialization, executing", object_id)
-            return self.execution_environment.internal_exec_impl(
-                operation_name, instance, parameters
-            )
+        if method_name.startswith(DCLAY_GETTER_PREFIX):
+            prop_name = method_name[len(DCLAY_GETTER_PREFIX) :]
+            ret_value = getattr(instance, DCLAY_PROPERTY_PREFIX + prop_name)
+            # FIXME: printing value can cause __str__ call (even if __repr__ is defined)
+            # FIXME: this function could be used during deserialization
+            # logger.debug("Getter: for property %s returned %r", prop_name, ret_value)
+            if not isinstance(ret_value, DataClayObject):
+                instance._is_dirty = True
 
-        # // === HINT === //
-        thisExecEnv = settings.environment_id
-        using_hint = False
-        if exec_env_id is None:
-            exec_env_id = instance._master_ee_id
-            if exec_env_id is not None:
-                using_hint = True
-                logger.debug(f"Using hint {exec_env_id} for object id {object_id}")
-            else:
-                logger.debug(f"Asking for EE of object with id {object_id}")
-                self.update_object_metadata(instance)
-                exec_env_id = instance._master_ee_id
+        elif method_name.startswith(DCLAY_SETTER_PREFIX):
+            prop_name = method_name[len(DCLAY_SETTER_PREFIX) :]
+            # FIXME: printing value can cause __str__ call (even if __repr__ is defined)
+            # FIXME: this function could be used during deserialization
+            # logger.debug("Setter: for property %s (value: %r)", prop_name, parameters[0])
+            setattr(instance, DCLAY_PROPERTY_PREFIX + prop_name, parameters[0])
+            ret_value = None
+            instance._is_dirty = True
 
-        if exec_env_id == thisExecEnv:
-            logger.debug("Object execution is local")
-
-            # Note that fat_instance tend to be the same as instance...
-            # *except* if it is a proxy
-            try:
-                fat_instance = self.get_or_new_instance_from_db(object_id, True)
-                # get_local_instance should indeed modify the same instance instance,
-                # so @abarcelo is leaving the assert just in case
-                assert (
-                    instance is fat_instance
-                ), "A tiny mess with get_local_instance and heap management, check that"
-                return self.execution_environment.internal_exec_impl(
-                    operation_name, fat_instance, parameters
-                )
-            except Exception as e:
-                return self.execution_environment.internal_exec_impl(
-                    operation_name, instance, parameters
-                )
         else:
-            logger.debug("Object execution is not local")
-            object_id = instance._object_id
-            return self.call_execute_to_ds(
-                instance, parameters, operation_name, exec_env_id, using_hint
-            )
+            logger.debug("Call: %s", method_name)
+            dataclay_decorated_func = getattr(instance, method_name)
+            ret_value = dataclay_decorated_func._dclay_entrypoint(instance, *parameters)
+
+        return ret_value
+
+    def call_active_method(self, instance, method_name, parameters):
+        """This method overrides parents method.
+        Use to check if the instance belongs to this execution environment
+        Replaces execute_implementation_aux
+        """
+
+        # TODO: Check if the object is under deserialization ¿?
+
+        if instance._master_ee_id == settings.environment_id:
+            logger.debug("Object is local")
+            # get_local_instance should indeed modify the same instance instance,
+            fat_instance = self.get_or_new_instance_from_db(instance._object_id, True)
+            assert instance is fat_instance
+            return self.internal_exec_impl(instance, method_name, parameters)
+        else:
+            logger.debug("Object is not local")
+            return super().call_active_method(instance, method_name, parameters)
 
     #########################################
     # Helper functions, not commonruntime methods #

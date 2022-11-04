@@ -72,9 +72,7 @@ class DynamicProperty(property):
                 logger.debug(f"Internal dictionary of the object: {obj.__dict__}")
                 raise
         else:
-            return get_runtime().execute_implementation_aux(
-                DCLAY_GETTER_PREFIX + self.p_name, obj, (), obj._master_ee_id
-            )
+            return get_runtime().call_active_method(obj, DCLAY_GETTER_PREFIX + self.p_name, ())
 
     def __set__(self, obj, value):
         """Setter for the dataClay property
@@ -89,9 +87,7 @@ class DynamicProperty(property):
             if is_exec_env:
                 obj._is_dirty = True
         else:
-            get_runtime().execute_implementation_aux(
-                DCLAY_SETTER_PREFIX + self.p_name, obj, (value,), obj._master_ee_id
-            )
+            get_runtime().call_active_method(obj, DCLAY_SETTER_PREFIX + self.p_name, (value,))
 
 
 class ReplicatedDynamicProperty(DynamicProperty):
@@ -119,17 +115,14 @@ class ReplicatedDynamicProperty(DynamicProperty):
         if is_client and not obj._is_persistent:
             object.__setattr__(obj, "%s%s" % (DCLAY_PROPERTY_PREFIX, self.p_name), value)
         elif not is_client and not obj._is_loaded:
-            get_runtime().execute_implementation_aux(
-                DCLAY_SETTER_PREFIX + self.p_name, obj, (value,), obj._master_ee_id
-            )
+            get_runtime().call_active_method(obj, DCLAY_SETTER_PREFIX + self.p_name, (value,))
         else:
             if self.inMaster:
 
-                get_runtime().execute_implementation_aux(
-                    "__setUpdate__",
+                get_runtime().call_active_method(
                     obj,
+                    "__setUpdate__",
                     (obj, self.p_name, value, self.beforeUpdate, self.afterUpdate),
-                    obj._master_ee_id,
                 )
             else:
                 logger.debug(

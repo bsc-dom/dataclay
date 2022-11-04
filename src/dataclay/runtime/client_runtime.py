@@ -89,25 +89,6 @@ class ClientRuntime(DataClayRuntime):
 
             return instance._master_ee_id
 
-    # TODO: Deprecate it and call to call_active_method(..) instead
-    @tracer.start_as_current_span("execute_implementation")
-    def execute_implementation_aux(self, operation_name, instance, parameters, exec_env_id=None):
-        logger.debug(
-            f"Calling operation {operation_name} in object {instance._object_id} with parameters {parameters}"
-        )
-
-        # TODO: Check if the below code is ever executed
-        # I think persistent objects should always have a _master_ee_id (@marc)
-        using_hint = True
-        hint = instance._master_ee_id
-        if hint is None:
-            self.update_object_metadata(instance)
-            hint = instance._master_ee_id
-            using_hint = False
-
-        return self.call_active_method(instance, operation_name, parameters, hint)
-        # return self.call_execute_to_ds(instance, parameters, operation_name, hint, using_hint)
-
     def get_operation_info(self, object_id, operation_name):
         dcc_extradata = self.get_object_by_id(object_id).get_class_extradata()
         stub_info = dcc_extradata.stub_info

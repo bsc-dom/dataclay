@@ -7,12 +7,7 @@ import uuid
 
 from dataclay.runtime import set_runtime, settings
 from dataclay.runtime.execution_environment_runtime import ExecutionEnvironmentRuntime
-from dataclay.dataclay_object import DataClayObject
-from dataclay.DataClayObjProperties import (
-    DCLAY_GETTER_PREFIX,
-    DCLAY_PROPERTY_PREFIX,
-    DCLAY_SETTER_PREFIX,
-)
+
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.paraver import (
     extrae_tracing_is_enabled,
@@ -154,51 +149,6 @@ class ExecutionEnvironment(object):
 
     def get_local_instance(self, object_id, retry=True):
         return self.runtime.get_or_new_instance_from_db(object_id, retry)
-
-    def internal_exec_impl(self, implementation_name, instance, params):
-        """Internal (network-agnostic) execute implementation behaviour.
-
-        Args:
-            instance: The object in which execution will be performed.
-            implementation_name: Name of the implementation (may also be some dataClay specific $$get)
-            params: The parameters (args)
-
-        Returns:
-            The return value of the function being executed.
-        """
-
-        """
-        TODO: use better design for this (dgasull) 
-        It is possible that a property is set to None by the GC before we 'execute' it. It should be solve by always 
-        checking if loaded before returning value. Check race conditions with GC. 
-        """
-        if not instance._is_loaded:
-            self.runtime.load_object_from_db(instance, True)
-
-        if implementation_name.startswith(DCLAY_GETTER_PREFIX):
-            prop_name = implementation_name[len(DCLAY_GETTER_PREFIX) :]
-            ret_value = getattr(instance, DCLAY_PROPERTY_PREFIX + prop_name)
-            # FIXME: printing value can cause __str__ call (even if __repr__ is defined)
-            # FIXME: this function could be used during deserialization
-            # logger.debug("Getter: for property %s returned %r", prop_name, ret_value)
-            if not isinstance(ret_value, DataClayObject):
-                instance._is_dirty = True
-
-        elif implementation_name.startswith(DCLAY_SETTER_PREFIX):
-            prop_name = implementation_name[len(DCLAY_SETTER_PREFIX) :]
-            # FIXME: printing value can cause __str__ call (even if __repr__ is defined)
-            # FIXME: this function could be used during deserialization
-            # logger.debug("Setter: for property %s (value: %r)", prop_name, params[0])
-            setattr(instance, DCLAY_PROPERTY_PREFIX + prop_name, params[0])
-            ret_value = None
-            instance._is_dirty = True
-
-        else:
-            logger.debug("Call: %s", implementation_name)
-            dataclay_decorated_func = getattr(instance, implementation_name)
-            ret_value = dataclay_decorated_func._dclay_entrypoint(instance, *params)
-
-        return ret_value
 
     def set_local_session(self, session_id: uuid.UUID):
         """Check and set the session to thread_local_data.
@@ -499,78 +449,10 @@ class ExecutionEnvironment(object):
         instance = self.get_local_instance(object_id, True)
         parameters = pickle.loads(parameters)
 
-        ###
-        # NOTE: Code copied from internal_exec_impl(...)
-        ###
-        if not instance._is_loaded:
-            self.runtime.load_object_from_db(instance, True)
+        returned_value = self.runtime.call_active_method(instance, method_name, parameters)
 
-        if method_name.startswith(DCLAY_GETTER_PREFIX):
-            prop_name = method_name[len(DCLAY_GETTER_PREFIX) :]
-            ret_value = getattr(instance, DCLAY_PROPERTY_PREFIX + prop_name)
-            # FIXME: printing value can cause __str__ call (even if __repr__ is defined)
-            # FIXME: this function could be used during deserialization
-            # logger.debug("Getter: for property %s returned %r", prop_name, ret_value)
-            if not isinstance(ret_value, DataClayObject):
-                instance._is_dirty = True
-
-        elif method_name.startswith(DCLAY_SETTER_PREFIX):
-            prop_name = method_name[len(DCLAY_SETTER_PREFIX) :]
-            # FIXME: printing value can cause __str__ call (even if __repr__ is defined)
-            # FIXME: this function could be used during deserialization
-            # logger.debug("Setter: for property %s (value: %r)", prop_name, params[0])
-            setattr(instance, DCLAY_PROPERTY_PREFIX + prop_name, parameters[0])
-            ret_value = None
-            instance._is_dirty = True
-
-        else:
-            logger.debug("Call: %s", method_name)
-            dataclay_decorated_func = getattr(instance, method_name)
-            ret_value = dataclay_decorated_func._dclay_entrypoint(instance, *parameters)
-
-        if ret_value is not None:
-            return pickle.dumps(ret_value)
-
-        ### End copied code
-
-    # TODO: Deprecate it and use call_active_method
-    def ds_exec_impl(self, object_id, implementation_id, serialized_params_grpc_msg, session_id):
-        """Perform a Remote Execute Implementation.
-
-        See Java Implementation for details on parameters and purpose.
-        """
-        self.set_local_session(session_id)
-
-        instance = self.get_local_instance(object_id, True)
-        metaclass_container = instance.get_class_extradata().metaclass_container
-        operation = metaclass_container.get_operation(implementation_id)
-        logger.debug(f"--> Starting execution in {object_id} of operation {operation.name}")
-
-        num_params = serialized_params_grpc_msg.num_params
-        params = []
-        if num_params > 0:
-            params = DeserializationLibUtilsSingleton.deserialize_params(
-                serialized_params_grpc_msg,
-                None,
-                operation.params,
-                operation.paramsOrder,
-                self.runtime,
-            )
-        # TODO: check if any parameter is dataClay object and do not call __str__ in dClayObject could end up into a dead-lock
-        # logger.debug(f"Parameters are {params}")
-
-        ret_value = self.internal_exec_impl(operation.name, instance, params)
-        result = None
-        if ret_value is None:
-            logger.debug("Returning None")
-        else:
-            logger.debug(f"Serializing return {operation.returnType.signature}")
-            result = SerializationLibUtilsSingleton.serialize_params_or_return(
-                {0: ret_value}, None, {"0": operation.returnType}, ["0"], None, self.runtime, True
-            )  # No volatiles inside EEs
-
-        logger.debug(f"--> Finished execution in {object_id} of operation {operation.name}")
-        return result
+        if returned_value is not None:
+            return pickle.dumps(returned_value)
 
     def new_persistent_instance(self, payload):
         """Create, make persistent and return an instance for a certain class."""

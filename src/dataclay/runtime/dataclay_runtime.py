@@ -24,6 +24,10 @@ from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from grpc import RpcError
 from dataclay_common.metadata_service import MetadataService
 from dataclay_common.clients.metadata_service_client import MDSClient
+from dataclay.heap.ExecutionEnvironmentHeapManager import ExecutionEnvironmentHeapManager
+from dataclay.heap.ClientHeapManager import ClientHeapManager
+from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader
+from dataclay.loader.ClientObjectLoader import ClientObjectLoader
 
 
 class NULL_NAMESPACE:
@@ -36,7 +40,12 @@ logger = logging.getLogger(__name__)
 
 
 class DataClayRuntime(ABC):
-    def __init__(self, metadata_service, heap_manager, object_loader):
+    def __init__(
+        self,
+        metadata_service: MetadataService | MDSClient,
+        heap_manager: ExecutionEnvironmentHeapManager | ClientHeapManager,
+        object_loader: ExecutionObjectLoader | ClientObjectLoader,
+    ):
 
         # Cache of EE info
         self.ee_infos = dict()
@@ -59,7 +68,7 @@ class DataClayRuntime(ABC):
         # volatiles currently under deserialization
         self.volatiles_under_deserialization = dict()
 
-        self.metadata_service: MetadataService | MDSClient = metadata_service
+        self.metadata_service = metadata_service
         self.dataclay_heap_manager = heap_manager
         self.dataclay_object_loader = object_loader
 
@@ -487,7 +496,7 @@ class DataClayRuntime(ABC):
                 ret, None, operation.returnType, self
             )
 
-    def call_active_method(self, instance, method_name, parameters, exec_env_id):
+    def call_active_method(self, instance, method_name, parameters):
         import pickle
 
         serialized_params = pickle.dumps(parameters)
@@ -495,7 +504,7 @@ class DataClayRuntime(ABC):
         # self.volatile_parameters_being_send to avoid race conditon.
         # May be necessary a custom pickle.Pickler
 
-        ee_client = self.get_backend_client(exec_env_id)
+        ee_client = self.get_backend_client(instance._master_ee_id)
 
         returned_value = ee_client.call_active_method(
             self.session.id, instance._object_id, method_name, serialized_params
