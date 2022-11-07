@@ -604,6 +604,7 @@ class ExecutionEnvironment(object):
         return serialized_result
 
     def update_object(self, session_id, into_object_id, from_object):
+        raise ("update_object need to be refactored")
         """Updates an object with ID provided with contents from another object
 
         Args:

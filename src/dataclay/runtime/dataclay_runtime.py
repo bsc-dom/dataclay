@@ -504,9 +504,9 @@ class DataClayRuntime(ABC):
         # self.volatile_parameters_being_send to avoid race conditon.
         # May be necessary a custom pickle.Pickler
 
-        ee_client = self.get_backend_client(instance._master_ee_id)
+        backend_client = self.get_backend_client(instance._master_ee_id)
 
-        returned_value = ee_client.call_active_method(
+        returned_value = backend_client.call_active_method(
             self.session.id, instance._object_id, method_name, serialized_params
         )
         if returned_value:

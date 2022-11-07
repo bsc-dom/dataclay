@@ -91,6 +91,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         self._alias = (None,)
         self._dataset_name = get_runtime().session.dataset_name
         self._class = self.__class__
+        self._class_name = self.__class__.__module__ + "." + self.__class__.__name__
         self._is_persistent = False
         self._master_ee_id = (
             get_runtime().get_hint()
@@ -107,7 +108,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
 
         # TODO: get_class_extradata function is adding DynamicProperties to class
         # (not to instance!) so it is needed to be called. Please, use a better function for that.
-        self.get_class_extradata()
+        # self.get_class_extradata()
 
         # Add instance to heap
         get_runtime().add_to_heap(self)
@@ -148,216 +149,6 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             self._is_pending_to_register = True
             # self._master_ee_id = get_runtime().get_hint()
 
-    @classmethod
-    def get_class_extradata(cls):
-        classname = cls.__name__
-        module_name = cls.__module__
-        full_name = module_name + "." + classname
-
-        # Check if class extradata is in cache.
-        if get_runtime().is_client():
-            dc_ced = class_extradata_cache_client.get(full_name)
-        else:
-            dc_ced = class_extradata_cache_exec_env.get(full_name)
-
-        if dc_ced is not None:
-            logger.debug("Found class %s extradata in cache" % full_name)
-            return dc_ced
-
-        logger.verbose("Proceeding to prepare the class `%s` from the ExecutionGateway", full_name)
-        logger.debug(
-            "The Runtime Type is: %s",
-            "client" if get_runtime().is_client() else "not client",
-        )
-
-        dc_ced = DataClayClassExtraData(
-            full_name=full_name,
-            classname=classname,
-            namespace=module_name.split(".", 1)[0],
-            properties=dict(),
-            imports=list(),
-        )
-
-        if get_runtime().is_client():
-            class_stubinfo = None
-
-            try:
-                all_classes = load_babel_data()
-
-                for c in all_classes:
-                    if "%s.%s" % (c.namespace, c.className) == full_name:
-                        class_stubinfo = c
-                        break
-            except ImproperlyConfigured:
-                pass
-
-            if class_stubinfo is None:
-                # Either ImproperlyConfigured (not initialized) or class not found:
-                # assuming non-registered class
-
-                # Let's navigate all the heritance, and aggregate all the information that can be found.
-                # FIXME: This code is NOT considering the scenario in which a class is extending an already registered one.
-                # FIXME: Behaviour when an attribute is defined in more than one class is not tested nor defined right now.
-                for current_cls in inspect.getmro(cls):
-                    # Ignore `object` and also ignore DataClayObject itself
-                    if current_cls in [object, DataClayObject]:
-                        continue
-
-                    # Prepare properties from the docstring
-                    doc = current_cls.__doc__  # If no documentation, consider an empty string
-                    if doc is None:
-                        doc = ""
-                    property_pos = 0
-
-                    for m in re_property.finditer(doc):
-                        # declaration in the form [ 'before|after', 'method', 'before|after', 'method', 'name', 'type' ]
-                        declaration = m.groups()
-                        prop_name = declaration[-2]
-                        prop_type = declaration[-1]
-
-                        beforeUpdate = (
-                            declaration[1]
-                            if declaration[0] == "before"
-                            else declaration[3]
-                            if declaration[2] == "before"
-                            else None
-                        )
-
-                        afterUpdate = (
-                            declaration[1]
-                            if declaration[0] == "after"
-                            else declaration[3]
-                            if declaration[2] == "after"
-                            else None
-                        )
-
-                        inMaster = declaration[4] == "True"
-
-                        current_type = Type.build_from_docstring(prop_type)
-
-                        logger.trace(
-                            "Property `%s` (with type signature `%s`) ready to go",
-                            prop_name,
-                            current_type.signature,
-                        )
-
-                        dc_ced.properties[prop_name] = PreprocessedProperty(
-                            name=prop_name,
-                            position=property_pos,
-                            type=current_type,
-                            beforeUpdate=beforeUpdate,
-                            afterUpdate=afterUpdate,
-                            inMaster=inMaster,
-                        )
-
-                        # Keep the position tracking (required for other languages compatibility)
-                        property_pos += 1
-
-                        # Prepare the `property` magic --this one without getter and setter ids
-                        # dct[prop_name] = DynamicProperty(prop_name)
-                        setattr(cls, prop_name, DynamicProperty(prop_name))
-                        # WARNING: This is done in `cls` and not in `current_cls` deliberately.
-
-                    for m in re_import.finditer(doc):
-                        gd = m.groupdict()
-
-                        if gd["from_mode"]:
-                            import_str = "from %s\n" % gd["import"]
-                        else:
-                            import_str = "import %s\n" % gd["import"]
-
-                        dc_ced.imports.append(import_str)
-
-            else:
-                logger.debug("Loading a class with babel_data information")
-
-                dc_ced.class_id = class_stubinfo.classID
-                dc_ced.stub_info = class_stubinfo
-
-                # WIP WORK IN PROGRESS (because all that is for the ancient StubInfo, not the new one)
-
-                # Prepare the `property` magic --in addition to prepare the properties dictionary too
-                for i, prop_name in enumerate(dc_ced.stub_info.propertyListWithNulls):
-
-                    if prop_name is None:
-                        continue
-
-                    prop_info = class_stubinfo.properties[prop_name]
-                    if prop_info.beforeUpdate is not None or prop_info.afterUpdate is not None:
-                        setattr(
-                            cls,
-                            prop_name,
-                            ReplicatedDynamicProperty(
-                                prop_name,
-                                prop_info.beforeUpdate,
-                                prop_info.afterUpdate,
-                                prop_info.inMaster,
-                            ),
-                        )
-
-                    else:
-                        # dct[prop_name] = DynamicProperty(prop_name)
-                        setattr(cls, prop_name, DynamicProperty(prop_name))
-
-                    dc_ced.properties[prop_name] = PreprocessedProperty(
-                        name=prop_name,
-                        position=i,
-                        type=prop_info.propertyType,
-                        beforeUpdate=prop_info.beforeUpdate,
-                        afterUpdate=prop_info.afterUpdate,
-                        inMaster=prop_info.inMaster,
-                    )
-
-        elif get_runtime().is_exec_env():
-            logger.verbose(
-                "Seems that we are a DataService, proceeding to load class %s", dc_ced.full_name
-            )
-            namespace_in_classname, dclay_classname = dc_ced.full_name.split(".", 1)
-            if namespace_in_classname != dc_ced.namespace:
-                raise DataClayException(
-                    "Namespace in ClassName: %s is different from one in ClassExtraData: %s",
-                    namespace_in_classname,
-                    dc_ced.namespace,
-                )
-            mc = load_metaclass(dc_ced.namespace, dclay_classname)
-            dc_ced.metaclass_container = mc
-            dc_ced.class_id = mc.dataClayID
-
-            # Prepare the `property` magic --in addition to prepare the properties dictionary too
-            for prop_info in dc_ced.metaclass_container.properties:
-                if prop_info.beforeUpdate is not None or prop_info.afterUpdate is not None:
-                    setattr(
-                        cls,
-                        prop_info.name,
-                        ReplicatedDynamicProperty(
-                            prop_info.name,
-                            prop_info.beforeUpdate,
-                            prop_info.afterUpdate,
-                            prop_info.inMaster,
-                        ),
-                    )
-                else:
-                    setattr(cls, prop_info.name, DynamicProperty(prop_info.name))
-
-                dc_ced.properties[prop_info.name] = PreprocessedProperty(
-                    name=prop_info.name,
-                    position=prop_info.position,
-                    type=prop_info.type,
-                    beforeUpdate=prop_info.beforeUpdate,
-                    afterUpdate=prop_info.afterUpdate,
-                    inMaster=prop_info.inMaster,
-                )
-        else:
-            raise RuntimeError(f"Could not recognize Runtime Type {type(get_runtime()).__name__}")
-
-        # Update class extradata cache.
-        if get_runtime().is_client():
-            class_extradata_cache_client[full_name] = dc_ced
-        else:
-            class_extradata_cache_exec_env[full_name] = dc_ced
-
-        return dc_ced
-
     def new_replica(self, backend_id=None, recursive=True):
         return get_runtime().new_replica(
             self._object_id, self._master_ee_id, backend_id, None, recursive
@@ -367,7 +158,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         return get_runtime().new_version(
             self._object_id,
             self._master_ee_id,
-            self.get_class_id(),
+            self._class_name,
             self._dataset_name,
             backend_id,
             None,
@@ -426,6 +217,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         get_runtime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
     def set_all(self, from_object):
+        raise ("set_all need to be refactored")
         properties = sorted(
             self.get_class_extradata().properties.values(), key=attrgetter("position")
         )
@@ -455,7 +247,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             return "%s:%s:%s" % (
                 self._object_id,
                 hint,
-                self.get_class_extradata().class_id,
+                None,  # self.get_class_extradata().class_id, TODO: Use class_name
             )
         else:
             return None
@@ -485,7 +277,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
             self._object_id,
             self._alias,
             self._dataset_name,
-            self.get_class_id(),
+            self._class_name,
             self._master_ee_id,
             self._replica_ee_ids,
             LANG_PYTHON,
@@ -563,10 +355,6 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         if replica_locations is not None:
             replica_locations.clear()
 
-    # Deprecated
-    def get_class_id(self):
-        return self.get_class_extradata().class_id
-
     ##############
     # Federation #
     ##############
@@ -609,6 +397,7 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         pending_objs,
         reference_counting,
     ):
+        raise
         # Reference counting information
         # First integer represent the position in the buffer in which
         # reference counting starts. This is done to avoid "holding"
@@ -716,6 +505,8 @@ class DataClayObject(object, metaclass=ExecutionGateway):
         # else:
         #     self.__dclay_instance_extradata.loaded_flag = True
 
+        raise
+
         """ reference counting """
         """ discard padding """
         IntegerWrapper().read(io_file)
@@ -801,23 +592,20 @@ class DataClayObject(object, metaclass=ExecutionGateway):
 
         return _get_object_by_id_helper, (
             self._object_id,
-            self.get_class_extradata().class_id,
+            self._class_name,  # self.get_class_extradata().class_id,
             self._master_ee_id,
         )
 
     def __repr__(self):
-        dcc_extradata = self.get_class_extradata()
 
         if self._is_persistent:
-            return "<%s (ClassID=%s) instance with ObjectID=%s>" % (
-                dcc_extradata.classname,
-                dcc_extradata.class_id,
+            return "<%s instance with ObjectID=%s>" % (
+                self._class_name,
                 self._object_id,
             )
         else:
-            return "<%s (ClassID=%s) volatile instance with ObjectID=%s>" % (
-                dcc_extradata.classname,
-                dcc_extradata.class_id,
+            return "<%s volatile instance with ObjectID=%s>" % (
+                self._class_name,
                 self._object_id,
             )
 

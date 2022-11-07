@@ -255,11 +255,11 @@ def init():
         #     sleep(2)
 
         # In all cases, track (done through babelstubs YAML file)
-        contracts = track_local_available_classes()
-        if not contracts:
-            logger.warning(
-                "No contracts available. Calling new_session, but no classes will be available"
-            )
+        # contracts = track_local_available_classes()
+        # if not contracts:
+        #     logger.warning(
+        #         "No contracts available. Calling new_session, but no classes will be available"
+        #     )
 
         # Ensure stubs are in the path (high "priority")
         sys.path.insert(0, os.path.join(settings.STUBS_PATH, "sources"))
