@@ -7,7 +7,7 @@ Created on 1 feb. 2018
 """
 import importlib
 
-from dataclay.runtime.ExecutionGateway import ExecutionGateway
+from dataclay import DataClayObject
 from dataclay.loader.DataClayObjectLoader import DataClayObjectLoader
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 
@@ -45,9 +45,7 @@ class ClientObjectLoader(DataClayObjectLoader):
         m = importlib.import_module(package_name)
         klass = getattr(m, class_name)
 
-        return ExecutionGateway.new_dataclay_instance(
-            klass, deserializing=True, object_id=object_id
-        )
+        return DataClayObject.new_dataclay_instance(klass, deserializing=True, object_id=object_id)
 
     def get_or_new_volatile_instance_and_load(
         self, class_id, object_id, hint, obj_with_data, ifacebitmaps

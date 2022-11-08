@@ -187,8 +187,8 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
         else:
             logger.debug("Call: %s", method_name)
-            dataclay_decorated_func = getattr(instance, method_name)
-            ret_value = dataclay_decorated_func._dclay_entrypoint(instance, *parameters)
+            method = getattr(instance, method_name)
+            ret_value = method(*parameters)
 
         return ret_value
 

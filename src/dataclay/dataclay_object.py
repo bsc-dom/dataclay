@@ -73,12 +73,26 @@ def _get_object_by_id_helper(object_id, class_id, hint):
     return get_runtime().get_object_by_id(object_id, class_id, hint)
 
 
-class DataClayObject(object, metaclass=ExecutionGateway):
+class DataClayObject:
     """Main class for Persistent Objects.
 
     Objects that has to be made persistent should derive this class (either
     directly, through the StorageObject alias, or through a derived class).
     """
+
+    @classmethod
+    def new_dataclay_instance(cls, deserializing: bool, object_id: uuid.UUID = None):
+        """Return a new instance, without calling to the class methods."""
+        logger.debug("New dataClay instance (without __call__) of class `%s`", cls.__name__)
+        obj = super().__new__(cls)  # this defers the __call__ method
+        obj.initialize_object(deserializing=deserializing, object_id=object_id)
+        return obj
+
+    def __new__(cls, *args, **kwargs):
+        logger.debug(f"Crated new dataclay object with args={args}, kwargs={kwargs}")
+        obj = super().__new__(cls)
+        obj.initialize_object()
+        return obj
 
     def initialize_object(self, deserializing=False, object_id: uuid.UUID = None):
         """Initializes the object"""
