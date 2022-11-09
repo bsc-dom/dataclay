@@ -85,7 +85,7 @@ def activemethod(func):
             ):
                 return func(self, *args, **kwargs)
             else:
-                return get_runtime().call_active_method(self, func.__name__, args)
+                return get_runtime().call_active_method(self, func.__name__, args, kwargs)
         except Exception:
             traceback.print_exc()
             raise

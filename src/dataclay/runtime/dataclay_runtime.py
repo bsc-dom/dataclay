@@ -496,10 +496,11 @@ class DataClayRuntime(ABC):
                 ret, None, operation.returnType, self
             )
 
-    def call_active_method(self, instance, method_name, parameters: tuple):
+    def call_active_method(self, instance, method_name, args: tuple, kwargs: dict):
         import pickle
 
-        serialized_params = pickle.dumps(parameters)
+        serialized_args = pickle.dumps(args)
+        serialized_kwargs = pickle.dumps(kwargs)
         # TODO: Add serialized volatile objects to
         # self.volatile_parameters_being_send to avoid race conditon.
         # May be necessary a custom pickle.Pickler
@@ -507,7 +508,7 @@ class DataClayRuntime(ABC):
         backend_client = self.get_backend_client(instance._master_ee_id)
 
         returned_value = backend_client.call_active_method(
-            self.session.id, instance._object_id, method_name, serialized_params
+            self.session.id, instance._object_id, method_name, serialized_args, serialized_kwargs
         )
         if returned_value:
             unserialized_response = pickle.loads(returned_value)

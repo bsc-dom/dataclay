@@ -443,13 +443,14 @@ class ExecutionEnvironment(object):
             raise e
         logger.debug("<--- Finished notification of unfederation")
 
-    def call_active_method(self, session_id, object_id, method_name, parameters):
+    def call_active_method(self, session_id, object_id, method_name, args, kwargs):
         self.set_local_session(session_id)
 
         instance = self.get_local_instance(object_id, True)
-        parameters = pickle.loads(parameters)
+        args = pickle.loads(args)
+        kwargs = pickle.loads(kwargs)
 
-        returned_value = self.runtime.call_active_method(instance, method_name, parameters)
+        returned_value = self.runtime.call_active_method(instance, method_name, args, kwargs)
 
         if returned_value is not None:
             return pickle.dumps(returned_value)

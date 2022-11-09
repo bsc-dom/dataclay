@@ -48,11 +48,8 @@ class DataclayProperty:
                 raise e
         else:
             return get_runtime().call_active_method(
-                instance, "__getattribute__", (self.property_name,)
+                instance, "__getattribute__", (self.property_name,), {}
             )
-            # return get_runtime().call_active_method(
-            #     instance, DCLAY_GETTER_PREFIX + self.property_name, ()
-            # )
 
     def __set__(self, instance, value):
         """Setter for the dataClay property
@@ -69,7 +66,9 @@ class DataclayProperty:
             if is_exec_env:
                 instance._is_dirty = True
         else:
-            get_runtime().call_active_method(instance, "__setattr__", (self.property_name, value))
+            get_runtime().call_active_method(
+                instance, "__setattr__", (self.property_name, value), {}
+            )
 
 
 # class ReplicatedDynamicProperty(DynamicProperty):

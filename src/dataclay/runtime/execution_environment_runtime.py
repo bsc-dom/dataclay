@@ -147,7 +147,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
         return instance._master_ee_id
 
-    def call_active_method(self, instance, method_name, parameters):
+    def call_active_method(self, instance, method_name, args: tuple, kwargs: dict):
         """This method overrides parents method.
         Use to check if the instance belongs to this execution environment
         Replaces execute_implementation_aux
@@ -161,10 +161,10 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             fat_instance = self.get_or_new_instance_from_db(instance._object_id, True)
             assert instance is fat_instance
             # TODO: Should i set _is_dirty always or only for getter and setter??
-            return getattr(instance, method_name)(*parameters)
+            return getattr(instance, method_name)(*args, **kwargs)
         else:
             logger.debug("Object is not local")
-            return super().call_active_method(instance, method_name, parameters)
+            return super().call_active_method(instance, method_name, args, kwargs)
 
     #########################################
     # Helper functions, not commonruntime methods #

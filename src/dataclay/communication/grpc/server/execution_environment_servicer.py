@@ -214,7 +214,8 @@ class DataServiceEE(ds.DataServiceServicer):
                 UUID(request.session_id),
                 UUID(request.object_id),
                 request.method_name,
-                request.parameters,
+                request.args,
+                request.kwargs,
             )
         except Exception as e:
             context.set_details(str(e))
