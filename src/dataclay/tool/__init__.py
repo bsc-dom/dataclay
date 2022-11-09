@@ -18,7 +18,6 @@ from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from jinja2 import Template
 
 from dataclay.api import finish, init_connection
-from dataclay.runtime.ExecutionGateway import ExecutionGateway
 from dataclay.runtime import get_runtime
 from dataclay.util.StubUtils import deploy_stubs, prepare_storage
 from dataclay.util.tools.python.PythonMetaClassFactory import MetaClassFactory
@@ -301,8 +300,8 @@ contribcontract: !!es.bsc.dataclay.util.management.contractmgr.Contract
         for thing_name in dir(module):
             thing = getattr(module, thing_name)
 
-            if not isinstance(thing, ExecutionGateway):
-                continue
+            # if not isinstance(thing, ExecutionGateway):
+            #     continue
 
             # Thing seems to be a DataClayObject class
             if thing.__module__ != module_name:

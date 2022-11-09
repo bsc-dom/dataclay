@@ -12,31 +12,6 @@ __copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
 
 logger = logging.getLogger(__name__)
 
-import functools
-
-
-def activemethod(func):
-    @functools.wraps(func)
-    def wrapper_activemethod(self, *args, **kwargs):
-        logger.verbose(f"Calling function {func.__name__}")
-        try:
-            # If the object is not persistent executes the method locally,
-            # else, executes the method within the execution environment
-            if (
-                (get_runtime().is_exec_env() and self._is_loaded)
-                or (get_runtime().is_client() and not self._is_persistent)
-                or func.__name__ == "__setstate__"
-                or func.__name__ == "__getstate__"
-            ):
-                return func(self, *args, **kwargs)
-            else:
-                return get_runtime().call_active_method(self, func.__name__, args)
-        except Exception:
-            traceback.print_exc()
-            raise
-
-    return wrapper_activemethod
-
 
 def _dclayMethod(f, self, *args, **kwargs):
     """Helper function for DataClayObject method decoration"""

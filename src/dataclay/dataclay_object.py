@@ -10,6 +10,7 @@ related to classes and function call parameters.
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
 
+import functools
 import inspect
 import logging
 import pickle
@@ -26,17 +27,11 @@ from dataclay.DataClayObjectExtraData import DataClayClassExtraData, DataClayIns
 from dataclay.DataClayObjMethods import dclayMethod
 from dataclay.DataClayObjProperties import (
     DCLAY_PROPERTY_PREFIX,
-    DynamicProperty,
+    DataclayProperty,
     PreprocessedProperty,
-    ReplicatedDynamicProperty,
 )
 from dataclay.exceptions.exceptions import DataClayException, ImproperlyConfigured
 from dataclay.runtime import get_runtime
-from dataclay.runtime.ExecutionGateway import (
-    ExecutionGateway,
-    class_extradata_cache_client,
-    class_extradata_cache_exec_env,
-)
 from dataclay.serialization.lib.DeserializationLibUtils import (
     DeserializationLibUtilsSingleton,
     PersistentLoadPicklerHelper,
@@ -73,12 +68,70 @@ def _get_object_by_id_helper(object_id, class_id, hint):
     return get_runtime().get_object_by_id(object_id, class_id, hint)
 
 
+def activemethod(func):
+    """Decorator for DataClayObject active methods"""
+
+    @functools.wraps(func)
+    def wrapper_activemethod(self, *args, **kwargs):
+        logger.verbose(f"Calling function {func.__name__}")
+        try:
+            # If the object is not persistent executes the method locally,
+            # else, executes the method within the execution environment
+            if (
+                (get_runtime().is_exec_env() and self._is_loaded)
+                or (get_runtime().is_client() and not self._is_persistent)
+                or func.__name__ == "__setstate__"  # For Pickle
+                or func.__name__ == "__getstate__"  # For Pickle
+            ):
+                return func(self, *args, **kwargs)
+            else:
+                return get_runtime().call_active_method(self, func.__name__, args)
+        except Exception:
+            traceback.print_exc()
+            raise
+
+    wrapper_activemethod.is_activemethod = True
+    return wrapper_activemethod
+
+
 class DataClayObject:
     """Main class for Persistent Objects.
 
     Objects that has to be made persistent should derive this class (either
     directly, through the StorageObject alias, or through a derived class).
     """
+
+    _object_id: uuid.UUID
+    _alias: str
+    _dataset_name: str
+    _class: type
+    _class_name: str
+    _is_persistent: bool
+    _master_ee_id: uuid.UUID
+    _replica_ee_ids: list[uuid.UUID]
+    _language: int
+    _is_read_only: bool
+    _is_dirty: bool
+    _is_pending_to_register: bool
+    _is_loaded: bool
+    _owner_session_id: uuid.UUID
+
+    def __init_subclass__(cls) -> None:
+        for property_name in cls.__annotations__:
+            print("****^*^*^*^", property_name)
+            setattr(cls, property_name, DataclayProperty(property_name))
+
+    # def __getattribute__(self, name):
+    #     res = super().__getattribute__(name)
+    #     if name in {**DataClayObject.__annotations__, **DataClayObject.__dict__}:
+    #         print(f"Base attribute {name}")
+    #         return res
+
+    #     if getattr(res, "is_activemethod", False):
+    #         print(f"activemethod")
+    #         return res
+
+    #     print("*^*^*^*^*^ is child attribute!!!!!!!")
 
     @classmethod
     def new_dataclay_instance(cls, deserializing: bool, object_id: uuid.UUID = None):

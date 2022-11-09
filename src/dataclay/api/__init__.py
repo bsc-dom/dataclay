@@ -417,15 +417,7 @@ def finish():
         clean_babel_data()
         sys.path.remove(os.path.join(settings.STUBS_PATH, "sources"))
         # unload caches of stubs
-        from dataclay.runtime.ExecutionGateway import (
-            class_extradata_cache_client,
-            class_extradata_cache_exec_env,
-            loaded_classes,
-        )
 
-        loaded_classes.clear()
-        class_extradata_cache_exec_env.clear()
-        class_extradata_cache_client.clear()
         # unload settings
         unload_settings()
         _initialized = False

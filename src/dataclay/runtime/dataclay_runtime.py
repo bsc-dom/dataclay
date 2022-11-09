@@ -496,7 +496,7 @@ class DataClayRuntime(ABC):
                 ret, None, operation.returnType, self
             )
 
-    def call_active_method(self, instance, method_name, parameters):
+    def call_active_method(self, instance, method_name, parameters: tuple):
         import pickle
 
         serialized_params = pickle.dumps(parameters)

@@ -5,7 +5,6 @@ import traceback
 from importlib import import_module
 
 from dataclay import DataClayObject
-from dataclay.runtime.ExecutionGateway import loaded_classes
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.util.management.classmgr.UserType import UserType
 
@@ -50,7 +49,7 @@ class MetaClassFactory(object):
 
         :param import_str: A string that can be used as parameter to import_module.
         """
-        loaded_classes.clear()
+        # loaded_classes.clear()
 
         try:
             import_module(import_str)
@@ -58,13 +57,13 @@ class MetaClassFactory(object):
             traceback.print_exc()
             logger.warning("Tried to import `%s` and failed, ignoring", import_str)
             logger.warning("Error: %s", e)
-        else:
-            for k in loaded_classes:
-                if k.__module__.startswith("dataclay"):
-                    # dataClay contrib classes should not be registered here
-                    continue
-                else:
-                    self.add_class(k)
+        # else:
+        #     for k in loaded_classes:
+        #         if k.__module__.startswith("dataclay"):
+        #             # dataClay contrib classes should not be registered here
+        #             continue
+        #         else:
+        #             self.add_class(k)
 
     def add_class(self, klass):
         """Add a class to this factory, from the class' Python object.

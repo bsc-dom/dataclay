@@ -147,51 +147,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
         return instance._master_ee_id
 
-    def internal_exec_impl(self, instance, method_name, parameters):
-        """Internal (network-agnostic) execute implementation behaviour.
-
-        Args:
-            instance: The object in which execution will be performed.
-            method_name: Name of the implementation (may also be some dataClay specific $$get)
-            parameters: The parameters (args)
-
-        Returns:
-            The return value of the function being executed.
-        """
-
-        """
-        TODO: use better design for this (dgasull)
-        It is possible that a property is set to None by the GC before we 'execute' it. It should be solve by always
-        checking if loaded before returning value. Check race conditions with GC.
-        """
-        if not instance._is_loaded:
-            self.runtime.load_object_from_db(instance, True)
-
-        if method_name.startswith(DCLAY_GETTER_PREFIX):
-            prop_name = method_name[len(DCLAY_GETTER_PREFIX) :]
-            ret_value = getattr(instance, DCLAY_PROPERTY_PREFIX + prop_name)
-            # FIXME: printing value can cause __str__ call (even if __repr__ is defined)
-            # FIXME: this function could be used during deserialization
-            # logger.debug("Getter: for property %s returned %r", prop_name, ret_value)
-            if not isinstance(ret_value, DataClayObject):
-                instance._is_dirty = True
-
-        elif method_name.startswith(DCLAY_SETTER_PREFIX):
-            prop_name = method_name[len(DCLAY_SETTER_PREFIX) :]
-            # FIXME: printing value can cause __str__ call (even if __repr__ is defined)
-            # FIXME: this function could be used during deserialization
-            # logger.debug("Setter: for property %s (value: %r)", prop_name, parameters[0])
-            setattr(instance, DCLAY_PROPERTY_PREFIX + prop_name, parameters[0])
-            ret_value = None
-            instance._is_dirty = True
-
-        else:
-            logger.debug("Call: %s", method_name)
-            method = getattr(instance, method_name)
-            ret_value = method(*parameters)
-
-        return ret_value
-
     def call_active_method(self, instance, method_name, parameters):
         """This method overrides parents method.
         Use to check if the instance belongs to this execution environment
@@ -205,7 +160,8 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             # get_local_instance should indeed modify the same instance instance,
             fat_instance = self.get_or_new_instance_from_db(instance._object_id, True)
             assert instance is fat_instance
-            return self.internal_exec_impl(instance, method_name, parameters)
+            # TODO: Should i set _is_dirty always or only for getter and setter??
+            return getattr(instance, method_name)(*parameters)
         else:
             logger.debug("Object is not local")
             return super().call_active_method(instance, method_name, parameters)
