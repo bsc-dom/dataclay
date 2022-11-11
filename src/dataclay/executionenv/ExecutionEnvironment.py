@@ -142,9 +142,9 @@ class ExecutionEnvironment(object):
         logger.info(f"Getting MetaData for object {object_id}")
 
         try:
-            instance = self.runtime.get_from_heap(object_id)
+            instance = self.runtime.heap_manager[object_id]
             return instance.metadata
-        except Exception:
+        except KeyError:
             return self.runtime.metadata_service.get_object_md_by_id(object_id)
 
     def get_local_instance(self, object_id, retry=True):
@@ -246,30 +246,25 @@ class ExecutionEnvironment(object):
         # Deserialize __dict__
         dict = pickle.loads(serialized_dict)
 
-        # Instantiate new object
-        instance = dict["_class"].__new__(dict["_class"])
-        instance.__dict__.update(dict)
-
-        # Update object extradata
-        instance._is_loaded = True
-        instance._is_persistent = True  # Need??
-
+        # NOTE: In case of circular dependencies, it is possible that
+        # the volatile object is stored in the heap as a persistent object.
+        # In this case we must update the persistent instance already stored.
+        # TODO: Remove the try when the new make_persistent is implemented.
+        # This new_make_persistent should send all the objects (even with circular dependencies)
+        # in one call to the EE
         try:
-            self.runtime.dataclay_heap_manager.inmemory_objects[
-                instance._object_id
-            ].__dict__.update(dict)
+            instance = self.runtime.heap_manager[dict["_object_id"]]
+            instance.__dict__.update(dict)
+            instance._is_persistent = True  # All objects in the EE are persistent
+            instance._is_loaded = True
+            instance._is_pending_to_register = True
+            instance._master_ee_id = self.runtime.get_hint()  # It should be already defined
         except KeyError:
-            # self.runtime.dataclay_heap_manager.inmemory_objects[instance._object_id] = instance
-            self.runtime.add_to_heap(instance)
+            instance = dict["_class"].new_volatile(**dict)
 
         print("\n*** unpickled_obj:", type(instance))
         print("*** unpickled_obj:", instance._object_id)
         print("*** unpickled_obj:", instance.__dict__, end="\n\n")
-
-        # NOTE: When make persistent, the object should not be already persisted.
-        # assert self.runtime.get_from_heap(instance._object_id) is None
-
-        # volatile_obj.initialize_object_as_volatile()
 
         self.runtime.metadata_service.register_object(instance.metadata)
 
@@ -1216,12 +1211,9 @@ class ExecutionEnvironment(object):
         # can tell if the object actually exists
         # summary: the object only exist in EE if it is loaded.
         try:
-            in_heap = self.runtime.exists(object_id)
-            if in_heap:
-                obj = self.runtime.get_from_heap(object_id)
-                return obj._is_loaded
-            else:
-                return False
+            return self.runtime.heap_manager[object_id]._is_loaded
+        except KeyError:
+            return False
         finally:
             self.runtime.unlock(object_id)
 

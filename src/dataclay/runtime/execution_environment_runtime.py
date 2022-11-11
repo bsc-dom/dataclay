@@ -38,9 +38,9 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         # Initialize parent
         metadata_service = MetadataService(etcd_host, etcd_port)
         dataclay_object_loader = ExecutionObjectLoader(self)
-        dataclay_heap_manager = ExecutionEnvironmentHeapManager(self)
+        heap_manager = ExecutionEnvironmentHeapManager(self)
 
-        super().__init__(metadata_service, dataclay_heap_manager, dataclay_object_loader)
+        super().__init__(metadata_service, heap_manager, dataclay_object_loader)
 
         # References hold by sessions. Resource note: Maximum size of this map is maximum number of objects allowed in EE x sessions.
         # Also, important to think what happens if one single session is associated to two client threads? use case?
@@ -97,7 +97,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         """
         @postcondition: Flush all objects in memory to disk.
         """
-        self.dataclay_heap_manager.flush_all()
+        self.heap_manager.flush_all()
 
     def store_object(self, instance):
         if not instance._is_persistent:
@@ -367,7 +367,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         retained_refs = set()
 
         """ memory references """
-        for oid in self.dataclay_heap_manager.get_object_ids_retained():
+        for oid in self.heap_manager.get_object_ids_retained():
             retained_refs.add(oid)
         logger.debug("[==GC==] Session refs: %s" % str(len(self.references_hold_by_sessions)))
         logger.debug(

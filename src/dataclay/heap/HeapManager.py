@@ -87,13 +87,10 @@ class HeapManager(threading.Thread, ABC):
         Returns:
             Object with id provided in heap or None if not found.
         """
-        try:
-            obj = self.inmemory_objects[object_id]
-            logger.debug("Hit in Heap object %s" % str(object_id))
-            return obj
-        except KeyError:
-            logger.debug("Miss in Heap object %s" % str(object_id))
-            return None
+        return self.inmemory_objects[object_id]
+
+    def __getitem__(self, object_id):
+        return self.inmemory_objects[object_id]
 
     def exists_in_heap(self, object_id):
         return object_id in self.inmemory_objects

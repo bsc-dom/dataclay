@@ -1,13 +1,24 @@
 """ Class description goes here. """
-from builtins import Exception
+import importlib
 import logging
 import uuid
-from uuid import UUID
 from abc import ABC, abstractmethod
+from builtins import Exception
+from uuid import UUID
+
 import grpc
+from dataclay_common.clients.execution_environment_client import EEClient
+from dataclay_common.clients.metadata_service_client import MDSClient
+from dataclay_common.metadata_service import MetadataService
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
+from grpc import RpcError
 
 from dataclay.exceptions.exceptions import DataClayException
+from dataclay.heap.ClientHeapManager import ClientHeapManager
+from dataclay.heap.ExecutionEnvironmentHeapManager import ExecutionEnvironmentHeapManager
 from dataclay.heap.LockerPool import LockerPool
+from dataclay.loader.ClientObjectLoader import ClientObjectLoader
+from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader
 from dataclay.paraver import (
     extrae_tracing_is_enabled,
     finish_tracing,
@@ -19,15 +30,7 @@ from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLi
 from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
-from dataclay_common.clients.execution_environment_client import EEClient
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from grpc import RpcError
-from dataclay_common.metadata_service import MetadataService
-from dataclay_common.clients.metadata_service_client import MDSClient
-from dataclay.heap.ExecutionEnvironmentHeapManager import ExecutionEnvironmentHeapManager
-from dataclay.heap.ClientHeapManager import ClientHeapManager
-from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader
-from dataclay.loader.ClientObjectLoader import ClientObjectLoader
+from dataclay.dataclay_object import DataClayObject
 
 
 class NULL_NAMESPACE:
@@ -69,10 +72,10 @@ class DataClayRuntime(ABC):
         self.volatiles_under_deserialization = dict()
 
         self.metadata_service = metadata_service
-        self.dataclay_heap_manager = heap_manager
+        self.heap_manager = heap_manager
         self.dataclay_object_loader = object_loader
 
-        self.dataclay_heap_manager.start()
+        self.heap_manager.start()
 
     ##############
     # Properties #
@@ -104,18 +107,18 @@ class DataClayRuntime(ABC):
 
     def get_from_heap(self, object_id):
         """Get from heap the object instance by the it"""
-        return self.dataclay_heap_manager.get_from_heap(object_id)
+        return self.heap_manager[object_id]
 
     def add_to_heap(self, instance):
         """Adds object instance to dataClay's heap"""
-        self.dataclay_heap_manager.add_to_heap(instance)
+        self.heap_manager.add_to_heap(instance)
 
     def update_object_id(self, instance, new_object_id):
         """Update the object id in both DataClayObject and HeapManager"""
         old_object_id = instance._object_id
         instance._object_id = new_object_id
-        self.dataclay_heap_manager.remove_from_heap(old_object_id)
-        self.dataclay_heap_manager._add_to_inmemory_map(instance)
+        self.heap_manager.remove_from_heap(old_object_id)
+        self.heap_manager._add_to_inmemory_map(instance)
 
     def remove_from_heap(self, object_id):
         """Remove reference from Heap.
@@ -123,36 +126,20 @@ class DataClayRuntime(ABC):
         Even if we remove it from the heap, the object won't be Garbage collected
         till HeapManager flushes the object and releases it.
         """
-        self.dataclay_heap_manager.remove_from_heap(object_id)
+        self.heap_manager.remove_from_heap(object_id)
 
     def exists(self, object_id):
-        return self.dataclay_heap_manager.exists_in_heap(object_id)
+        return self.heap_manager.exists_in_heap(object_id)
 
     def heap_size(self):
-        return self.dataclay_heap_manager.heap_size()
+        return self.heap_manager.heap_size()
 
     def count_loaded_objs(self):
-        return self.dataclay_heap_manager.count_loaded_objs()
+        return self.heap_manager.count_loaded_objs()
 
     #############
     # Volatiles #
     #############
-
-    def get_or_new_volatile_instance_and_load(
-        self, object_id, class_id, hint, obj_with_data, ifacebitmaps
-    ):
-        """Get from Heap or create a new volatile in EE and load data on it.
-
-        Args:
-            object_id: ID of object to get or create
-            class_id: ID of class of the object (needed for creating it)
-            hint: Hint of the object, can be None.
-            obj_with_data: data of the volatile instance
-            ifacebitmaps: interface bitmaps
-        """
-        return self.dataclay_object_loader.get_or_new_volatile_instance_and_load(
-            class_id, object_id, hint, obj_with_data, ifacebitmaps
-        )
 
     def add_volatiles_under_deserialization(self, volatiles):
         """Add volatiles provided to be 'under deserialization' in case any execution
@@ -172,23 +159,6 @@ class DataClayRuntime(ABC):
         for vol_obj in volatiles:
             if vol_obj.object_id in self.volatiles_under_deserialization:
                 del self.volatiles_under_deserialization[vol_obj.object_id]
-
-    def get_or_new_persistent_instance(self, object_id, class_id, hint):
-        """Check if object with ID provided exists in dataClay heap.
-        If so, return it. Otherwise, create it.
-
-        Args:
-            object_id: ID of object to get or create
-            class_id: ID of class of the object (needed for creating it)
-            hint: Hint of the object, can be None.
-        Returns:
-            DataClayObject instance with of the id provided
-        """
-        if class_id is None:
-            object_md = self.metadata_service.get_object_md_by_id(object_id)
-            class_id = object_md.class_id
-
-        return self.dataclay_object_loader.get_or_new_persistent_instance(class_id, object_id, hint)
 
     def update_object(self, into_object, from_object):
         session_id = self.session.id
@@ -268,35 +238,41 @@ class DataClayRuntime(ABC):
     # Object Metadata #
     ###################
 
-    def get_object_by_id(self, object_id, class_id=None, hint=None):
-        """Get object instance directly from an object id, use class id and hint in
+    def get_object_by_id(
+        self, object_id: UUID, cls: type[DataClayObject] = None, master_ee_id: UUID = None
+    ):
+        """Get object instance directly from an object id, use class id and master_ee_id in
         case it is still not registered.
 
         Args:
             object_id: id of the object to get
             class_id: class id of the object to get
-            hint: hint of the object to get
+            master_ee_id: master_ee_id of the object to get
         Returns:
             object instance
         """
         logger.debug(f"Get object {object_id} by id")
 
-        instance = self.get_from_heap(object_id)
-        if instance is not None:
-            return instance
+        # Check if object is in heap
+        try:
+            return self.heap_manager[object_id]
+        except KeyError:
+            # Double-checked lock
+            self.lock(object_id)
+            try:
+                return self.heap_manager[object_id]
+            except KeyError:
+                # Import class if None
+                if cls is None or master_ee_id is None:
+                    object_md = self.metadata_service.get_object_md_by_id(object_id)
+                    module_name, class_name = object_md.class_name.rsplit(".", 1)
+                    m = importlib.import_module(module_name)
+                    cls = getattr(m, class_name)
+                    master_ee_id = object_md.master_ee_id
 
-        if not class_id:
-            object_md = self.metadata_service.get_object_md_by_id(object_id)
-            class_id = object_md.class_id
-            # DEPRECATED: It may be usefull when removing stubs and identifying class by name (not id)
-            # full_name, namespace = self.backend_clients["@LM"].get_object_info(self.session.id, object_id)
-            # prefix, class_name = (f"{namespace}.{full_name}").rsplit(".", 1)
-            # m = importlib.import_module(prefix)
-            # klass = getattr(m, class_name)
-            # class_id = klass.get_class_extradata().class_id
-
-        instance = self.get_or_new_persistent_instance(object_id, class_id, hint)
-        return instance
+                return cls.new_persistent(object_id, master_ee_id)
+            finally:
+                self.unlock(object_id)
 
     def get_object_by_alias(self, alias, dataset_name=None):
         """Get object instance from alias"""
@@ -308,12 +284,11 @@ class DataClayRuntime(ABC):
             alias, dataset_name, self.session.id
         )
 
-        instance = self.get_from_heap(object_md.id)
-        if instance is None:
-            instance = self.get_or_new_persistent_instance(
-                object_md.id, object_md.class_id, object_md.master_ee_id
-            )
-        return instance
+        module_name, class_name = object_md.class_name.rsplit(".", 1)
+        m = importlib.import_module(module_name)
+        cls = getattr(m, class_name)
+
+        return self.get_object_by_id(object_md.id, cls, object_md.master_ee_id)
 
     def get_backend_id_by_object_id(self, object_id):
         backend_ids = list(self.get_all_execution_environments_at_dataclay(self.dataclay_id))
@@ -333,10 +308,10 @@ class DataClayRuntime(ABC):
     def get_all_locations(self, object_id):
         locations = set()
         try:
-            instance = self.get_from_heap(object_id)
+            instance = self.heap_manager[object_id]
             locations.add(instance._master_ee_id)
             locations.update(instance._replica_ee_ids)
-        except Exception:
+        except KeyError:
             object_md = self.metadata_service.get_object_md_by_id(object_id)
             locations.add(object_md.master_ee_id)
             locations.update(object_md.replica_ee_ids)
@@ -931,9 +906,9 @@ class DataClayRuntime(ABC):
         """Stop GC. useful for shutdown."""
         # Stop HeapManager
         logger.debug("Stopping GC. Sending shutdown event.")
-        self.dataclay_heap_manager.shutdown()
+        self.heap_manager.shutdown()
         logger.debug("Waiting for GC.")
-        self.dataclay_heap_manager.join()
+        self.heap_manager.join()
         logger.debug("GC stopped.")
 
     def stop_runtime(self):

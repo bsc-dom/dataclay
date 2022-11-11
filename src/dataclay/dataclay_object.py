@@ -63,9 +63,9 @@ re_property = re.compile(
 re_import = re.compile(r"^\s*@d[cC]layImport(?P<from_mode>From)?\s+(?P<import>.+)$", re.MULTILINE)
 
 
-def _get_object_by_id_helper(object_id, class_id, hint):
+def _get_object_by_id_helper(object_id, cls, hint):
     """Helper method which can be pickled and used by DataClayObject.__reduce__"""
-    return get_runtime().get_object_by_id(object_id, class_id, hint)
+    return get_runtime().get_object_by_id(object_id, cls, hint)
 
 
 def activemethod(func):
@@ -90,7 +90,7 @@ def activemethod(func):
             traceback.print_exc()
             raise
 
-    wrapper_activemethod.is_activemethod = True
+    # wrapper_activemethod.is_activemethod = True
     return wrapper_activemethod
 
 
@@ -117,28 +117,54 @@ class DataClayObject:
     _owner_session_id: uuid.UUID
 
     def __init_subclass__(cls) -> None:
+        """ "Defines @properties for each annotatted attribute"""
         for property_name in cls.__annotations__:
-            print("****^*^*^*^", property_name)
             setattr(cls, property_name, DataclayProperty(property_name))
 
-    # def __getattribute__(self, name):
-    #     res = super().__getattribute__(name)
-    #     if name in {**DataClayObject.__annotations__, **DataClayObject.__dict__}:
-    #         print(f"Base attribute {name}")
-    #         return res
-
-    #     if getattr(res, "is_activemethod", False):
-    #         print(f"activemethod")
-    #         return res
-
-    #     print("*^*^*^*^*^ is child attribute!!!!!!!")
-
     @classmethod
-    def new_dataclay_instance(cls, deserializing: bool, object_id: uuid.UUID = None):
+    def new_dataclay_instance(cls, deserializing: bool = False, object_id: uuid.UUID = None):
         """Return a new instance, without calling to the class methods."""
         logger.debug("New dataClay instance (without __call__) of class `%s`", cls.__name__)
         obj = super().__new__(cls)  # this defers the __call__ method
         obj.initialize_object(deserializing=deserializing, object_id=object_id)
+        return obj
+
+    @classmethod
+    def new_volatile(cls, **kwargs):
+        obj = super().__new__(cls)
+
+        new_dict = kwargs
+
+        if get_runtime().is_exec_env():
+            # *** Execution Environment flags
+            obj._is_pending_to_register = True
+            new_dict["_is_persistent"] = True  # All objects in the EE are persistent
+            new_dict["_is_loaded"] = True
+            new_dict["_is_pending_to_register"] = True
+            new_dict["_master_ee_id"] = get_runtime().get_hint()  # It should be in kwargs
+
+        obj.initialize_object(**new_dict)
+        return obj
+
+    @classmethod
+    def new_persistent(cls, object_id, master_ee_id):
+        obj = super().__new__(cls)
+
+        new_dict = {}
+        new_dict["_is_persistent"] = True
+        new_dict["_object_id"] = object_id
+        new_dict["_master_ee_id"] = master_ee_id
+
+        if get_runtime().is_exec_env():
+            # *** Execution Environment flags
+            # by default, loaded = true for volatiles created inside executions
+            # this function (initialize as persistent) is used for objects being
+            # deserialized and therefore they might be unloaded
+            # same happens for pending to register flag.
+            new_dict["_is_loaded"] = False
+            new_dict["_is_pending_to_register"] = False
+
+        obj.initialize_object(**new_dict)
         return obj
 
     def __new__(cls, *args, **kwargs):
@@ -147,15 +173,12 @@ class DataClayObject:
         obj.initialize_object()
         return obj
 
-    def initialize_object(self, deserializing=False, object_id: uuid.UUID = None):
+    def initialize_object(self, deserializing=False, **kwargs):
         """Initializes the object"""
 
-        # Populate internal fields
-        if object_id:
-            self._object_id = uuid.UUID(str(object_id))
-        else:
-            self._object_id = uuid.uuid4()
-        self._alias = (None,)
+        # Populate default internal fields
+        self._object_id = uuid.uuid4()
+        self._alias = None
         self._dataset_name = get_runtime().session.dataset_name
         self._class = self.__class__
         self._class_name = self.__class__.__module__ + "." + self.__class__.__name__
@@ -173,9 +196,8 @@ class DataClayObject:
             get_runtime().session.id
         )  # May be removed to instantiate dc object without init()
 
-        # TODO: get_class_extradata function is adding DynamicProperties to class
-        # (not to instance!) so it is needed to be called. Please, use a better function for that.
-        # self.get_class_extradata()
+        # Update object dict with custome kwargs
+        self.__dict__.update(kwargs)
 
         # Add instance to heap
         get_runtime().add_to_heap(self)
@@ -183,6 +205,14 @@ class DataClayObject:
         if not deserializing:
             # object created during executions is volatile.
             self.initialize_object_as_volatile()
+
+    @property
+    def dataclay_id(self):
+        return self._object_id
+
+    @property
+    def dataset(self):
+        return self._dataset_name
 
     def initialize_object_as_persistent(self):
         """Initializes the object as a persistent
@@ -659,7 +689,7 @@ class DataClayObject:
 
         return _get_object_by_id_helper, (
             self._object_id,
-            self._class_name,  # self.get_class_extradata().class_id,
+            self._class,  # self.get_class_extradata().class_id,
             self._master_ee_id,
         )
 

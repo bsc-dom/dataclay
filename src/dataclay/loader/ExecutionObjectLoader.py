@@ -87,11 +87,6 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         klass = getattr(m, class_name)
         return klass.new_dataclay_instance(deserializing=True, object_id=object_id)
 
-    def get_or_new_persistent_instance(self, class_id, object_id, hint):
-        return super(ExecutionObjectLoader, self).get_or_new_persistent_instance(
-            class_id, object_id, hint
-        )
-
     def _get_from_db_and_fill(self, object_to_fill):
         """
         @postcondition: Get from DB and deserialize into instance
@@ -195,58 +190,3 @@ class ExecutionObjectLoader(DataClayObjectLoader):
                 time.sleep(sleep_time)
             finally:
                 self.runtime.unlock(object_id)
-
-    def get_or_new_volatile_instance_and_load(
-        self, class_id, object_id, hint, obj_with_data, ifacebitmaps
-    ):
-        """
-        @postcondition: Get from Heap or create a new volatile in EE and load data on it.
-        @param class_id: id of the class of the object
-        @param object_id: id of the object
-        @param hint: hint of the object
-        @param obj_with_data: data of the volatile
-        @param ifacebitmaps: interface bitmaps
-        """
-        """
-        RACE CONDITION DESIGN
-        There are two objects A and B, A -> B, A is persistent and B is volatile.
-        There are two threads T1 and T2, T1 is executing a method on A that uses B, when deserializing A, B is loaded into
-        heap as a persistent object (all associations are persistent). However, it is actually a volatile send by T2.
-        When a volatile server is received and a persistent instance is found, this persistent instance should be "replaced"
-        by the new volatile server.
-        """
-        self.runtime.lock(object_id)
-        try:
-            """Double check for race conditions"""
-            self.logger.verbose(
-                "Get or create new volatile instance in EE with object id %s in Heap ",
-                str(object_id),
-            )
-            volatile_obj = self.runtime.get_from_heap(object_id)
-            if volatile_obj is None:
-                volatile_obj = self.new_instance_internal(class_id, object_id, hint)
-
-            """ Deserialize volatile """
-            DeserializationLibUtilsSingleton.deserialize_object_with_data(
-                obj_with_data,
-                volatile_obj,
-                ifacebitmaps,
-                self.runtime,
-                self.runtime.session.id,
-                True,
-            )
-
-            self.logger.debug("Object %s deserialized", object_id)
-
-            # WARNING: RACE CONDITION at EE - during deserialization of volatiles the
-            # object may be created and
-            # loaded in Heap but not "fully deserialized" yet so even if any execution find
-            # it in the
-            # heap, object might
-            # be not ready (null fields, and no, so is loaded cannot
-            # be true till object was fully deserialized)
-            volatile_obj.initialize_object_as_volatile()
-        finally:
-            self.runtime.unlock(object_id)
-
-        return volatile_obj

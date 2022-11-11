@@ -29,9 +29,9 @@ class ClientRuntime(DataClayRuntime):
     def __init__(self, metadata_service_host, metadata_service_port):
         # Initialize parent
         metadata_service = MDSClient(metadata_service_host, metadata_service_port)
-        dataclay_heap_manager = ClientHeapManager(self)
+        heap_manager = ClientHeapManager(self)
         dataclay_object_loader = ClientObjectLoader(self)
-        super().__init__(metadata_service, dataclay_heap_manager, dataclay_object_loader)
+        super().__init__(metadata_service, heap_manager, dataclay_object_loader)
 
     def is_client(self):
         return True
@@ -150,7 +150,7 @@ class ClientRuntime(DataClayRuntime):
     def detach_object_from_session(self, object_id, hint):
         try:
             if hint is None:
-                instance = self.get_from_heap(object_id)
+                instance = self.heap_manager[object_id]
                 self.update_object_metadata(instance)
                 hint = instance._master_ee_id
             try:
