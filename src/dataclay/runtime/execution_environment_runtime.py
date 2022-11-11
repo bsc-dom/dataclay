@@ -257,16 +257,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         else:
             client.ds_upsert_objects(self.session.id, serialized_objs)
 
-    def get_operation_info(self, object_id, operation_name):
-        dcc_extradata = self.get_object_by_id(object_id).get_class_extradata()
-        metaclass_container = dcc_extradata.metaclass_container
-        operation = metaclass_container.get_operation_from_name(operation_name)
-        return operation
-
-    def get_implementation_id(self, object_id, operation_name, implementation_idx=0):
-        operation = self.get_operation_info(object_id, operation_name)
-        return operation.implementations[0].dataClayID
-
     def check_and_fill_volatile_under_deserialization(self, volatile_obj, ifacebitmaps):
         """Check if there is a volatile object with ID provided pending to deserialize and if so, deserialize it since it is needed.
         :param volatile_obj: object to check

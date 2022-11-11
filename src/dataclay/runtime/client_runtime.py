@@ -89,17 +89,6 @@ class ClientRuntime(DataClayRuntime):
 
             return instance._master_ee_id
 
-    def get_operation_info(self, object_id, operation_name):
-        dcc_extradata = self.get_object_by_id(object_id).get_class_extradata()
-        stub_info = dcc_extradata.stub_info
-        implementation_stub_infos = stub_info.implementations
-        operation = implementation_stub_infos[operation_name]
-        return operation
-
-    def get_implementation_id(self, object_id, operation_name, implementation_idx=0):
-        operation = self.get_operation_info(object_id, operation_name)
-        return operation.remoteImplID
-
     # NOTE: This function may be removed.
     # When an alias is removed without having the instance, the persistent object
     # has to know it if we consult its alias, therefore, in all cases, the alias

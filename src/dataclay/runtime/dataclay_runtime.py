@@ -491,7 +491,7 @@ class DataClayRuntime(ABC):
 
     # DEPRECATED: Use call_active_method
     def call_execute_to_ds(self, instance, parameters, operation_name, exec_env_id, using_hint):
-
+        raise Exception("Deprecated")
         object_id = instance._object_id
         operation = self.get_operation_info(object_id, operation_name)
         session_id = self.session.id
@@ -838,21 +838,6 @@ class DataClayRuntime(ABC):
             port: external dataClay port
         """
         self.metadata_service.autoregister_mds(id, hostname, port)
-
-    ##################################
-    # To deprecate                   #
-    # Operations and implementations #
-    ##################################
-
-    # TODO: remove it
-    @abstractmethod
-    def get_operation_info(self, object_id, operation_name):
-        pass
-
-    # TODO: Remove it
-    @abstractmethod
-    def get_implementation_id(self, object_id, operation_name, implementation_idx=0):
-        pass
 
     ###########
     # Tracing #

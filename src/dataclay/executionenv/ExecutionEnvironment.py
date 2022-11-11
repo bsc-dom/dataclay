@@ -60,62 +60,9 @@ class ExecutionEnvironment(object):
         lm_client = self.runtime.backend_clients["@LM"]
         lm_client.notify_execution_environment_shutdown(self.execution_environment_id)
 
-    # TODO: Deprecate or refactor when stubs are removed
-    def ds_deploy_metaclasses(self, namespace, classes_map_yamls):
-        """Deploy MetaClass containers to the Python Execution Environment.
-
-        This function stores in a file all the MetaClass, in addition to (optionally)
-        putting them into the cache, according to the ConfigOptions.
-
-        :param namespace: The namespace
-        :param classes_map: classes map
-        :return: The response (empty string)
-        """
-        try:
-            for class_name, clazz_yaml in classes_map_yamls.items():
-                metaclass = dataclay_yaml_load(clazz_yaml)
-                ClassLoader.deploy_metaclass_grpc(namespace, class_name, clazz_yaml, metaclass)
-
-                if metaclass.name == "UserType" or metaclass.name == "HashType":
-                    logger.warning("Ignoring %s dataClay MetaClass", metaclass.name)
-                    logger.debug(metaclass)
-                    continue
-
-                if (
-                    metaclass.name == "DataClayPersistentObject"
-                    or metaclass.name == "DataClayObject"
-                    or metaclass.name == "StorageObject"
-                ):
-                    continue
-
-                logger.info(
-                    "Deploying class %s to deployment source path %s",
-                    metaclass.name,
-                    settings.deploy_path_source,
-                )
-
-                try:
-                    # ToDo: check whether `lang_codes.LANG_PYTHON` or `'LANG_PYTHON'` is the correct key here
-                    import_lines = metaclass.languageDepInfos[LANG_PYTHON].imports
-                    imports = "\n".join(import_lines)
-                except KeyError:
-                    # What is most likely is languageDepInfos not having the Python
-                    imports = ""
-
-                deploy_class(
-                    metaclass.namespace,
-                    metaclass.name,
-                    metaclass.juxtapose_code(True),
-                    imports,
-                    settings.deploy_path_source,
-                    ds_deploy=True,
-                )
-                logger.info("Deployment of class %s successful", metaclass.name)
-
-            return str()
-        except:
-            traceback.print_exc()
-            return str()
+    #####
+    # Tracing
+    #####
 
     def activate_tracing(self, task_id):
         if not extrae_tracing_is_enabled():
@@ -125,6 +72,9 @@ class ExecutionEnvironment(object):
     def deactivate_tracing(self):
         if extrae_tracing_is_enabled():
             finish_tracing(True)
+
+    #####
+    #####
 
     def get_object_metadata(self, object_id):
         """Get the MetaDataInfo for a certain object.
@@ -136,14 +86,13 @@ class ExecutionEnvironment(object):
             object_id: The ID of the persistent object
 
         Returns:
-            The MetaDataInfo for the given object.
+            The MetaData for the given object.
         """
 
         logger.info(f"Getting MetaData for object {object_id}")
 
         try:
-            instance = self.runtime.heap_manager[object_id]
-            return instance.metadata
+            return self.runtime.heap_manager[object_id].metadata
         except KeyError:
             return self.runtime.metadata_service.get_object_md_by_id(object_id)
 
@@ -267,29 +216,6 @@ class ExecutionEnvironment(object):
         print("*** unpickled_obj:", instance.__dict__, end="\n\n")
 
         self.runtime.metadata_service.register_object(instance.metadata)
-
-    # TODO: Deprecate it, and steal name for new_make_persistent
-    @tracer.start_as_current_span("EE: make_persistent")
-    def make_persistent(self, session_id, objects_to_persist):
-        """This function will deserialize make persistent "parameters" (i.e. object to persist
-        and subobjects if needed) into dataClay memory heap using the same design as for
-        volatile parameters. Eventually, dataClay GC will collect them, and then they will be
-        registered in LogicModule if needed (if objects were created with alias, they must
-        have metadata already).
-
-        Args:
-            session_id: ID of session of make persistent call
-            objects_to_persist: objects to store.
-        """
-        logger.debug("Starting make persistent")
-        self.set_local_session(session_id)
-
-        objects = self.store_in_memory(objects_to_persist)
-        for object in objects:
-            # TODO: The location should be check (in the deserialization) that is the same as current ee, and reasign if not
-            object_md = object.metadata
-            self.runtime.metadata_service.register_object(object_md)
-        logger.debug("Finished make persistent")
 
     def federate(self, session_id, object_id, external_execution_env_id, recursive):
         """Federate object with id provided to external execution env id specified
