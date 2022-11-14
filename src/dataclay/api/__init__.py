@@ -12,7 +12,6 @@ import logging.config
 import os
 import sys
 import warnings
-from time import sleep
 
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.dataclay_object import DataClayObject
@@ -26,7 +25,6 @@ from dataclay.runtime import get_runtime, set_runtime, settings, unload_settings
 from dataclay.runtime.client_runtime import ClientRuntime
 from dataclay.runtime.client_runtime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
 from dataclay.runtime.Initializer import _get_logging_dict_config, initialize
-from dataclay.util.StubUtils import clean_babel_data, track_local_available_classes
 from opentelemetry import trace
 
 # This will be populated during initialization
@@ -61,6 +59,7 @@ def reinitialize_logging() -> None:
 
 
 def reinitialize_clients() -> None:
+    raise
     """
     Reinitialize connection to logic module
     :return: None
@@ -112,6 +111,11 @@ def init_connection(client_file) -> LMClient:
     return client
 
 
+###############
+# Backends info
+###############
+
+
 def get_backends():
     """Return all the dataClay backend present in the system."""
     result = get_runtime().get_execution_environments_names()
@@ -152,6 +156,11 @@ def get_backend_id(hostname, port):
         if backend.port == port:
             return backend.id
     return None
+
+
+##########
+# Dataclay
+##########
 
 
 def register_dataclay(id, hostname, port):
@@ -213,12 +222,6 @@ def federate_all_objects(dest_dataclay_id):
     return get_runtime().federate_all_objects(dest_dataclay_id)
 
 
-# DEPRECATED: Remove this function
-def pre_network_init(config_file):
-    """Perform a partial initialization, with no network."""
-    settings.load_properties(config_file)
-
-
 # TODO: Structure in smaller functions
 def init():
     """Initialization made on the client-side, with .env settings
@@ -254,16 +257,6 @@ def init():
         #     logger.info("Waiting for any python backend to be ready ...")
         #     sleep(2)
 
-        # In all cases, track (done through babelstubs YAML file)
-        # contracts = track_local_available_classes()
-        # if not contracts:
-        #     logger.warning(
-        #         "No contracts available. Calling new_session, but no classes will be available"
-        #     )
-
-        # Ensure stubs are in the path (high "priority")
-        sys.path.insert(0, os.path.join(settings.STUBS_PATH, "sources"))
-
         # Create a new session
         session = runtime.metadata_service.new_session(
             settings.DC_USERNAME, settings.DC_PASSWORD, settings.DEFAULT_DATASET
@@ -294,50 +287,9 @@ def init():
         init_span.add_event("marcevent - ending init")
 
 
-# DEPRECATED: Remove this method
-def init_deprecated(config_file=None) -> None:
-    """Initialization made on the client-side, with file-based settings.
-
-    Note that after a successful call to this method, subsequent calls will be
-    a no-operation.
-
-    :param config_file: The configuration file that will be used. If not set, then
-     the DATACLAYSESSIONCONFIG environment variable will be used and the fallback
-     will be the `./cfgfiles/session.properties` path.
-    """
-
-    # TODO: Use replace init(..) to mds_init(..)
-
-    global _initialized
-
-    logger.info("Initializing dataClay API")
-
-    if _initialized:
-        logger.warning("Already initialized --ignoring")
-        return
-
-    if not config_file:
-        # If the call doesn't has config_file set, let's try to fallback into the envvar
-        env_config_file = os.getenv("DATACLAYSESSIONCONFIG")
-        if env_config_file:
-            # If the environment is defined, it is preferred
-            config_file = env_config_file
-            logger.info("Using the environment variable DATACLAYSESSIONCONFIG=%s", config_file)
-        else:
-            config_file = "./cfgfiles/session.properties"
-            logger.info("Fallback to default ./cfgfiles/session.properties")
-    else:
-        logger.info('Explicit parameter config_file="%s" will be used', config_file)
-
-    if not os.path.isfile(config_file):
-        raise ValueError("dataClay requires a session.properties in order to initialize")
-
-    pre_network_init(config_file)
-    post_network_init()
-
-
 # DEPRECATED: Remove this function
 def post_network_init():
+    raise
     global _initialized
 
     """Perform the last part of initialization, now with network."""
@@ -381,6 +333,7 @@ def finish_tracing():
     """
     Finishes tracing if needed
     """
+    raise
     if extrae_tracing_is_enabled():
         extrae_compss = int(settings.extrae_starting_task_id) != 0
 
@@ -413,10 +366,6 @@ def finish():
         finish_tracing()
         get_runtime().close_session()
         get_runtime().stop_runtime()
-        # Unload stubs
-        clean_babel_data()
-        sys.path.remove(os.path.join(settings.STUBS_PATH, "sources"))
-        # unload caches of stubs
 
         # unload settings
         unload_settings()
