@@ -120,10 +120,10 @@ class DataClayObject:
     """
 
     _dc_id: UUID
-    _alias: str
-    _dataset_name: str
-    _class: type
-    _class_name: str
+    _dc_alias: str
+    _dc_dataset_name: str
+    _dc_class: type
+    _dc_class_name: str
     _is_persistent: bool
     _master_ee_id: UUID
     _replica_ee_ids: list[UUID]
@@ -197,10 +197,10 @@ class DataClayObject:
 
         # Populate default internal fields
         self._dc_id = uuid.uuid4()
-        self._alias = None
-        self._dataset_name = get_runtime().session.dataset_name
-        self._class = self.__class__
-        self._class_name = self.__class__.__module__ + "." + self.__class__.__name__
+        self._dc_alias = None
+        self._dc_dataset_name = get_runtime().session.dataset_name
+        self._dc_class = self.__class__
+        self._dc_class_name = self.__class__.__module__ + "." + self.__class__.__name__
         self._is_persistent = False
         self._master_ee_id = (
             get_runtime().get_hint()
@@ -231,7 +231,7 @@ class DataClayObject:
 
     @property
     def dataset(self):
-        return self._dataset_name
+        return self._dc_dataset_name
 
     def initialize_object_as_persistent(self):
         """Initializes the object as a persistent
@@ -274,8 +274,8 @@ class DataClayObject:
         return get_runtime().new_version(
             self._dc_id,
             self._master_ee_id,
-            self._class_name,
-            self._dataset_name,
+            self._dc_class_name,
+            self._dc_dataset_name,
             backend_id,
             None,
             recursive,
@@ -391,9 +391,9 @@ class DataClayObject:
     def metadata(self):
         object_md = ObjectMetadata(
             self._dc_id,
-            self._alias,
-            self._dataset_name,
-            self._class_name,
+            self._dc_alias,
+            self._dc_dataset_name,
+            self._dc_class_name,
             self._master_ee_id,
             self._replica_ee_ids,
             self._language,
@@ -405,8 +405,8 @@ class DataClayObject:
     def metadata(self, object_md):
         # self.__metadata = object_md
         self._dc_id = object_md.id
-        self._alias = object_md.alias_name
-        self._dataset_name = object_md.dataset_name
+        self._dc_alias = object_md.alias_name
+        self._dc_dataset_name = object_md.dataset_name
         self._master_ee_id = object_md.master_ee_id
         self._replica_ee_ids = object_md.replica_ee_ids
         self._is_read_only = object_md.is_read_only
@@ -708,7 +708,7 @@ class DataClayObject:
 
         return _get_object_by_id_helper, (
             self._dc_id,
-            self._class,  # self.get_class_extradata().class_id,
+            self._dc_class,  # self.get_class_extradata().class_id,
             self._master_ee_id,
         )
 
@@ -716,12 +716,12 @@ class DataClayObject:
 
         if self._is_persistent:
             return "<%s instance with ObjectID=%s>" % (
-                self._class_name,
+                self._dc_class_name,
                 self._dc_id,
             )
         else:
             return "<%s volatile instance with ObjectID=%s>" % (
-                self._class_name,
+                self._dc_class_name,
                 self._dc_id,
             )
 

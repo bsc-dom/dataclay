@@ -51,7 +51,7 @@ class ReferenceCounting(object):
         @param reference_counting: Reference counting to serialize
         """
         self.external_references = 0
-        if dc_obj._alias is not None and dc_obj._alias != "":
+        if dc_obj._dc_alias is not None and dc_obj._dc_alias != "":
             logger.trace("Found alias reference")
             self.external_references = self.external_references + 1
 

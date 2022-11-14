@@ -56,7 +56,7 @@ class ClientRuntime(DataClayRuntime):
         else:
             logger.debug(f"Starting make persistent for object {instance._dc_id}")
 
-            instance._alias = alias
+            instance._dc_alias = alias
             instance._master_ee_id = backend_id or self.get_backend_id_by_object_id(instance._dc_id)
 
             # Gets Execution Environment client
@@ -103,7 +103,7 @@ class ClientRuntime(DataClayRuntime):
             ee_client = EEClient(ee_info.hostname, ee_info.port)
             self.backend_clients[ee_id] = ee_client
         ee_client.delete_alias(self.session.id, instance._dc_id)
-        instance._alias = None
+        instance._dc_alias = None
 
     def close_session(self):
         self.metadata_service.close_session(self.session.id)

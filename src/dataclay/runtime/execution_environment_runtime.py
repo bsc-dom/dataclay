@@ -135,7 +135,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             # 1 - object was persisted without alias and not yet registered -> we need to register it with new alias.
             # 2 - object was persisted and it is already registered -> we only add a new alias
             # 3 - object was persisted with an alias and it must be already registered -> we add a new alias.
-            instance._alias = alias
+            instance._dc_alias = alias
 
             if instance._is_pending_to_register:
                 self.metadata_service.register_object(instance.metadata)
@@ -330,10 +330,10 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                 self.unlock(session_id)
 
     def delete_alias(self, instance):
-        alias = instance._alias
+        alias = instance._dc_alias
         if alias is not None:
-            self.delete_alias_in_dataclay(alias, instance._dataset_name)
-        instance._alias = None
+            self.delete_alias_in_dataclay(alias, instance._dc_dataset_name)
+        instance._dc_alias = None
         instance._is_dirty = True
 
     def close_session_in_ee(self, session_id):

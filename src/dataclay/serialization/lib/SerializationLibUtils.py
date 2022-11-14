@@ -70,9 +70,9 @@ class SerializationLibUtils(object):
             instance.get_root_location(),
             instance.get_origin_location(),
             instance._replica_ee_ids,
-            instance._alias,
+            instance._dc_alias,
             instance._is_read_only,
-            instance._dataset_name,
+            instance._dc_dataset_name,
         )
         dcc_extradata = instance.get_class_extradata()
         byte_array = buffer.getvalue()

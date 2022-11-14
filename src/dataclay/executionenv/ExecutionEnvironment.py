@@ -209,7 +209,7 @@ class ExecutionEnvironment(object):
             instance._is_pending_to_register = True
             instance._master_ee_id = self.runtime.get_hint()  # It should be already defined
         except KeyError:
-            instance = dict["_class"].new_volatile(**dict)
+            instance = dict["_dc_class"].new_volatile(**dict)
 
         print("\n*** unpickled_obj:", type(instance))
         print("*** unpickled_obj:", instance._dc_id)
@@ -259,7 +259,7 @@ class ExecutionEnvironment(object):
 
             # Register objects with alias (should we?)
             for object in federated_objs:
-                if object._alias:
+                if object._dc_alias:
                     self.runtime.metadata_service.register_object(object.metadata)
 
             for federated_obj in federated_objs:
@@ -343,8 +343,8 @@ class ExecutionEnvironment(object):
                 instance.set_origin_location(None)
                 try:
 
-                    if instance._alias is not None and instance._alias != "":
-                        logger.debug(f"Removing alias {instance._alias}")
+                    if instance._dc_alias is not None and instance._dc_alias != "":
+                        logger.debug(f"Removing alias {instance._dc_alias}")
                         self.self.runtime.delete_alias(instance)
 
                 except Exception as ex:
