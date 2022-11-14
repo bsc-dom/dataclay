@@ -69,7 +69,7 @@ class HeapManager(threading.Thread, ABC):
 
     def _add_to_inmemory_map(self, dc_object):
         """add object to inmemory map"""
-        oid = dc_object._object_id
+        oid = dc_object._dc_id
         self.inmemory_objects[oid] = dc_object
 
     def remove_from_heap(self, object_id):

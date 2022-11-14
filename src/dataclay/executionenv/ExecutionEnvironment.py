@@ -152,7 +152,7 @@ class ExecutionEnvironment(object):
 
     def register_and_store_pending(self, instance, obj_bytes, sync):
 
-        object_id = instance._object_id
+        object_id = instance._dc_id
 
         # NOTE: we are doing *two* remote calls, and wishlist => they work as a transaction
         self.runtime.backend_clients["@STORAGE"].store_to_db(
@@ -202,7 +202,7 @@ class ExecutionEnvironment(object):
         # This new_make_persistent should send all the objects (even with circular dependencies)
         # in one call to the EE
         try:
-            instance = self.runtime.heap_manager[dict["_object_id"]]
+            instance = self.runtime.heap_manager[dict["_dc_id"]]
             instance.__dict__.update(dict)
             instance._is_persistent = True  # All objects in the EE are persistent
             instance._is_loaded = True
@@ -212,7 +212,7 @@ class ExecutionEnvironment(object):
             instance = dict["_class"].new_volatile(**dict)
 
         print("\n*** unpickled_obj:", type(instance))
-        print("*** unpickled_obj:", instance._object_id)
+        print("*** unpickled_obj:", instance._dc_id)
         print("*** unpickled_obj:", instance.__dict__, end="\n\n")
 
         self.runtime.metadata_service.register_object(instance.metadata)
@@ -544,7 +544,7 @@ class ExecutionEnvironment(object):
         logger.debug(
             "[==PutObject==] Updated object %s from object %s",
             into_object_id,
-            object_from._object_id,
+            object_from._dc_id,
         )
 
     def get_objects(

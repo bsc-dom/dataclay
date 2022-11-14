@@ -19,7 +19,7 @@ except ImportError:
     tracemalloc = None
 
 import psutil
-from dataclay.DataClayObjProperties import DCLAY_PROPERTY_PREFIX
+from dataclay.dataclay_object import DCLAY_PROPERTY_PREFIX
 from dataclay.heap.HeapManager import HeapManager
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
@@ -77,8 +77,8 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         using weak references. In order to avoid objects to be GC without a flush in DB, HeapManager has hard-references to
         them and is the only one able to release them. This function creates the hard-reference.
         """
-        if dc_object._object_id not in self.retained_objects_id:
-            self.retained_objects_id.add(dc_object._object_id)
+        if dc_object._dc_id not in self.retained_objects_id:
+            self.retained_objects_id.add(dc_object._dc_id)
             self.retained_objects.append(dc_object)
 
     def release_from_heap(self, dc_obj):
@@ -86,12 +86,12 @@ class ExecutionEnvironmentHeapManager(HeapManager):
 
         Without hard reference, the object can be Garbage collected
         """
-        logger.debug("Releasing object with id %s from retained map. ", dc_obj._object_id)
+        logger.debug("Releasing object with id %s from retained map. ", dc_obj._dc_id)
         try:
-            self.retained_objects_id.remove(dc_obj._object_id)
+            self.retained_objects_id.remove(dc_obj._dc_id)
             self.retained_objects.remove(dc_obj)
         except Exception as e:
-            logger.debug("Releasing object with id %s ", dc_obj._object_id)
+            logger.debug("Releasing object with id %s ", dc_obj._dc_id)
 
     def __check_memory_pressure(self):
         """Check if memory is under pressure
@@ -127,7 +127,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         """Set all fields to none to allow GC action"""
 
         metaclass = dc_object.get_class_extradata()
-        logger.debug("Going to clean object %s", dc_object._object_id)
+        logger.debug("Going to clean object %s", dc_object._dc_id)
 
         # Put here because it is critical path and I prefer to have a single isEnabledFor
         # instead of checking it for each element
@@ -139,7 +139,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
 
             logger.debug(
                 "The following attributes will be nullified from object %s: %s",
-                dc_object._object_id,
+                dc_object._dc_id,
                 ", ".join(prop_name_list),
             )
 
@@ -168,13 +168,13 @@ class ExecutionEnvironmentHeapManager(HeapManager):
             if held_attr_names:
                 logger.debug(
                     "The following attributes of object %s still have a backref active: %s",
-                    dc_object._object_id,
+                    dc_object._dc_id,
                     ", ".join(held_attr_names),
                 )
             else:
                 logger.debug(
                     "The garbage collector seems to have cleaned all the nullified attributes on %s",
-                    dc_object._object_id,
+                    dc_object._dc_id,
                 )
 
     def __clean_object(self, dc_object):
@@ -188,7 +188,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         Lock object (not locking executions!)
         Lock is needed in case object is being nullified and some threads requires to load it from disk.
         """
-        object_id = dc_object._object_id
+        object_id = dc_object._dc_id
         self.runtime.lock(object_id)
         try:
 
@@ -205,10 +205,10 @@ class ExecutionEnvironmentHeapManager(HeapManager):
             dc_object._is_loaded = False
 
             # Update it
-            logger.debug("[==GC==] Updating object %s ", dc_object._object_id)
+            logger.debug("[==GC==] Updating object %s ", dc_object._dc_id)
             self.gc_collect_internal(dc_object)
 
-            logger.debug("[==GC==] Cleaning object %s", dc_object._object_id)
+            logger.debug("[==GC==] Cleaning object %s", dc_object._dc_id)
 
             self.__nullify_object(dc_object)
 
@@ -239,11 +239,11 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         @param object_to_update: object to update
         """
         try:
-            logger.debug("[==GCUpdate==] Updating object %s", object_to_update._object_id)
+            logger.debug("[==GCUpdate==] Updating object %s", object_to_update._dc_id)
             """ Call EE update """
             if object_to_update._is_pending_to_register:
                 logger.debug(
-                    f"[==GCUpdate==] Storing and registering object {object_to_update._object_id}"
+                    f"[==GCUpdate==] Storing and registering object {object_to_update._dc_id}"
                 )
                 obj_bytes = SerializationLibUtilsSingleton.serialize_for_db_gc(
                     object_to_update, False, None
@@ -251,13 +251,11 @@ class ExecutionEnvironmentHeapManager(HeapManager):
                 self.exec_env.register_and_store_pending(object_to_update, obj_bytes, True)
             else:
                 # TODO: use dirty flag to avoid trips to SL? how to update SL graph of references?
-                logger.debug(
-                    "[==GCUpdate==] Updating dirty object %s ", object_to_update._object_id
-                )
+                logger.debug("[==GCUpdate==] Updating dirty object %s ", object_to_update._dc_id)
                 obj_bytes = SerializationLibUtilsSingleton.serialize_for_db_gc(
                     object_to_update, False, None
                 )
-                self.runtime.update_to_sl(object_to_update._object_id, obj_bytes, True)
+                self.runtime.update_to_sl(object_to_update._dc_id, obj_bytes, True)
 
         except:
             # do nothing
@@ -319,11 +317,11 @@ class ExecutionEnvironmentHeapManager(HeapManager):
                     # NOTE: Memory pinned is never set or used
                     # if dc_obj.get_memory_pinned():
                     #     logger.trace(
-                    #         "Object %s is memory pinned, ignoring it", dc_obj._object_id
+                    #         "Object %s is memory pinned, ignoring it", dc_obj._dc_id
                     #     )
                     #     continue
 
-                    if dc_obj._object_id in self.runtime.volatiles_under_deserialization:
+                    if dc_obj._dc_id in self.runtime.volatiles_under_deserialization:
                         logger.trace("[==GC==] Not collecting since it is under deserialization.")
                         continue
 
@@ -332,41 +330,41 @@ class ExecutionEnvironmentHeapManager(HeapManager):
                     logger.debug("[==GC==] Is tracked? %s", str(gc.is_tracked(dc_obj)))
                     for r in gc.get_referents(dc_obj):
                         if r == self.retained_objects:
-                            logger.debug("[==GC==] REFERENT BEFORE CLEAN FOR %s is retained map. ", (dc_obj._object_id))
+                            logger.debug("[==GC==] REFERENT BEFORE CLEAN FOR %s is retained map. ", (dc_obj._dc_id))
                         elif r == HeapManager.get_heap(self):
-                            logger.debug("[==GC==] REFERENT BEFORE CLEAN FOR %s is inmemory map. ", (dc_obj._object_id)) 
+                            logger.debug("[==GC==] REFERENT BEFORE CLEAN FOR %s is inmemory map. ", (dc_obj._dc_id)) 
                         else:
-                            logger.debug("[==GC==] REFERENT BEFORE CLEAN FOR %s is: %s ", (dc_obj._object_id, str(id(r))))
-                            # logger.debug("[==GC==] REFERENT BEFORE CLEAN FOR %s is: %s ", (dc_obj._object_id, pprint.pformat(r)))
+                            logger.debug("[==GC==] REFERENT BEFORE CLEAN FOR %s is: %s ", (dc_obj._dc_id, str(id(r))))
+                            # logger.debug("[==GC==] REFERENT BEFORE CLEAN FOR %s is: %s ", (dc_obj._dc_id, pprint.pformat(r)))
                     for r in gc.get_referrers(dc_obj):
                         if r == self.retained_objects:
-                            logger.debug("[==GC==] REFERRER BEFORE CLEAN FOR %s is retained map. ", (dc_obj._object_id))
+                            logger.debug("[==GC==] REFERRER BEFORE CLEAN FOR %s is retained map. ", (dc_obj._dc_id))
                         elif r == HeapManager.get_heap(self):
-                            logger.debug("[==GC==] REFERRER BEFORE CLEAN FOR %s is inmemory map. ", (dc_obj._object_id))
+                            logger.debug("[==GC==] REFERRER BEFORE CLEAN FOR %s is inmemory map. ", (dc_obj._dc_id))
                         else:
-                            logger.debug("[==GC==] REFERRER BEFORE CLEAN FOR %s is: %s ", (dc_obj._object_id, str(id(r))))
-                            # logger.debug("[==GC==] REFERRER BEFORE CLEAN FOR %s is: %s ", (dc_obj._object_id, pprint.pformat(r)))
+                            logger.debug("[==GC==] REFERRER BEFORE CLEAN FOR %s is: %s ", (dc_obj._dc_id, str(id(r))))
+                            # logger.debug("[==GC==] REFERRER BEFORE CLEAN FOR %s is: %s ", (dc_obj._dc_id, pprint.pformat(r)))
                     """
                     self.__clean_object(dc_obj)
                     """
                     for r in gc.get_referents(dc_obj):
                         if r == self.retained_objects:
-                            logger.debug("[==GC==] REFERENT FOR %s is retained map. ", (dc_obj._object_id))
+                            logger.debug("[==GC==] REFERENT FOR %s is retained map. ", (dc_obj._dc_id))
                         elif r == HeapManager.get_heap(self):
-                            logger.debug("[==GC==] REFERENT FOR %s is inmemory map. ", (dc_obj._object_id))
+                            logger.debug("[==GC==] REFERENT FOR %s is inmemory map. ", (dc_obj._dc_id))
                         else:
-                            logger.debug("[==GC==] REFERENT FOR %s is: %s ", (dc_obj._object_id, str(id(r))))
-                            # logger.debug("[==GC==] REFERENTS FOR %s is: %s ", (dc_obj._object_id, pprint.pformat(r)))
+                            logger.debug("[==GC==] REFERENT FOR %s is: %s ", (dc_obj._dc_id, str(id(r))))
+                            # logger.debug("[==GC==] REFERENTS FOR %s is: %s ", (dc_obj._dc_id, pprint.pformat(r)))
                     """
                     """
                     for r in gc.get_referrers(dc_obj):
                         if r == self.retained_objects:
-                            logger.debug("[==GC==] REFERRER FOR %s is retained map. ", (dc_obj._object_id))
+                            logger.debug("[==GC==] REFERRER FOR %s is retained map. ", (dc_obj._dc_id))
                         elif r == HeapManager.get_heap(self):
-                            logger.debug("[==GC==] REFERRER FOR %s is inmemory map. ", (dc_obj._object_id))
+                            logger.debug("[==GC==] REFERRER FOR %s is inmemory map. ", (dc_obj._dc_id))
                         else:
-                            logger.debug("[==GC==] ID REFERRER FOR %s is: %s ", (dc_obj._object_id, str(id(r))))
-                            logger.debug("[==GC==] REFERRER FOR %s are: %s ", (dc_obj._object_id, pprint.pformat(r)))
+                            logger.debug("[==GC==] ID REFERRER FOR %s is: %s ", (dc_obj._dc_id, str(id(r))))
+                            logger.debug("[==GC==] REFERRER FOR %s are: %s ", (dc_obj._dc_id, pprint.pformat(r)))
                     """
                     del dc_obj  # Remove reference from Frame
 

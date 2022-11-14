@@ -92,7 +92,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         @postcondition: Get from DB and deserialize into instance
         @param object_to_fill: Instance to fill
         """
-        object_id = object_to_fill._object_id
+        object_id = object_to_fill._dc_id
         self.logger.debug("Object %s being loaded from DB", object_id)
         obj_bytes = self.runtime.get_from_sl(object_id)
         DeserializationLibUtilsSingleton.deserialize_object_from_db(
@@ -170,7 +170,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         @param retry: Indicates retry loading in case it is not in db.
         """
 
-        object_id = instance._object_id
+        object_id = instance._dc_id
         loaded = False
         wait_time = 0
         sleep_time = Configuration.SLEEP_WAIT_REGISTERED / 1000

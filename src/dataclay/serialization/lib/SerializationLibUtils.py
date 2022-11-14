@@ -78,7 +78,7 @@ class SerializationLibUtils(object):
         byte_array = buffer.getvalue()
         buffer.close()
         return ObjectWithDataParamOrReturn(
-            instance._object_id, dcc_extradata.class_id, metadata, byte_array
+            instance._dc_id, dcc_extradata.class_id, metadata, byte_array
         )
 
     def serialize_association(
@@ -92,14 +92,14 @@ class SerializationLibUtils(object):
         try:
             tag = cur_serialized_objs[element]
         except KeyError:
-            logger.debug("Adding object %s to pending_objects", element._object_id)
+            logger.debug("Adding object %s to pending_objects", element._dc_id)
 
             pending_objs.append(element)
             tag = len(cur_serialized_objs)
             cur_serialized_objs[element] = tag
 
         """ update reference counting """
-        associated_oid = element._object_id
+        associated_oid = element._dc_id
         hint = element._master_ee_id
         reference_counting.increment_reference_counting(associated_oid, hint)
 
@@ -148,7 +148,7 @@ class SerializationLibUtils(object):
                     param = safe_wait_if_compss_future(param)
 
                     try:
-                        oid = param._object_id
+                        oid = param._dc_id
 
                         runtime.add_session_reference(oid)
 
@@ -202,7 +202,7 @@ class SerializationLibUtils(object):
                 while pending_objects:
                     # Note that pending objects are *only* DataClay Objects)
                     pending_obj = pending_objects.pop()
-                    oid = pending_obj._object_id
+                    oid = pending_obj._dc_id
 
                     if oid in already_serialized_params:
                         continue
@@ -274,7 +274,7 @@ class SerializationLibUtils(object):
         """
 
         object_with_data = None
-        object_id = dc_object._object_id
+        object_id = dc_object._dc_id
         runtime.lock(object_id)
         try:
             cur_serialized_objs = IdentityDict()
@@ -332,7 +332,7 @@ class SerializationLibUtils(object):
                 obj = k
                 tag = v
                 class_id = obj.get_class_extradata().class_id
-                object_id = obj._object_id
+                object_id = obj._dc_id
                 hint = obj._master_ee_id
 
                 tags_to_oids[tag] = object_id
@@ -416,9 +416,7 @@ class SerializationLibUtils(object):
         if return_none_if_no_ref_counting:
             if obj_data == None:
                 return None
-        return self.serialize_for_db(
-            instance._object_id, obj_data.metadata, obj_data.obj_bytes, False
-        )
+        return self.serialize_for_db(instance._dc_id, obj_data.metadata, obj_data.obj_bytes, False)
 
     def serialize_for_db_gc_not_dirty(
         self, instance, ignore_user_types, ifacebitmaps, return_none_if_no_ref_counting=True
@@ -480,7 +478,7 @@ class PersistentIdPicklerHelper(object):
                 self._cur_serialized_objs[obj] = tag
 
             """ update reference counting """
-            associated_oid = obj._object_id
+            associated_oid = obj._dc_id
             hint = obj._master_ee_id
             self._reference_counting.increment_reference_counting(associated_oid, hint)
 

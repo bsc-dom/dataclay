@@ -258,7 +258,7 @@ class SplittableCollectionMixin(object):
             (
                 # Overly complex way to get a single ExecutionEnvironmentID
                 # works in both Python2 & Python3
-                next(iter(((get_runtime().get_all_locations(ch._object_id)).keys()))),
+                next(iter(((get_runtime().get_all_locations(ch._dc_id)).keys()))),
                 ch,
             )
             for ch in self.get_chunks()

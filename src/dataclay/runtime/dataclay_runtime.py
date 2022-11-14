@@ -115,8 +115,8 @@ class DataClayRuntime(ABC):
 
     def update_object_id(self, instance, new_object_id):
         """Update the object id in both DataClayObject and HeapManager"""
-        old_object_id = instance._object_id
-        instance._object_id = new_object_id
+        old_object_id = instance._dc_id
+        instance._dc_id = new_object_id
         self.heap_manager.remove_from_heap(old_object_id)
         self.heap_manager._add_to_inmemory_map(instance)
 
@@ -197,8 +197,8 @@ class DataClayRuntime(ABC):
             for tag in vol_objects:
                 cur_oid = serialized_params.vol_objs[tag].object_id
                 if cur_oid not in new_ids:
-                    if cur_oid == from_object._object_id:
-                        new_ids[cur_oid] = into_object._object_id
+                    if cur_oid == from_object._dc_id:
+                        new_ids[cur_oid] = into_object._dc_id
                     else:
                         new_ids[cur_oid] = uuid.uuid4()
 
@@ -220,7 +220,7 @@ class DataClayRuntime(ABC):
                         except KeyError:
                             pass
 
-        ee_client.ds_update_object(session_id, into_object._object_id, serialized_params)
+        ee_client.ds_update_object(session_id, into_object._dc_id, serialized_params)
 
     #################
     # Lock & unlock #
@@ -318,7 +318,7 @@ class DataClayRuntime(ABC):
         return locations
 
     def update_object_metadata(self, instance):
-        object_md = self.metadata_service.get_object_md_by_id(instance._object_id)
+        object_md = self.metadata_service.get_object_md_by_id(instance._dc_id)
         instance.metadata = object_md
 
     #####################
@@ -483,7 +483,7 @@ class DataClayRuntime(ABC):
         backend_client = self.get_backend_client(instance._master_ee_id)
 
         returned_value = backend_client.call_active_method(
-            self.session.id, instance._object_id, method_name, serialized_args, serialized_kwargs
+            self.session.id, instance._dc_id, method_name, serialized_args, serialized_kwargs
         )
         if returned_value:
             unserialized_response = pickle.loads(returned_value)
@@ -492,7 +492,7 @@ class DataClayRuntime(ABC):
     # DEPRECATED: Use call_active_method
     def call_execute_to_ds(self, instance, parameters, operation_name, exec_env_id, using_hint):
         raise Exception("Deprecated")
-        object_id = instance._object_id
+        object_id = instance._dc_id
         operation = self.get_operation_info(object_id, operation_name)
         session_id = self.session.id
         implementation_id = self.get_implementation_id(object_id, operation_name)
@@ -584,7 +584,7 @@ class DataClayRuntime(ABC):
                         instance._master_ee_id = exec_env_id
                     logger.debug(
                         "[==Miss Jump==] MISS. The object %s was not in the exec.location %s. Retrying execution."
-                        % (instance._object_id, str(exec_env_id))
+                        % (instance._dc_id, str(exec_env_id))
                     )
 
         if serialized_params is not None and serialized_params.vol_objs is not None:
@@ -641,9 +641,7 @@ class DataClayRuntime(ABC):
             ee_client = EEClient(exec_env.hostname, exec_env.port)
             self.backend_clients[backend_id] = ee_client
 
-        copiedObject = ee_client.ds_get_copy_of_object(
-            session_id, from_object._object_id, recursive
-        )
+        copiedObject = ee_client.ds_get_copy_of_object(session_id, from_object._dc_id, recursive)
         result = DeserializationLibUtilsSingleton.deserialize_params_or_return(
             copiedObject, None, None, None, self
         )

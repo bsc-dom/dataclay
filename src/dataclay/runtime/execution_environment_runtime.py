@@ -12,12 +12,7 @@ from dataclay.runtime import settings
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
 from dataclay_common.metadata_service import MetadataService
-from dataclay.dataclay_object import DataClayObject
-from dataclay.DataClayObjProperties import (
-    DCLAY_GETTER_PREFIX,
-    DCLAY_PROPERTY_PREFIX,
-    DCLAY_SETTER_PREFIX,
-)
+
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
@@ -124,13 +119,13 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             ID of the backend in which te object was persisted.
         """
         del recursive
-        logger.debug(f"Starting make persistent for instance {instance._object_id}")
+        logger.debug(f"Starting make persistent for instance {instance._dc_id}")
 
         # It should always have a master location, since all objects intantiated
         # in a ee, get the ee as the master location
         # if not _master_ee_id:
         #     instance._master_ee_id = backend_id or self.get_backend_id_by_object_id(
-        #         instance._object_id
+        #         instance._dc_id
         #     )
 
         if alias is not None:
@@ -158,7 +153,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         if instance._master_ee_id == settings.environment_id:
             logger.debug("Object is local")
             # get_local_instance should indeed modify the same instance instance,
-            fat_instance = self.get_or_new_instance_from_db(instance._object_id, True)
+            fat_instance = self.get_or_new_instance_from_db(instance._dc_id, True)
             assert instance is fat_instance
             # TODO: Should i set _is_dirty always or only for getter and setter??
             return getattr(instance, method_name)(*args, **kwargs)
@@ -199,14 +194,14 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         while pending_objs:
             current_obj = pending_objs.pop()
             # Lock and make sure it is loaded
-            current_obj_id = current_obj._object_id
+            current_obj_id = current_obj._dc_id
             self.lock(current_obj_id)  # Avoid GC clean object while storing it
             try:
                 if not current_obj._is_loaded:
                     current_obj = self.get_or_new_instance_from_db(current_obj_id, False)
 
                 dcc_extradata = current_obj.get_class_extradata()
-                object_id = current_obj._object_id
+                object_id = current_obj._dc_id
 
                 if make_persistent:
                     # Ignore already persistent objects
@@ -267,7 +262,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         :rtype: boolean
         """
 
-        object_id = volatile_obj._object_id
+        object_id = volatile_obj._dc_id
         if hasattr(self.thread_local_data, "volatiles_under_deserialization"):
             if self.thread_local_data.volatiles_under_deserialization is not None:
                 for obj_with_data in self.thread_local_data.volatiles_under_deserialization:
@@ -459,9 +454,9 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
     def synchronize(self, instance, operation_name, params):
         session_id = self.session.id
-        object_id = instance._object_id
-        operation = self.get_operation_info(instance._object_id, operation_name)
-        implementation_id = self.get_implementation_id(instance._object_id, operation_name)
+        object_id = instance._dc_id
+        operation = self.get_operation_info(instance._dc_id, operation_name)
+        implementation_id = self.get_implementation_id(instance._dc_id, operation_name)
         # === SERIALIZE PARAMETERS ===
         serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
             params=[params],
@@ -488,7 +483,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                     del self.references_hold_by_sessions[object_id]
 
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
-        object_id = dc_obj._object_id
+        object_id = dc_obj._dc_id
         session_id = self.session.id
         logger.debug(
             "[==FederateObject==] Starting federation of object by %s with dest dataClay %s, and session %s",
@@ -501,7 +496,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         )
 
     def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
-        object_id = dc_obj._object_id
+        object_id = dc_obj._dc_id
         session_id = self.session.id
         logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",

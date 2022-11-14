@@ -7,57 +7,25 @@ Note that this managers also includes most serialization/deserialization code
 related to classes and function call parameters.
 """
 
-__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
-__copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"
-
 import functools
-import inspect
 import logging
 import pickle
-import re
 import traceback
 import uuid
-from operator import attrgetter
+from uuid import UUID
+import typing
 
 from dataclay_common.managers.object_manager import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from opentelemetry import trace
 
-from dataclay.DataClayObjectExtraData import DataClayClassExtraData, DataClayInstanceExtraData
-from dataclay.DataClayObjMethods import dclayMethod
-from dataclay.DataClayObjProperties import (
-    DCLAY_PROPERTY_PREFIX,
-    DataclayProperty,
-    PreprocessedProperty,
-)
-from dataclay.exceptions.exceptions import DataClayException, ImproperlyConfigured
 from dataclay.runtime import get_runtime
-from dataclay.serialization.lib.DeserializationLibUtils import (
-    DeserializationLibUtilsSingleton,
-    PersistentLoadPicklerHelper,
-)
-from dataclay.serialization.lib.SerializationLibUtils import (
-    PersistentIdPicklerHelper,
-    SerializationLibUtilsSingleton,
-)
-from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
-from dataclay.serialization.python.lang.DCIDWrapper import DCIDWrapper
-from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
-from dataclay.serialization.python.lang.StringWrapper import StringWrapper
-from dataclay.util.management.classmgr.UserType import UserType
+
 
 # Publicly show the dataClay method decorators
 
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
-
-# For efficiency purposes compile the folowing regular expressions:
-# (they return a tuple of two elements)
-re_property = re.compile(
-    r"(?:^\s*@dclayReplication\s*\(\s*(before|after)Update\s*=\s*'([^']+)'(?:,\s(before|after)Update='([^']+)')?(?:,\sinMaster='(True|False)')?\s*\)\n)?^\s*@ClassField\s+([\w.]+)[ \t]+([\w.\[\]<> ,]+)",
-    re.MULTILINE,
-)
-re_import = re.compile(r"^\s*@d[cC]layImport(?P<from_mode>From)?\s+(?P<import>.+)$", re.MULTILINE)
 
 
 def _get_object_by_id_helper(object_id, cls, hint):
@@ -91,6 +59,59 @@ def activemethod(func):
     return wrapper_activemethod
 
 
+DCLAY_PROPERTY_PREFIX = "_dc_property_"
+
+
+class DataClayProperty:
+
+    __slots__ = "property_name", "dc_property_name"
+
+    def __init__(self, property_name):
+        self.property_name = property_name
+        self.dc_property_name = DCLAY_PROPERTY_PREFIX + property_name
+
+    def __get__(self, instance, owner):
+        is_exec_env = get_runtime().is_exec_env()
+
+        if (is_exec_env and instance._is_loaded) or (
+            not is_exec_env and not instance._is_persistent
+        ):
+            try:
+                instance._is_dirty = True
+                # set dirty = true for language types like lists, dicts, that are get and modified. TODO: improve this.
+                return getattr(instance, self.dc_property_name)
+            except AttributeError as e:
+                logger.warning(
+                    f"Received AttributeError while accessing property {self.property_name} on instance {instance}"
+                )
+                logger.debug(f"Internal dictionary of the intance: {instance.__dict__}")
+                e.args = (e.args[0].replace(self.dc_property_name, self.property_name),)
+                raise e
+        else:
+            return get_runtime().call_active_method(
+                instance, "__getattribute__", (self.property_name,), {}
+            )
+
+    def __set__(self, instance, value):
+        """Setter for the dataClay property
+
+        See the __get__ method for the basic behavioural explanation.
+        """
+        logger.debug(f"Calling setter for property {self.property_name}")
+
+        is_exec_env = get_runtime().is_exec_env()
+        if (is_exec_env and instance._is_loaded) or (
+            not is_exec_env and not instance._is_persistent
+        ):
+            setattr(instance, self.dc_property_name, value)
+            if is_exec_env:
+                instance._is_dirty = True
+        else:
+            get_runtime().call_active_method(
+                instance, "__setattr__", (self.property_name, value), {}
+            )
+
+
 class DataClayObject:
     """Main class for Persistent Objects.
 
@@ -98,28 +119,29 @@ class DataClayObject:
     directly, through the StorageObject alias, or through a derived class).
     """
 
-    _object_id: uuid.UUID
+    _dc_id: UUID
     _alias: str
     _dataset_name: str
     _class: type
     _class_name: str
     _is_persistent: bool
-    _master_ee_id: uuid.UUID
-    _replica_ee_ids: list[uuid.UUID]
+    _master_ee_id: UUID
+    _replica_ee_ids: list[UUID]
     _language: int
     _is_read_only: bool
     _is_dirty: bool
     _is_pending_to_register: bool
     _is_loaded: bool
-    _owner_session_id: uuid.UUID
+    _owner_session_id: UUID
 
     def __init_subclass__(cls) -> None:
-        """ "Defines @properties for each annotatted attribute"""
-        for property_name in cls.__annotations__:
-            setattr(cls, property_name, DataclayProperty(property_name))
+        """Defines a @property for each annotatted attribute"""
+        for property_name in typing.get_type_hints(cls):
+            if not property_name.startswith("_dc_"):
+                setattr(cls, property_name, DataClayProperty(property_name))
 
     @classmethod
-    def new_dataclay_instance(cls, deserializing: bool = False, object_id: uuid.UUID = None):
+    def new_dataclay_instance(cls, deserializing: bool = False, object_id: UUID = None):
         """Return a new instance, without calling to the class methods."""
         logger.debug("New dataClay instance (without __call__) of class `%s`", cls.__name__)
         obj = super().__new__(cls)  # this defers the __call__ method
@@ -149,7 +171,7 @@ class DataClayObject:
 
         new_dict = {}
         new_dict["_is_persistent"] = True
-        new_dict["_object_id"] = object_id
+        new_dict["_dc_id"] = object_id
         new_dict["_master_ee_id"] = master_ee_id
 
         if get_runtime().is_exec_env():
@@ -174,7 +196,7 @@ class DataClayObject:
         """Initializes the object"""
 
         # Populate default internal fields
-        self._object_id = uuid.uuid4()
+        self._dc_id = uuid.uuid4()
         self._alias = None
         self._dataset_name = get_runtime().session.dataset_name
         self._class = self.__class__
@@ -205,7 +227,7 @@ class DataClayObject:
 
     @property
     def dataclay_id(self):
-        return self._object_id
+        return self._dc_id
 
     @property
     def dataset(self):
@@ -245,12 +267,12 @@ class DataClayObject:
 
     def new_replica(self, backend_id=None, recursive=True):
         return get_runtime().new_replica(
-            self._object_id, self._master_ee_id, backend_id, None, recursive
+            self._dc_id, self._master_ee_id, backend_id, None, recursive
         )
 
     def new_version(self, backend_id=None, recursive=True):
         return get_runtime().new_version(
-            self._object_id,
+            self._dc_id,
             self._master_ee_id,
             self._class_name,
             self._dataset_name,
@@ -261,7 +283,7 @@ class DataClayObject:
 
     def consolidate_version(self):
         """Consolidate: copy contents of current version object to original object"""
-        return get_runtime().consolidate_version(self._object_id, self._master_ee_id)
+        return get_runtime().consolidate_version(self._dc_id, self._master_ee_id)
 
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
 
@@ -316,7 +338,7 @@ class DataClayObject:
             self.get_class_extradata().properties.values(), key=attrgetter("position")
         )
 
-        logger.verbose("Set all properties from object %s", from_object._object_id)
+        logger.verbose("Set all properties from object %s", from_object._dc_id)
 
         for p in properties:
             value = getattr(from_object, p.name)
@@ -339,7 +361,7 @@ class DataClayObject:
             hint = self._master_ee_id or ""
 
             return "%s:%s:%s" % (
-                self._object_id,
+                self._dc_id,
                 hint,
                 None,  # self.get_class_extradata().class_id, TODO: Use class_name
             )
@@ -368,13 +390,13 @@ class DataClayObject:
     @property
     def metadata(self):
         object_md = ObjectMetadata(
-            self._object_id,
+            self._dc_id,
             self._alias,
             self._dataset_name,
             self._class_name,
             self._master_ee_id,
             self._replica_ee_ids,
-            LANG_PYTHON,
+            self._language,
             self._is_read_only,
         )
         return object_md
@@ -382,7 +404,7 @@ class DataClayObject:
     @metadata.setter
     def metadata(self, object_md):
         # self.__metadata = object_md
-        self._object_id = object_md.id
+        self._dc_id = object_md.id
         self._alias = object_md.alias_name
         self._dataset_name = object_md.dataset_name
         self._master_ee_id = object_md.master_ee_id
@@ -391,7 +413,7 @@ class DataClayObject:
 
     def get_all_locations(self):
         """Return all the locations of this object."""
-        return get_runtime().get_all_locations(self._object_id)
+        return get_runtime().get_all_locations(self._dc_id)
 
     # TODO: This function is redundant. Change it to get_random_backend(self), and implement it
     def get_location(self):
@@ -406,7 +428,7 @@ class DataClayObject:
     # DEPRECATED
     def get_original_object_id(self):
         # return self.__dclay_instance_extradata.original_object_id
-        return self._object_id
+        return self._dc_id
 
     # DEPRECATED
     def set_original_object_id(self, new_original_object_id):
@@ -476,7 +498,7 @@ class DataClayObject:
         Detach object from session, i.e. remove reference from current session provided to current object,
             'dear garbage-collector, the current session is not using this object anymore'
         """
-        get_runtime().detach_object_from_session(self._object_id, self._master_ee_id)
+        get_runtime().detach_object_from_session(self._dc_id, self._master_ee_id)
 
     #################
     # Serialization #
@@ -578,7 +600,7 @@ class DataClayObject:
 
     def deserialize(self, io_file, iface_bitmaps, metadata, cur_deserialized_python_objs):
         """Reciprocal to serialize."""
-        logger.verbose("Deserializing object %s", str(self._object_id))
+        logger.verbose("Deserializing object %s", str(self._dc_id))
 
         # Put slow debugging info inside here:
         #
@@ -610,7 +632,7 @@ class DataClayObject:
         if des_master_loc_str == "x":
             self._master_ee_id = None
         else:
-            self._master_ee_id = uuid.UUID(des_master_loc_str)
+            self._master_ee_id = UUID(des_master_loc_str)
 
         if hasattr(self, "__setstate__"):
             # The object has a user-defined deserialization method.
@@ -685,7 +707,7 @@ class DataClayObject:
             self.make_persistent()
 
         return _get_object_by_id_helper, (
-            self._object_id,
+            self._dc_id,
             self._class,  # self.get_class_extradata().class_id,
             self._master_ee_id,
         )
@@ -695,12 +717,12 @@ class DataClayObject:
         if self._is_persistent:
             return "<%s instance with ObjectID=%s>" % (
                 self._class_name,
-                self._object_id,
+                self._dc_id,
             )
         else:
             return "<%s volatile instance with ObjectID=%s>" % (
                 self._class_name,
-                self._object_id,
+                self._dc_id,
             )
 
     def __eq__(self, other):
@@ -710,16 +732,16 @@ class DataClayObject:
         if not self._is_persistent or not other._is_persistent:
             return False
 
-        return self._object_id and other._object_id and self._object_id == other._object_id
+        return self._dc_id and other._dc_id and self._dc_id == other._dc_id
 
     # FIXME: Think another solution, the user may want to override the method
     def __hash__(self):
-        return hash(self._object_id)
+        return hash(self._dc_id)
 
-    @dclayMethod(
-        obj="anything", property_name="str", value="anything", beforeUpdate="str", afterUpdate="str"
-    )
-    def __setUpdate__(self, obj, property_name, value, beforeUpdate, afterUpdate):
+    @activemethod
+    def __setUpdate__(
+        self, obj: "Any", property_name: str, value: "Any", beforeUpdate: str, afterUpdate: str
+    ):
         if beforeUpdate is not None:
             getattr(self, beforeUpdate)(property_name, value)
         object.__setattr__(obj, "%s%s" % ("_dataclay_property_", property_name), value)

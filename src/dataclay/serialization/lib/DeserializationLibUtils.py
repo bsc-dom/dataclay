@@ -151,7 +151,7 @@ class DeserializationLibUtils(object):
         """
 
         """ Lock object until deserialization is finished in case another instance is waiting to do the same so much """
-        runtime.lock(instance._object_id)
+        runtime.lock(instance._dc_id)
         try:
             metadata = param_or_ret.metadata
             io_file = BytesIO(param_or_ret.obj_bytes)
@@ -169,7 +169,7 @@ class DeserializationLibUtils(object):
             instance._alias = metadata.alias
             instance._dataset_name = metadata.dataset_name
         finally:
-            runtime.unlock(instance._object_id)
+            runtime.unlock(instance._dc_id)
 
     def deserialize_object_with_data(
         self, param_or_ret, instance, ifacebitmpas, runtime, owner_session_id, force_deserialization
@@ -195,7 +195,7 @@ class DeserializationLibUtils(object):
         Also happening in update of objects and cleaning in GC.
         """
         """ Lock object until deserialization is finished in case another instance is waiting to do the same so much """
-        runtime.lock(instance._object_id)
+        runtime.lock(instance._dc_id)
         try:
             if force_deserialization or not instance._is_loaded:
                 """TODO: improve GRPC messages"""
@@ -218,7 +218,7 @@ class DeserializationLibUtils(object):
                 instance._dataset_name = metadata.dataset_name
 
         finally:
-            runtime.unlock(instance._object_id)
+            runtime.unlock(instance._dc_id)
 
     def deserialize_return(self, serialized_params_or_return, iface_bitmaps, return_type, runtime):
 
@@ -263,7 +263,7 @@ class DeserializationLibUtils(object):
             # For makePersistent or federate methods, we must know that there is a session using the object which
             # is the one that persisted/federated. Normally, we know a client is using an object if we serialize
             # it to send to him but in that case client has created/federated the object.
-            runtime.add_session_reference(deserialized_param._object_id)
+            runtime.add_session_reference(deserialized_param._dc_id)
 
             if i < num_params:
                 params[i] = deserialized_param

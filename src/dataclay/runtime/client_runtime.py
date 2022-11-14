@@ -54,12 +54,10 @@ class ClientRuntime(DataClayRuntime):
         if instance._is_persistent:
             raise RuntimeError("Instance is already persistent")
         else:
-            logger.debug(f"Starting make persistent for object {instance._object_id}")
+            logger.debug(f"Starting make persistent for object {instance._dc_id}")
 
             instance._alias = alias
-            instance._master_ee_id = backend_id or self.get_backend_id_by_object_id(
-                instance._object_id
-            )
+            instance._master_ee_id = backend_id or self.get_backend_id_by_object_id(instance._dc_id)
 
             # Gets Execution Environment client
             try:
@@ -104,7 +102,7 @@ class ClientRuntime(DataClayRuntime):
             ee_info = self.get_execution_environment_info(ee_id)
             ee_client = EEClient(ee_info.hostname, ee_info.port)
             self.backend_clients[ee_id] = ee_client
-        ee_client.delete_alias(self.session.id, instance._object_id)
+        ee_client.delete_alias(self.session.id, instance._dc_id)
         instance._alias = None
 
     def close_session(self):
@@ -115,8 +113,8 @@ class ClientRuntime(DataClayRuntime):
 
     def synchronize(self, instance, operation_name, params):
         dest_backend_id = self.get_hint()
-        operation = self.get_operation_info(instance._object_id, operation_name)
-        implementation_id = self.get_implementation_id(instance._object_id, operation_name)
+        operation = self.get_operation_info(instance._dc_id, operation_name)
+        implementation_id = self.get_implementation_id(instance._dc_id, operation_name)
         # === SERIALIZE PARAMETER ===
         serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
             params=[params],
@@ -133,7 +131,7 @@ class ClientRuntime(DataClayRuntime):
             ee_client = EEClient(exec_env.hostname, exec_env.port)
             self.backend_clients[dest_backend_id] = ee_client
         ee_client.synchronize(
-            self.session.id, instance._object_id, implementation_id, serialized_params
+            self.session.id, instance._dc_id, implementation_id, serialized_params
         )
 
     def detach_object_from_session(self, object_id, hint):
@@ -166,19 +164,19 @@ class ClientRuntime(DataClayRuntime):
 
         logger.debug(
             "[==FederateObject==] Starting federation of object by %s calling EE %s with dest dataClay %s, and session %s",
-            instance._object_id,
+            instance._dc_id,
             hint,
             external_execution_environment_id,
             self.session.id,
         )
         ee_client.federate(
-            self.session.id, instance._object_id, external_execution_environment_id, recursive
+            self.session.id, instance._dc_id, external_execution_environment_id, recursive
         )
 
     def unfederate_from_backend(self, instance, external_execution_environment_id, recursive):
         logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",
-            instance._object_id,
+            instance._dc_id,
             external_execution_environment_id,
             self.session.id,
         )
@@ -194,5 +192,5 @@ class ClientRuntime(DataClayRuntime):
             self.backend_clients[hint] = ee_client
 
         ee_client.unfederate(
-            self.session.id, instance._object_id, external_execution_environment_id, recursive
+            self.session.id, instance._dc_id, external_execution_environment_id, recursive
         )
