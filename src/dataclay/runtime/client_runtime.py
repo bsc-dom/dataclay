@@ -51,22 +51,24 @@ class ClientRuntime(DataClayRuntime):
             ID of the backend in which the object was persisted.
         """
 
-        if instance._is_persistent:
+        if instance._dc_is_persistent:
             raise RuntimeError("Instance is already persistent")
         else:
             logger.debug(f"Starting make persistent for object {instance._dc_id}")
 
             instance._dc_alias = alias
-            instance._master_ee_id = backend_id or self.get_backend_id_by_object_id(instance._dc_id)
+            instance._dc_master_ee_id = backend_id or self.get_backend_id_by_object_id(
+                instance._dc_id
+            )
 
             # Gets Execution Environment client
             try:
-                ee_client = self.backend_clients[instance._master_ee_id]
+                ee_client = self.backend_clients[instance._dc_master_ee_id]
             except KeyError:
-                logger.debug(f"Client {instance._master_ee_id} not found in cache!")
-                exec_env = self.get_execution_environment_info(instance._master_ee_id)
+                logger.debug(f"Client {instance._dc_master_ee_id} not found in cache!")
+                exec_env = self.get_execution_environment_info(instance._dc_master_ee_id)
                 ee_client = EEClient(exec_env.hostname, exec_env.port)
-                self.backend_clients[instance._master_ee_id] = ee_client
+                self.backend_clients[instance._dc_master_ee_id] = ee_client
 
             ######################################
             # Serialize instance with Pickle
@@ -80,19 +82,19 @@ class ClientRuntime(DataClayRuntime):
             # TODO: Check if we can make a use of the recursive parameter
 
             # Must be set to True before pickle.dumps to avoid infinit recursion
-            instance._is_persistent = True
+            instance._dc_is_persistent = True
 
             serialized_dict = pickle.dumps(instance.__dict__)
             ee_client.new_make_persistent(self.session.id, serialized_dict)
 
-            return instance._master_ee_id
+            return instance._dc_master_ee_id
 
     # NOTE: This function may be removed.
     # When an alias is removed without having the instance, the persistent object
     # has to know it if we consult its alias, therefore, in all cases, the alias
     # will have to be updated from the single source of truth i.e. the etcd metadata
     def delete_alias(self, instance):
-        ee_id = instance._master_ee_id
+        ee_id = instance._dc_master_ee_id
         if not ee_id:
             self.update_object_metadata(instance)
             ee_id = self.get_hint()
@@ -121,7 +123,7 @@ class ClientRuntime(DataClayRuntime):
             iface_bitmaps=None,
             params_spec=operation.params,
             params_order=operation.paramsOrder,
-            hint_volatiles=instance._master_ee_id,
+            hint_volatiles=instance._dc_master_ee_id,
             runtime=self,
         )
         try:
@@ -139,7 +141,7 @@ class ClientRuntime(DataClayRuntime):
             if hint is None:
                 instance = self.heap_manager[object_id]
                 self.update_object_metadata(instance)
-                hint = instance._master_ee_id
+                hint = instance._dc_master_ee_id
             try:
                 ee_client = self.backend_clients[hint]
             except KeyError:
@@ -151,7 +153,7 @@ class ClientRuntime(DataClayRuntime):
             traceback.print_exc()
 
     def federate_to_backend(self, instance, external_execution_environment_id, recursive):
-        hint = instance._master_ee_id
+        hint = instance._dc_master_ee_id
         if hint is None:
             self.update_object_metadata(instance)
             hint = self.get_hint()
@@ -180,7 +182,7 @@ class ClientRuntime(DataClayRuntime):
             external_execution_environment_id,
             self.session.id,
         )
-        hint = instance._master_ee_id
+        hint = instance._dc_master_ee_id
         if hint is None:
             self.update_object_metadata(instance)
             hint = self.get_hint()

@@ -101,7 +101,7 @@ class HeapManager(threading.Thread, ABC):
     def count_loaded_objs(self):
         num_loaded_objs = 0
         for obj in self.inmemory_objects.values():
-            if obj._is_loaded:
+            if obj._dc_is_loaded:
                 num_loaded_objs = num_loaded_objs + 1
         return num_loaded_objs
 

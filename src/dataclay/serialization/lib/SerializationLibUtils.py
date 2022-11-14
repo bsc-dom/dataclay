@@ -69,9 +69,9 @@ class SerializationLibUtils(object):
             instance.get_original_object_id(),
             instance.get_root_location(),
             instance.get_origin_location(),
-            instance._replica_ee_ids,
+            instance._dc_replica_ee_ids,
             instance._dc_alias,
-            instance._is_read_only,
+            instance._dc_is_read_only,
             instance._dc_dataset_name,
         )
         dcc_extradata = instance.get_class_extradata()
@@ -100,7 +100,7 @@ class SerializationLibUtils(object):
 
         """ update reference counting """
         associated_oid = element._dc_id
-        hint = element._master_ee_id
+        hint = element._dc_master_ee_id
         reference_counting.increment_reference_counting(associated_oid, hint)
 
         """ write tag """
@@ -152,11 +152,11 @@ class SerializationLibUtils(object):
 
                         runtime.add_session_reference(oid)
 
-                        if param._is_persistent:
+                        if param._dc_is_persistent:
                             logger.debug("Serializing persistent parameter/return with oid %s", oid)
 
                             class_id = param.get_class_extradata().class_id
-                            hint = param._master_ee_id
+                            hint = param._dc_master_ee_id
 
                             pers_param = PersistentParamOrReturn(oid, hint, class_id)
                             pers_params[i] = pers_param
@@ -207,13 +207,13 @@ class SerializationLibUtils(object):
                     if oid in already_serialized_params:
                         continue
 
-                    if pending_obj._is_persistent:
+                    if pending_obj._dc_is_persistent:
                         logger.debug(
                             "Serializing sub-object persistent parameter/return with oid %s", oid
                         )
 
                         class_id = param.get_class_extradata().class_id
-                        hint = param._master_ee_id
+                        hint = param._dc_master_ee_id
 
                         pers_param = PersistentParamOrReturn(oid, hint, class_id)
                         pers_params[i] = pers_param
@@ -285,8 +285,8 @@ class SerializationLibUtils(object):
             # is for associated objects that are not persistent yet (currently being persisted)
             # This algorithm can be improved in both languages, Python and Java.
             if for_update is False:
-                dc_object._master_ee_id = hint
-                dc_object._is_persistent = True
+                dc_object._dc_master_ee_id = hint
+                dc_object._dc_is_persistent = True
 
             object_with_data = self._create_buffer_and_serialize(
                 dc_object,
@@ -298,7 +298,7 @@ class SerializationLibUtils(object):
             )
 
             if force_pending_to_register:
-                dc_object._is_pending_to_register = True
+                dc_object._dc_is_pending_to_register = True
 
         finally:
             runtime.unlock(object_id)
@@ -333,7 +333,7 @@ class SerializationLibUtils(object):
                 tag = v
                 class_id = obj.get_class_extradata().class_id
                 object_id = obj._dc_id
-                hint = obj._master_ee_id
+                hint = obj._dc_master_ee_id
 
                 tags_to_oids[tag] = object_id
                 tags_to_class_id[tag] = class_id
@@ -479,7 +479,7 @@ class PersistentIdPicklerHelper(object):
 
             """ update reference counting """
             associated_oid = obj._dc_id
-            hint = obj._master_ee_id
+            hint = obj._dc_master_ee_id
             self._reference_counting.increment_reference_counting(associated_oid, hint)
 
             return str(tag)

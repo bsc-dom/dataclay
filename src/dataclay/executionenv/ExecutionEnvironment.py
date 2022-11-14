@@ -162,7 +162,7 @@ class ExecutionEnvironment(object):
         # TODO: When the object metadata is updated synchronously, this should me removed
         self.runtime.metadata_service.update_object(instance.metadata)
 
-        instance._is_pending_to_register = False
+        instance._dc_is_pending_to_register = False
 
     def store_in_memory(self, objects_to_store):
         """This function will deserialize objects into dataClay memory heap using the same design as for
@@ -204,10 +204,10 @@ class ExecutionEnvironment(object):
         try:
             instance = self.runtime.heap_manager[dict["_dc_id"]]
             instance.__dict__.update(dict)
-            instance._is_persistent = True  # All objects in the EE are persistent
-            instance._is_loaded = True
-            instance._is_pending_to_register = True
-            instance._master_ee_id = self.runtime.get_hint()  # It should be already defined
+            instance._dc_is_persistent = True  # All objects in the EE are persistent
+            instance._dc_is_loaded = True
+            instance._dc_is_pending_to_register = True
+            instance._dc_master_ee_id = self.runtime.get_hint()  # It should be already defined
         except KeyError:
             instance = dict["_dc_class"].new_volatile(**dict)
 
@@ -453,7 +453,7 @@ class ExecutionEnvironment(object):
                     calling_backend_id=self.execution_environment_id,
                 )
 
-        replica_locations = instance._replica_ee_ids
+        replica_locations = instance._dc_replica_ee_ids
         if replica_locations is not None:
             logger.debug(f"Found replica locations {replica_locations}")
             for replica_location in replica_locations:
@@ -678,27 +678,27 @@ class ExecutionEnvironment(object):
 
             # update_replica_locs = 1 means new replica/federation
             if dest_replica_backend_id is not None and update_replica_locs == 1:
-                if current_obj._replica_ee_ids is not None:
-                    if dest_replica_backend_id in current_obj._replica_ee_ids:
+                if current_obj._dc_replica_ee_ids is not None:
+                    if dest_replica_backend_id in current_obj._dc_replica_ee_ids:
                         # already replicated
                         logger.debug(f"WARNING: Found already replicated object {oid}. Skipping")
                         return None
 
             # Add object to result and obtained_objs for return and recursive
             obj_with_data = SerializationLibUtilsSingleton.serialize_dcobj_with_data(
-                current_obj, pending_objs, False, current_obj._master_ee_id, self.runtime, False
+                current_obj, pending_objs, False, current_obj._dc_master_ee_id, self.runtime, False
             )
 
             if dest_replica_backend_id is not None and update_replica_locs == 1:
                 current_obj.add_replica_location(dest_replica_backend_id)
-                current_obj._is_dirty = True
+                current_obj._dc_is_dirty = True
                 obj_with_data.metadata.origin_location = self.execution_environment_id
             elif update_replica_locs == 2:
                 if dest_replica_backend_id is not None:
                     current_obj.remove_replica_location(dest_replica_backend_id)
                 else:
                     current_obj.clear_replica_locations()
-                current_obj._is_dirty = True
+                current_obj._dc_is_dirty = True
 
         finally:
             self.runtime.unlock(oid)
@@ -934,7 +934,7 @@ class ExecutionEnvironment(object):
                         True,
                     )
 
-                    instance._is_dirty = True
+                    instance._dc_is_dirty = True
                     updated_objects_here.append(cur_entry)
                 except Exception:
                     # Get in other backend
@@ -1137,7 +1137,7 @@ class ExecutionEnvironment(object):
         # can tell if the object actually exists
         # summary: the object only exist in EE if it is loaded.
         try:
-            return self.runtime.heap_manager[object_id]._is_loaded
+            return self.runtime.heap_manager[object_id]._dc_is_loaded
         except KeyError:
             return False
         finally:

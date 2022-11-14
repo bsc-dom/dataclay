@@ -95,7 +95,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         self.heap_manager.flush_all()
 
     def store_object(self, instance):
-        if not instance._is_persistent:
+        if not instance._dc_is_persistent:
             raise RuntimeError(
                 "StoreObject should only be called on Persistent Objects. "
                 "Ensure to call make_persistent first"
@@ -124,7 +124,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         # It should always have a master location, since all objects intantiated
         # in a ee, get the ee as the master location
         # if not _master_ee_id:
-        #     instance._master_ee_id = backend_id or self.get_backend_id_by_object_id(
+        #     instance._dc_master_ee_id = backend_id or self.get_backend_id_by_object_id(
         #         instance._dc_id
         #     )
 
@@ -137,10 +137,10 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             # 3 - object was persisted with an alias and it must be already registered -> we add a new alias.
             instance._dc_alias = alias
 
-            if instance._is_pending_to_register:
+            if instance._dc_is_pending_to_register:
                 self.metadata_service.register_object(instance.metadata)
 
-        return instance._master_ee_id
+        return instance._dc_master_ee_id
 
     def call_active_method(self, instance, method_name, args: tuple, kwargs: dict):
         """This method overrides parents method.
@@ -150,7 +150,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
         # TODO: Check if the object is under deserialization ¿?
 
-        if instance._master_ee_id == settings.environment_id:
+        if instance._dc_master_ee_id == settings.environment_id:
             logger.debug("Object is local")
             # get_local_instance should indeed modify the same instance instance,
             fat_instance = self.get_or_new_instance_from_db(instance._dc_id, True)
@@ -197,7 +197,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             current_obj_id = current_obj._dc_id
             self.lock(current_obj_id)  # Avoid GC clean object while storing it
             try:
-                if not current_obj._is_loaded:
+                if not current_obj._dc_is_loaded:
                     current_obj = self.get_or_new_instance_from_db(current_obj_id, False)
 
                 dcc_extradata = current_obj.get_class_extradata()
@@ -205,19 +205,19 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
                 if make_persistent:
                     # Ignore already persistent objects
-                    if current_obj._is_persistent:
+                    if current_obj._dc_is_persistent:
                         continue
 
                     obj_to_register.append(current_obj)
 
                 # This object will soon be persistent
-                current_obj._is_persistent = True
-                current_obj._master_ee_id = settings.environment_id
+                current_obj._dc_is_persistent = True
+                current_obj._dc_master_ee_id = settings.environment_id
                 # Just in case (should have been loaded already)
                 logger.debug(
                     "Setting loaded to true from internal store for object %s" % str(object_id)
                 )
-                current_obj._is_loaded = True
+                current_obj._dc_is_loaded = True
 
                 logger.debug(
                     "Ready to make persistent object {%s} of class %s {%s}"
@@ -275,7 +275,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                             return True
                         # deserialize it
                         metaclass_id = volatile_obj.get_class_extradata().class_id
-                        hint = volatile_obj._master_ee_id
+                        hint = volatile_obj._dc_master_ee_id
                         self.get_or_new_volatile_instance_and_load(
                             object_id, metaclass_id, hint, obj_with_data, ifacebitmaps
                         )
@@ -334,7 +334,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         if alias is not None:
             self.delete_alias_in_dataclay(alias, instance._dc_dataset_name)
         instance._dc_alias = None
-        instance._is_dirty = True
+        instance._dc_is_dirty = True
 
     def close_session_in_ee(self, session_id):
         """Close session in EE. Subtract session references for GC."""
@@ -463,7 +463,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             iface_bitmaps=None,
             params_spec=operation.params,
             params_order=operation.paramsOrder,
-            hint_volatiles=instance._master_ee_id,
+            hint_volatiles=instance._dc_master_ee_id,
             runtime=self,
         )
         self.execution_environment.synchronize(

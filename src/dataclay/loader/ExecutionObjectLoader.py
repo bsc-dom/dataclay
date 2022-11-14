@@ -98,7 +98,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         DeserializationLibUtilsSingleton.deserialize_object_from_db(
             object_to_fill, obj_bytes, self.runtime
         )
-        object_to_fill._master_ee_id = self.runtime.get_hint()
+        object_to_fill._dc_master_ee_id = self.runtime.get_hint()
         self.logger.debug("Object %s loaded from DB", object_id)
 
     def get_or_new_instance_from_db(self, object_id, retry):
@@ -141,10 +141,10 @@ class ExecutionObjectLoader(DataClayObjectLoader):
                     DeserializationLibUtilsSingleton.deserialize_object_from_db_bytes_aux(
                         instance, metadata, msg.data, self.runtime
                     )
-                    instance._master_ee_id = self.runtime.get_hint()
+                    instance._dc_master_ee_id = self.runtime.get_hint()
                     self.logger.debug("Object %s deserialized", object_id)
 
-                if not instance._is_loaded:
+                if not instance._dc_is_loaded:
                     self._get_from_db_and_fill(instance)
 
                 obtained = True
@@ -178,7 +178,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
             self.runtime.lock(object_id)
             try:
                 """double check for race-conditions"""
-                if not instance._is_loaded:
+                if not instance._dc_is_loaded:
                     self._get_from_db_and_fill(instance)
                 loaded = True
             except Exception as ex:

@@ -192,7 +192,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         self.runtime.lock(object_id)
         try:
 
-            is_loaded = dc_object._is_loaded
+            is_loaded = dc_object._dc_is_loaded
             if not is_loaded:
                 logger.trace("[==GC==] Not collecting since not loaded.")
                 self.release_from_heap(dc_object)
@@ -202,7 +202,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
             object from DB, and lock will control that object is not being cleaned """
             logger.debug("[==GC==] Setting loaded to false from gc %s" % str(object_id))
 
-            dc_object._is_loaded = False
+            dc_object._dc_is_loaded = False
 
             # Update it
             logger.debug("[==GC==] Updating object %s ", dc_object._dc_id)
@@ -213,7 +213,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
             self.__nullify_object(dc_object)
 
             """ Object is not dirty anymore """
-            dc_object._is_dirty = False
+            dc_object._dc_is_dirty = False
 
             """
             VERY IMPORTANT (RACE CONDITION)
@@ -241,7 +241,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         try:
             logger.debug("[==GCUpdate==] Updating object %s", object_to_update._dc_id)
             """ Call EE update """
-            if object_to_update._is_pending_to_register:
+            if object_to_update._dc_is_pending_to_register:
                 logger.debug(
                     f"[==GCUpdate==] Storing and registering object {object_to_update._dc_id}"
                 )

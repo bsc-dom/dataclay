@@ -43,8 +43,8 @@ def activemethod(func):
             # If the object is not persistent executes the method locally,
             # else, executes the method within the execution environment
             if (
-                (get_runtime().is_exec_env() and self._is_loaded)
-                or (get_runtime().is_client() and not self._is_persistent)
+                (get_runtime().is_exec_env() and self._dc_is_loaded)
+                or (get_runtime().is_client() and not self._dc_is_persistent)
                 or func.__name__ == "__setstate__"  # For Pickle
                 or func.__name__ == "__getstate__"  # For Pickle
             ):
@@ -73,11 +73,11 @@ class DataClayProperty:
     def __get__(self, instance, owner):
         is_exec_env = get_runtime().is_exec_env()
 
-        if (is_exec_env and instance._is_loaded) or (
-            not is_exec_env and not instance._is_persistent
+        if (is_exec_env and instance._dc_is_loaded) or (
+            not is_exec_env and not instance._dc_is_persistent
         ):
             try:
-                instance._is_dirty = True
+                instance._dc_is_dirty = True
                 # set dirty = true for language types like lists, dicts, that are get and modified. TODO: improve this.
                 return getattr(instance, self.dc_property_name)
             except AttributeError as e:
@@ -100,12 +100,12 @@ class DataClayProperty:
         logger.debug(f"Calling setter for property {self.property_name}")
 
         is_exec_env = get_runtime().is_exec_env()
-        if (is_exec_env and instance._is_loaded) or (
-            not is_exec_env and not instance._is_persistent
+        if (is_exec_env and instance._dc_is_loaded) or (
+            not is_exec_env and not instance._dc_is_persistent
         ):
             setattr(instance, self.dc_property_name, value)
             if is_exec_env:
-                instance._is_dirty = True
+                instance._dc_is_dirty = True
         else:
             get_runtime().call_active_method(
                 instance, "__setattr__", (self.property_name, value), {}
@@ -124,15 +124,15 @@ class DataClayObject:
     _dc_dataset_name: str
     _dc_class: type
     _dc_class_name: str
-    _is_persistent: bool
-    _master_ee_id: UUID
-    _replica_ee_ids: list[UUID]
-    _language: int
-    _is_read_only: bool
-    _is_dirty: bool
-    _is_pending_to_register: bool
-    _is_loaded: bool
-    _owner_session_id: UUID
+    _dc_is_persistent: bool
+    _dc_master_ee_id: UUID
+    _dc_replica_ee_ids: list[UUID]
+    _dc_language: int
+    _dc_is_read_only: bool
+    _dc_is_dirty: bool
+    _dc_is_pending_to_register: bool
+    _dc_is_loaded: bool
+    _dc_owner_session_id: UUID
 
     def __init_subclass__(cls) -> None:
         """Defines a @property for each annotatted attribute"""
@@ -156,11 +156,11 @@ class DataClayObject:
 
         if get_runtime().is_exec_env():
             # *** Execution Environment flags
-            obj._is_pending_to_register = True
-            new_dict["_is_persistent"] = True  # All objects in the EE are persistent
-            new_dict["_is_loaded"] = True
-            new_dict["_is_pending_to_register"] = True
-            new_dict["_master_ee_id"] = get_runtime().get_hint()  # It should be in kwargs
+            obj._dc_is_pending_to_register = True
+            new_dict["_dc_is_persistent"] = True  # All objects in the EE are persistent
+            new_dict["_dc_is_loaded"] = True
+            new_dict["_dc_is_pending_to_register"] = True
+            new_dict["_dc_master_ee_id"] = get_runtime().get_hint()  # It should be in kwargs
 
         obj.initialize_object(**new_dict)
         return obj
@@ -170,9 +170,9 @@ class DataClayObject:
         obj = super().__new__(cls)
 
         new_dict = {}
-        new_dict["_is_persistent"] = True
+        new_dict["_dc_is_persistent"] = True
         new_dict["_dc_id"] = object_id
-        new_dict["_master_ee_id"] = master_ee_id
+        new_dict["_dc_master_ee_id"] = master_ee_id
 
         if get_runtime().is_exec_env():
             # *** Execution Environment flags
@@ -180,8 +180,8 @@ class DataClayObject:
             # this function (initialize as persistent) is used for objects being
             # deserialized and therefore they might be unloaded
             # same happens for pending to register flag.
-            new_dict["_is_loaded"] = False
-            new_dict["_is_pending_to_register"] = False
+            new_dict["_dc_is_loaded"] = False
+            new_dict["_dc_is_pending_to_register"] = False
 
         obj.initialize_object(**new_dict)
         return obj
@@ -201,17 +201,17 @@ class DataClayObject:
         self._dc_dataset_name = get_runtime().session.dataset_name
         self._dc_class = self.__class__
         self._dc_class_name = self.__class__.__module__ + "." + self.__class__.__name__
-        self._is_persistent = False
-        self._master_ee_id = (
+        self._dc_is_persistent = False
+        self._dc_master_ee_id = (
             get_runtime().get_hint()
         )  # May be replaced if instantiating a thing object from different ee
-        self._replica_ee_ids = []
-        self._language = LANG_PYTHON
-        self._is_read_only = False
-        self._is_dirty = False
-        self._is_pending_to_register = False
-        self._is_loaded = False
-        self._owner_session_id = (
+        self._dc_replica_ee_ids = []
+        self._dc_language = LANG_PYTHON
+        self._dc_is_read_only = False
+        self._dc_is_dirty = False
+        self._dc_is_pending_to_register = False
+        self._dc_is_loaded = False
+        self._dc_owner_session_id = (
             get_runtime().session.id
         )  # May be removed to instantiate dc object without init()
 
@@ -239,7 +239,7 @@ class DataClayObject:
         Flags for "persistent" state might be different in EE and client.
         """
         # TODO: improve this using an specialization (dgasull)
-        self._is_persistent = True
+        self._dc_is_persistent = True
 
         if get_runtime().is_exec_env():
             # *** Execution Environment flags
@@ -247,8 +247,8 @@ class DataClayObject:
             # this function (initialize as persistent) is used for objects being
             # deserialized and therefore they might be unloaded
             # same happens for pending to register flag.
-            self._is_loaded = False
-            self._is_pending_to_register = False
+            self._dc_is_loaded = False
+            self._dc_is_pending_to_register = False
 
     def initialize_object_as_volatile(self):
         """Initialize object with state 'volatile' with proper flags.
@@ -260,20 +260,20 @@ class DataClayObject:
         # TODO: improve this using an specialization (dgasull)
         if get_runtime().is_exec_env():
             # *** Execution Environment flags
-            self._is_persistent = True  # All objects in the EE are persistent
-            self._is_loaded = True
-            self._is_pending_to_register = True
-            # self._master_ee_id = get_runtime().get_hint()
+            self._dc_is_persistent = True  # All objects in the EE are persistent
+            self._dc_is_loaded = True
+            self._dc_is_pending_to_register = True
+            # self._dc_master_ee_id = get_runtime().get_hint()
 
     def new_replica(self, backend_id=None, recursive=True):
         return get_runtime().new_replica(
-            self._dc_id, self._master_ee_id, backend_id, None, recursive
+            self._dc_id, self._dc_master_ee_id, backend_id, None, recursive
         )
 
     def new_version(self, backend_id=None, recursive=True):
         return get_runtime().new_version(
             self._dc_id,
-            self._master_ee_id,
+            self._dc_master_ee_id,
             self._dc_class_name,
             self._dc_dataset_name,
             backend_id,
@@ -283,7 +283,7 @@ class DataClayObject:
 
     def consolidate_version(self):
         """Consolidate: copy contents of current version object to original object"""
-        return get_runtime().consolidate_version(self._dc_id, self._master_ee_id)
+        return get_runtime().consolidate_version(self._dc_id, self._dc_master_ee_id)
 
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
 
@@ -357,8 +357,8 @@ class DataClayObject:
 
         If the object is NOT persistent, then this method returns None.
         """
-        if self._is_persistent:
-            hint = self._master_ee_id or ""
+        if self._dc_is_persistent:
+            hint = self._dc_master_ee_id or ""
 
             return "%s:%s:%s" % (
                 self._dc_id,
@@ -394,10 +394,10 @@ class DataClayObject:
             self._dc_alias,
             self._dc_dataset_name,
             self._dc_class_name,
-            self._master_ee_id,
-            self._replica_ee_ids,
-            self._language,
-            self._is_read_only,
+            self._dc_master_ee_id,
+            self._dc_replica_ee_ids,
+            self._dc_language,
+            self._dc_is_read_only,
         )
         return object_md
 
@@ -407,9 +407,9 @@ class DataClayObject:
         self._dc_id = object_md.id
         self._dc_alias = object_md.alias_name
         self._dc_dataset_name = object_md.dataset_name
-        self._master_ee_id = object_md.master_ee_id
-        self._replica_ee_ids = object_md.replica_ee_ids
-        self._is_read_only = object_md.is_read_only
+        self._dc_master_ee_id = object_md.master_ee_id
+        self._dc_replica_ee_ids = object_md.replica_ee_ids
+        self._dc_is_read_only = object_md.is_read_only
 
     def get_all_locations(self):
         """Return all the locations of this object."""
@@ -419,7 +419,7 @@ class DataClayObject:
     def get_location(self):
         """Return a single (random) location of this object."""
         # return get_runtime().get_location(self.__dclay_instance_extradata.object_id)
-        return self._master_ee_id
+        return self._dc_master_ee_id
 
     #################################
     # Extradata getters and setters #
@@ -438,7 +438,7 @@ class DataClayObject:
     # DEPRECATED
     def get_root_location(self):
         # return self.__dclay_instance_extradata.root_location
-        return self._master_ee_id
+        return self._dc_master_ee_id
 
     # DEPRECATED
     def set_root_location(self, new_root_location):
@@ -448,7 +448,7 @@ class DataClayObject:
     # DEPRECATED
     def get_origin_location(self):
         # return self.__dclay_instance_extradata.origin_location
-        return self._master_ee_id
+        return self._dc_master_ee_id
 
     # DEPRECATED
     def set_origin_location(self, new_origin_location):
@@ -456,18 +456,18 @@ class DataClayObject:
         pass
 
     def add_replica_location(self, new_replica_location):
-        replica_locations = self._replica_ee_ids
+        replica_locations = self._dc_replica_ee_ids
         if replica_locations is None:
             replica_locations = list()
-            self._replica_ee_ids = replica_locations
+            self._dc_replica_ee_ids = replica_locations
         replica_locations.append(new_replica_location)
 
     def remove_replica_location(self, old_replica_location):
-        replica_locations = self._replica_ee_ids
+        replica_locations = self._dc_replica_ee_ids
         replica_locations.remove(old_replica_location)
 
     def clear_replica_locations(self):
-        replica_locations = self._replica_ee_ids
+        replica_locations = self._dc_replica_ee_ids
         if replica_locations is not None:
             replica_locations.clear()
 
@@ -498,7 +498,7 @@ class DataClayObject:
         Detach object from session, i.e. remove reference from current session provided to current object,
             'dear garbage-collector, the current session is not using this object anymore'
         """
-        get_runtime().detach_object_from_session(self._dc_id, self._master_ee_id)
+        get_runtime().detach_object_from_session(self._dc_id, self._dc_master_ee_id)
 
     #################
     # Serialization #
@@ -523,7 +523,7 @@ class DataClayObject:
         # TODO: use padding instead once new serialization is implemented
         IntegerWrapper().write(io_file, 0)
 
-        cur_master_loc = self._master_ee_id
+        cur_master_loc = self._dc_master_ee_id
         if cur_master_loc is not None:
             StringWrapper().write(io_file, str(cur_master_loc))
         else:
@@ -532,18 +532,18 @@ class DataClayObject:
         if hasattr(self, "__getstate__"):
             # The object has a user-defined serialization method.
             # Use that
-            last_loaded_flag = self._is_loaded
-            last_persistent_flag = self._is_persistent
+            last_loaded_flag = self._dc_is_loaded
+            last_persistent_flag = self._dc_is_persistent
 
-            self._is_loaded = True
-            self._is_persistent = False
+            self._dc_is_loaded = True
+            self._dc_is_persistent = False
 
             # Use pickle to the result of the serialization
             state = pickle.dumps(self.__getstate__())
 
             # Leave the previous value, probably False & True`
-            self._is_loaded = last_loaded_flag
-            self._is_persistent = last_persistent_flag
+            self._dc_is_loaded = last_loaded_flag
+            self._dc_is_persistent = last_persistent_flag
 
             StringWrapper(mode="binary").write(io_file, state)
 
@@ -630,9 +630,9 @@ class DataClayObject:
         """ deserialize master_location """
         des_master_loc_str = StringWrapper().read(io_file)
         if des_master_loc_str == "x":
-            self._master_ee_id = None
+            self._dc_master_ee_id = None
         else:
-            self._master_ee_id = UUID(des_master_loc_str)
+            self._dc_master_ee_id = UUID(des_master_loc_str)
 
         if hasattr(self, "__setstate__"):
             # The object has a user-defined deserialization method.
@@ -702,19 +702,19 @@ class DataClayObject:
         """
         logger.debug("Proceeding to `__reduce__` (Pickle-related) on a DataClayObject")
 
-        if not self._is_persistent:
+        if not self._dc_is_persistent:
             logger.debug("Pickling of object is causing a make_persistent")
             self.make_persistent()
 
         return _get_object_by_id_helper, (
             self._dc_id,
             self._dc_class,  # self.get_class_extradata().class_id,
-            self._master_ee_id,
+            self._dc_master_ee_id,
         )
 
     def __repr__(self):
 
-        if self._is_persistent:
+        if self._dc_is_persistent:
             return "<%s instance with ObjectID=%s>" % (
                 self._dc_class_name,
                 self._dc_id,
@@ -729,7 +729,7 @@ class DataClayObject:
         if not isinstance(other, DataClayObject):
             return False
 
-        if not self._is_persistent or not other._is_persistent:
+        if not self._dc_is_persistent or not other._dc_is_persistent:
             return False
 
         return self._dc_id and other._dc_id and self._dc_id == other._dc_id
