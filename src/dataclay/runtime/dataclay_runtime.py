@@ -14,8 +14,8 @@ from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from grpc import RpcError
 
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.heap.ClientHeapManager import ClientHeapManager
-from dataclay.heap.ExecutionEnvironmentHeapManager import ExecutionEnvironmentHeapManager
+from dataclay.heap.client_heap_manager import ClientHeapManager
+from dataclay.heap.backend_heap_manager import ExecutionEnvironmentHeapManager
 from dataclay.heap.LockerPool import LockerPool
 from dataclay.loader.ClientObjectLoader import ClientObjectLoader
 from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader

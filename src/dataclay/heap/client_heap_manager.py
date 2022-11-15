@@ -8,7 +8,7 @@ Created on 26 ene. 2018
 import logging
 from threading import Timer
 
-from dataclay.heap.HeapManager import HeapManager
+from dataclay.heap.heap_manager import HeapManager
 from dataclay_common import utils
 
 logger = utils.LoggerEvent(logging.getLogger(__name__))

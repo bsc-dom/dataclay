@@ -5,7 +5,7 @@ import logging
 import threading
 import time
 
-from dataclay.heap.ExecutionEnvironmentHeapManager import ExecutionEnvironmentHeapManager
+from dataclay.heap.backend_heap_manager import ExecutionEnvironmentHeapManager
 from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader
 from dataclay.runtime.dataclay_runtime import DataClayRuntime
 from dataclay.runtime import settings
@@ -71,6 +71,14 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             object_id: ID of object to get or create
             retry: indicates if we should retry and wait
         """
+        try:
+            return self.heap_manager[object_id]
+        except KeyError:
+            raise ("Not Implemented")
+            return self.get_from_sl(object_id)
+            # object_md = self.metadata_service.get_object_md_by_id(object_id)
+            # cls.new_persistent(object_id, master_ee_id)
+
         return self.dataclay_object_loader.get_or_new_instance_from_db(object_id, retry)
 
     def load_object_from_db(self, instance, retry):

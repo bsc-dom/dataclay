@@ -20,7 +20,7 @@ except ImportError:
 
 import psutil
 from dataclay.dataclay_object import DCLAY_PROPERTY_PREFIX
-from dataclay.heap.HeapManager import HeapManager
+from dataclay.heap.heap_manager import HeapManager
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration

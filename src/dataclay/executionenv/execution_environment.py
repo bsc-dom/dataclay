@@ -54,27 +54,19 @@ class ExecutionEnvironment(object):
         self.execution_environment_id = uuid.uuid4()
         logger.info(f"Initialized EE with ID: {self.execution_environment_id}")
 
-    # TODO: Instead of notifying, just delete the EE entry in ETCD using MetadataService
-    def notify_execution_environment_shutdown(self):
-        """Notify LM current node left"""
-        lm_client = self.runtime.backend_clients["@LM"]
-        lm_client.notify_execution_environment_shutdown(self.execution_environment_id)
-
-    #####
-    # Tracing
-    #####
-
-    def activate_tracing(self, task_id):
-        if not extrae_tracing_is_enabled():
-            set_current_available_task_id(task_id)
-            initialize_extrae(True)
-
-    def deactivate_tracing(self):
-        if extrae_tracing_is_enabled():
-            finish_tracing(True)
-
-    #####
-    #####
+    def exists(self, object_id):
+        self.runtime.lock(object_id)  # RACE CONDITION: object is being unloaded but still not in SL
+        # object might be in heap but as a "proxy"
+        # since this function is used from SL after checking if the object is in database,
+        # we return false if the object is not loaded so the combination of SL exists and EE exists
+        # can tell if the object actually exists
+        # summary: the object only exist in EE if it is loaded.
+        try:
+            return self.runtime.heap_manager[object_id]._dc_is_loaded
+        except KeyError:
+            return False
+        finally:
+            self.runtime.unlock(object_id)
 
     def get_object_metadata(self, object_id):
         """Get the MetaDataInfo for a certain object.
@@ -216,6 +208,294 @@ class ExecutionEnvironment(object):
         print("*** unpickled_obj:", instance.__dict__, end="\n\n")
 
         self.runtime.metadata_service.register_object(instance.metadata)
+
+    ###############
+    # active method
+    ###############
+
+    def call_active_method(self, session_id, object_id, method_name, args, kwargs):
+        self.set_local_session(session_id)
+
+        instance = self.get_local_instance(object_id, True)
+        args = pickle.loads(args)
+        kwargs = pickle.loads(kwargs)
+
+        returned_value = self.runtime.call_active_method(instance, method_name, args, kwargs)
+
+        if returned_value is not None:
+            return pickle.dumps(returned_value)
+
+    #######
+    # Clone
+    #######
+
+    def get_copy_of_object(self, session_id, object_id, recursive):
+        """Returns a non-persistent copy of the object with ID provided
+
+        Args:
+            session_id: ID of session
+            object_id: ID of the object
+        Returns:
+            the generated non-persistent objects
+        """
+        logger.debug("[==Get==] Get copy of %s ", object_id)
+
+        # Get the data service of one of the backends that contains the original object.
+        object_ids = set()
+        object_ids.add(object_id)
+
+        serialized_objs = self.get_objects(session_id, object_ids, set(), recursive, None, 0)
+
+        # Prepare OIDs
+        logger.debug("[==Get==] Serialized objects obtained to create a copy of %s", object_id)
+        original_to_version = dict()
+
+        # Store version in this backend (if already stored, just skip it)
+        for obj_with_param_or_return in serialized_objs:
+            orig_obj_id = obj_with_param_or_return.object_id
+            version_obj_id = uuid.uuid4()
+            original_to_version[orig_obj_id] = version_obj_id
+
+        for obj_with_param_or_return in serialized_objs:
+            orig_obj_id = obj_with_param_or_return.object_id
+            version_obj_id = original_to_version[orig_obj_id]
+            metadata = obj_with_param_or_return.metadata
+            self._modify_metadata_oids(metadata, original_to_version)
+            obj_with_param_or_return.object_id = version_obj_id
+
+        i = 0
+        imm_objs = dict()
+        lang_objs = dict()
+        vol_params = dict()
+        pers_params = dict()
+        for obj in serialized_objs:
+            vol_params[i] = obj
+            i = i + 1
+
+        serialized_result = SerializedParametersOrReturn(
+            num_params=i,
+            imm_objs=imm_objs,
+            lang_objs=lang_objs,
+            vol_objs=vol_params,
+            pers_objs=pers_params,
+        )
+
+        return serialized_result
+
+    ######
+    # Move
+    ######
+
+    def move_objects(self, session_id, object_id, dest_backend_id, recursive):
+        """This operation removes the objects with IDs provided
+
+         This function is recursive, it is going to other DSs if needed.
+
+        Args:
+            session_id: ID of session.
+            object_id: ID of the object to move.
+            dest_backend_id: ID of the backend where to move.
+            recursive: Indicates if all sub-objects (in this location or others) must be moved as well.
+
+        Returns:
+            Set of moved objects.
+        """
+        update_metadata_of = set()
+
+        try:
+            logger.debug(
+                "[==MoveObjects==] Moving object %s to storage location: %s",
+                object_id,
+                dest_backend_id,
+            )
+            object_ids = set()
+            object_ids.add(object_id)
+
+            # TODO: Object being used by session (any oid in the method header) G.C.
+
+            serialized_objs = self.get_objects(session_id, object_ids, set(), True, None, 0)
+            objects_to_remove = set()
+            objects_to_move = list()
+
+            for obj_found in serialized_objs:
+                logger.debug("[==MoveObjects==] Looking for metadata of %s", obj_found[0])
+                object_md = self.get_object_metadata(obj_found[0])
+                obj_location = object_md.master_ee_id
+
+                if obj_location == dest_backend_id:
+                    logger.debug(
+                        "[==MoveObjects==] Ignoring move of object %s since it is already where it should be."
+                        " ObjLoc = %s and DestLoc = %s",
+                        obj_found[0],
+                        obj_location,
+                        dest_backend_id,
+                    )
+
+                    # object already in dest
+                    pass
+                else:
+                    if settings.storage_id == dest_backend_id:
+                        # THE DESTINATION IS HERE
+                        if obj_location != settings.storage_id:
+                            logger.debug(
+                                "[==MoveObjects==] Moving object  %s since dest.location is different to src.location and object is not in dest.location."
+                                " ObjLoc = %s and DestLoc = %s",
+                                obj_found[0],
+                                obj_location,
+                                dest_backend_id,
+                            )
+                            objects_to_move.append(obj_found)
+                            objects_to_remove.add(obj_found[0])
+                            update_metadata_of.add(obj_found[0])
+                        else:
+                            logger.debug(
+                                "[==MoveObjects==] Ignoring move of object %s since it is already where it should be"
+                                " ObjLoc = %s and DestLoc = %s",
+                                obj_found[0],
+                                obj_location,
+                                dest_backend_id,
+                            )
+                    else:
+                        logger.debug(
+                            "[==MoveObjects==] Moving object %s since dest.location is different to src.location and object is not in dest.location "
+                            " ObjLoc = %s and DestLoc = %s",
+                            obj_found[0],
+                            obj_location,
+                            dest_backend_id,
+                        )
+                        # THE DESTINATION IS ANOTHER NODE: move.
+                        objects_to_move.append(obj_found)
+                        objects_to_remove.add(obj_found[0])
+                        update_metadata_of.add(obj_found[0])
+
+            logger.debug("[==MoveObjects==] Finally moving OBJECTS: %s", objects_to_remove)
+
+            try:
+                sl_client = self.runtime.backend_clients[dest_backend_id]
+            except KeyError:
+                st_loc = self.runtime.ee_infos[dest_backend_id]
+                logger.debug(
+                    "Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
+                    dest_backend_id,
+                    st_loc.hostname,
+                    st_loc.port,
+                )
+                sl_client = EEClient(st_loc.hostname, st_loc.port)
+                self.runtime.backend_clients[dest_backend_id] = sl_client
+
+            sl_client.ds_store_objects(session_id, objects_to_move, True, None)
+
+            # TODO: lock any execution in remove before storing objects in remote dataservice so anyone can modify it.
+            # Remove after store in order to avoid wrong executions during the movement :)
+            # Remove all objects in all source locations different to dest. location
+            # TODO: Check that remove is not necessary (G.C. Should do it?)
+            # self.runtime.backend_clients["@STORAGE"].ds_remove_objects(session_id, object_ids, recursive, True, dest_backend_id)
+
+            for oid in objects_to_remove:
+                self.runtime.remove_metadata_from_cache(oid)
+            logger.debug("[==MoveObjects==] Move finalized ")
+
+        except Exception as e:
+            logger.error("[==MoveObjects==] Exception %s", e.args)
+
+        return update_metadata_of
+
+    ##########
+    # Replicas
+    ##########
+
+    def get_dest_ee_api(self, dest_backend_id):
+        """Get API to connect to destination Execution environment with id provided
+
+        Args:
+            dest_backend_id: ID of destination backend
+        """
+        backend = self.runtime.get_execution_environment_info(dest_backend_id)
+        try:
+            client_backend = self.runtime.backend_clients[dest_backend_id]
+        except KeyError:
+            logger.verbose(
+                "Not found Client to ExecutionEnvironment {%s}!" " Starting it at %s:%d",
+                dest_backend_id,
+                backend.hostname,
+                backend.port,
+            )
+            client_backend = EEClient(backend.hostname, backend.port)
+            self.runtime.backend_clients[dest_backend_id] = client_backend
+        return client_backend
+
+    def new_replica(self, session_id, object_id, dest_backend_id, recursive):
+        """Creates a new replica of the object with ID provided in the backend specified.
+
+        Args:
+            session_id: ID of session
+            object_id: ID of the object
+            dest_backend_id: destination backend id
+            recursive: Indicates if all sub-objects must be replicated as well.
+        """
+        logger.debug("----> Starting new replica of %s to backend %s", object_id, dest_backend_id)
+
+        serialized_objs = self.get_objects(
+            session_id, {object_id}, set(), recursive, dest_backend_id, 1
+        )
+        client_backend = self.get_dest_ee_api(dest_backend_id)
+        client_backend.ds_store_objects(session_id, serialized_objs, False, None)
+        replicated_ids = set()
+        for serialized_obj in serialized_objs:
+            replicated_ids.add(serialized_obj.object_id)
+        logger.debug("<---- Finished new replica of %s", object_id)
+        return replicated_ids
+
+    def synchronize(
+        self, session_id, object_id, implementation_id, serialized_value, calling_backend_id=None
+    ):
+        # set field
+        logger.debug(
+            f"----> Starting synchronization of {object_id} from calling backend {calling_backend_id}"
+        )
+
+        self.ds_exec_impl(object_id, implementation_id, serialized_value, session_id)
+        instance = self.get_local_instance(object_id, True)
+        src_exec_env_id = instance.get_origin_location()
+        if src_exec_env_id is not None:
+            logger.debug(f"Found origin location {src_exec_env_id}")
+            if calling_backend_id is None or src_exec_env_id != calling_backend_id:
+                # do not synchronize to calling source (avoid infinite loops)
+                dest_backend = self.get_dest_ee_api(src_exec_env_id)
+                logger.debug(
+                    f"----> Propagating synchronization of {object_id} to origin location {src_exec_env_id}"
+                )
+
+                dest_backend.synchronize(
+                    session_id,
+                    object_id,
+                    implementation_id,
+                    serialized_value,
+                    calling_backend_id=self.execution_environment_id,
+                )
+
+        replica_locations = instance._dc_replica_ee_ids
+        if replica_locations is not None:
+            logger.debug(f"Found replica locations {replica_locations}")
+            for replica_location in replica_locations:
+                if calling_backend_id is None or replica_location != calling_backend_id:
+                    # do not synchronize to calling source (avoid infinite loops)
+                    dest_backend = self.get_dest_ee_api(replica_location)
+                    logger.debug(
+                        f"----> Propagating synchronization of {object_id} to replica location {replica_location}"
+                    )
+                    dest_backend.synchronize(
+                        session_id,
+                        object_id,
+                        implementation_id,
+                        serialized_value,
+                        calling_backend_id=self.execution_environment_id,
+                    )
+        logger.debug(f"----> Finished synchronization of {object_id}")
+
+    ############
+    # Federation
+    ############
 
     def federate(self, session_id, object_id, external_execution_env_id, recursive):
         """Federate object with id provided to external execution env id specified
@@ -364,166 +644,9 @@ class ExecutionEnvironment(object):
             raise e
         logger.debug("<--- Finished notification of unfederation")
 
-    def call_active_method(self, session_id, object_id, method_name, args, kwargs):
-        self.set_local_session(session_id)
-
-        instance = self.get_local_instance(object_id, True)
-        args = pickle.loads(args)
-        kwargs = pickle.loads(kwargs)
-
-        returned_value = self.runtime.call_active_method(instance, method_name, args, kwargs)
-
-        if returned_value is not None:
-            return pickle.dumps(returned_value)
-
-    def new_persistent_instance(self, payload):
-        """Create, make persistent and return an instance for a certain class."""
-
-        raise NotImplementedError(
-            "NewPersistentInstance RPC is not yet ready (@ Python ExecutionEnvironment)"
-        )
-
-    def get_dest_ee_api(self, dest_backend_id):
-        """Get API to connect to destination Execution environment with id provided
-
-        Args:
-            dest_backend_id: ID of destination backend
-        """
-        backend = self.runtime.get_execution_environment_info(dest_backend_id)
-        try:
-            client_backend = self.runtime.backend_clients[dest_backend_id]
-        except KeyError:
-            logger.verbose(
-                "Not found Client to ExecutionEnvironment {%s}!" " Starting it at %s:%d",
-                dest_backend_id,
-                backend.hostname,
-                backend.port,
-            )
-            client_backend = EEClient(backend.hostname, backend.port)
-            self.runtime.backend_clients[dest_backend_id] = client_backend
-        return client_backend
-
-    def new_replica(self, session_id, object_id, dest_backend_id, recursive):
-        """Creates a new replica of the object with ID provided in the backend specified.
-
-        Args:
-            session_id: ID of session
-            object_id: ID of the object
-            dest_backend_id: destination backend id
-            recursive: Indicates if all sub-objects must be replicated as well.
-        """
-        logger.debug("----> Starting new replica of %s to backend %s", object_id, dest_backend_id)
-
-        serialized_objs = self.get_objects(
-            session_id, {object_id}, set(), recursive, dest_backend_id, 1
-        )
-        client_backend = self.get_dest_ee_api(dest_backend_id)
-        client_backend.ds_store_objects(session_id, serialized_objs, False, None)
-        replicated_ids = set()
-        for serialized_obj in serialized_objs:
-            replicated_ids.add(serialized_obj.object_id)
-        logger.debug("<---- Finished new replica of %s", object_id)
-        return replicated_ids
-
-    def synchronize(
-        self, session_id, object_id, implementation_id, serialized_value, calling_backend_id=None
-    ):
-        # set field
-        logger.debug(
-            f"----> Starting synchronization of {object_id} from calling backend {calling_backend_id}"
-        )
-
-        self.ds_exec_impl(object_id, implementation_id, serialized_value, session_id)
-        instance = self.get_local_instance(object_id, True)
-        src_exec_env_id = instance.get_origin_location()
-        if src_exec_env_id is not None:
-            logger.debug(f"Found origin location {src_exec_env_id}")
-            if calling_backend_id is None or src_exec_env_id != calling_backend_id:
-                # do not synchronize to calling source (avoid infinite loops)
-                dest_backend = self.get_dest_ee_api(src_exec_env_id)
-                logger.debug(
-                    f"----> Propagating synchronization of {object_id} to origin location {src_exec_env_id}"
-                )
-
-                dest_backend.synchronize(
-                    session_id,
-                    object_id,
-                    implementation_id,
-                    serialized_value,
-                    calling_backend_id=self.execution_environment_id,
-                )
-
-        replica_locations = instance._dc_replica_ee_ids
-        if replica_locations is not None:
-            logger.debug(f"Found replica locations {replica_locations}")
-            for replica_location in replica_locations:
-                if calling_backend_id is None or replica_location != calling_backend_id:
-                    # do not synchronize to calling source (avoid infinite loops)
-                    dest_backend = self.get_dest_ee_api(replica_location)
-                    logger.debug(
-                        f"----> Propagating synchronization of {object_id} to replica location {replica_location}"
-                    )
-                    dest_backend.synchronize(
-                        session_id,
-                        object_id,
-                        implementation_id,
-                        serialized_value,
-                        calling_backend_id=self.execution_environment_id,
-                    )
-        logger.debug(f"----> Finished synchronization of {object_id}")
-
-    def get_copy_of_object(self, session_id, object_id, recursive):
-        """Returns a non-persistent copy of the object with ID provided
-
-        Args:
-            session_id: ID of session
-            object_id: ID of the object
-        Returns:
-            the generated non-persistent objects
-        """
-        logger.debug("[==Get==] Get copy of %s ", object_id)
-
-        # Get the data service of one of the backends that contains the original object.
-        object_ids = set()
-        object_ids.add(object_id)
-
-        serialized_objs = self.get_objects(session_id, object_ids, set(), recursive, None, 0)
-
-        # Prepare OIDs
-        logger.debug("[==Get==] Serialized objects obtained to create a copy of %s", object_id)
-        original_to_version = dict()
-
-        # Store version in this backend (if already stored, just skip it)
-        for obj_with_param_or_return in serialized_objs:
-            orig_obj_id = obj_with_param_or_return.object_id
-            version_obj_id = uuid.uuid4()
-            original_to_version[orig_obj_id] = version_obj_id
-
-        for obj_with_param_or_return in serialized_objs:
-            orig_obj_id = obj_with_param_or_return.object_id
-            version_obj_id = original_to_version[orig_obj_id]
-            metadata = obj_with_param_or_return.metadata
-            self._modify_metadata_oids(metadata, original_to_version)
-            obj_with_param_or_return.object_id = version_obj_id
-
-        i = 0
-        imm_objs = dict()
-        lang_objs = dict()
-        vol_params = dict()
-        pers_params = dict()
-        for obj in serialized_objs:
-            vol_params[i] = obj
-            i = i + 1
-
-        serialized_result = SerializedParametersOrReturn(
-            num_params=i,
-            imm_objs=imm_objs,
-            lang_objs=lang_objs,
-            vol_objs=vol_params,
-            pers_objs=pers_params,
-        )
-
-        return serialized_result
+    ###############
+    # Update Object
+    ###############
 
     def update_object(self, session_id, into_object_id, from_object):
         raise ("update_object need to be refactored")
@@ -994,120 +1117,6 @@ class ExecutionEnvironment(object):
 
             client_backend.ds_upsert_objects(session_id, objects_to_update)
 
-    def move_objects(self, session_id, object_id, dest_backend_id, recursive):
-        """This operation removes the objects with IDs provided
-
-         This function is recursive, it is going to other DSs if needed.
-
-        Args:
-            session_id: ID of session.
-            object_id: ID of the object to move.
-            dest_backend_id: ID of the backend where to move.
-            recursive: Indicates if all sub-objects (in this location or others) must be moved as well.
-
-        Returns:
-            Set of moved objects.
-        """
-        update_metadata_of = set()
-
-        try:
-            logger.debug(
-                "[==MoveObjects==] Moving object %s to storage location: %s",
-                object_id,
-                dest_backend_id,
-            )
-            object_ids = set()
-            object_ids.add(object_id)
-
-            # TODO: Object being used by session (any oid in the method header) G.C.
-
-            serialized_objs = self.get_objects(session_id, object_ids, set(), True, None, 0)
-            objects_to_remove = set()
-            objects_to_move = list()
-
-            for obj_found in serialized_objs:
-                logger.debug("[==MoveObjects==] Looking for metadata of %s", obj_found[0])
-                object_md = self.get_object_metadata(obj_found[0])
-                obj_location = object_md.master_ee_id
-
-                if obj_location == dest_backend_id:
-                    logger.debug(
-                        "[==MoveObjects==] Ignoring move of object %s since it is already where it should be."
-                        " ObjLoc = %s and DestLoc = %s",
-                        obj_found[0],
-                        obj_location,
-                        dest_backend_id,
-                    )
-
-                    # object already in dest
-                    pass
-                else:
-                    if settings.storage_id == dest_backend_id:
-                        # THE DESTINATION IS HERE
-                        if obj_location != settings.storage_id:
-                            logger.debug(
-                                "[==MoveObjects==] Moving object  %s since dest.location is different to src.location and object is not in dest.location."
-                                " ObjLoc = %s and DestLoc = %s",
-                                obj_found[0],
-                                obj_location,
-                                dest_backend_id,
-                            )
-                            objects_to_move.append(obj_found)
-                            objects_to_remove.add(obj_found[0])
-                            update_metadata_of.add(obj_found[0])
-                        else:
-                            logger.debug(
-                                "[==MoveObjects==] Ignoring move of object %s since it is already where it should be"
-                                " ObjLoc = %s and DestLoc = %s",
-                                obj_found[0],
-                                obj_location,
-                                dest_backend_id,
-                            )
-                    else:
-                        logger.debug(
-                            "[==MoveObjects==] Moving object %s since dest.location is different to src.location and object is not in dest.location "
-                            " ObjLoc = %s and DestLoc = %s",
-                            obj_found[0],
-                            obj_location,
-                            dest_backend_id,
-                        )
-                        # THE DESTINATION IS ANOTHER NODE: move.
-                        objects_to_move.append(obj_found)
-                        objects_to_remove.add(obj_found[0])
-                        update_metadata_of.add(obj_found[0])
-
-            logger.debug("[==MoveObjects==] Finally moving OBJECTS: %s", objects_to_remove)
-
-            try:
-                sl_client = self.runtime.backend_clients[dest_backend_id]
-            except KeyError:
-                st_loc = self.runtime.ee_infos[dest_backend_id]
-                logger.debug(
-                    "Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
-                    dest_backend_id,
-                    st_loc.hostname,
-                    st_loc.port,
-                )
-                sl_client = EEClient(st_loc.hostname, st_loc.port)
-                self.runtime.backend_clients[dest_backend_id] = sl_client
-
-            sl_client.ds_store_objects(session_id, objects_to_move, True, None)
-
-            # TODO: lock any execution in remove before storing objects in remote dataservice so anyone can modify it.
-            # Remove after store in order to avoid wrong executions during the movement :)
-            # Remove all objects in all source locations different to dest. location
-            # TODO: Check that remove is not necessary (G.C. Should do it?)
-            # self.runtime.backend_clients["@STORAGE"].ds_remove_objects(session_id, object_ids, recursive, True, dest_backend_id)
-
-            for oid in objects_to_remove:
-                self.runtime.remove_metadata_from_cache(oid)
-            logger.debug("[==MoveObjects==] Move finalized ")
-
-        except Exception as e:
-            logger.error("[==MoveObjects==] Exception %s", e.args)
-
-        return update_metadata_of
-
     def update_refs(self, ref_counting):
         """forward to SL"""
         self.runtime.backend_clients["@STORAGE"].update_refs(ref_counting)
@@ -1124,27 +1133,40 @@ class ExecutionEnvironment(object):
         self.runtime.detach_object_from_session(object_id, None)
         logger.debug(f"<-- Detached object {object_id} from session {session_id}")
 
+    #######
+    # Alias
+    #######
+
     def delete_alias(self, session_id, object_id):
         self.set_local_session(session_id)
         instance = self.get_local_instance(object_id, True)
         self.runtime.delete_alias(instance)
 
-    def exists(self, object_id):
-        self.runtime.lock(object_id)  # RACE CONDITION: object is being unloaded but still not in SL
-        # object might be in heap but as a "proxy"
-        # since this function is used from SL after checking if the object is in database,
-        # we return false if the object is not loaded so the combination of SL exists and EE exists
-        # can tell if the object actually exists
-        # summary: the object only exist in EE if it is loaded.
-        try:
-            return self.runtime.heap_manager[object_id]._dc_is_loaded
-        except KeyError:
-            return False
-        finally:
-            self.runtime.unlock(object_id)
-
     def get_num_objects(self):
         return self.runtime.count_loaded_objs()
+
+    ##########
+    # Shutdown
+    ##########
+
+    # TODO: Instead of notifying, just delete the EE entry in ETCD using MetadataService
+    def notify_execution_environment_shutdown(self):
+        """Notify LM current node left"""
+        lm_client = self.runtime.backend_clients["@LM"]
+        lm_client.notify_execution_environment_shutdown(self.execution_environment_id)
+
+    #########
+    # Tracing
+    #########
+
+    def activate_tracing(self, task_id):
+        if not extrae_tracing_is_enabled():
+            set_current_available_task_id(task_id)
+            initialize_extrae(True)
+
+    def deactivate_tracing(self):
+        if extrae_tracing_is_enabled():
+            finish_tracing(True)
 
     def get_traces(self):
         logger.debug("Merging...")

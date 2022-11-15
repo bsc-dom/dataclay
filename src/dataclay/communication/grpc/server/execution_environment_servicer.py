@@ -8,7 +8,7 @@ import traceback
 from uuid import UUID
 
 import grpc
-from dataclay.executionenv.ExecutionEnvironment import ExecutionEnvironment
+from dataclay.executionenv.execution_environment import ExecutionEnvironment
 from dataclay.runtime import get_runtime
 from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException

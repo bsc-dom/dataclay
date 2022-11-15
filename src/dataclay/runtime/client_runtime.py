@@ -8,7 +8,7 @@ import logging
 import pickle
 import traceback
 
-from dataclay.heap.ClientHeapManager import ClientHeapManager
+from dataclay.heap.client_heap_manager import ClientHeapManager
 from dataclay.loader.ClientObjectLoader import ClientObjectLoader
 from dataclay.runtime.dataclay_runtime import DataClayRuntime
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton

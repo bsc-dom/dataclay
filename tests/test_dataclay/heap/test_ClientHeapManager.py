@@ -2,7 +2,7 @@ import uuid
 from unittest import TestCase
 from unittest.mock import Mock
 
-from dataclay.heap.ClientHeapManager import ClientHeapManager
+from dataclay.heap.client_heap_manager import ClientHeapManager
 
 
 class TestClientHeapManager(TestCase):
