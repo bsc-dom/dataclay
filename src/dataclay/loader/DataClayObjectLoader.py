@@ -28,28 +28,3 @@ class DataClayObjectLoader(ABC):
         """
         """ Runtime being monitorized. Java uses abstract functions to get the field in the proper type (EE or client) due to type-check. Not needed here. """
         self.runtime = theruntime
-
-    @abstractmethod
-    def new_instance(self, class_id, object_id):
-        """
-        @postcondition: create a new instance using proper class. This function is abstract.
-        @param class_id: id of the class of the object.
-        @param object_id: id of the object to get/create
-        @return instance with object id provided
-        """
-        pass
-
-    def new_instance_internal(self, class_id, object_id, hint):
-        """
-        @postcondition: create a new instance.
-        @param class_id: id of the class of the object. Can be none. If none, means that class_id should be obtained from metadata of the obj.
-        @param object_id: id of the object to get/create
-        @param hint: hint of the object in case it is created.
-        @return instance with object id provided
-        """
-        obj = self.new_instance(class_id, object_id)
-        if hint is not None:
-            """set hint if not none. If none do not set it to avoid overriding!"""
-            obj._dc_master_ee_id = hint
-
-        return obj

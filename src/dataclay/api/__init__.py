@@ -10,7 +10,6 @@ __all__ = ["init", "finish", "DataClayObject"]
 
 import logging.config
 import os
-import sys
 import warnings
 
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
@@ -363,7 +362,7 @@ def finish():
             return
         global _connection_initialized
         logger.info("Finishing dataClay API")
-        finish_tracing()
+        # finish_tracing()
         get_runtime().close_session()
         get_runtime().stop_runtime()
 

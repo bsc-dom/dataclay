@@ -25,24 +25,3 @@ class ClientObjectLoader(DataClayObjectLoader):
         @param theruntime: Runtime being managed
         """
         DataClayObjectLoader.__init__(self, theruntime)
-
-    def new_instance(self, class_id, object_id):
-        """
-        TODO: Refactor this function
-        """
-        self.logger.verbose("Creating an instance from the class: {%s}", class_id)
-
-        try:
-            # Note that full_class_name *includes* namespace (Python-specific behaviour)
-            full_class_name = self.runtime.local_available_classes[class_id]
-        except KeyError:
-            raise RuntimeError(
-                "Class {%s} is not amongst the locally available classes, "
-                "check contracts and/or initialization" % class_id
-            )
-
-        package_name, class_name = full_class_name.rsplit(".", 1)
-        m = importlib.import_module(package_name)
-        klass = getattr(m, class_name)
-
-        return DataClayObject.new_dataclay_instance(klass, deserializing=True, object_id=object_id)

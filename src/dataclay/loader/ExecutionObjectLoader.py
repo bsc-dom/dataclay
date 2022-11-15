@@ -32,61 +32,6 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         """
         DataClayObjectLoader.__init__(self, theruntime)
 
-    def new_instance(self, class_id, object_id):
-
-        self.logger.debug("Creating an instance from the class: {%s}", class_id)
-
-        # Obtain the class name from the MetaClassInfo
-        full_class_name, namespace = load_metaclass_info(class_id)
-        self.logger.debug(
-            "MetaClassID {%s}: full class name `%s` | namespace `%s`",
-            class_id,
-            full_class_name,
-            namespace,
-        )
-
-        class_name_parts = full_class_name.rsplit(".", 1)
-
-        if len(class_name_parts) == 2:
-            package_name, class_name = class_name_parts
-            module_name = "%s.%s" % (namespace, package_name)
-        else:
-            class_name = class_name_parts[0]
-            module_name = "%s" % namespace
-
-        try:
-            import sys
-
-            m = importlib.import_module(module_name)
-        except ImportError:
-            self.logger.error("new_instance failed due to ImportError")
-            self.logger.error(
-                "load_metaclass_info returned: full_class_name=%s, namespace=%s",
-                full_class_name,
-                namespace,
-            )
-            self.logger.error("Trying to import: %s", module_name)
-
-            if self.logger.isEnabledFor(logging.DEBUG):
-                self.logger.error("DEBUG Stacktrace", exc_info=True)
-
-            # # Very ugly, but required for some deep debugging strange behaviour
-            # import sys
-            # logger.error("The import path is: %s", sys.path)
-            #
-            # import subprocess
-            # logger.error("`ls -laR %s` yields the following:\n%s",
-            #              settings.deploy_path_source,
-            #              subprocess.check_output("ls -laR %s" % settings.deploy_path_source,
-            #                                      shell=True)
-            #              )
-
-            # Let the exception raise again, untouched
-            raise
-
-        klass = getattr(m, class_name)
-        return klass.new_dataclay_instance(deserializing=True, object_id=object_id)
-
     def _get_from_db_and_fill(self, object_to_fill):
         """
         @postcondition: Get from DB and deserialize into instance
@@ -102,6 +47,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         self.logger.debug("Object %s loaded from DB", object_id)
 
     def get_or_new_instance_from_db(self, object_id, retry):
+        raise ("Need to be rafactored")
         """
         @postcondition: Get object from memory or database and WAIT in case we are still waiting for it to be persisted.
         @param object_id: ID of the object to get

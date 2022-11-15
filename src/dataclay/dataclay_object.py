@@ -11,9 +11,9 @@ import functools
 import logging
 import pickle
 import traceback
+import typing
 import uuid
 from uuid import UUID
-import typing
 
 from dataclay_common.managers.object_manager import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
@@ -21,16 +21,11 @@ from opentelemetry import trace
 
 from dataclay.runtime import get_runtime
 
+DCLAY_PROPERTY_PREFIX = "_dc_property_"
 
-# Publicly show the dataClay method decorators
 
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
-
-
-def _get_object_by_id_helper(object_id, cls, hint):
-    """Helper method which can be pickled and used by DataClayObject.__reduce__"""
-    return get_runtime().get_object_by_id(object_id, cls, hint)
 
 
 def activemethod(func):
@@ -57,9 +52,6 @@ def activemethod(func):
 
     # wrapper_activemethod.is_activemethod = True
     return wrapper_activemethod
-
-
-DCLAY_PROPERTY_PREFIX = "_dc_property_"
 
 
 class DataClayProperty:
@@ -140,12 +132,10 @@ class DataClayObject:
             if not property_name.startswith("_dc_"):
                 setattr(cls, property_name, DataClayProperty(property_name))
 
-    @classmethod
-    def new_dataclay_instance(cls, deserializing: bool = False, object_id: UUID = None):
-        """Return a new instance, without calling to the class methods."""
-        logger.debug("New dataClay instance (without __call__) of class `%s`", cls.__name__)
-        obj = super().__new__(cls)  # this defers the __call__ method
-        obj.initialize_object(deserializing=deserializing, object_id=object_id)
+    def __new__(cls, *args, **kwargs):
+        logger.debug(f"Crated new dataclay object with args={args}, kwargs={kwargs}")
+        obj = super().__new__(cls)
+        obj.initialize_object()
         return obj
 
     @classmethod
@@ -186,12 +176,6 @@ class DataClayObject:
         obj.initialize_object(**new_dict)
         return obj
 
-    def __new__(cls, *args, **kwargs):
-        logger.debug(f"Crated new dataclay object with args={args}, kwargs={kwargs}")
-        obj = super().__new__(cls)
-        obj.initialize_object()
-        return obj
-
     def initialize_object(self, deserializing=False, **kwargs):
         """Initializes the object"""
 
@@ -221,10 +205,6 @@ class DataClayObject:
         # Add instance to heap
         get_runtime().add_to_heap(self)
 
-        if not deserializing:
-            # object created during executions is volatile.
-            self.initialize_object_as_volatile()
-
     @property
     def dataclay_id(self):
         return self._dc_id
@@ -233,37 +213,31 @@ class DataClayObject:
     def dataset(self):
         return self._dc_dataset_name
 
-    def initialize_object_as_persistent(self):
-        """Initializes the object as a persistent
+    @property
+    def metadata(self):
+        return ObjectMetadata(
+            self._dc_id,
+            self._dc_alias,
+            self._dc_dataset_name,
+            self._dc_class_name,
+            self._dc_master_ee_id,
+            self._dc_replica_ee_ids,
+            self._dc_language,
+            self._dc_is_read_only,
+        )
 
-        Flags for "persistent" state might be different in EE and client.
-        """
-        # TODO: improve this using an specialization (dgasull)
-        self._dc_is_persistent = True
+    @metadata.setter
+    def metadata(self, object_md):
+        self._dc_id = object_md.id
+        self._dc_alias = object_md.alias_name
+        self._dc_dataset_name = object_md.dataset_name
+        self._dc_master_ee_id = object_md.master_ee_id
+        self._dc_replica_ee_ids = object_md.replica_ee_ids
+        self._dc_is_read_only = object_md.is_read_only
 
-        if get_runtime().is_exec_env():
-            # *** Execution Environment flags
-            # by default, loaded = true for volatiles created inside executions
-            # this function (initialize as persistent) is used for objects being
-            # deserialized and therefore they might be unloaded
-            # same happens for pending to register flag.
-            self._dc_is_loaded = False
-            self._dc_is_pending_to_register = False
-
-    def initialize_object_as_volatile(self):
-        """Initialize object with state 'volatile' with proper flags.
-
-        Usually, volatile state is created by a stub, app, exec, class,..
-        See same function in DataClayExecutionObject for a different initialization.
-        This design is intended to be clear with object state.
-        """
-        # TODO: improve this using an specialization (dgasull)
-        if get_runtime().is_exec_env():
-            # *** Execution Environment flags
-            self._dc_is_persistent = True  # All objects in the EE are persistent
-            self._dc_is_loaded = True
-            self._dc_is_pending_to_register = True
-            # self._dc_master_ee_id = get_runtime().get_hint()
+    ################
+    # TODO: REFACTOR
+    ################
 
     def new_replica(self, backend_id=None, recursive=True):
         return get_runtime().new_replica(
@@ -285,12 +259,28 @@ class DataClayObject:
         """Consolidate: copy contents of current version object to original object"""
         return get_runtime().consolidate_version(self._dc_id, self._dc_master_ee_id)
 
+    def set_all(self, from_object):
+        raise ("set_all need to be refactored")
+        properties = sorted(
+            self.get_class_extradata().properties.values(), key=attrgetter("position")
+        )
+
+        logger.verbose("Set all properties from object %s", from_object._dc_id)
+
+        for p in properties:
+            value = getattr(from_object, p.name)
+            setattr(self, p.name, value)
+
+    ################
+    ################
+    ################
+
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
 
         with tracer.start_as_current_span(
             "make_persistent",
             attributes={"alias": str(alias), "backend_id": str(backend_id), "recursive": recursive},
-        ) as span:
+        ):
             if alias == "":
                 raise AttributeError("Alias cannot be empty")
             get_runtime().make_persistent(
@@ -332,18 +322,7 @@ class DataClayObject:
             raise AttributeError("Alias cannot be null or empty")
         get_runtime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
-    def set_all(self, from_object):
-        raise ("set_all need to be refactored")
-        properties = sorted(
-            self.get_class_extradata().properties.values(), key=attrgetter("position")
-        )
-
-        logger.verbose("Set all properties from object %s", from_object._dc_id)
-
-        for p in properties:
-            value = getattr(from_object, p.name)
-            setattr(self, p.name, value)
-
+    # TODO: Rename it to get_id ??
     def getID(self):
         """Return the string representation of the persistent object for COMPSs.
 
@@ -358,19 +337,18 @@ class DataClayObject:
         If the object is NOT persistent, then this method returns None.
         """
         if self._dc_is_persistent:
-            hint = self._dc_master_ee_id or ""
 
             return "%s:%s:%s" % (
                 self._dc_id,
-                hint,
-                None,  # self.get_class_extradata().class_id, TODO: Use class_name
+                self._dc_master_ee_id,
+                self._dc_class_name,
             )
         else:
             return None
 
     @classmethod
-    def get_object_by_id(cls, object_id, *args, **kwargs):
-        return get_runtime().get_object_by_id(object_id, *args, **kwargs)
+    def get_object_by_id(cls, object_id: UUID, master_ee_id: UUID = None):
+        return get_runtime().get_object_by_id(object_id, cls, master_ee_id)
 
     @classmethod
     def get_by_alias(cls, alias, dataset_name=None):
@@ -387,39 +365,13 @@ class DataClayObject:
     # def delete_alias(self):
     #     get_runtime().delete_alias(self)
 
-    @property
-    def metadata(self):
-        object_md = ObjectMetadata(
-            self._dc_id,
-            self._dc_alias,
-            self._dc_dataset_name,
-            self._dc_class_name,
-            self._dc_master_ee_id,
-            self._dc_replica_ee_ids,
-            self._dc_language,
-            self._dc_is_read_only,
-        )
-        return object_md
-
-    @metadata.setter
-    def metadata(self, object_md):
-        # self.__metadata = object_md
-        self._dc_id = object_md.id
-        self._dc_alias = object_md.alias_name
-        self._dc_dataset_name = object_md.dataset_name
-        self._dc_master_ee_id = object_md.master_ee_id
-        self._dc_replica_ee_ids = object_md.replica_ee_ids
-        self._dc_is_read_only = object_md.is_read_only
-
     def get_all_locations(self):
         """Return all the locations of this object."""
         return get_runtime().get_all_locations(self._dc_id)
 
-    # TODO: This function is redundant. Change it to get_random_backend(self), and implement it
-    def get_location(self):
-        """Return a single (random) location of this object."""
-        # return get_runtime().get_location(self.__dclay_instance_extradata.object_id)
-        return self._dc_master_ee_id
+    # TODO: Implement it?
+    def get_random_backend(self):
+        pass
 
     #################################
     # Extradata getters and setters #
@@ -489,8 +441,8 @@ class DataClayObject:
         get_runtime().unfederate_object(self, ext_dataclay_id, recursive)
 
     def synchronize(self, field_name, value):
-        from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
-
+        # from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
+        raise ("Synchronize need refactor")
         return get_runtime().synchronize(self, DCLAY_SETTER_PREFIX + field_name, value)
 
     def session_detach(self):
@@ -706,9 +658,8 @@ class DataClayObject:
             logger.debug("Pickling of object is causing a make_persistent")
             self.make_persistent()
 
-        return _get_object_by_id_helper, (
+        return self.get_object_by_id, (
             self._dc_id,
-            self._dc_class,  # self.get_class_extradata().class_id,
             self._dc_master_ee_id,
         )
 
