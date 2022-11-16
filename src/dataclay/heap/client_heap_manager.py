@@ -21,18 +21,5 @@ class ClientHeapManager(HeapManager):
         super().__init__(theruntime)
         logger.debug("CLIENT HEAP MANAGER created")
 
-    def add_to_heap(self, dc_object):
-        """add object to dataClay's heap"""
-        super()._add_to_inmemory_map(dc_object)
-
-    def flush_all(self):
-        """Does nothing.
-
-        This function is intended to be used only in Execution Environment. Since
-        Heap Manager is an abstract class, we define this method as an "empty" method. Maybe I am missing some
-        better way to do that? (dgasull)
-        """
-        return
-
     def run_task(self):
         self.cleanReferencesAndLockers()

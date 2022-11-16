@@ -20,9 +20,7 @@ logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
 class HeapManager(threading.Thread, ABC):
-    """
-    @summary: This class is intended to manage all dataClay objects in runtime's memory.
-    """
+    """This class is intended to manage all dataClay objects in runtime's memory."""
 
     logger = None
 
@@ -32,7 +30,7 @@ class HeapManager(threading.Thread, ABC):
         Args:
             theruntime: Runtime being managed
         """
-        threading.Thread.__init__(self)
+        threading.Thread.__init__(self, name="heap-manager")
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
         self.inmemory_objects = WeakValueDictionary()
@@ -67,36 +65,35 @@ class HeapManager(threading.Thread, ABC):
 
         logger.debug("HEAP MANAGER THREAD Finished.")
 
-    def _add_to_inmemory_map(self, dc_object):
-        """add object to inmemory map"""
-        oid = dc_object._dc_id
-        self.inmemory_objects[oid] = dc_object
+    ##############
+    # Dict methods
+    ##############
 
-    def remove_from_heap(self, object_id):
+    def __getitem__(self, object_id):
+        return self.inmemory_objects[object_id]
+
+    def __setitem__(self, object_id, obj):
+        self.inmemory_objects[object_id] = obj
+
+    def __contains__(self, item):
+        return item in self.inmemory_objects
+
+    def __len__(self):
+        return len(self.inmemory_objects)
+
+    def __delitem__(self, object_id):
         """Remove reference from Heap.
 
         Even if we remove it from the heap the object won't be Garbage collected
         untill HeapManager flushes the object and releases it.
         """
-        self.inmemory_objects.pop(object_id)
+        # self.inmemory_objects.pop(object_id) # Maybe this?
+        del self.inmemory_objects[object_id]
 
-    def get_from_heap(self, object_id):
-        """Get from heap.
-        Args:
-            object_id: id of object to get from heap
-        Returns:
-            Object with id provided in heap or None if not found.
-        """
-        return self.inmemory_objects[object_id]
+    def keys(self):
+        return self.inmemory_objects.keys()
 
-    def __getitem__(self, object_id):
-        return self.inmemory_objects[object_id]
-
-    def exists_in_heap(self, object_id):
-        return object_id in self.inmemory_objects
-
-    def heap_size(self):
-        return len(self.inmemory_objects)
+    #####
 
     def count_loaded_objs(self):
         num_loaded_objs = 0
@@ -104,10 +101,6 @@ class HeapManager(threading.Thread, ABC):
             if obj._dc_is_loaded:
                 num_loaded_objs = num_loaded_objs + 1
         return num_loaded_objs
-
-    @abstractmethod
-    def flush_all(self):
-        pass
 
     @abstractmethod
     def run_task(self):

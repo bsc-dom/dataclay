@@ -6,19 +6,22 @@
 
 import logging
 import threading
+from uuid import UUID
 
 __author__ = "dgasull"
 
 
-class LockerPool(object):
+class LockerPool:
     logger = logging.getLogger("LockerPool")
+
+    lockers: dict[UUID, threading.RLock]
 
     def __init__(self):
         # Lockers
         self.lockers = dict()
 
         # Lock for the pool
-        self.locker = threading.Lock()
+        self.pool_lock = threading.Lock()
 
     def lock(self, object_id):
         """
@@ -81,18 +84,14 @@ class LockerPool(object):
 
         """
         try:
-            obj_lock = self.lockers[object_id]
+            self.lockers[object_id].acquire()
         except KeyError:
-            with self.locker:  # ensure only one locker is created per object
-                if object_id not in self.lockers:
-                    obj_lock = threading.RLock()
-                    self.lockers[object_id] = obj_lock
-                else:
-                    # race condition averted!
-                    obj_lock = self.lockers[object_id]
-
-        # Locks the object
-        obj_lock.acquire()
+            with self.pool_lock:  # ensure only one locker is created per object
+                try:
+                    self.lockers[object_id].acquire()
+                except KeyError:
+                    self.lockers[object_id] = threading.RLock()
+                    self.lockers[object_id].acquire()
 
     def unlock(self, object_id):
         """
@@ -114,15 +113,11 @@ class LockerPool(object):
         that some thread wants to create a Locker (see lock function) at same time we want to remove it. Therefore, we create
         a synchronized block for that.
         """
-        cleaned_lockers = 0
 
-        # We create a copy of the locker_ids, (the key-set) and we remove them if needed.
-        locker_ids = list(self.lockers.keys())
-        for object_id in locker_ids:
-            with self.locker:  # ensure we are not cleaning lockers during lockers creation.
-                locker = self.lockers.get(object_id)
-                if locker.acquire(False):
-                    self.logger.trace(f"Cleaning locker {object_id}")
+        # NOTE: Do we need to create a copy with list(self.lockers.keys()), like previous implementation??
+        for object_id, object_lock in self.lockers.items():
+            with self.pool_lock:  # ensure we are not cleaning lockers during lockers creation.
+                if object_lock.acquire(blocking=False):
+                    self.logger.debug(f"Cleaning locker {object_id}")
                     del self.lockers[object_id]
-                    cleaned_lockers = cleaned_lockers + 1
-                    locker.release()
+                    object_lock.release()

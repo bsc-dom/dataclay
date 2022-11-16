@@ -74,7 +74,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         while not obtained:
             self.runtime.lock(object_id)
             try:
-                instance = self.runtime.get_from_heap(object_id)
+                instance = self.runtime.heap_manager[object_id]
                 if instance is None:
                     obj_bytes = self.runtime.get_from_sl(object_id)
                     msg = DeserializationLibUtilsSingleton.deserialize_grpc_message_from_db(

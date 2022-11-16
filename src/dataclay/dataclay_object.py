@@ -203,7 +203,7 @@ class DataClayObject:
         self.__dict__.update(kwargs)
 
         # Add instance to heap
-        get_runtime().add_to_heap(self)
+        get_runtime().heap_manager[self._dc_id] = self
 
     @property
     def dataclay_id(self):

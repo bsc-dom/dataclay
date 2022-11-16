@@ -26,7 +26,7 @@ from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUti
 from dataclay.util import Configuration
 from dataclay_common import utils
 
-logger = utils.LoggerEvent(logging.getLogger(__name__))
+logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
 class ExecutionEnvironmentHeapManager(HeapManager):
@@ -61,16 +61,10 @@ class ExecutionEnvironmentHeapManager(HeapManager):
 
         logger.debug("EE HEAP MANAGER created for EE %s", self.exec_env.ee_name)
 
-    def get_object_ids_retained(self):
-        """get ids of objects retained in memory"""
-        logger.debug("Retained refs: %s " % str(len(self.retained_objects)))
-        logger.debug("Inmemory refs: %s " % str(len(self.inmemory_objects)))
-        return self.inmemory_objects.keys()
-
-    def add_to_heap(self, dc_object):
+    def __setitem__(self, object_id, obj):
         """the object is added to dataClay's heap"""
-        self._add_to_inmemory_map(dc_object)
-        self.retain_in_heap(dc_object)
+        super().__setitem__(object_id, obj)
+        self.retain_in_heap(obj)
 
     def retain_in_heap(self, dc_object):
         """Add a new Hard reference to the object provided. All code in stubs/exec classes using objects in dataClay heap are
@@ -123,6 +117,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         return False
         return float(virtual_mem.percent) < (Configuration.MEMMGMT_EASE_FRACTION * 100)
 
+    # NOTE: Does it need to be nullify???
     def __nullify_object(self, dc_object):
         """Set all fields to none to allow GC action"""
 
@@ -178,80 +173,67 @@ class ExecutionEnvironmentHeapManager(HeapManager):
                 )
 
     def __clean_object(self, dc_object):
-        """
-        @postcondition: Clean object (except if not loaded or being used). Cleaning means set all fields to None to allow
-        GC to work.
-        @param dc_object: Object to clean.
+        """Clean object (except if not loaded or being used).
+        Cleaning means set all fields to None to allow GC to work.
         """
 
-        """
-        Lock object (not locking executions!)
-        Lock is needed in case object is being nullified and some threads requires to load it from disk.
-        """
-        object_id = dc_object._dc_id
-        self.runtime.lock(object_id)
+        # Lock object (not locking executions!)
+        # Lock is needed in case object is being nullified and some threads requires to load it from disk.
+
+        self.runtime.lock(dc_object._dc_id)
         try:
+            logger.debug("Cleaning object %s", dc_object._dc_id)
 
             is_loaded = dc_object._dc_is_loaded
             if not is_loaded:
-                logger.trace("[==GC==] Not collecting since not loaded.")
+                logger.debug("Not collecting since not loaded.")
                 self.release_from_heap(dc_object)
                 return
 
-            """ Set loaded flag to false, any current execution that wants to get/set a field must try to load
-            object from DB, and lock will control that object is not being cleaned """
-            logger.debug("[==GC==] Setting loaded to false from gc %s" % str(object_id))
-
+            # Set loaded flag to false, any current execution that wants to get/set a field must try to load
+            # object from DB, and lock will control that object is not being cleaned
             dc_object._dc_is_loaded = False
 
             # Update it
             logger.debug("[==GC==] Updating object %s ", dc_object._dc_id)
             self.gc_collect_internal(dc_object)
 
-            logger.debug("[==GC==] Cleaning object %s", dc_object._dc_id)
-
             self.__nullify_object(dc_object)
 
-            """ Object is not dirty anymore """
+            # Object is not dirty anymore
             dc_object._dc_is_dirty = False
 
-            """
-            VERY IMPORTANT (RACE CONDITION)
-            If some object was cleaned and removed from GC retained refs, it does NOT mean it was removed
-            from Weak references Heap because we will ONLY remove an entry in that Heap if the GC removed it.
-            So, if some execution is requested after we remove an entry from retained refs (we cleaned and send
-            the object to disk), we check if the
-            object is in Heap (see executeImplementation as an example) and therefore, we created a new reference
-            making impossible for GC to clean the reference. We will add the object to retained refs
-            again once it is deserialized from DB. See DeserializationLib. It's the best solution without Lockers 
-            in get and remove in Heap.
+            # VERY IMPORTANT (RACE CONDITION)
+            # If some object was cleaned and removed from GC retained refs, it does NOT mean it was removed
+            # from Weak references Heap because we will ONLY remove an entry in that Heap if the GC removed it.
+            # So, if some execution is requested after we remove an entry from retained refs (we cleaned and send
+            # the object to disk), we check if the
+            # object is in Heap (see executeImplementation as an example) and therefore, we created a new reference
+            # making impossible for GC to clean the reference. We will add the object to retained refs
+            # again once it is deserialized from DB. See DeserializationLib. It's the best solution without Lockers
+            # in get and remove in Heap.
+            #
+            # Remove it from Retained refs to allow GC action.
 
-            Remove it from Retained refs to allow GC action.
-            """
             self.release_from_heap(dc_object)
 
         finally:
-            self.runtime.unlock(object_id)
+            self.runtime.unlock(dc_object._dc_id)
 
     def gc_collect_internal(self, object_to_update):
-        """
-        @postcondition: Update object in db or store it if volatile (and register in LM)
-        @param object_to_update: object to update
-        """
+        """Update object in db or store it if volatile"""
         try:
-            logger.debug("[==GCUpdate==] Updating object %s", object_to_update._dc_id)
-            """ Call EE update """
+            logger.debug(f"Updating object {object_to_update._dc_id}")
+            # Call EE update
             if object_to_update._dc_is_pending_to_register:
-                logger.debug(
-                    f"[==GCUpdate==] Storing and registering object {object_to_update._dc_id}"
-                )
+                logger.debug(f"Storing and registering object {object_to_update._dc_id}")
                 obj_bytes = SerializationLibUtilsSingleton.serialize_for_db_gc(
                     object_to_update, False, None
                 )
                 self.exec_env.register_and_store_pending(object_to_update, obj_bytes, True)
             else:
                 # TODO: use dirty flag to avoid trips to SL? how to update SL graph of references?
-                logger.debug("[==GCUpdate==] Updating dirty object %s ", object_to_update._dc_id)
+                logger.debug(f"Updating dirty object {object_to_update._dc_id}")
                 obj_bytes = SerializationLibUtilsSingleton.serialize_for_db_gc(
                     object_to_update, False, None
                 )
@@ -260,7 +242,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         except:
             # do nothing
             traceback.print_exc()
-        """ TODO: set datasetid for GC if set by user """
+        # TODO: set dataset for GC if set by user
 
     def run_task(self):
         """
@@ -458,7 +440,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
             time.sleep(self.TIME_WAIT_FOR_GC_TO_FINISH)
             max_wait_time = max_wait_time + self.TIME_WAIT_FOR_GC_TO_FINISH
 
-        logger.debug("[==FlushAll==] Number of objects in Heap: %s", self.heap_size())
+        logger.debug("[==FlushAll==] Number of objects in Heap: %s", len(self))
         for object_to_update in self.retained_objects:
             self.gc_collect_internal(object_to_update)
 

@@ -43,6 +43,9 @@ logger = logging.getLogger(__name__)
 
 
 class DataClayRuntime(ABC):
+
+    backend_clients: dict[UUID, EEClient]
+
     def __init__(
         self,
         metadata_service: MetadataService | MDSClient,
@@ -54,10 +57,7 @@ class DataClayRuntime(ABC):
         self.ee_infos = dict()
 
         # GRPC clients
-        self.backend_clients: dict[UUID, EEClient] = dict()
-
-        # Cache of classes. TODO: is it used? -> Yes, in StubUtils and ClientObjectLoader
-        self.local_available_classes = dict()
+        self.backend_clients = dict()
 
         # Locker Pool in runtime. This pool is used to provide thread-safe implementations in dataClay.
         self.locker_pool = LockerPool()
@@ -73,8 +73,11 @@ class DataClayRuntime(ABC):
 
         self.metadata_service = metadata_service
         self.heap_manager = heap_manager
-        self.dataclay_object_loader = object_loader
+        # self.dataclay_object_loader = object_loader
 
+        # self.inmemory_object
+
+        # start heap manager. Invokes run() in a separate thread
         self.heap_manager.start()
 
     ##############
@@ -105,34 +108,11 @@ class DataClayRuntime(ABC):
     # Heap #
     ########
 
-    def get_from_heap(self, object_id):
-        """Get from heap the object instance by the it"""
-        return self.heap_manager[object_id]
-
-    def add_to_heap(self, instance):
-        """Adds object instance to dataClay's heap"""
-        self.heap_manager.add_to_heap(instance)
-
-    def update_object_id(self, instance, new_object_id):
-        """Update the object id in both DataClayObject and HeapManager"""
-        old_object_id = instance._dc_id
-        instance._dc_id = new_object_id
-        self.heap_manager.remove_from_heap(old_object_id)
-        self.heap_manager._add_to_inmemory_map(instance)
-
-    def remove_from_heap(self, object_id):
-        """Remove reference from Heap.
-
-        Even if we remove it from the heap, the object won't be Garbage collected
-        till HeapManager flushes the object and releases it.
-        """
-        self.heap_manager.remove_from_heap(object_id)
-
     def exists(self, object_id):
-        return self.heap_manager.exists_in_heap(object_id)
+        return object_id in self.heap_manager
 
     def heap_size(self):
-        return self.heap_manager.heap_size()
+        return len(self.heap_manager)
 
     def count_loaded_objs(self):
         return self.heap_manager.count_loaded_objs()
@@ -599,7 +579,7 @@ class DataClayRuntime(ABC):
                     # hint we set in volatile parameters is wrong, because they are going to be deserialized/stored
                     # in the same location as the object with the method to execute
                     # ===========================================================
-                    param_instance = self.get_from_heap(param.object_id)
+                    param_instance = self.heap_manager[param.object_id]
                     param_instance._dc_master_ee_id = exec_env_id
                 self.volatile_parameters_being_send.remove(param.object_id)
 
@@ -669,7 +649,7 @@ class DataClayRuntime(ABC):
 
         # NOTE ¿It should never happen?
         if hint is None:
-            instance = self.get_from_heap(object_id)
+            instance = self.heap_manager[object_id]
             self.update_object_metadata(instance)
             hint = instance._dc_master_ee_id
 
@@ -739,7 +719,7 @@ class DataClayRuntime(ABC):
         # Update replicated objects metadata
         for replicated_object_id in replicated_object_ids:
             # NOTE: If it fails, use object_id instead of replicated_object_id
-            instance = self.get_from_heap(replicated_object_id)
+            instance = self.heap_manager[replicated_object_id]
             instance.add_replica_location(dest_backend.id)
             if instance.get_origin_location() is None:
                 # NOTE: at client side there cannot be two replicas of same oid
@@ -765,7 +745,7 @@ class DataClayRuntime(ABC):
 
         # NOTE: ¿Can it happen?
         if hint is None:
-            instance = self.get_from_heap(object_id)
+            instance = self.heap_manager[object_id]
             self.update_object_metadata(instance)
             hint = self.get_hint(object_id)
 

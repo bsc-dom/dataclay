@@ -360,7 +360,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         retained_refs = set()
 
         """ memory references """
-        for oid in self.heap_manager.get_object_ids_retained():
+        for oid in self.heap_manager.keys():
             retained_refs.add(oid)
         logger.debug("[==GC==] Session refs: %s" % str(len(self.references_hold_by_sessions)))
         logger.debug(
