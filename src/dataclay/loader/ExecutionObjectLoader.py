@@ -116,6 +116,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         @param retry: Indicates retry loading in case it is not in db.
         """
 
+        raise ("Not implemented")
         object_id = instance._dc_id
         loaded = False
         wait_time = 0

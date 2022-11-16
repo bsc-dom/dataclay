@@ -8,6 +8,7 @@ import time
 from dataclay.heap.backend_heap_manager import ExecutionEnvironmentHeapManager
 from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader
 from dataclay.runtime.dataclay_runtime import DataClayRuntime
+from dataclay.runtime import UUIDLock
 from dataclay.runtime import settings
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
@@ -203,8 +204,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             current_obj = pending_objs.pop()
             # Lock and make sure it is loaded
             current_obj_id = current_obj._dc_id
-            self.lock(current_obj_id)  # Avoid GC clean object while storing it
-            try:
+            with UUIDLock(current_obj_id):
                 if not current_obj._dc_is_loaded:
                     current_obj = self.get_or_new_instance_from_db(current_obj_id, False)
 
@@ -240,8 +240,6 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
                         current_obj, pending_objs, False, None, self, False
                     )
                 )
-            finally:
-                self.unlock(current_obj_id)
 
         if make_persistent:
 
@@ -302,13 +300,10 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
         if object_id not in self.references_hold_by_sessions:
             """race condition: two objects creating set of sessions at same time"""
-            self.lock(object_id)
-            try:
+            with UUIDLock(object_id):
                 if object_id not in self.references_hold_by_sessions:
                     session_refs = set()
                     self.references_hold_by_sessions[object_id] = session_refs
-            finally:
-                self.unlock(object_id)
         else:
             session_refs = self.references_hold_by_sessions.get(object_id)
         session_refs.add(session_id)
@@ -331,11 +326,8 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             What if T2 removes it after the put?
             Synchronization is needed to avoid this. It is not a big penalty if session expiration date was already added.
             """
-            self.lock(session_id)  # Use same locking system for object ids.
-            try:
+            with UUIDLock(session_id):
                 self.session_expires_dates[session_id] = expiration_date
-            finally:
-                self.unlock(session_id)
 
     def delete_alias(self, instance):
         alias = instance._dc_alias

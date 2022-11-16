@@ -22,4 +22,4 @@ class ClientHeapManager(HeapManager):
         logger.debug("CLIENT HEAP MANAGER created")
 
     def run_task(self):
-        self.cleanReferencesAndLockers()
+        pass

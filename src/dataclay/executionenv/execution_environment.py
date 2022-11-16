@@ -7,6 +7,7 @@ import uuid
 
 from dataclay.runtime import set_runtime, settings
 from dataclay.runtime.execution_environment_runtime import ExecutionEnvironmentRuntime
+from dataclay.runtime import UUIDLock
 
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.paraver import (
@@ -55,18 +56,16 @@ class ExecutionEnvironment(object):
         logger.info(f"Initialized EE with ID: {self.execution_environment_id}")
 
     def exists(self, object_id):
-        self.runtime.lock(object_id)  # RACE CONDITION: object is being unloaded but still not in SL
-        # object might be in heap but as a "proxy"
-        # since this function is used from SL after checking if the object is in database,
-        # we return false if the object is not loaded so the combination of SL exists and EE exists
-        # can tell if the object actually exists
-        # summary: the object only exist in EE if it is loaded.
-        try:
-            return self.runtime.heap_manager[object_id]._dc_is_loaded
-        except KeyError:
-            return False
-        finally:
-            self.runtime.unlock(object_id)
+        with UUIDLock(object_id):
+            # object might be in heap but as a "proxy"
+            # since this function is used from SL after checking if the object is in database,
+            # we return false if the object is not loaded so the combination of SL exists and EE exists
+            # can tell if the object actually exists
+            # summary: the object only exist in EE if it is loaded.
+            try:
+                return self.runtime.heap_manager[object_id]._dc_is_loaded
+            except KeyError:
+                return False
 
     def get_object_metadata(self, object_id):
         """Get the MetaDataInfo for a certain object.
@@ -792,10 +791,8 @@ class ExecutionEnvironment(object):
         logger.verbose("[==GetInternal==] Trying to get local instance for object %s", oid)
 
         # ToDo: Manage better this try/catch
-        self.runtime.lock(
-            oid
-        )  # Race condition with gc: make sure GC does not CLEAN the object while retrieving/serializing it!
-        try:
+        # Race condition with gc: make sure GC does not CLEAN the object while retrieving/serializing it!
+        with UUIDLock(oid):
             current_obj = self.get_local_instance(oid, False)
             pending_objs = list()
 
@@ -823,8 +820,6 @@ class ExecutionEnvironment(object):
                     current_obj.clear_replica_locations()
                 current_obj._dc_is_dirty = True
 
-        finally:
-            self.runtime.unlock(oid)
         return obj_with_data
 
     def get_objects_in_other_backends(

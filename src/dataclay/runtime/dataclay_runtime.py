@@ -6,17 +6,17 @@ from abc import ABC, abstractmethod
 from builtins import Exception
 from uuid import UUID
 
-import grpc
 from dataclay_common.clients.execution_environment_client import EEClient
 from dataclay_common.clients.metadata_service_client import MDSClient
 from dataclay_common.metadata_service import MetadataService
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from grpc import RpcError
 
-from dataclay.exceptions.exceptions import DataClayException
-from dataclay.heap.client_heap_manager import ClientHeapManager
+from dataclay.dataclay_object import DataClayObject
 from dataclay.heap.backend_heap_manager import ExecutionEnvironmentHeapManager
-from dataclay.heap.LockerPool import LockerPool
+from dataclay.heap.client_heap_manager import ClientHeapManager
+
+# from dataclay.exceptions.exceptions import DataClayException
 from dataclay.loader.ClientObjectLoader import ClientObjectLoader
 from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader
 from dataclay.paraver import (
@@ -26,17 +26,11 @@ from dataclay.paraver import (
     get_task_id,
     initialize_extrae,
 )
+from dataclay.runtime import UUIDLock
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
-from dataclay.dataclay_object import DataClayObject
-
-
-class NULL_NAMESPACE:
-    """null Namespace for uuid3, same as java's UUID.nameUUIDFromBytes"""
-
-    bytes = b""
 
 
 logger = logging.getLogger(__name__)
@@ -58,9 +52,6 @@ class DataClayRuntime(ABC):
 
         # GRPC clients
         self.backend_clients = dict()
-
-        # Locker Pool in runtime. This pool is used to provide thread-safe implementations in dataClay.
-        self.locker_pool = LockerPool()
 
         # Indicates volatiles being send - to avoid race-conditions
         self.volatile_parameters_being_send = set()
@@ -202,18 +193,6 @@ class DataClayRuntime(ABC):
 
         ee_client.ds_update_object(session_id, into_object._dc_id, serialized_params)
 
-    #################
-    # Lock & unlock #
-    #################
-
-    def lock(self, object_id):
-        """Lock object with ID provided"""
-        self.locker_pool.lock(object_id)
-
-    def unlock(self, object_id):
-        """Unlock object with ID provided"""
-        self.locker_pool.unlock(object_id)
-
     ###################
     # Object Metadata #
     ###################
@@ -237,22 +216,19 @@ class DataClayRuntime(ABC):
         try:
             return self.heap_manager[object_id]
         except KeyError:
-            # Double-checked lock
-            self.lock(object_id)
-            try:
-                return self.heap_manager[object_id]
-            except KeyError:
-                # Import class if None
-                if cls is None or master_ee_id is None:
-                    object_md = self.metadata_service.get_object_md_by_id(object_id)
-                    module_name, class_name = object_md.class_name.rsplit(".", 1)
-                    m = importlib.import_module(module_name)
-                    cls = getattr(m, class_name)
-                    master_ee_id = object_md.master_ee_id
+            with UUIDLock(object_id):
+                try:
+                    return self.heap_manager[object_id]
+                except KeyError:
+                    # Import class if None
+                    if cls is None or master_ee_id is None:
+                        object_md = self.metadata_service.get_object_md_by_id(object_id)
+                        module_name, class_name = object_md.class_name.rsplit(".", 1)
+                        m = importlib.import_module(module_name)
+                        cls = getattr(m, class_name)
+                        master_ee_id = object_md.master_ee_id
 
-                return cls.new_persistent(object_id, master_ee_id)
-            finally:
-                self.unlock(object_id)
+                    return cls.new_persistent(object_id, master_ee_id)
 
     def get_object_by_alias(self, alias, dataset_name=None):
         """Get object instance from alias"""

@@ -25,6 +25,7 @@ from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLi
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
 from dataclay_common import utils
+from dataclay.runtime import UUIDLock
 
 logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))
 
@@ -181,7 +182,7 @@ class ExecutionEnvironmentHeapManager(HeapManager):
         # Lock is needed in case object is being nullified and some threads requires to load it from disk.
 
         self.runtime.lock(dc_object._dc_id)
-        try:
+        with UUIDLock(dc_object._dc_id):
             logger.debug("Cleaning object %s", dc_object._dc_id)
 
             is_loaded = dc_object._dc_is_loaded
@@ -216,9 +217,6 @@ class ExecutionEnvironmentHeapManager(HeapManager):
             # Remove it from Retained refs to allow GC action.
 
             self.release_from_heap(dc_object)
-
-        finally:
-            self.runtime.unlock(dc_object._dc_id)
 
     def gc_collect_internal(self, object_to_update):
         """Update object in db or store it if volatile"""

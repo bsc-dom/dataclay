@@ -105,7 +105,3 @@ class HeapManager(threading.Thread, ABC):
     @abstractmethod
     def run_task(self):
         pass
-
-    def cleanReferencesAndLockers(self):
-        """Clean references and lockers not being used."""
-        self.runtime.locker_pool.cleanLockers()
