@@ -30,7 +30,7 @@ from dataclay.runtime import UUIDLock
 logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
-class ExecutionEnvironmentHeapManager(HeapManager):
+class BackendHeapManager(HeapManager):
     def __init__(self, theruntime):
         super().__init__(theruntime)
 

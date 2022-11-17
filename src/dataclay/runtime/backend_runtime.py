@@ -5,7 +5,7 @@ import logging
 import threading
 import time
 
-from dataclay.heap.backend_heap_manager import ExecutionEnvironmentHeapManager
+from dataclay.heap.backend_heap_manager import BackendHeapManager
 from dataclay.runtime.dataclay_runtime import DataClayRuntime
 from dataclay.runtime import UUIDLock
 from dataclay.runtime import settings
@@ -35,7 +35,7 @@ class BackendRuntime(DataClayRuntime):
 
         super().__init__(metadata_service)
 
-        self.heap_manager = ExecutionEnvironmentHeapManager(self)
+        self.heap_manager = BackendHeapManager(self)
         # start heap manager. Invokes run() in a separate thread
         self.heap_manager.start()
 
