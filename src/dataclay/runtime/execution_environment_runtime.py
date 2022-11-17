@@ -6,14 +6,13 @@ import threading
 import time
 
 from dataclay.heap.backend_heap_manager import ExecutionEnvironmentHeapManager
-from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader
 from dataclay.runtime.dataclay_runtime import DataClayRuntime
 from dataclay.runtime import UUIDLock
 from dataclay.runtime import settings
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
 from dataclay_common.metadata_service import MetadataService
-
+from dataclay.dataclay_object import DataClayObject
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
@@ -33,10 +32,12 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
 
         # Initialize parent
         metadata_service = MetadataService(etcd_host, etcd_port)
-        dataclay_object_loader = ExecutionObjectLoader(self)
-        heap_manager = ExecutionEnvironmentHeapManager(self)
 
-        super().__init__(metadata_service, heap_manager, dataclay_object_loader)
+        super().__init__(metadata_service)
+
+        self.heap_manager = ExecutionEnvironmentHeapManager(self)
+        # start heap manager. Invokes run() in a separate thread
+        self.heap_manager.start()
 
         # References hold by sessions. Resource note: Maximum size of this map is maximum number of objects allowed in EE x sessions.
         # Also, important to think what happens if one single session is associated to two client threads? use case?
@@ -62,6 +63,10 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
     def session(self, value):
         self.thread_local_data.session = value
 
+    def add_to_heap(self, instance: DataClayObject):
+        self.inmemory_objects[instance._dc_id] = instance
+        self.heap_manager.retain_in_heap(instance)
+
     def is_exec_env(self):
         return True
 
@@ -73,7 +78,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
             retry: indicates if we should retry and wait
         """
         try:
-            return self.heap_manager[object_id]
+            return self.inmemory_objects[object_id]
         except KeyError:
             raise ("Not Implemented")
             return self.get_from_sl(object_id)
@@ -83,6 +88,7 @@ class ExecutionEnvironmentRuntime(DataClayRuntime):
         return self.dataclay_object_loader.get_or_new_instance_from_db(object_id, retry)
 
     def load_object_from_db(self, instance, retry):
+        raise
         """
         @postcondition: Load DataClayObject from Database
         @param instance: DataClayObject instance to fill

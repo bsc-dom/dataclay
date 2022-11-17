@@ -13,12 +13,8 @@ from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from grpc import RpcError
 
 from dataclay.dataclay_object import DataClayObject
-from dataclay.heap.backend_heap_manager import ExecutionEnvironmentHeapManager
-from dataclay.heap.client_heap_manager import ClientHeapManager
 
 # from dataclay.exceptions.exceptions import DataClayException
-from dataclay.loader.ClientObjectLoader import ClientObjectLoader
-from dataclay.loader.ExecutionObjectLoader import ExecutionObjectLoader
 from dataclay.paraver import (
     extrae_tracing_is_enabled,
     finish_tracing,
@@ -32,6 +28,8 @@ from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDat
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.util import Configuration
 
+from weakref import WeakValueDictionary
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,12 +38,7 @@ class DataClayRuntime(ABC):
 
     backend_clients: dict[UUID, EEClient]
 
-    def __init__(
-        self,
-        metadata_service: MetadataService | MDSClient,
-        heap_manager: ExecutionEnvironmentHeapManager | ClientHeapManager,
-        object_loader: ExecutionObjectLoader | ClientObjectLoader,
-    ):
+    def __init__(self, metadata_service: MetadataService | MDSClient):
 
         # Cache of EE info
         self.ee_infos = dict()
@@ -63,13 +56,9 @@ class DataClayRuntime(ABC):
         self.volatiles_under_deserialization = dict()
 
         self.metadata_service = metadata_service
-        self.heap_manager = heap_manager
-        # self.dataclay_object_loader = object_loader
 
-        # self.inmemory_object
-
-        # start heap manager. Invokes run() in a separate thread
-        self.heap_manager.start()
+        # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
+        self.inmemory_objects = WeakValueDictionary()
 
     ##############
     # Properties #
@@ -100,13 +89,14 @@ class DataClayRuntime(ABC):
     ########
 
     def exists(self, object_id):
-        return object_id in self.heap_manager
+        return object_id in self.inmemory_objects
 
     def heap_size(self):
-        return len(self.heap_manager)
+        return len(self.inmemory_objects)
 
-    def count_loaded_objs(self):
-        return self.heap_manager.count_loaded_objs()
+    # TODO: Only in backend?
+    # def count_loaded_objs(self):
+    #     return self.heap_manager.count_loaded_objs()
 
     #############
     # Volatiles #
@@ -214,11 +204,11 @@ class DataClayRuntime(ABC):
 
         # Check if object is in heap
         try:
-            return self.heap_manager[object_id]
+            return self.inmemory_objects[object_id]
         except KeyError:
             with UUIDLock(object_id):
                 try:
-                    return self.heap_manager[object_id]
+                    return self.inmemory_objects[object_id]
                 except KeyError:
                     # Import class if None
                     if cls is None or master_ee_id is None:
@@ -264,7 +254,7 @@ class DataClayRuntime(ABC):
     def get_all_locations(self, object_id):
         locations = set()
         try:
-            instance = self.heap_manager[object_id]
+            instance = self.inmemory_objects[object_id]
             locations.add(instance._dc_master_ee_id)
             locations.update(instance._dc_replica_ee_ids)
         except KeyError:
@@ -555,7 +545,7 @@ class DataClayRuntime(ABC):
                     # hint we set in volatile parameters is wrong, because they are going to be deserialized/stored
                     # in the same location as the object with the method to execute
                     # ===========================================================
-                    param_instance = self.heap_manager[param.object_id]
+                    param_instance = self.inmemory_objects[param.object_id]
                     param_instance._dc_master_ee_id = exec_env_id
                 self.volatile_parameters_being_send.remove(param.object_id)
 
@@ -625,7 +615,7 @@ class DataClayRuntime(ABC):
 
         # NOTE ¿It should never happen?
         if hint is None:
-            instance = self.heap_manager[object_id]
+            instance = self.inmemory_objects[object_id]
             self.update_object_metadata(instance)
             hint = instance._dc_master_ee_id
 
@@ -695,7 +685,7 @@ class DataClayRuntime(ABC):
         # Update replicated objects metadata
         for replicated_object_id in replicated_object_ids:
             # NOTE: If it fails, use object_id instead of replicated_object_id
-            instance = self.heap_manager[replicated_object_id]
+            instance = self.inmemory_objects[replicated_object_id]
             instance.add_replica_location(dest_backend.id)
             if instance.get_origin_location() is None:
                 # NOTE: at client side there cannot be two replicas of same oid
@@ -721,7 +711,7 @@ class DataClayRuntime(ABC):
 
         # NOTE: ¿Can it happen?
         if hint is None:
-            instance = self.heap_manager[object_id]
+            instance = self.inmemory_objects[object_id]
             self.update_object_metadata(instance)
             hint = self.get_hint(object_id)
 
@@ -862,7 +852,8 @@ class DataClayRuntime(ABC):
         self.backend_clients = {}
 
         # Stop HeapManager
-        self.stop_gc()
+        # TODO: Now only backend have heap manager
+        # self.stop_gc()
 
     ################## EXTRAE IGNORED FUNCTIONS ###########################
     deactivate_tracing.do_not_trace = True

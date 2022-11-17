@@ -63,7 +63,7 @@ class ExecutionEnvironment(object):
             # can tell if the object actually exists
             # summary: the object only exist in EE if it is loaded.
             try:
-                return self.runtime.heap_manager[object_id]._dc_is_loaded
+                return self.runtime.inmemory_objects[object_id]._dc_is_loaded
             except KeyError:
                 return False
 
@@ -83,7 +83,7 @@ class ExecutionEnvironment(object):
         logger.info(f"Getting MetaData for object {object_id}")
 
         try:
-            return self.runtime.heap_manager[object_id].metadata
+            return self.runtime.inmemory_objects[object_id].metadata
         except KeyError:
             return self.runtime.metadata_service.get_object_md_by_id(object_id)
 
@@ -193,7 +193,7 @@ class ExecutionEnvironment(object):
         # This new_make_persistent should send all the objects (even with circular dependencies)
         # in one call to the EE
         try:
-            instance = self.runtime.heap_manager[dict["_dc_id"]]
+            instance = self.runtime.inmemory_objects[dict["_dc_id"]]
             instance.__dict__.update(dict)
             instance._dc_is_persistent = True  # All objects in the EE are persistent
             instance._dc_is_loaded = True

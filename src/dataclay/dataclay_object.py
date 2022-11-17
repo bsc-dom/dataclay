@@ -176,7 +176,7 @@ class DataClayObject:
         obj.initialize_object(**new_dict)
         return obj
 
-    def initialize_object(self, deserializing=False, **kwargs):
+    def initialize_object(self, **kwargs):
         """Initializes the object"""
 
         # Populate default internal fields
@@ -194,7 +194,7 @@ class DataClayObject:
         self._dc_is_read_only = False
         self._dc_is_dirty = False
         self._dc_is_pending_to_register = False
-        self._dc_is_loaded = False
+        self._dc_is_loaded = True
         self._dc_owner_session_id = (
             get_runtime().session.id
         )  # May be removed to instantiate dc object without init()
@@ -203,7 +203,7 @@ class DataClayObject:
         self.__dict__.update(kwargs)
 
         # Add instance to heap
-        get_runtime().heap_manager[self._dc_id] = self
+        get_runtime().add_to_heap(self)
 
     @property
     def dataclay_id(self):

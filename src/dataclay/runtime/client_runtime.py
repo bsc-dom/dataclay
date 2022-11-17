@@ -8,13 +8,13 @@ import logging
 import pickle
 import traceback
 
-from dataclay.heap.client_heap_manager import ClientHeapManager
-from dataclay.loader.ClientObjectLoader import ClientObjectLoader
 from dataclay.runtime.dataclay_runtime import DataClayRuntime
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay_common.clients.execution_environment_client import EEClient
 from dataclay_common.clients.metadata_service_client import MDSClient
 from opentelemetry import trace
+
+from dataclay.dataclay_object import DataClayObject
 
 UNDEFINED_LOCAL = object()
 
@@ -29,9 +29,10 @@ class ClientRuntime(DataClayRuntime):
     def __init__(self, metadata_service_host, metadata_service_port):
         # Initialize parent
         metadata_service = MDSClient(metadata_service_host, metadata_service_port)
-        heap_manager = ClientHeapManager(self)
-        dataclay_object_loader = ClientObjectLoader(self)
-        super().__init__(metadata_service, heap_manager, dataclay_object_loader)
+        super().__init__(metadata_service)
+
+    def add_to_heap(self, instance: DataClayObject):
+        self.inmemory_objects[instance._dc_id] = instance
 
     def is_client(self):
         return True
@@ -139,7 +140,7 @@ class ClientRuntime(DataClayRuntime):
     def detach_object_from_session(self, object_id, hint):
         try:
             if hint is None:
-                instance = self.heap_manager[object_id]
+                instance = self.inmemory_objects[object_id]
                 self.update_object_metadata(instance)
                 hint = instance._dc_master_ee_id
             try:
