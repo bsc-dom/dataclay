@@ -6,7 +6,7 @@ import traceback
 import uuid
 
 from dataclay.runtime import set_runtime, settings
-from dataclay.runtime.execution_environment_runtime import ExecutionEnvironmentRuntime
+from dataclay.runtime.backend_runtime import BackendRuntime
 from dataclay.runtime import UUIDLock
 
 from dataclay.exceptions.exceptions import DataClayException
@@ -48,7 +48,7 @@ class ExecutionEnvironment(object):
         self.ee_port = theee_port
 
         # Initialize runtime
-        self.runtime = ExecutionEnvironmentRuntime(self, etcd_host, etcd_port)
+        self.runtime = BackendRuntime(self, etcd_host, etcd_port)
         set_runtime(self.runtime)
 
         # UNDONE: Do not store EE information. If restarted, create new EE uuid.

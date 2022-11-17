@@ -26,7 +26,7 @@ from dataclay.util import Configuration
 # Explicit and manually crafted list of CLASSES to be instrumentated
 CLASSES_WITH_EXTRAE_DECORATORS = {  # Similar to Java paraver/extrae AspectJ file.
     # MAPPING: package name - modules with class named equal to modulen name
-    "dataclay.commonruntime": ["ClientRuntime", "DataClayRuntime", "ExecutionEnvironmentRuntime"],
+    "dataclay.commonruntime": ["ClientRuntime", "DataClayRuntime", "BackendRuntime"],
     "dataclay.executionenv": ["ExecutionEnvironment"],
     "dataclay.heap": ["ClientHeapManager", "ExecutionEnvironmentHeapManager", "HeapManager"],
     "dataclay": ["DataClayObject"],

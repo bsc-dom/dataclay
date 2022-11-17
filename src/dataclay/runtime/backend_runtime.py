@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 
-class ExecutionEnvironmentRuntime(DataClayRuntime):
+class BackendRuntime(DataClayRuntime):
     def __init__(self, theexec_env, etcd_host, etcd_port):
 
         # Execution Environment using this runtime.

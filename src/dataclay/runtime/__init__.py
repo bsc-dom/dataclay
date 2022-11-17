@@ -6,12 +6,12 @@ from dataclay.runtime.settings_hub import settings, unload_settings
 
 if TYPE_CHECKING:
     from dataclay.runtime.client_runtime import ClientRuntime
-    from dataclay.runtime.execution_environment_runtime import ExecutionEnvironmentRuntime
+    from dataclay.runtime.backend_runtime import BackendRuntime
 
 current_runtime = None
 
 
-def get_runtime() -> "ClientRuntime | ExecutionEnvironmentRuntime":
+def get_runtime() -> "ClientRuntime | BackendRuntime":
     return current_runtime
 
 

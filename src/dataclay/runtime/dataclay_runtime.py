@@ -77,7 +77,7 @@ class DataClayRuntime(ABC):
         return self._dataclay_id
 
     def is_exec_env(self):
-        # ExecutionEnvironmentRuntime must override to True.
+        # BackendRuntime must override to True.
         return False
 
     def is_client(self):
@@ -289,7 +289,7 @@ class DataClayRuntime(ABC):
     def add_session_reference(self, object_id):
         """reference associated to thread session
 
-        Only implemented in ExecutionEnvironmentRuntime
+        Only implemented in BackendRuntime
         """
         pass
 
