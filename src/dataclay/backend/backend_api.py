@@ -18,28 +18,17 @@ from dataclay.paraver import (
     set_current_available_task_id,
 )
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
-from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
-from dataclay.util import Configuration
-from dataclay.util.classloaders import ClassLoader
-from dataclay.util.FileUtils import deploy_class
-from dataclay.util.YamlParser import dataclay_yaml_load
 from dataclay_common import utils
 from dataclay_common.clients.execution_environment_client import EEClient
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from opentelemetry import trace
-
-__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
-__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
-
-from dataclay.util.management.metadataservice.RegistrationInfo import RegistrationInfo
 
 tracer = trace.get_tracer(__name__)
 logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
-class ExecutionEnvironment(object):
+class ExecutionEnvironment:
     def __init__(self, theee_name, theee_port, etcd_host, etcd_port):
 
         # NOTE: the port is (atm) exclusively for unique identification of an EE

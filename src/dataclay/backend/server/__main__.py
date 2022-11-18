@@ -9,8 +9,6 @@ The main can be called easily through a
 
 import logging
 
-__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
-__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +19,7 @@ def run_main():
     from dataclay import initialize
 
     initialize()
-    from dataclay.executionenv.server.ExecutionEnvironmentSrv import ExecutionEnvironmentSrv
+    from dataclay.backend.server.ExecutionEnvironmentSrv import ExecutionEnvironmentSrv
 
     exec_env_srv = ExecutionEnvironmentSrv()
     exec_env_srv.start()

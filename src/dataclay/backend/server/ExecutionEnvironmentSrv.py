@@ -30,8 +30,8 @@ from dataclay.runtime.Initializer import logger
 from dataclay.runtime import settings
 from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
 from dataclay.communication.grpc.clients.StorageLocationGrpcClient import SLClient
-from dataclay.communication.grpc.server.execution_environment_servicer import DataServiceEE
-from dataclay.executionenv.execution_environment import ExecutionEnvironment
+from dataclay.communication.grpc.server.execution_environment_servicer import BackendServicer
+from dataclay.backend.backend_api import ExecutionEnvironment
 from dataclay.util import Configuration
 from dataclay.util.classloaders import (
     ClassLoader,
@@ -48,11 +48,6 @@ class ExecutionEnvironmentSrv(object):
     def __init__(self):
         self.execution_environment = None
 
-    def reset_caches(self):
-        logger.info("Received SIGHUP --proceeding to reset caches")
-        ClassLoader.cached_metaclass_info.clear()
-        ClassLoader.cached_metaclasses.clear()
-
     def persist_and_exit(self):
         logger.info("Performing exit hook --persisting files")
 
@@ -67,20 +62,6 @@ class ExecutionEnvironmentSrv(object):
 
         finish()
 
-    def preface_autoregister(self):
-        """Perform a pre-initialization of stuff (prior to the autoregister call)."""
-
-        # Check if there is an explicit IP for autoregistering
-        local_ip = os.getenv("DATASERVICE_HOST", "")
-        if not local_ip:
-            local_ip = socket.gethostbyname(socket.gethostname())
-
-        # TODO: Remove LogicModule client. Needed for getting stubs.
-        # lm_client = LMClient(settings.logicmodule_host, settings.logicmodule_port)
-        # self.execution_environment.runtime.backend_clients["@LM"] = lm_client
-
-        return local_ip
-
     def start_autoregister(self, local_ip):
         """Start the autoregister procedure to introduce ourselves to the LogicModule."""
 
@@ -89,37 +70,6 @@ class ExecutionEnvironmentSrv(object):
         # Setting settings
         execution_environment_id = self.execution_environment.execution_environment_id
         settings.environment_id = execution_environment_id
-        # sl_name = settings.dataservice_name
-        # settings.storage_id = sl_name
-
-        max_retries = Configuration.MAX_RETRY_AUTOREGISTER
-        sleep_time = Configuration.RETRY_AUTOREGISTER_TIME / 1000
-
-        # Autoregister of ExecutionEnvironment to LogicModule
-        # NOTE: Needed to get registered classes from LogicModule
-        # TODO: Should be removed when LogicModule is replaced by MetadataService
-        # lm_client = self.execution_environment.runtime.backend_clients["@LM"]
-        # retries = 0
-        # while True:
-        #     try:
-        #         lm_client.autoregister_ee(
-        #             execution_environment_id,
-        #             settings.dataservice_name,
-        #             local_ip,
-        #             settings.dataservice_port,
-        #             LANG_PYTHON,
-        #         )
-        #         break
-        #     except Exception as e:
-        #         if retries == max_retries:
-        #             logger.critical("Could not create channel, aborting")
-        #             raise
-        #         else:
-        #             logger.info(
-        #                 f"Could not create channel, retry #{retries} of {max_retries} in {sleep_time} seconds"
-        #             )
-        #             time.sleep(sleep_time)
-        #             retries += 1
 
         # Autoregister of ExecutionEnvironment to MetadataService
         metadata_service = self.execution_environment.runtime.metadata_service
@@ -130,52 +80,6 @@ class ExecutionEnvironmentSrv(object):
             settings.dataservice_name,
             LANG_PYTHON,
         )
-
-        # Get the StorageLocation info associated to ExecutionEnvironment
-        # retries = 0
-        # while True:
-        #     try:
-        #         storage_location = metadata_service.get_storage_location(sl_name)
-        #         break
-        #     except StorageLocationDoesNotExistError as e:
-        #         if retries == max_retries:
-        #             logger.critical(f"Could not get StorageLocation {sl_name}, aborting")
-        #             raise e
-        #         else:
-        #             logger.warning(
-        #                 f"StorageLocation {sl_name} not ready, retry #{retries} of {max_retries} in {sleep_time} seconds"
-        #             )
-        #             retries += 1
-        #             time.sleep(sleep_time)
-
-        # logger.info(
-        #     f"Starting client to StorageLocation {storage_location.name} at {storage_location.hostname}:{storage_location.port}"
-        # )
-
-        # Connect to the StorageLocation
-        # retries = 0
-        # while True:
-        #     try:
-        #         storage_client = SLClient(storage_location.hostname, storage_location.port)
-        #         break
-        #     except:
-        #         if retries == max_retries:
-        #             logger.critical(
-        #                 f"Could not connect to storage location at {storage_location.hostname} and {storage_location.port}, aborting"
-        #             )
-        #             raise
-        #         else:
-        #             logger.warning(
-        #                 f"StorageLocation {sl_name} not ready, retry #{retries} of {max_retries} in {sleep_time} seconds",
-        #             )
-        #             retries += 1
-        #             time.sleep(sleep_time)
-
-        # logger.info(f"Connected to StorageLocation {sl_name}!")
-
-        # Makes the StorageLocation client globally available
-        # self.execution_environment.runtime.backend_clients["@STORAGE"] = storage_client
-        # storage_client.associate_execution_environment(execution_environment_id)
 
     def start(self):
         """Start the dataClay server (Execution Environment).
@@ -224,15 +128,15 @@ class ExecutionEnvironmentSrv(object):
                 ),
             ),
         )
-        ee = DataServiceEE(self.execution_environment)
+        ee = BackendServicer(self.execution_environment)
 
-        from dataclay_common.protos import dataservice_pb2_grpc as ds
+        from dataclay_common.protos import dataservice_pb2_grpc
 
-        ds.add_DataServiceServicer_to_server(ee, self.server)
+        dataservice_pb2_grpc.add_DataServiceServicer_to_server(ee, self.server)
 
         address = str(settings.server_listen_addr) + ":" + str(settings.server_listen_port)
 
-        logger.info("Starting DataServiceEE on %s", address)
+        logger.info("Starting BackendServicer on %s", address)
         try:
             # TODO: Better way for start server?
             self.server.add_insecure_port(address)

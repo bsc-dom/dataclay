@@ -8,29 +8,47 @@ import traceback
 from uuid import UUID
 
 import grpc
-from dataclay.executionenv.execution_environment import ExecutionEnvironment
-from dataclay.runtime import get_runtime
-from dataclay.communication.grpc import Utils
-from dataclay.exceptions.exceptions import DataClayException
-from dataclay_common.protos import common_messages_pb2, dataservice_messages_pb2
-from dataclay_common.protos import dataservice_pb2_grpc as ds
+from dataclay_common.protos import (
+    common_messages_pb2,
+    dataservice_messages_pb2,
+    dataservice_pb2_grpc,
+)
 from google.protobuf.empty_pb2 import Empty
 from google.protobuf.wrappers_pb2 import BytesValue
 
-__author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
-__copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
+from dataclay.communication.grpc import Utils
+from dataclay.exceptions.exceptions import DataClayException
+from dataclay.backend.backend_api import ExecutionEnvironment
+from dataclay.runtime import get_runtime
 
 logger = logging.getLogger(__name__)
 
 
-class DataServiceEE(ds.DataServiceServicer):
+# from concurrent import futures
+
+# from dataclay.util import Configuration
+# from dataclay.runtime import settings
+
+# max_workers = Configuration.THREAD_POOL_WORKERS or None
+# address = str(settings.server_listen_addr) + ":" + str(settings.server_listen_port)
+
+
+# def serve():
+#     server = grpc.server(futures.ThreadPoolExecutor(max_workers=max_workers))
+#     dataservice_pb2_grpc.add_DataServiceServicer_to_server(BackendServicer(_), server)
+#     server.add_insecure_port(address)
+#     server.start()
+#     server.wait_for_termination()
+
+
+class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
 
     interceptor = None
 
     def __init__(self, theexec_env: ExecutionEnvironment, interceptor=None):
         """Execution environment being managed"""
         self.execution_environment = theexec_env
-        DataServiceEE.interceptor = interceptor
+        BackendServicer.interceptor = interceptor
 
     def ass_client(self):
         self.client = get_runtime().backend_clients["@STORAGE"]
