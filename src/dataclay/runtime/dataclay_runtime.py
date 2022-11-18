@@ -84,6 +84,14 @@ class DataClayRuntime(ABC):
         # ClientRuntime must override to True
         return False
 
+    ##
+    # Common runtime API
+    ##
+
+    @abstractmethod
+    def make_persistent(self, instance, alias, backend_id, recursive):
+        pass
+
     ########
     # Heap #
     ########

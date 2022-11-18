@@ -77,7 +77,7 @@ def serve():
 
     backend.stop()
 
-    server.stop()
+    server.stop(5)
 
 
 class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
