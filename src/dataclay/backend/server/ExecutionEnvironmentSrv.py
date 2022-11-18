@@ -28,8 +28,6 @@ from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
 from dataclay.runtime.Initializer import logger
 from dataclay.runtime import settings
-from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
-from dataclay.communication.grpc.clients.StorageLocationGrpcClient import SLClient
 from dataclay.communication.grpc.server.execution_environment_servicer import BackendServicer
 from dataclay.backend.backend_api import ExecutionEnvironment
 from dataclay.util import Configuration

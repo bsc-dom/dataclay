@@ -1133,11 +1133,10 @@ class ExecutionEnvironment:
     # Shutdown
     ##########
 
-    # TODO: Instead of notifying, just delete the EE entry in ETCD using MetadataService
-    def notify_execution_environment_shutdown(self):
-        """Notify LM current node left"""
-        lm_client = self.runtime.backend_clients["@LM"]
-        lm_client.notify_execution_environment_shutdown(self.execution_environment_id)
+    def stop(self):
+        self.runtime.stop_gc()
+        self.runtime.flush_all()
+        # TODO: delete the EE entry in ETCD using MetadataService, or use Lease
 
     #########
     # Tracing
