@@ -18,7 +18,7 @@ from google.protobuf.wrappers_pb2 import BytesValue
 
 from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.backend.backend_api import ExecutionEnvironment
+from dataclay.backend.api import BackendAPI
 from dataclay.runtime import get_runtime
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ def serve():
 
     stop_event = threading.Event()
 
-    backend = ExecutionEnvironment(
+    backend = BackendAPI(
         settings.dataservice_name,
         settings.server_listen_port,
         settings.ETCD_HOST,
@@ -84,7 +84,7 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
 
     interceptor = None
 
-    def __init__(self, theexec_env: ExecutionEnvironment, interceptor=None):
+    def __init__(self, theexec_env: BackendAPI, interceptor=None):
         """Execution environment being managed"""
         self.execution_environment = theexec_env
         BackendServicer.interceptor = interceptor

@@ -28,7 +28,7 @@ tracer = trace.get_tracer(__name__)
 logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
-class ExecutionEnvironment:
+class BackendAPI:
     def __init__(self, theee_name, theee_port, etcd_host, etcd_port):
 
         # NOTE: the port is (atm) exclusively for unique identification of an EE

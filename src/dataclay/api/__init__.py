@@ -5,7 +5,6 @@ Note that importing this module has a basic semantic: it prepares the dataClay
 core and sets the "client" mode for the library.
 """
 
-__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 __all__ = ["init", "finish", "DataClayObject"]
 
 import logging.config
@@ -34,6 +33,10 @@ logger = logging.getLogger("dataclay.api")
 
 _connection_initialized = False
 _initialized = False
+
+
+# def client(username, password, etcd_ip,):
+#     return DataclayClient()
 
 
 def is_initialized() -> bool:
