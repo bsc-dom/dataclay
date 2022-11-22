@@ -24,7 +24,7 @@ from dataclay.heap.heap_manager import HeapManager
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.conf import settings
-from dataclay_common import utils
+from dataclay import utils
 from dataclay.runtime import UUIDLock
 
 logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))

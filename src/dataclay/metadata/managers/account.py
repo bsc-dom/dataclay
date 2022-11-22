@@ -4,8 +4,8 @@ import logging
 from passlib.hash import bcrypt
 from opentelemetry import trace
 
-from dataclay_common.exceptions.exceptions import *
-from dataclay_common.utils.json import UUIDEncoder, uuid_parser
+from dataclay.exceptions.exceptions import *
+from dataclay.utils.json import UUIDEncoder, uuid_parser
 
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)

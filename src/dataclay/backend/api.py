@@ -5,7 +5,7 @@ import pickle
 import traceback
 import uuid
 
-from dataclay_common import utils
+from dataclay import utils
 from dataclay.backend.client import BackendClient
 from opentelemetry import trace
 

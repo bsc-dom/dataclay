@@ -1,18 +1,9 @@
-""" Class description goes here. """
-
-"""
-Created on Jan 25, 2018
-
-@author: dgasull
-"""
 import logging
 import threading
 from abc import ABC, abstractmethod
 from weakref import WeakValueDictionary
 
-from dataclay_common import utils
-
-""" Make this class abstract """
+from dataclay import utils
 
 logger = utils.LoggerEvent(logging.getLogger(__name__))
 

@@ -1,18 +1,14 @@
-from dataclay.metadata import servicer
-
-servicer.serve()
-
-
+import signal
 import threading
-from dataclay.metadata.api import MetadataAPI
+import uuid
+from concurrent import futures
+
 import grpc
 from dataclay_common.protos import metadata_service_pb2_grpc
-from dataclay.metadata.servicer import MetadataServicer
-from concurrent import futures
-import uuid
-import signal
 
 from dataclay.conf import settings
+from dataclay.metadata.api import MetadataAPI
+from dataclay.metadata.servicer import MetadataServicer
 
 
 def serve():
@@ -22,8 +18,6 @@ def serve():
     metadata_service = MetadataAPI(settings.ETCD_HOST, settings.ETCD_PORT)
 
     dataclay_id = uuid.uuid4()
-
-    metadata_service.autoregister_mds()
 
     metadata_service.autoregister_mds(
         dataclay_id,

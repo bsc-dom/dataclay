@@ -3,7 +3,7 @@ import uuid
 from uuid import UUID
 
 import etcd3
-from dataclay_common.exceptions.exceptions import *
+from dataclay.exceptions.exceptions import *
 from dataclay.metadata.managers.account import Account, AccountManager
 from dataclay.metadata.managers.dataclay import (
     Dataclay,

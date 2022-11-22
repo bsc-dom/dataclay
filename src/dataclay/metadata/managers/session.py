@@ -3,9 +3,9 @@ import uuid
 
 from opentelemetry import trace
 
-from dataclay_common.exceptions.exceptions import *
+from dataclay.exceptions.exceptions import *
 from dataclay_common.protos import common_messages_pb2
-from dataclay_common.utils.json import UUIDEncoder, uuid_parser
+from dataclay.utils.json import UUIDEncoder, uuid_parser
 
 tracer = trace.get_tracer(__name__)
 
