@@ -1,17 +1,11 @@
-""" Class description goes here. """
-
-"""
-Created on 26 ene. 2018
-
-@author: dgasull
-"""
-
 import gc
 import logging
-import sys
+import threading
 import time
 import traceback
 from weakref import WeakValueDictionary
+
+from dataclay import utils
 
 try:
     import tracemalloc
@@ -19,20 +13,32 @@ except ImportError:
     tracemalloc = None
 
 import psutil
-from dataclay.dataclay_object import DCLAY_PROPERTY_PREFIX
-from dataclay.heap.heap_manager import HeapManager
-from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
-from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
-from dataclay.conf import settings
+
 from dataclay import utils
+from dataclay.conf import settings
+from dataclay.dataclay_object import DCLAY_PROPERTY_PREFIX
 from dataclay.runtime import UUIDLock
+from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 
 logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
-class BackendHeapManager(HeapManager):
+class HeapManager(threading.Thread):
+    """This class is intended to manage all dataClay objects in runtime's memory."""
+
     def __init__(self, theruntime):
-        super().__init__(theruntime)
+        threading.Thread.__init__(self, name="heap-manager")
+
+        # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
+        self.inmemory_objects = WeakValueDictionary()
+
+        # Event object to communicate shutdown
+        self._finished = threading.Event()
+
+        # Runtime being monitorized.
+        self.runtime = theruntime
+
+        self.daemon = True
 
         # During a flush of all objects in Heap, if GC is being processed, wait, and check after time specified here in seconds
         self.TIME_WAIT_FOR_GC_TO_FINISH = 1
@@ -60,12 +66,65 @@ class BackendHeapManager(HeapManager):
         # Indicates if HeapManager is processing GC
         self.is_processing_gc = False
 
-        logger.debug("EE HEAP MANAGER created for EE %s", self.exec_env.ee_name)
+    ##############
+    # Dict methods
+    ##############
+
+    def __getitem__(self, object_id):
+        return self.inmemory_objects[object_id]
 
     def __setitem__(self, object_id, obj):
-        """the object is added to dataClay's heap"""
-        super().__setitem__(object_id, obj)
-        self.retain_in_heap(obj)
+        self.inmemory_objects[object_id] = obj
+
+    def __contains__(self, item):
+        return item in self.inmemory_objects
+
+    def __len__(self):
+        return len(self.inmemory_objects)
+
+    def __delitem__(self, object_id):
+        """Remove reference from Heap.
+
+        Even if we remove it from the heap the object won't be Garbage collected
+        untill HeapManager flushes the object and releases it.
+        """
+        # self.inmemory_objects.pop(object_id) # Maybe this?
+        del self.inmemory_objects[object_id]
+
+    def keys(self):
+        return self.inmemory_objects.keys()
+
+    #####
+
+    def shutdown(self):
+        """Stop this thread"""
+        logger.debug("HEAP MANAGER shutdown request received.")
+        self._finished.set()
+
+    def run(self):
+        """Overrides run function"""
+        # gc_check_time_interval_seconds = settings.MEMMGMT_CHECK_TIME_INTERVAL / 1000.0
+        gc_check_time_interval_seconds = 1200
+        while True:
+            logger.debug("HEAP MANAGER THREAD is awake...")
+            if self._finished.is_set():
+                break
+            self.run_task()
+
+            # sleep for interval or until shutdown
+            logger.debug("HEAP MANAGER THREAD is going to sleep...")
+            self._finished.wait(gc_check_time_interval_seconds)
+
+        logger.debug("HEAP MANAGER THREAD Finished.")
+
+    def count_loaded_objs(self):
+        num_loaded_objs = 0
+        for obj in self.inmemory_objects.values():
+            if obj._dc_is_loaded:
+                num_loaded_objs = num_loaded_objs + 1
+        return num_loaded_objs
+
+    # BackendHeapManager specific methods
 
     def retain_in_heap(self, dc_object):
         """Add a new Hard reference to the object provided. All code in stubs/exec classes using objects in dataClay heap are

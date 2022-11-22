@@ -27,7 +27,7 @@ CLASSES_WITH_EXTRAE_DECORATORS = {  # Similar to Java paraver/extrae AspectJ fil
     # MAPPING: package name - modules with class named equal to modulen name
     "dataclay.commonruntime": ["ClientRuntime", "DataClayRuntime", "BackendRuntime"],
     "dataclay.executionenv": ["ExecutionEnvironment"],
-    "dataclay.heap": ["ClientHeapManager", "BackendHeapManager", "HeapManager"],
+    "dataclay.heap": ["HeapManager"],
     "dataclay": ["DataClayObject"],
     "dataclay.serialization.lib": ["SerializationLibUtils", "DeserializationLibUtils"],
     "dataclay.serialization.python.util": ["PyTypeWildcardWrapper"],
