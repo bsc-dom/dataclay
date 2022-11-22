@@ -10,8 +10,8 @@ import traceback
 
 from dataclay.runtime.dataclay_runtime import DataClayRuntime
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
-from dataclay_common.clients.execution_environment_client import EEClient
-from dataclay_common.clients.metadata_service_client import MDSClient
+from dataclay.backend.client import BackendClient
+from dataclay.metadata.client import MetadataClient
 from opentelemetry import trace
 
 from dataclay.dataclay_object import DataClayObject
@@ -28,7 +28,7 @@ class ClientRuntime(DataClayRuntime):
 
     def __init__(self, metadata_service_host, metadata_service_port):
         # Initialize parent
-        metadata_service = MDSClient(metadata_service_host, metadata_service_port)
+        metadata_service = MetadataClient(metadata_service_host, metadata_service_port)
         super().__init__(metadata_service)
 
     def add_to_heap(self, instance: DataClayObject):
@@ -68,7 +68,7 @@ class ClientRuntime(DataClayRuntime):
             except KeyError:
                 logger.debug(f"Client {instance._dc_master_ee_id} not found in cache!")
                 exec_env = self.get_execution_environment_info(instance._dc_master_ee_id)
-                ee_client = EEClient(exec_env.hostname, exec_env.port)
+                ee_client = BackendClient(exec_env.hostname, exec_env.port)
                 self.backend_clients[instance._dc_master_ee_id] = ee_client
 
             ######################################
@@ -103,7 +103,7 @@ class ClientRuntime(DataClayRuntime):
             ee_client = self.backend_clients[ee_id]
         except KeyError:
             ee_info = self.get_execution_environment_info(ee_id)
-            ee_client = EEClient(ee_info.hostname, ee_info.port)
+            ee_client = BackendClient(ee_info.hostname, ee_info.port)
             self.backend_clients[ee_id] = ee_client
         ee_client.delete_alias(self.session.id, instance._dc_id)
         instance._dc_alias = None
@@ -131,7 +131,7 @@ class ClientRuntime(DataClayRuntime):
             ee_client = self.backend_clients[dest_backend_id]
         except KeyError:
             exec_env = self.get_execution_environment_info(dest_backend_id)
-            ee_client = EEClient(exec_env.hostname, exec_env.port)
+            ee_client = BackendClient(exec_env.hostname, exec_env.port)
             self.backend_clients[dest_backend_id] = ee_client
         ee_client.synchronize(
             self.session.id, instance._dc_id, implementation_id, serialized_params
@@ -147,7 +147,7 @@ class ClientRuntime(DataClayRuntime):
                 ee_client = self.backend_clients[hint]
             except KeyError:
                 ee_info = self.get_execution_environment_info(hint)
-                ee_client = EEClient(ee_info.hostname, ee_info.port)
+                ee_client = BackendClient(ee_info.hostname, ee_info.port)
                 self.backend_clients[hint] = ee_client
             ee_client.detach_object_from_session(object_id, self.session.id)
         except:
@@ -162,7 +162,7 @@ class ClientRuntime(DataClayRuntime):
             ee_client = self.backend_clients[hint]
         except KeyError:
             exec_env = self.get_execution_environment_info(hint)
-            ee_client = EEClient(exec_env.hostname, exec_env.port)
+            ee_client = BackendClient(exec_env.hostname, exec_env.port)
             self.backend_clients[hint] = ee_client
 
         logger.debug(
@@ -191,7 +191,7 @@ class ClientRuntime(DataClayRuntime):
             ee_client = self.backend_clients[hint]
         except KeyError:
             exec_env = self.get_execution_environment_info(hint)
-            ee_client = EEClient(exec_env.hostname, exec_env.port)
+            ee_client = BackendClient(exec_env.hostname, exec_env.port)
             self.backend_clients[hint] = ee_client
 
         ee_client.unfederate(

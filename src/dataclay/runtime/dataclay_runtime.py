@@ -6,9 +6,9 @@ from abc import ABC, abstractmethod
 from builtins import Exception
 from uuid import UUID
 
-from dataclay_common.clients.execution_environment_client import EEClient
-from dataclay_common.clients.metadata_service_client import MDSClient
-from dataclay_common.metadata_service import MetadataService
+from dataclay.backend.client import BackendClient
+from dataclay.metadata.client import MetadataClient
+from dataclay.metadata.api import MetadataAPI
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from grpc import RpcError
 
@@ -26,7 +26,7 @@ from dataclay.runtime import UUIDLock
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
-from dataclay.util import Configuration
+from dataclay.conf import settings
 
 from weakref import WeakValueDictionary
 
@@ -36,9 +36,9 @@ logger = logging.getLogger(__name__)
 
 class DataClayRuntime(ABC):
 
-    backend_clients: dict[UUID, EEClient]
+    backend_clients: dict[UUID, BackendClient]
 
-    def __init__(self, metadata_service: MetadataService | MDSClient):
+    def __init__(self, metadata_service: MetadataAPI | MetadataClient):
 
         # Cache of EE info
         self.ee_infos = dict()
@@ -137,7 +137,7 @@ class DataClayRuntime(ABC):
             ee_client = self.backend_clients[backend_id]
         except KeyError:
             exec_env = self.get_execution_environment_info(backend_id)
-            ee_client = EEClient(exec_env.hostname, exec_env.port)
+            ee_client = BackendClient(exec_env.hostname, exec_env.port)
             self.backend_clients[backend_id] = ee_client
 
         # We serialize objects like volatile parameters
@@ -305,7 +305,7 @@ class DataClayRuntime(ABC):
     # Execution Environments #
     ##########################
 
-    def get_backend_client(self, backend_id: UUID) -> EEClient:
+    def get_backend_client(self, backend_id: UUID) -> BackendClient:
         try:
             return self.backend_clients[backend_id]
         except KeyError:
@@ -321,11 +321,11 @@ class DataClayRuntime(ABC):
         # TODO: Update backend_clients using multithreading
         for id, info in self.ee_infos.items():
             if id in self.backend_clients:
-                if self.backend_clients[id].is_ready(Configuration.TIMEOUT_CHANNEL_READY):
+                if self.backend_clients[id].is_ready(settings.TIMEOUT_CHANNEL_READY):
                     new_backend_clients[id] = self.backend_clients[id]
                     continue
 
-            backend_client = EEClient(info.hostname, info.port)
+            backend_client = BackendClient(info.hostname, info.port)
             if backend_client.is_ready():
                 new_backend_clients[id] = backend_client
             else:
@@ -403,7 +403,7 @@ class DataClayRuntime(ABC):
             ee_client = self.backend_clients[backend_id]
         except KeyError:
             exec_env = self.get_execution_environment_info(backend_id)
-            ee_client = EEClient(exec_env.hostname, exec_env.port)
+            ee_client = BackendClient(exec_env.hostname, exec_env.port)
             self.backend_clients[backend_id] = ee_client
 
         operation = self.get_operation_info(object_id, operation_name)
@@ -469,7 +469,7 @@ class DataClayRuntime(ABC):
                 self.volatile_parameters_being_send.add(param.object_id)
 
         # // === EXECUTE === //
-        max_retry = Configuration.MAX_EXECUTION_RETRIES
+        max_retry = settings.MAX_EXECUTION_RETRIES
         num_misses = 0
         executed = False
         for _ in range(max_retry):
@@ -484,7 +484,7 @@ class DataClayRuntime(ABC):
                     exec_env.hostname,
                     exec_env.port,
                 )
-                ee_client = EEClient(exec_env.hostname, exec_env.port)
+                ee_client = BackendClient(exec_env.hostname, exec_env.port)
                 self.backend_clients[exec_env_id] = ee_client
 
             try:
@@ -592,7 +592,7 @@ class DataClayRuntime(ABC):
             ee_client = self.backend_clients[backend_id]
         except KeyError:
             exec_env = self.get_execution_environment_info(backend_id)
-            ee_client = EEClient(exec_env.hostname, exec_env.port)
+            ee_client = BackendClient(exec_env.hostname, exec_env.port)
             self.backend_clients[backend_id] = ee_client
 
         copiedObject = ee_client.ds_get_copy_of_object(session_id, from_object._dc_id, recursive)
@@ -675,7 +675,7 @@ class DataClayRuntime(ABC):
             ee_client = self.backend_clients[hint]
         except KeyError:
             backend_to_call = self.get_execution_environment_info(hint)
-            ee_client = EEClient(backend_to_call.hostname, backend_to_call.port)
+            ee_client = BackendClient(backend_to_call.hostname, backend_to_call.port)
             self.backend_clients[hint] = ee_client
         return ee_client, dest_backend
 
@@ -727,7 +727,7 @@ class DataClayRuntime(ABC):
             ee_client = self.backend_clients[hint]
         except KeyError:
             backend_to_call = self.get_execution_environment_info(hint)
-            ee_client = EEClient(backend_to_call.hostname, backend_to_call.port)
+            ee_client = BackendClient(backend_to_call.hostname, backend_to_call.port)
             self.backend_clients[hint] = ee_client
 
         ee_client.consolidate_version(self.session.id, object_id)
@@ -816,10 +816,10 @@ class DataClayRuntime(ABC):
     def get_traces_in_dataclay_services(self):
         """Get temporary traces from LM and DSs and store it in current workspace"""
         traces = self.backend_clients["@LM"].get_traces()
-        traces_dir = Configuration.TRACES_DEST_PATH
+        traces_dir = settings.TRACES_DEST_PATH
         if len(traces) > 0:
-            set_path = Configuration.TRACES_DEST_PATH + "/set-0"
-            trace_mpits = Configuration.TRACES_DEST_PATH + "/TRACE.mpits"
+            set_path = settings.TRACES_DEST_PATH + "/set-0"
+            trace_mpits = settings.TRACES_DEST_PATH + "/TRACE.mpits"
             with open(trace_mpits, "a+") as trace_file:
                 # store them here
                 for key, value in traces.items():

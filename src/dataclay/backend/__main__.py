@@ -8,12 +8,12 @@ The main can be called easily through a
 """
 
 
-from dataclay.util.config import CfgExecEnv
-from dataclay import initialize
 from dataclay.backend import servicer
+from dataclay.conf import settings
 
-initialize()
+# from dataclay import initialize
 
+# initialize()
 
-CfgExecEnv.set_defaults()
+settings.load_backend_properties()
 servicer.serve()

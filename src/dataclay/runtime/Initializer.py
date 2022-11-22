@@ -140,8 +140,8 @@ def initialize():
     config_kwargs["disable_existing_loggers"] = False
     logging.config.dictConfig(config_kwargs)
 
-    logger.verbose("Starting dataClay library")
-    logger.verbose("Debug output seems to be enabled")
+    logger.debug("Starting dataClay library")
+    logger.debug("Debug output seems to be enabled")
 
 
 @contextmanager

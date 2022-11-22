@@ -23,7 +23,7 @@ from dataclay.dataclay_object import DCLAY_PROPERTY_PREFIX
 from dataclay.heap.heap_manager import HeapManager
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
-from dataclay.util import Configuration
+from dataclay.conf import settings
 from dataclay_common import utils
 from dataclay.runtime import UUIDLock
 
@@ -100,7 +100,7 @@ class BackendHeapManager(HeapManager):
             TRUE if memory is under pressure. FALSE otherwise.
         """
         virtual_mem = psutil.virtual_memory()
-        mem_pressure_limit = Configuration.MEMMGMT_PRESSURE_FRACTION * 100
+        mem_pressure_limit = settings.MEMMGMT_PRESSURE_FRACTION * 100
         logger.debug("Memory: %s", virtual_mem)
         logger.debug(f"Checking if Memory: {float(virtual_mem.percent)} > {mem_pressure_limit}")
         return False
@@ -116,7 +116,7 @@ class BackendHeapManager(HeapManager):
         virtual_mem = psutil.virtual_memory()
         logger.trace("Memory: %s", virtual_mem)
         return False
-        return float(virtual_mem.percent) < (Configuration.MEMMGMT_EASE_FRACTION * 100)
+        return float(virtual_mem.percent) < (settings.MEMMGMT_EASE_FRACTION * 100)
 
     # NOTE: Does it need to be nullify???
     def __nullify_object(self, dc_object):

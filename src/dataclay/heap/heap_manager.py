@@ -12,8 +12,6 @@ from weakref import WeakValueDictionary
 
 from dataclay_common import utils
 
-from dataclay.util import Configuration
-
 """ Make this class abstract """
 
 logger = utils.LoggerEvent(logging.getLogger(__name__))
@@ -51,7 +49,7 @@ class HeapManager(threading.Thread, ABC):
 
     def run(self):
         """Overrides run function"""
-        # gc_check_time_interval_seconds = Configuration.MEMMGMT_CHECK_TIME_INTERVAL / 1000.0
+        # gc_check_time_interval_seconds = settings.MEMMGMT_CHECK_TIME_INTERVAL / 1000.0
         gc_check_time_interval_seconds = 1200
         while True:
             logger.debug("HEAP MANAGER THREAD is awake...")

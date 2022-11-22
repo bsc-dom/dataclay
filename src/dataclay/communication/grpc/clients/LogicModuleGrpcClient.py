@@ -17,7 +17,6 @@ from grpc._cython.cygrpc import ChannelArgKey
 from dataclay.runtime import settings
 from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.util import Configuration
 from dataclay.util.YamlParser import dataclay_yaml_dump, dataclay_yaml_load
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
@@ -46,12 +45,12 @@ class LMClient(object):
         ]
 
         if (
-            Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != ""
-            or Configuration.SSL_CLIENT_CERTIFICATE != ""
-            or Configuration.SSL_CLIENT_KEY != ""
+            settings.SSL_CLIENT_TRUSTED_CERTIFICATES != ""
+            or settings.SSL_CLIENT_CERTIFICATE != ""
+            or settings.SSL_CLIENT_KEY != ""
         ):
             # read in certificates
-            options.append(("grpc.ssl_target_name_override", Configuration.SSL_TARGET_AUTHORITY))
+            options.append(("grpc.ssl_target_name_override", settings.SSL_TARGET_AUTHORITY))
             if port != 443:
                 service_alias = str(port)
                 self.metadata_call.append(("service-alias", service_alias))
@@ -59,18 +58,18 @@ class LMClient(object):
                 logger.info(f"SSL configured: changed address {hostname}:{port} to {hostname}:443")
                 logger.info("SSL configured: using service-alias " + service_alias)
             else:
-                self.metadata_call.append(("service-alias", Configuration.SSL_TARGET_LM_ALIAS))
+                self.metadata_call.append(("service-alias", settings.SSL_TARGET_LM_ALIAS))
 
             try:
-                if Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != "":
-                    with open(Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES, "rb") as f:
+                if settings.SSL_CLIENT_TRUSTED_CERTIFICATES != "":
+                    with open(settings.SSL_CLIENT_TRUSTED_CERTIFICATES, "rb") as f:
                         trusted_certs = f.read()
-                if Configuration.SSL_CLIENT_CERTIFICATE != "":
-                    with open(Configuration.SSL_CLIENT_CERTIFICATE, "rb") as f:
+                if settings.SSL_CLIENT_CERTIFICATE != "":
+                    with open(settings.SSL_CLIENT_CERTIFICATE, "rb") as f:
                         client_cert = f.read()
 
-                if Configuration.SSL_CLIENT_KEY != "":
-                    with open(Configuration.SSL_CLIENT_KEY, "rb") as f:
+                if settings.SSL_CLIENT_KEY != "":
+                    with open(settings.SSL_CLIENT_KEY, "rb") as f:
                         client_key = f.read()
             except Exception as e:
                 logger.error("failed-to-read-cert-keys", reason=e)
@@ -91,16 +90,16 @@ class LMClient(object):
 
             logger.info(
                 "SSL configured: using SSL_CLIENT_TRUSTED_CERTIFICATES located at "
-                + Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES
+                + settings.SSL_CLIENT_TRUSTED_CERTIFICATES
             )
             logger.info(
                 "SSL configured: using SSL_CLIENT_CERTIFICATE located at "
-                + Configuration.SSL_CLIENT_CERTIFICATE
+                + settings.SSL_CLIENT_CERTIFICATE
             )
             logger.info(
-                "SSL configured: using SSL_CLIENT_KEY located at " + Configuration.SSL_CLIENT_KEY
+                "SSL configured: using SSL_CLIENT_KEY located at " + settings.SSL_CLIENT_KEY
             )
-            logger.info("SSL configured: using authority  " + Configuration.SSL_TARGET_AUTHORITY)
+            logger.info("SSL configured: using authority  " + settings.SSL_TARGET_AUTHORITY)
 
         else:
             self.channel = grpc.insecure_channel(address, options)
@@ -109,7 +108,7 @@ class LMClient(object):
         try:
             logger.info("Connecting to address %s" % address)
             grpc.channel_ready_future(self.channel).result(
-                timeout=Configuration.GRPC_CHECK_ALIVE_TIMEOUT
+                timeout=settings.GRPC_CHECK_ALIVE_TIMEOUT
             )
         except Exception as e:
             logger.debug("Error connecting to server %s. Retrying" % address)
@@ -131,21 +130,19 @@ class LMClient(object):
             response = None
             future = lm_function(request)
             i = 0
-            while i < Configuration.MAX_RETRIES_LOGICMODULE:
+            while i < settings.MAX_RETRIES_LOGICMODULE:
                 try:
                     response = future.result()
                     break
                 except Exception as e:
                     i = i + 1
-                    if i > Configuration.MAX_RETRIES_LOGICMODULE:
+                    if i > settings.MAX_RETRIES_LOGICMODULE:
                         logger.warning("Max retries reached", exc_info=True)
                         raise e
                     else:
                         logger.debug("Received exception, will retry", exc_info=True)
-                        logger.info(
-                            "Sleeping for %i seconds " % Configuration.SLEEP_RETRIES_LOGICMODULE
-                        )
-                        sleep(Configuration.SLEEP_RETRIES_LOGICMODULE)
+                        logger.info("Sleeping for %i seconds " % settings.SLEEP_RETRIES_LOGICMODULE)
+                        sleep(settings.SLEEP_RETRIES_LOGICMODULE)
         except:
             traceback.print_exc()
             raise

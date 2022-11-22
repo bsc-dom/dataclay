@@ -19,9 +19,8 @@ from ctypes import cdll
 from distutils.util import strtobool
 from functools import wraps
 
-from dataclay.runtime import settings
+from dataclay.conf import settings
 from dataclay.contrib.dummy_pycompss import task
-from dataclay.util import Configuration
 
 # Explicit and manually crafted list of CLASSES to be instrumentated
 CLASSES_WITH_EXTRAE_DECORATORS = {  # Similar to Java paraver/extrae AspectJ file.
@@ -326,7 +325,7 @@ def get_traces():
     global TRACED_METHODS
     traces = dict()
     global TASK_ID
-    set_path = Configuration.TRACES_DEST_PATH + "/set-0"
+    set_path = settings.TRACES_DEST_PATH + "/set-0"
     LOGGER.debug("Sending files in %s" % set_path)
     for dirpath, subdirs, files in os.walk(set_path):
         for name in files:
@@ -431,7 +430,7 @@ def load_type_values():
     global PARAVER_FUNC_MAP
 
     __location__ = os.path.realpath(
-        os.path.join(Configuration.TRACES_DEST_PATH, os.path.dirname(__file__))
+        os.path.join(settings.TRACES_DEST_PATH, os.path.dirname(__file__))
     )
     prv_values_file = os.path.join(__location__, "python_paraver_values.properties")
     LOGGER.debug("Loading paraver values file from %s" % str(prv_values_file))

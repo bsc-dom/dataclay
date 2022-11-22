@@ -5,10 +5,11 @@ import pickle
 import traceback
 import uuid
 
-from dataclay.runtime import set_runtime, settings
-from dataclay.runtime.backend_runtime import BackendRuntime
-from dataclay.runtime import UUIDLock
+from dataclay_common import utils
+from dataclay.backend.client import BackendClient
+from opentelemetry import trace
 
+from dataclay.conf import settings
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.paraver import (
     extrae_tracing_is_enabled,
@@ -17,12 +18,11 @@ from dataclay.paraver import (
     initialize_extrae,
     set_current_available_task_id,
 )
+from dataclay.runtime import UUIDLock, set_runtime
+from dataclay.runtime.backend_runtime import BackendRuntime
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
-from dataclay_common import utils
-from dataclay_common.clients.execution_environment_client import EEClient
-from opentelemetry import trace
 
 tracer = trace.get_tracer(__name__)
 logger = utils.LoggerEvent(logging.getLogger(__name__))
@@ -136,7 +136,7 @@ class BackendAPI:
 
         # NOTE: we are doing *two* remote calls, and wishlist => they work as a transaction
         self.runtime.backend_clients["@STORAGE"].store_to_db(
-            settings.environment_id, object_id, obj_bytes
+            self.execution_environment_id, object_id, obj_bytes
         )
 
         # TODO: When the object metadata is updated synchronously, this should me removed
@@ -368,7 +368,7 @@ class BackendAPI:
                     st_loc.hostname,
                     st_loc.port,
                 )
-                sl_client = EEClient(st_loc.hostname, st_loc.port)
+                sl_client = BackendClient(st_loc.hostname, st_loc.port)
                 self.runtime.backend_clients[dest_backend_id] = sl_client
 
             sl_client.ds_store_objects(session_id, objects_to_move, True, None)
@@ -408,7 +408,7 @@ class BackendAPI:
                 backend.hostname,
                 backend.port,
             )
-            client_backend = EEClient(backend.hostname, backend.port)
+            client_backend = BackendClient(backend.hostname, backend.port)
             self.runtime.backend_clients[dest_backend_id] = client_backend
         return client_backend
 
@@ -876,7 +876,7 @@ class BackendAPI:
                         backend.port,
                     )
 
-                    client_backend = EEClient(backend.hostname, backend.port)
+                    client_backend = BackendClient(backend.hostname, backend.port)
                     self.runtime.backend_clients[backend_id] = client_backend
 
                 cur_result = client_backend.ds_get_objects(
@@ -1096,7 +1096,7 @@ class BackendAPI:
                     backend.port,
                 )
 
-                client_backend = EEClient(backend.hostname, backend.port)
+                client_backend = BackendClient(backend.hostname, backend.port)
                 self.runtime.backend_clients[backend_id] = client_backend
 
             client_backend.ds_upsert_objects(session_id, objects_to_update)

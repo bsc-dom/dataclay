@@ -15,7 +15,7 @@ import typing
 import uuid
 from uuid import UUID
 
-from dataclay_common.managers.object_manager import ObjectMetadata
+from dataclay.metadata.managers.object import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from opentelemetry import trace
 

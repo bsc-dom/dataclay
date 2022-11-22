@@ -6,7 +6,6 @@ Created on 1 feb. 2018
 @author: dgasull
 """
 import importlib
-import logging
 import time
 import traceback
 
@@ -14,7 +13,7 @@ from dataclay.runtime import get_runtime
 from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.loader.DataClayObjectLoader import DataClayObjectLoader
 from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
-from dataclay.util import Configuration
+from dataclay.conf import settings
 from dataclay.util.classloaders.ClassLoader import load_metaclass_info
 
 
@@ -69,7 +68,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         )
         obtained = False
         wait_time = 0
-        sleep_time = Configuration.SLEEP_WAIT_REGISTERED / 1000
+        sleep_time = settings.SLEEP_WAIT_REGISTERED / 1000
         instance = None
         while not obtained:
             self.runtime.lock(object_id)
@@ -98,7 +97,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
                 self.logger.debug(
                     "Received error while retrieving object %s", object_id, exc_info=True
                 )
-                if not retry or wait_time > Configuration.TIMEOUT_WAIT_REGISTERED:
+                if not retry or wait_time > settings.TIMEOUT_WAIT_REGISTERED:
                     raise
 
                 wait_time = wait_time + sleep_time
@@ -120,8 +119,8 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         object_id = instance._dc_id
         loaded = False
         wait_time = 0
-        sleep_time = Configuration.SLEEP_WAIT_REGISTERED / 1000
-        while not loaded and wait_time < Configuration.TIMEOUT_WAIT_REGISTERED:
+        sleep_time = settings.SLEEP_WAIT_REGISTERED / 1000
+        while not loaded and wait_time < settings.TIMEOUT_WAIT_REGISTERED:
             self.runtime.lock(object_id)
             try:
                 """double check for race-conditions"""
@@ -130,7 +129,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
                 loaded = True
             except Exception as ex:
                 traceback.print_exc()
-                if not retry or wait_time > Configuration.TIMEOUT_WAIT_REGISTERED:
+                if not retry or wait_time > settings.TIMEOUT_WAIT_REGISTERED:
                     raise ex
                 self.logger.debug("Object %s not found in DB. Waiting and retry...", object_id)
                 wait_time = wait_time + sleep_time

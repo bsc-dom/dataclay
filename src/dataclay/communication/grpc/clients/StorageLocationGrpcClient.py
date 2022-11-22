@@ -12,7 +12,7 @@ from grpc._cython.cygrpc import ChannelArgKey
 
 from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.util import Configuration
+from dataclay.conf import settings
 
 __author__ = "Enrico La Sala <enrico.lasala@bsc.es>"
 __copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
@@ -30,12 +30,12 @@ class SLClient(object):
         ]
         self.metadata_call = []
         if (
-            Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != ""
-            or Configuration.SSL_CLIENT_CERTIFICATE != ""
-            or Configuration.SSL_CLIENT_KEY != ""
+            settings.SSL_CLIENT_TRUSTED_CERTIFICATES != ""
+            or settings.SSL_CLIENT_CERTIFICATE != ""
+            or settings.SSL_CLIENT_KEY != ""
         ):
             # read in certificates
-            options.append(("grpc.ssl_target_name_override", Configuration.SSL_TARGET_AUTHORITY))
+            options.append(("grpc.ssl_target_name_override", settings.SSL_TARGET_AUTHORITY))
             if port != 443:
                 service_alias = str(port)
                 self.metadata_call.append(("service-alias", service_alias))
@@ -43,18 +43,18 @@ class SLClient(object):
                 logger.info(f"SSL configured: changed address {hostname}:{port} to {hostname}:443")
                 logger.info("SSL configured: using service-alias  " + service_alias)
             else:
-                self.metadata_call.append(("service-alias", Configuration.SSL_TARGET_SL_ALIAS))
+                self.metadata_call.append(("service-alias", settings.SSL_TARGET_SL_ALIAS))
 
             try:
-                if Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES != "":
-                    with open(Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES, "rb") as f:
+                if settings.SSL_CLIENT_TRUSTED_CERTIFICATES != "":
+                    with open(settings.SSL_CLIENT_TRUSTED_CERTIFICATES, "rb") as f:
                         trusted_certs = f.read()
-                if Configuration.SSL_CLIENT_CERTIFICATE != "":
-                    with open(Configuration.SSL_CLIENT_CERTIFICATE, "rb") as f:
+                if settings.SSL_CLIENT_CERTIFICATE != "":
+                    with open(settings.SSL_CLIENT_CERTIFICATE, "rb") as f:
                         client_cert = f.read()
 
-                if Configuration.SSL_CLIENT_KEY != "":
-                    with open(Configuration.SSL_CLIENT_KEY, "rb") as f:
+                if settings.SSL_CLIENT_KEY != "":
+                    with open(settings.SSL_CLIENT_KEY, "rb") as f:
                         client_key = f.read()
             except Exception as e:
                 logger.error("failed-to-read-cert-keys", reason=e)
@@ -75,16 +75,16 @@ class SLClient(object):
 
             logger.info(
                 "SSL configured: using SSL_CLIENT_TRUSTED_CERTIFICATES located at "
-                + Configuration.SSL_CLIENT_TRUSTED_CERTIFICATES
+                + settings.SSL_CLIENT_TRUSTED_CERTIFICATES
             )
             logger.info(
                 "SSL configured: using SSL_CLIENT_CERTIFICATE located at "
-                + Configuration.SSL_CLIENT_CERTIFICATE
+                + settings.SSL_CLIENT_CERTIFICATE
             )
             logger.info(
-                "SSL configured: using SSL_CLIENT_KEY located at " + Configuration.SSL_CLIENT_KEY
+                "SSL configured: using SSL_CLIENT_KEY located at " + settings.SSL_CLIENT_KEY
             )
-            logger.info("SSL configured: using authority  " + Configuration.SSL_TARGET_AUTHORITY)
+            logger.info("SSL configured: using authority  " + settings.SSL_TARGET_AUTHORITY)
 
         else:
             self.channel = grpc.insecure_channel(self.address, options)
@@ -92,7 +92,7 @@ class SLClient(object):
 
         try:
             grpc.channel_ready_future(self.channel).result(
-                timeout=Configuration.GRPC_CHECK_ALIVE_TIMEOUT
+                timeout=settings.GRPC_CHECK_ALIVE_TIMEOUT
             )
         except Exception as e:
             sys.exit("Error connecting to server %s" % self.address)

@@ -3,8 +3,13 @@
 """gRPC ExecutionEnvironment Server code - StorageLocation/EE methods."""
 
 import logging
+import os
 import pickle
+import signal
+import socket
+import threading
 import traceback
+from concurrent import futures
 from uuid import UUID
 
 import grpc
@@ -13,24 +18,17 @@ from dataclay_common.protos import (
     dataservice_messages_pb2,
     dataservice_pb2_grpc,
 )
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from google.protobuf.empty_pb2 import Empty
 from google.protobuf.wrappers_pb2 import BytesValue
 
-from dataclay.communication.grpc import Utils
-from dataclay.exceptions.exceptions import DataClayException
 from dataclay.backend.api import BackendAPI
+from dataclay.communication.grpc import Utils
+from dataclay.conf import settings
+from dataclay.exceptions.exceptions import DataClayException
 from dataclay.runtime import get_runtime
 
 logger = logging.getLogger(__name__)
-
-from dataclay.util import Configuration
-
-from concurrent import futures
-from dataclay.runtime import settings
-import os
-import socket
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-import threading
 
 
 def serve():
@@ -38,14 +36,14 @@ def serve():
     stop_event = threading.Event()
 
     backend = BackendAPI(
-        settings.dataservice_name,
-        settings.server_listen_port,
+        settings.DC_BACKEND_NAME,
+        settings.SERVER_LISTEN_PORT,
         settings.ETCD_HOST,
         settings.ETCD_PORT,
     )
 
-    max_workers = Configuration.THREAD_POOL_WORKERS or None
-    address = str(settings.server_listen_addr) + ":" + str(settings.server_listen_port)
+    max_workers = settings.THREAD_POOL_WORKERS
+    address = str(settings.SERVER_LISTEN_ADDR) + ":" + str(settings.SERVER_LISTEN_PORT)
 
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers=max_workers),
@@ -61,22 +59,25 @@ def serve():
 
     # Start autoregister
     execution_environment_id = backend.execution_environment_id
-    settings.environment_id = execution_environment_id
+    settings.DC_BACKEND_ID = execution_environment_id
 
     # Autoregister of ExecutionEnvironment to MetadataService
     backend.runtime.metadata_service.autoregister_ee(
         execution_environment_id,
         local_ip,
-        settings.dataservice_port,
-        settings.dataservice_name,
+        settings.SERVER_LISTEN_PORT,
+        settings.DC_BACKEND_NAME,
         LANG_PYTHON,
     )
+
+    # Set signal hook for SIGINT and SIGTERM
+    signal.signal(signal.SIGINT, lambda sig, frame: stop_event.set())
+    signal.signal(signal.SIGTERM, lambda sig, frame: stop_event.set())
 
     # Wait until stop_event is set. Then, gracefully stop dataclay backend.
     stop_event.wait()
 
     backend.stop()
-
     server.stop(5)
 
 

@@ -5,17 +5,13 @@ import logging
 import threading
 import time
 
-from dataclay.heap.backend_heap_manager import BackendHeapManager
-from dataclay.runtime.dataclay_runtime import DataClayRuntime
-from dataclay.runtime import UUIDLock
-from dataclay.runtime import settings
-from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
-from dataclay.util import Configuration
-from dataclay_common.metadata_service import MetadataService
+from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
-
-__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
-__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
+from dataclay.heap.backend_heap_manager import BackendHeapManager
+from dataclay.metadata.api import MetadataAPI
+from dataclay.runtime import UUIDLock
+from dataclay.runtime.dataclay_runtime import DataClayRuntime
+from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +27,7 @@ class BackendRuntime(DataClayRuntime):
         self.execution_environment = theexec_env
 
         # Initialize parent
-        metadata_service = MetadataService(etcd_host, etcd_port)
+        metadata_service = MetadataAPI(etcd_host, etcd_port)
 
         super().__init__(metadata_service)
 
@@ -101,7 +97,7 @@ class BackendRuntime(DataClayRuntime):
         @postcondition: Get hint of the current EE
         @return Hint of current EE
         """
-        return settings.environment_id
+        return settings.DC_BACKEND_ID
 
     def flush_all(self):
         """
@@ -165,7 +161,7 @@ class BackendRuntime(DataClayRuntime):
 
         # TODO: Check if the object is under deserialization ¿?
 
-        if instance._dc_master_ee_id == settings.environment_id:
+        if instance._dc_master_ee_id == settings.DC_BACKEND_ID:
             logger.debug("Object is local")
             # get_local_instance should indeed modify the same instance instance,
             fat_instance = self.get_or_new_instance_from_db(instance._dc_id, True)
@@ -226,7 +222,7 @@ class BackendRuntime(DataClayRuntime):
 
                 # This object will soon be persistent
                 current_obj._dc_is_persistent = True
-                current_obj._dc_master_ee_id = settings.environment_id
+                current_obj._dc_master_ee_id = settings.DC_BACKEND_ID
                 # Just in case (should have been loaded already)
                 logger.debug(
                     "Setting loaded to true from internal store for object %s" % str(object_id)
@@ -320,10 +316,10 @@ class BackendRuntime(DataClayRuntime):
         Concurrency note: adding two times same expiration date is not a problem since exp. date is the same. We avoid locking.
         """
         if not session_id in self.session_expires_dates:
-            if Configuration.CHECK_SESSION:
+            if settings.CHECK_SESSION:
                 """TODO: implement session control in python"""
             else:
-                expiration_date = Configuration.NOCHECK_SESSION_EXPIRATION
+                expiration_date = settings.NOCHECK_SESSION_EXPIRATION
 
             """
             // === concurrency note === //
@@ -441,7 +437,7 @@ class BackendRuntime(DataClayRuntime):
         :returns: Bytes of object
         :rtype: Byte array
         """
-        return self.backend_clients["@STORAGE"].get_from_db(settings.environment_id, object_id)
+        return self.backend_clients["@STORAGE"].get_from_db(settings.DC_BACKEND_ID, object_id)
 
     def update_to_sl(self, object_id, obj_bytes, dirty):
         """Update to SL associated to this EE.
@@ -455,7 +451,7 @@ class BackendRuntime(DataClayRuntime):
         :rtype: None
         """
         return self.backend_clients["@STORAGE"].update_to_db(
-            settings.environment_id, object_id, obj_bytes, dirty
+            settings.DC_BACKEND_ID, object_id, obj_bytes, dirty
         )
 
     def synchronize(self, instance, operation_name, params):

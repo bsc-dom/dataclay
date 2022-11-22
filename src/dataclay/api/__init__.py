@@ -8,22 +8,16 @@ core and sets the "client" mode for the library.
 __all__ = ["init", "finish", "DataClayObject"]
 
 import logging.config
-import os
 import warnings
 
-from dataclay.communication.grpc.clients.LogicModuleGrpcClient import LMClient
-from dataclay.dataclay_object import DataClayObject
-from dataclay.paraver import (
-    TRACE_ENABLED,
-    extrae_tracing_is_enabled,
-    get_task_id,
-    set_current_available_task_id,
-)
-from dataclay.runtime import get_runtime, set_runtime, settings, unload_settings
-from dataclay.runtime.client_runtime import ClientRuntime
-from dataclay.runtime.client_runtime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
-from dataclay.runtime.Initializer import _get_logging_dict_config, initialize
 from opentelemetry import trace
+
+from dataclay.conf import settings
+from dataclay.dataclay_object import DataClayObject
+from dataclay.runtime import get_runtime, set_runtime
+from dataclay.runtime.client_runtime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
+from dataclay.runtime.client_runtime import ClientRuntime
+from dataclay.runtime.Initializer import _get_logging_dict_config, initialize
 
 # This will be populated during initialization
 LOCAL = _UNDEFINED_LOCAL
@@ -58,59 +52,6 @@ def reinitialize_logging() -> None:
     dictconfig["disable_existing_loggers"] = False
     logging.config.dictConfig(dictconfig)
     logger.verbose("Logging reinitialized. Welcome back!")
-
-
-def reinitialize_clients() -> None:
-    raise
-    """
-    Reinitialize connection to logic module
-    :return: None
-    """
-    runtime = get_runtime()
-    logger.verbose(
-        "Performing reinitialization of clients, removing #%d cached ones and recreating LMClient",
-        len(runtime.backend_clients),
-    )
-    runtime.backend_clients = {
-        "@LM": LMClient(settings.logicmodule_host, settings.logicmodule_port),
-    }
-
-
-# TODO: REFACTOR Remove this function. Currently used by tool/functions
-def init_connection(client_file) -> LMClient:
-    """Initialize the connection client ==> LogicModule.
-
-    Note that the connection can be initialized standalone from here (like the
-    dataClay tool performs) or it can be initialized by the full init() call.
-
-    :param client_file: The path to the `client.properties` file. If set to None,
-    then this function assumes that the connection settings are already loaded.
-    :return: The LogicModule client (also accessible through the global
-    commonruntime.backend_clients["@LM"]
-    """
-    global _connection_initialized
-    logger.debug("Initializing dataClay connection with LM")
-
-    settings.load_metadata_properties()
-    runtime = ClientRuntime(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
-    set_runtime(runtime)
-
-    if _connection_initialized:
-        logger.warning("Runtime already has a client with the LogicModule, reusing that")
-        return runtime.backend_clients["@LM"]
-
-    client = LMClient(os.environ["LOGICMODULE_HOST"], os.getenv("LOGICMODULE_PORT_TCP", 11034))
-    runtime.backend_clients["@LM"] = client
-
-    _connection_initialized = True
-
-    # TODO: Remove this call to LM
-    # wait for 1 python backend
-    # while len(get_backends_info()) < 1:
-    #     logger.info("Waiting for any python backend to be ready ...")
-    #     sleep(2)
-
-    return client
 
 
 ###############
@@ -242,8 +183,7 @@ def init():
             logger.warning("Already initialized --ignoring")
             return
 
-        settings.load_metadata_properties()
-        settings.load_session_properties()
+        settings.load_client_properties()
 
         # Initialize ClientRuntime
         runtime = ClientRuntime(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
@@ -289,74 +229,6 @@ def init():
         init_span.add_event("marcevent - ending init")
 
 
-# DEPRECATED: Remove this function
-def post_network_init():
-    raise
-    global _initialized
-
-    """Perform the last part of initialization, now with network."""
-    client = init_connection(None)
-
-    # Remember this function is called after a fork in workers also.
-    # Activate Extrae if needed.
-    ### READ ####
-    # Activating tracing with tracing_enabled property set True and starting task id = 0 means we are only tracing dataClay
-    # dataClay client will not increment current available task ID and will send a 0 to LM, which will understand the 0 as
-    # "only dataClay tracing" since for compss it is never 0.
-    # Activating tracing with tracing_enabled property set True and starting task id != 0 means we are tracing COMPSs
-    # and dataClay. Current client will not initialize pyextrae or increment task id since COMPSs already initializes
-    # it for us (as a worker).
-    # In any case, none of them needs to add synchronization event or increment the available task id (only services).
-    # Synchronization events are used to merge LM traces and python EE traces. Incrementing available task id is useful to
-    # send to N EE/DS nodes.
-    if settings.tracing_enabled:
-        logger.info("Initializing tracing")
-
-        extrae_compss = int(settings.extrae_starting_task_id) != 0
-
-        if extrae_compss:
-            get_runtime().activate_tracing(False)
-            # set current available task id
-            # set_current_available_task_id(int(settings.extrae_starting_task_id))
-            # if get_task_id() == 0:
-            #    get_runtime().activate_tracing_in_dataclay_services()
-
-        else:
-            get_runtime().activate_tracing(True)
-            if get_task_id() == 0:
-                get_runtime().activate_tracing_in_dataclay_services()
-
-    # The new_session RPC may fall, and thus we will consider
-    # the library as "not initialized". Arriving here means "all ok".
-    _initialized = True
-
-
-def finish_tracing():
-    """
-    Finishes tracing if needed
-    """
-    raise
-    if extrae_tracing_is_enabled():
-        extrae_compss = int(settings.extrae_starting_task_id) != 0
-
-        if extrae_compss:
-            if get_task_id() == 0:
-                get_runtime().deactivate_tracing(False)
-                # in compss Java runtime will get traces for us
-            else:
-                get_runtime().deactivate_tracing(False)
-
-        else:
-            if get_task_id() == 0:
-                get_runtime().deactivate_tracing_in_dataclay_services()
-                get_runtime().deactivate_tracing(True)
-                get_runtime().get_traces_in_dataclay_services()  # not on workers!
-                # Merge
-                os.system("mpi2prv -keep-mpits -no-syn -f TRACE.mpits -o ./trace/dctrace.prv")
-            else:
-                get_runtime().deactivate_tracing(True)
-
-
 def finish():
     with tracer.start_as_current_span("finish") as span:
         global _initialized
@@ -370,7 +242,7 @@ def finish():
         get_runtime().stop_runtime()
 
         # unload settings
-        unload_settings()
+        # unload_settings()
         _initialized = False
         _connection_initialized = False
 

@@ -2,8 +2,6 @@ from contextlib import AbstractContextManager
 from threading import Condition
 from typing import TYPE_CHECKING
 
-from dataclay.runtime.settings_hub import settings, unload_settings
-
 if TYPE_CHECKING:
     from dataclay.runtime.client_runtime import ClientRuntime
     from dataclay.runtime.backend_runtime import BackendRuntime
