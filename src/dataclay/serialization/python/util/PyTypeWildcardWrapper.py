@@ -5,7 +5,7 @@ import os
 import pickle
 import re
 
-from dataclay.runtime.Initializer import size_tracking
+from dataclay.util.Initializer import size_tracking
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper

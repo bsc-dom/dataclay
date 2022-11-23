@@ -30,7 +30,7 @@ class BackendRuntime(DataClayRuntime):
 
         super().__init__(metadata_service)
 
-        self.heap_manager = HeapManager(self)
+        self.heap_manager = HeapManager()
         # start heap manager. Invokes run() in a separate thread
         self.heap_manager.start()
 

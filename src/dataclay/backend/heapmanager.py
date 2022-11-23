@@ -25,7 +25,7 @@ logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))
 class HeapManager(threading.Thread):
     """This class is intended to manage all dataClay objects in runtime's memory."""
 
-    def __init__(self, theruntime):
+    def __init__(self):
         threading.Thread.__init__(self, name="heap-manager")
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
@@ -34,17 +34,11 @@ class HeapManager(threading.Thread):
         # Event object to communicate shutdown
         self._finished = threading.Event()
 
-        # Runtime being monitorized.
-        self.runtime = theruntime
-
         self.daemon = True
 
         # During a flush of all objects in Heap, if GC is being processed, wait, and check after time specified here in seconds
         self.TIME_WAIT_FOR_GC_TO_FINISH = 1
         self.MAX_TIME_WAIT_FOR_GC_TO_FINISH = 60
-
-        # Execution Environment being managed
-        self.exec_env = theruntime.execution_environment
 
         # Retained objects so they cannot be GC by PythonGC.
         # It is very important to be a sorted list, so first elements to arrive are cleaned before,
@@ -239,7 +233,6 @@ class HeapManager(threading.Thread):
         # Lock object (not locking executions!)
         # Lock is needed in case object is being nullified and some threads requires to load it from disk.
 
-        self.runtime.lock(dc_object._dc_id)
         with UUIDLock(dc_object._dc_id):
             logger.debug("Cleaning object %s", dc_object._dc_id)
 
@@ -278,6 +271,7 @@ class HeapManager(threading.Thread):
 
     def gc_collect_internal(self, object_to_update):
         """Update object in db or store it if volatile"""
+        raise ("To refactor")
         try:
             logger.debug(f"Updating object {object_to_update._dc_id}")
             # Call EE update
