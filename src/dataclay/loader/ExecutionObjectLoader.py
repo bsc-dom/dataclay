@@ -5,16 +5,11 @@ Created on 1 feb. 2018
 
 @author: dgasull
 """
-import importlib
 import time
 import traceback
 
-from dataclay.runtime import get_runtime
-from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.loader.DataClayObjectLoader import DataClayObjectLoader
-from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
 from dataclay.conf import settings
-from dataclay.util.classloaders.ClassLoader import load_metaclass_info
 
 
 class ExecutionObjectLoader(DataClayObjectLoader):
@@ -63,7 +58,7 @@ class ExecutionObjectLoader(DataClayObjectLoader):
         Due to concurrency we should read bytes and deserialize and unlock.
         Therefore there is Two waiting loops. (can we do it better?, more locking?)
         """
-        self.logger.verbose(
+        self.logger.debug(
             "Get or create new instance from SL with object id %s in Heap ", str(object_id)
         )
         obtained = False

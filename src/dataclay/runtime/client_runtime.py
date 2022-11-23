@@ -8,13 +8,12 @@ import logging
 import pickle
 import traceback
 
-from dataclay.runtime.dataclay_runtime import DataClayRuntime
-from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
-from dataclay.backend.client import BackendClient
-from dataclay.metadata.client import MetadataClient
 from opentelemetry import trace
 
+from dataclay.backend.client import BackendClient
 from dataclay.dataclay_object import DataClayObject
+from dataclay.metadata.client import MetadataClient
+from dataclay.runtime.dataclay_runtime import DataClayRuntime
 
 UNDEFINED_LOCAL = object()
 
@@ -86,7 +85,7 @@ class ClientRuntime(DataClayRuntime):
             instance._dc_is_persistent = True
 
             serialized_dict = pickle.dumps(instance.__dict__)
-            ee_client.new_make_persistent(self.session.id, serialized_dict)
+            ee_client.make_persistent(self.session.id, serialized_dict)
 
             return instance._dc_master_ee_id
 

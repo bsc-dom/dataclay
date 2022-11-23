@@ -1,6 +1,6 @@
 """ Class description goes here. """
 
-from lru import LRU
+# from lru import LRU
 
 from dataclay.util.MgrObject import ManagementObject
 
@@ -89,8 +89,9 @@ class MetaClass(ManagementObject):
         the constructor is one of those non-Python methods, then the class is
         flagged as EXTERNAL_INIT only (see ExecutionGateway for further info).
         """
-        from dataclay.util.management.classmgr.python.PythonImplementation import \
-            PythonImplementation
+        from dataclay.util.management.classmgr.python.PythonImplementation import (
+            PythonImplementation,
+        )
 
         imp_codes = list()
 

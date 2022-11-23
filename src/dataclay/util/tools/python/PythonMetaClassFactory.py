@@ -76,7 +76,7 @@ class MetaClassFactory(object):
         if not issubclass(klass, DataClayObject):
             raise DataClayException("Can only use DataClayObject classes")
 
-        logger.verbose("Adding class %s to the MetaClassFactory", klass)
+        logger.debug("Adding class %s to the MetaClassFactory", klass)
         class_container = klass._prepare_metaclass(self._namespace, self._responsible_account)
 
         # Save to the list, and bookmark the MetaClass

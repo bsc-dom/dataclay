@@ -5,13 +5,12 @@ import logging
 import threading
 import time
 
+from dataclay.backend.heapmanager import HeapManager
 from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
-from dataclay.backend.heapmanager import HeapManager
 from dataclay.metadata.api import MetadataAPI
 from dataclay.runtime import UUIDLock
 from dataclay.runtime.dataclay_runtime import DataClayRuntime
-from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 
 logger = logging.getLogger(__name__)
 

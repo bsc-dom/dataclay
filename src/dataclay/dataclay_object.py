@@ -33,7 +33,7 @@ def activemethod(func):
 
     @functools.wraps(func)
     def wrapper_activemethod(self, *args, **kwargs):
-        logger.verbose(f"Calling function {func.__name__}")
+        logger.debug(f"Calling function {func.__name__}")
         try:
             # If the object is not persistent executes the method locally,
             # else, executes the method within the execution environment
@@ -265,7 +265,7 @@ class DataClayObject:
             self.get_class_extradata().properties.values(), key=attrgetter("position")
         )
 
-        logger.verbose("Set all properties from object %s", from_object._dc_id)
+        logger.debug("Set all properties from object %s", from_object._dc_id)
 
         for p in properties:
             value = getattr(from_object, p.name)
@@ -506,7 +506,7 @@ class DataClayObject:
                 self.get_class_extradata().properties.values(), key=attrgetter("position")
             )
 
-            logger.verbose("Serializing list of properties: %s", properties)
+            logger.debug("Serializing list of properties: %s", properties)
 
             for p in properties:
 
@@ -515,7 +515,7 @@ class DataClayObject:
                 except AttributeError:
                     value = None
 
-                logger.verbose("Serializing property %s", p.name)
+                logger.debug("Serializing property %s", p.name)
 
                 if value is None:
                     BooleanWrapper().write(io_file, False)
@@ -552,7 +552,7 @@ class DataClayObject:
 
     def deserialize(self, io_file, iface_bitmaps, metadata, cur_deserialized_python_objs):
         """Reciprocal to serialize."""
-        logger.verbose("Deserializing object %s", str(self._dc_id))
+        logger.debug("Deserializing object %s", str(self._dc_id))
 
         # Put slow debugging info inside here:
         #
@@ -601,7 +601,7 @@ class DataClayObject:
             )
 
             logger.trace("Tell io_file before loop: %s", io_file.tell())
-            logger.verbose("Deserializing list of properties: %s", properties)
+            logger.debug("Deserializing list of properties: %s", properties)
 
             for p in properties:
 

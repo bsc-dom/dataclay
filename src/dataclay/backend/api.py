@@ -5,24 +5,14 @@ import pickle
 import traceback
 import uuid
 
-from dataclay import utils
-from dataclay.backend.client import BackendClient
 from opentelemetry import trace
 
+from dataclay import utils
+from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.paraver import (
-    extrae_tracing_is_enabled,
-    finish_tracing,
-    get_traces,
-    initialize_extrae,
-    set_current_available_task_id,
-)
 from dataclay.runtime import UUIDLock, set_runtime
 from dataclay.runtime.backend_runtime import BackendRuntime
-from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
-from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
-from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
 
 tracer = trace.get_tracer(__name__)
 logger = utils.LoggerEvent(logging.getLogger(__name__))
@@ -402,7 +392,7 @@ class BackendAPI:
         try:
             client_backend = self.runtime.backend_clients[dest_backend_id]
         except KeyError:
-            logger.verbose(
+            logger.debug(
                 "Not found Client to ExecutionEnvironment {%s}!" " Starting it at %s:%d",
                 dest_backend_id,
                 backend.hostname,
@@ -700,7 +690,7 @@ class BackendAPI:
                     current_hint = current_oid_and_hint[1]
                     if current_oid in already_obtained_objs:
                         # Already Read
-                        logger.verbose("[==Get==] Object %s already read", current_oid)
+                        logger.debug("[==Get==] Object %s already read", current_oid)
                         continue
                     if current_hint is not None and current_hint != self.execution_environment_id:
                         # in another backend
@@ -709,7 +699,7 @@ class BackendAPI:
 
                     else:
                         try:
-                            logger.verbose(
+                            logger.debug(
                                 "[==Get==] Trying to get local instance for object %s", current_oid
                             )
                             obj_with_data = self.get_object_internal(
@@ -777,7 +767,7 @@ class BackendAPI:
             Object with data
         """
         # Serialize the object
-        logger.verbose("[==GetInternal==] Trying to get local instance for object %s", oid)
+        logger.debug("[==GetInternal==] Trying to get local instance for object %s", oid)
 
         # ToDo: Manage better this try/catch
         # Race condition with gc: make sure GC does not CLEAN the object while retrieving/serializing it!
@@ -868,7 +858,7 @@ class BackendAPI:
                 try:
                     client_backend = self.runtime.backend_clients[backend_id]
                 except KeyError:
-                    logger.verbose(
+                    logger.debug(
                         "[==GetObjectsInOtherBackend==] Not found Client to ExecutionEnvironment {%s}!"
                         " Starting it at %s:%d",
                         backend_id,
@@ -887,7 +877,7 @@ class BackendAPI:
                     dest_replica_backend_id,
                     update_replica_locs,
                 )
-                logger.verbose(
+                logger.debug(
                     "[==GetObjectsInOtherBackend==] call return length: %d", len(cur_result)
                 )
                 logger.trace("[==GetObjectsInOtherBackend==] call return content: %s", cur_result)
@@ -1088,7 +1078,7 @@ class BackendAPI:
             try:
                 client_backend = self.runtime.backend_clients[backend_id]
             except KeyError:
-                logger.verbose(
+                logger.debug(
                     "[==GetObjectsInOtherBackend==] Not found Client to ExecutionEnvironment {%s}!"
                     " Starting it at %s:%d",
                     backend_id,

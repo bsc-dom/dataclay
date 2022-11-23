@@ -12,7 +12,7 @@ class Test(TestCase):
     def setUp(self):
         # Mock logger #
         api.logger.debug = print
-        api.logger.verbose = print
+        api.logger.debug = print
 
     def tearDown(self):
         pass

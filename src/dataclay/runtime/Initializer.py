@@ -39,7 +39,7 @@ def trace(self, message, *args, **kws):
         self._log(TRACE_LEVEL_NUM, message, args, **kws)
 
 
-def verbose(self, message, *args, **kws):
+def debug(self, message, *args, **kws):
     if self.isEnabledFor(VERB_LEVEL_NUM):
         self._log(VERB_LEVEL_NUM, message, args, **kws)
 
@@ -48,8 +48,8 @@ def verbose(self, message, *args, **kws):
 logging.TRACE = TRACE_LEVEL_NUM
 logging.VERB = VERB_LEVEL_NUM
 logging.VERBOSE = VERB_LEVEL_NUM
-logging.Logger.verb = verbose
-logging.Logger.verbose = verbose
+logging.Logger.verb = debug
+logging.Logger.debug = debug
 logging.Logger.trace = trace
 
 

@@ -15,7 +15,7 @@ requires some specific methods from here. But this may change in the future.
 
 import os.path
 
-from lru import LRU
+# from lru import LRU
 
 from dataclay.runtime import get_runtime, settings
 from dataclay.conf import settings
@@ -25,8 +25,11 @@ __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
 
 # TODO: un-hardcode this
-cached_metaclasses = LRU(200)
-cached_metaclass_info = LRU(200)
+# cached_metaclasses = LRU(200)
+# cached_metaclass_info = LRU(200)
+
+cached_metaclasses = dict()
+cached_metaclass_info = dict()
 
 
 def deploy_metaclass_grpc(namespace, class_name, metaclass_yaml_str, metaclass):

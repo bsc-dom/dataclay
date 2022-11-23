@@ -277,7 +277,7 @@ def define_event_types():
         try:
             description_values[i] = TRACED_METHODS[i - 1].encode("utf-8")
             values[i] = PARAVER_FUNC_MAP[description_values[i].decode("utf-8")]
-            LOGGER.verbose(
+            LOGGER.debug(
                 "Defined event %s with value %s" % (str(description_values[i]), str(values[i]))
             )
         except KeyError:

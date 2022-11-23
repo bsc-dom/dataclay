@@ -8,7 +8,6 @@ core and sets the "client" mode for the library.
 __all__ = ["init", "finish", "DataClayObject"]
 
 import logging.config
-import warnings
 
 from opentelemetry import trace
 
@@ -17,7 +16,6 @@ from dataclay.dataclay_object import DataClayObject
 from dataclay.runtime import get_runtime, set_runtime
 from dataclay.runtime.client_runtime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
 from dataclay.runtime.client_runtime import ClientRuntime
-from dataclay.runtime.Initializer import _get_logging_dict_config, initialize
 
 # This will be populated during initialization
 LOCAL = _UNDEFINED_LOCAL
@@ -41,17 +39,17 @@ def is_initialized() -> bool:
     return _initialized
 
 
-def reinitialize_logging() -> None:
-    """
-    Restart logging system with new logging dict configuration
-    :return: None
-    """
-    warnings.warn("deprecated", DeprecationWarning)
-    dictconfig = _get_logging_dict_config()
-    logger.debug("Ready to close loggers, bye bye!")
-    dictconfig["disable_existing_loggers"] = False
-    logging.config.dictConfig(dictconfig)
-    logger.verbose("Logging reinitialized. Welcome back!")
+# def reinitialize_logging() -> None:
+#     """
+#     Restart logging system with new logging dict configuration
+#     :return: None
+#     """
+#     warnings.warn("deprecated", DeprecationWarning)
+#     dictconfig = _get_logging_dict_config()
+#     logger.debug("Ready to close loggers, bye bye!")
+#     dictconfig["disable_existing_loggers"] = False
+#     logging.config.dictConfig(dictconfig)
+#     logger.debug("Logging reinitialized. Welcome back!")
 
 
 ###############
@@ -256,8 +254,8 @@ def finish():
 # del DataClayObject.__del__
 
 
-initialize()
+# initialize()
 
 
 # Now the logger is ready
-logger.verbose("Client-mode initialized, dataclay.commonruntime should be ready")
+# logger.debug("Client-mode initialized, dataclay.commonruntime should be ready")

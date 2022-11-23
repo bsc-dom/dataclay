@@ -18,7 +18,6 @@ from dataclay import utils
 from dataclay.conf import settings
 from dataclay.dataclay_object import DCLAY_PROPERTY_PREFIX
 from dataclay.runtime import UUIDLock
-from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
 
 logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))
 
@@ -317,7 +316,7 @@ class HeapManager(threading.Thread):
             logger.trace("[==GC==] Running GC")
 
             if self.__check_memory_pressure():
-                logger.verbose("System memory is under pressure, proceeding to clean up objects")
+                logger.debug("System memory is under pressure, proceeding to clean up objects")
                 if (
                     logger.isEnabledFor(logging.DEBUG)
                     and tracemalloc is not None

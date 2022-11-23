@@ -223,7 +223,7 @@ class DeserializationLibUtils(object):
     def deserialize_return(self, serialized_params_or_return, iface_bitmaps, return_type, runtime):
 
         if serialized_params_or_return.num_params == 0:
-            logger.verbose("No return to deserialize: returning None")
+            logger.debug("No return to deserialize: returning None")
             return None
         return self.deserialize_params_or_return(
             serialized_params_or_return, iface_bitmaps, {"0": return_type}, ["0"], runtime
@@ -248,7 +248,7 @@ class DeserializationLibUtils(object):
         for i, serialized_param in serialized_params_or_return.vol_objs.items():
             object_id = serialized_param.object_id
             class_id = serialized_param.class_id
-            logger.verbose("Deserializing volatile with object ID %s" % str(object_id))
+            logger.debug("Deserializing volatile with object ID %s" % str(object_id))
 
             if first_volatile:
                 runtime.add_volatiles_under_deserialization(
@@ -270,7 +270,7 @@ class DeserializationLibUtils(object):
 
         """ LANGUAGE """
         for i, serialized_param in serialized_params_or_return.lang_objs.items():
-            logger.verbose("Deserializing language type at index %s" % str(i))
+            logger.debug("Deserializing language type at index %s" % str(i))
 
             obj_bytes = BytesIO(serialized_param[1])
             params[i] = self.deserialize_language(obj_bytes, param_specs[params_order[i]])
@@ -278,7 +278,7 @@ class DeserializationLibUtils(object):
 
         """ IMMUTABLES """
         for i, serialized_param in serialized_params_or_return.imm_objs.items():
-            logger.verbose("Deserializing immutable type at index %s" % str(i))
+            logger.debug("Deserializing immutable type at index %s" % str(i))
 
             obj_bytes = BytesIO(serialized_param)
             params[i] = self.deserialize_immutable(obj_bytes, param_specs[params_order[i]])
@@ -291,7 +291,7 @@ class DeserializationLibUtils(object):
             hint = serialized_param.hint
             class_id = serialized_param.class_id
 
-            logger.verbose("Deserializing persistent object with object ID %s" % str(object_id))
+            logger.debug("Deserializing persistent object with object ID %s" % str(object_id))
 
             deserialized_param = runtime.get_or_new_persistent_instance(object_id, class_id, hint)
             deserialized_param._dc_is_persistent = True

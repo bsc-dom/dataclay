@@ -114,7 +114,7 @@ def track_local_available_classes():
 
         get_runtime().local_available_classes[class_data.classID] = "%s.%s" % (namespace, full_name)
 
-    logger.verbose("Using the following contracts: %s", contracts)
+    logger.debug("Using the following contracts: %s", contracts)
     return contracts
 
 

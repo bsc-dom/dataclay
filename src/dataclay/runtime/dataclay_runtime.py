@@ -5,31 +5,26 @@ import uuid
 from abc import ABC, abstractmethod
 from builtins import Exception
 from uuid import UUID
-
-from dataclay.backend.client import BackendClient
-from dataclay.metadata.client import MetadataClient
-from dataclay.metadata.api import MetadataAPI
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
-from grpc import RpcError
-
-from dataclay.dataclay_object import DataClayObject
-
-# from dataclay.exceptions.exceptions import DataClayException
-from dataclay.paraver import (
-    extrae_tracing_is_enabled,
-    finish_tracing,
-    get_current_available_task_id,
-    get_task_id,
-    initialize_extrae,
-)
-from dataclay.runtime import UUIDLock
-from dataclay.serialization.lib.DeserializationLibUtils import DeserializationLibUtilsSingleton
-from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
-from dataclay.serialization.lib.SerializationLibUtils import SerializationLibUtilsSingleton
-from dataclay.conf import settings
-
 from weakref import WeakValueDictionary
 
+import grpc
+from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
+
+from dataclay.backend.client import BackendClient
+from dataclay.conf import settings
+from dataclay.dataclay_object import DataClayObject
+from dataclay.metadata.api import MetadataAPI
+from dataclay.metadata.client import MetadataClient
+from dataclay.runtime import UUIDLock
+
+# from dataclay.exceptions.exceptions import DataClayException
+# from dataclay.paraver import (
+#     extrae_tracing_is_enabled,
+#     finish_tracing,
+#     get_current_available_task_id,
+#     get_task_id,
+#     initialize_extrae,
+# )
 
 logger = logging.getLogger(__name__)
 
@@ -474,7 +469,7 @@ class DataClayRuntime(ABC):
         executed = False
         for _ in range(max_retry):
             try:
-                logger.verbose("Obtaining API for remote execution in %s ", exec_env_id)
+                logger.debug("Obtaining API for remote execution in %s ", exec_env_id)
                 ee_client = self.backend_clients[exec_env_id]
             except KeyError:
                 exec_env = self.get_execution_environment_info(exec_env_id)
@@ -488,14 +483,14 @@ class DataClayRuntime(ABC):
                 self.backend_clients[exec_env_id] = ee_client
 
             try:
-                logger.verbose("Calling remote EE %s ", exec_env_id)
+                logger.debug("Calling remote EE %s ", exec_env_id)
                 ret = ee_client.ds_execute_implementation(
                     object_id, implementation_id, session_id, serialized_params
                 )
                 executed = True
                 break
 
-            except (DataClayException, RpcError) as dce:
+            except (DataClayException, grpc.RpcError) as dce:
                 logger.warning("Execution resulted in an error, retrying...", exc_info=dce)
 
                 is_race_condition = False
@@ -851,10 +846,10 @@ class DataClayRuntime(ABC):
     def stop_runtime(self):
         """Stop connections and daemon threads."""
 
-        logger.verbose("** Stopping runtime **")
+        logger.debug("** Stopping runtime **")
 
         for name, client in self.backend_clients.items():
-            logger.verbose("Closing client connection to %s", name)
+            logger.debug("Closing client connection to %s", name)
             client.close()
 
         self.backend_clients = {}

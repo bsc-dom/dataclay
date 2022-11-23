@@ -9,10 +9,8 @@ from dataclay_common.protos import common_messages_pb2 as CommonMessages
 from dataclay_common.protos import dataservice_messages_pb2, dataservice_pb2_grpc, dataservice_pb2
 from grpc._cython.cygrpc import ChannelArgKey
 
-from dataclay.communication.grpc import Utils
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.conf import settings
-from dataclay.util.YamlParser import dataclay_yaml_dump
 
 logger = logging.getLogger(__name__)
 
@@ -112,29 +110,30 @@ class BackendClient:
         self.channel = None
         self.stub = None
 
-    def ds_deploy_metaclasses(self, namespace_name, deployment_pack):
-        deployment_pack_dict = dict()
+    # def ds_deploy_metaclasses(self, namespace_name, deployment_pack):
+    #     deployment_pack_dict = dict()
 
-        for k, v in deployment_pack.items():
-            deployment_pack_dict[k] = dataclay_yaml_dump(v)
+    #     for k, v in deployment_pack.items():
+    #         deployment_pack_dict[k] = dataclay_yaml_dump(v)
 
-        request = dataservice_messages_pb2.DeployMetaClassesRequest(
-            namespace=namespace_name, deploymentPack=deployment_pack_dict
-        )
+    #     request = dataservice_messages_pb2.DeployMetaClassesRequest(
+    #         namespace=namespace_name, deploymentPack=deployment_pack_dict
+    #     )
 
-        try:
-            response = self.stub.deployMetaClasses(request=request, metadata=self.metadata_call)
+    #     try:
+    #         response = self.stub.deployMetaClasses(request=request, metadata=self.metadata_call)
 
-        except RuntimeError as e:
-            raise e
+    #     except RuntimeError as e:
+    #         raise e
 
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
+    #     if response.isException:
+    #         raise DataClayException(response.exceptionMessage)
 
     def ds_new_persistent_instance(
         self, session_id, class_id, implementation_id, i_face_bitmaps, params
     ):
 
+        raise ("To refactor")
         logger.debug(
             "Ready to call to a DS to build a new persistent instance for class {%s}", class_id
         )
@@ -149,9 +148,9 @@ class BackendClient:
             temp_param = Utils.get_param_or_return(params)
 
         request = dataservice_messages_pb2.NewPersistentInstanceRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            classID=Utils.get_msg_id(class_id),
-            implementationID=Utils.get_msg_id(implementation_id),
+            sessionID=str(session_id),
+            classID=str(class_id),
+            implementationID=str(implementation_id),
             ifaceBitMaps=temp_iface_b,
             params=temp_param,
         )
@@ -165,10 +164,11 @@ class BackendClient:
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
 
-        return Utils.get_id(response.objectID)
+        return UUID(response.objectID)
 
     def ds_store_objects(self, session_id, objects, moving, ids_with_alias):
 
+        raise ("To Refactor")
         obj_list = []
         id_with_alias_list = []
 
@@ -178,10 +178,10 @@ class BackendClient:
         if ids_with_alias is not None:
             for id_with_alias in ids_with_alias:
                 if id_with_alias is not None:
-                    id_with_alias_list.append(Utils.get_msg_id(id_with_alias))
+                    id_with_alias_list.append(str(id_with_alias))
 
         request = dataservice_messages_pb2.StoreObjectsRequest(
-            sessionID=Utils.get_msg_id(session_id),
+            sessionID=str(session_id),
             objects=obj_list,
             moving=moving,
             idsWithAlias=id_with_alias_list,
@@ -198,9 +198,10 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def ds_get_copy_of_object(self, session_id, object_id, recursive):
+        raise ("To refactor")
         request = dataservice_messages_pb2.GetCopyOfObjectRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objectID=Utils.get_msg_id(object_id),
+            sessionID=str(session_id),
+            objectID=str(object_id),
             recursive=recursive,
         )
 
@@ -218,9 +219,10 @@ class BackendClient:
         return serialized_obj
 
     def ds_update_object(self, session_id, into_object_id, from_object):
+        raise ("To refactor")
         request = dataservice_messages_pb2.UpdateObjectRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            intoObjectID=Utils.get_msg_id(into_object_id),
+            sessionID=str(session_id),
+            intoObjectID=str(into_object_id),
             fromObject=Utils.get_param_or_return(from_object),
         )
 
@@ -243,19 +245,20 @@ class BackendClient:
         update_replica_locs,
     ):
 
+        raise ("To refactor")
         object_ids_list = []
         for oid in object_ids:
-            object_ids_list.append(Utils.get_msg_id(oid))
+            object_ids_list.append(str(oid))
         already_obtained_objects = []
         for oid in already_obtained_obs:
-            already_obtained_objects.append(Utils.get_msg_id(oid))
+            already_obtained_objects.append(str(oid))
 
         request = dataservice_messages_pb2.GetObjectsRequest(
-            sessionID=Utils.get_msg_id(session_id),
+            sessionID=str(session_id),
             objectIDS=object_ids_list,
             alreadyObtainedObjects=already_obtained_objects,
             recursive=recursive,
-            destBackendID=Utils.get_msg_id(dest_backend_id),
+            destBackendID=str(dest_backend_id),
             updateReplicaLocs=update_replica_locs,
         )
 
@@ -276,9 +279,9 @@ class BackendClient:
 
     def new_version(self, session_id, object_id, dest_backend_id):
         request = dataservice_messages_pb2.NewVersionRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objectID=Utils.get_msg_id(object_id),
-            destBackendID=Utils.get_msg_id(dest_backend_id),
+            sessionID=str(session_id),
+            objectID=str(object_id),
+            destBackendID=str(dest_backend_id),
         )
         try:
             response = self.stub.newVersion(request, metadata=self.metadata_call)
@@ -288,12 +291,12 @@ class BackendClient:
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
 
-        return Utils.get_id(response.objectID)
+        return UUID(response.objectID)
 
     def consolidate_version(self, session_id, version_object_id):
         request = dataservice_messages_pb2.ConsolidateVersionRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            versionObjectID=Utils.get_msg_id(version_object_id),
+            sessionID=str(session_id),
+            versionObjectID=str(version_object_id),
         )
         try:
             response = self.stub.consolidateVersion(request, metadata=self.metadata_call)
@@ -306,12 +309,13 @@ class BackendClient:
 
     def ds_upsert_objects(self, session_id, object_bytes):
 
+        raise ("To refactor")
         obj_byt_list = []
         for entry in object_bytes:
             obj_byt_list.append(Utils.get_obj_with_data_param_or_return(entry))
 
         request = dataservice_messages_pb2.UpsertObjectsRequest(
-            sessionID=Utils.get_msg_id(session_id), bytesUpdate=obj_byt_list
+            sessionID=str(session_id), bytesUpdate=obj_byt_list
         )
 
         try:
@@ -323,40 +327,18 @@ class BackendClient:
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    def new_make_persistent(self, session_id: UUID, pickled_obj: bytes):
+    def make_persistent(self, session_id: UUID, pickled_obj: bytes):
         request = dataservice_pb2.MakePersistentRequest(
             session_id=str(session_id), pickled_obj=pickled_obj
         )
         self.stub.MakePersistent(request)
 
-    # TODO: deprecate it and use the new_make_persistent
-    def make_persistent(self, session_id, params):
-        logger.debug("Client performing MakePersistent")
-        obj_list = []
-        for entry in params:
-            obj_list.append(Utils.get_obj_with_data_param_or_return(entry))
-
-        request = dataservice_messages_pb2.OldMakePersistentRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objects=obj_list,
-        )
-
-        try:
-            response = self.stub.makePersistent(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            logger.error("Failed to make persistent", exc_info=True)
-            raise e
-
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
     def federate(self, session_id, object_id, external_execution_env_id, recursive):
         try:
             request = dataservice_messages_pb2.FederateRequest(
-                sessionID=Utils.get_msg_id(session_id),
-                objectID=Utils.get_msg_id(object_id),
-                externalExecutionEnvironmentID=Utils.get_msg_id(external_execution_env_id),
+                sessionID=str(session_id),
+                objectID=str(object_id),
+                externalExecutionEnvironmentID=str(external_execution_env_id),
                 recursive=recursive,
             )
             response = self.stub.federate(request, metadata=self.metadata_call)
@@ -370,9 +352,9 @@ class BackendClient:
     def unfederate(self, session_id, object_id, external_execution_env_id, recursive):
 
         request = dataservice_messages_pb2.UnfederateRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objectID=Utils.get_msg_id(object_id),
-            externalExecutionEnvironmentID=Utils.get_msg_id(external_execution_env_id),
+            sessionID=str(session_id),
+            objectID=str(object_id),
+            externalExecutionEnvironmentID=str(external_execution_env_id),
             recursive=recursive,
         )
         try:
@@ -384,12 +366,13 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def notify_federation(self, session_id, params):
+        raise ("To refactor")
         obj_list = []
         for entry in params:
             obj_list.append(Utils.get_obj_with_data_param_or_return(entry))
 
         request = dataservice_messages_pb2.NotifyFederationRequest(
-            sessionID=Utils.get_msg_id(session_id),
+            sessionID=str(session_id),
             objects=obj_list,
         )
 
@@ -406,10 +389,10 @@ class BackendClient:
     def notify_unfederation(self, session_id, object_ids):
         obj_list = []
         for entry in object_ids:
-            obj_list.append(Utils.get_msg_id(entry))
+            obj_list.append(str(entry))
 
         request = dataservice_messages_pb2.NotifyUnfederationRequest(
-            sessionID=Utils.get_msg_id(session_id),
+            sessionID=str(session_id),
             objectIDs=obj_list,
         )
 
@@ -437,44 +420,14 @@ class BackendClient:
         response = self.stub.CallActiveMethod(request)
         return response.value
 
-    # TODO: Deprecate it and use call_active_method
-    def ds_execute_implementation(self, object_id, implementation_id, session_id, params):
-        logger.debug("Client performing ExecuteImplementation")
-
-        request = dataservice_messages_pb2.ExecuteImplementationRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            implementationID=Utils.get_msg_id(implementation_id),
-            params=Utils.get_param_or_return(params),
-            objectID=Utils.get_msg_id(object_id),
-        )
-
-        try:
-            response = self.stub.executeImplementation(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            logger.error("Failed to execute implementation", exc_info=True)
-            raise e
-
-        if response.excInfo.isException:
-            try:
-                exception = pickle.loads(response.excInfo.serializedException)
-            except:
-                raise DataClayException(response.excInfo.exceptionMessage)
-            else:
-                raise exception
-
-        if response.ret is not None:
-            return Utils.get_param_or_return(response.ret)
-        else:
-            return None
-
     def synchronize(self, session_id, object_id, implementation_id, params, calling_backend_id):
+        raise ("To refactor")
         request = dataservice_messages_pb2.SynchronizeRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objectID=Utils.get_msg_id(object_id),
-            implementationID=Utils.get_msg_id(implementation_id),
+            sessionID=str(session_id),
+            objectID=str(object_id),
+            implementationID=str(implementation_id),
             params=Utils.get_param_or_return(params),
-            callingBackendID=Utils.get_msg_id(calling_backend_id),
+            callingBackendID=str(calling_backend_id),
         )
         try:
             response = self.stub.synchronize(request, metadata=self.metadata_call)
@@ -486,9 +439,9 @@ class BackendClient:
     def new_replica(self, session_id, object_id, dest_backend_id, recursive):
 
         request = dataservice_messages_pb2.NewReplicaRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objectID=Utils.get_msg_id(object_id),
-            destBackendID=Utils.get_msg_id(dest_backend_id),
+            sessionID=str(session_id),
+            objectID=str(object_id),
+            destBackendID=str(dest_backend_id),
             recursive=recursive,
         )
 
@@ -504,16 +457,16 @@ class BackendClient:
         result = set()
 
         for oid in response.replicatedObjects:
-            result.add(Utils.get_id(oid))
+            result.add(UUID(oid))
 
         return result
 
     def ds_move_objects(self, session_id, object_id, dest_st_location, recursive):
 
         request = dataservice_messages_pb2.MoveObjectsRequest(
-            sessionID=Utils.get_msg_id(session_id),
-            objectID=Utils.get_msg_id(object_id),
-            destLocID=Utils.get_msg_id(dest_st_location),
+            sessionID=str(session_id),
+            objectID=str(object_id),
+            destLocID=str(dest_st_location),
             recursive=recursive,
         )
 
@@ -529,7 +482,7 @@ class BackendClient:
         result = set()
 
         for oid in response.movedObjects:
-            result.add(Utils.get_id(oid))
+            result.add(UUID(oid))
 
         return result
 
@@ -537,14 +490,14 @@ class BackendClient:
 
         obj_ids_list = []
         for oid in object_ids:
-            obj_ids_list.append(Utils.get_msg_id(oid))
+            obj_ids_list.append(str(oid))
 
         request = dataservice_messages_pb2.RemoveObjectsRequest(
-            sessionID=Utils.get_msg_id(session_id),
+            sessionID=str(session_id),
             objectIDs=obj_ids_list,
             recursive=recursive,
             moving=moving,
-            newHint=Utils.get_msg_id(new_hint),
+            newHint=str(new_hint),
         )
 
         try:
@@ -559,11 +512,13 @@ class BackendClient:
         result = dict()
 
         for k, v in response.removedObjects.items():
-            result[Utils.get_idd(k)] = Utils.get_id(v)
+            result[UUID(k)] = UUID(v)
 
         return result
 
     def ds_migrate_objects_to_backends(self, back_ends):
+
+        raise ("To refactor")
 
         back_ends_dict = dict()
 
@@ -588,14 +543,14 @@ class BackendClient:
             oids = set()
 
             for oid in m_objs.getObjsList():
-                oids.add(Utils.get_id(oid))
+                oids.add(UUID(oid))
 
-            result[Utils.get_id(k)] = oids
+            result[UUID(k)] = oids
 
         non_migrated = set()
 
         for oid in response.nonMigratedObjs.getObjsList():
-            non_migrated.add(Utils.get_id(oid))
+            non_migrated.add(UUID(oid))
 
         t = (result, non_migrated)
 
@@ -603,7 +558,7 @@ class BackendClient:
 
     def delete_alias(self, session_id, object_id):
         request = dataservice_messages_pb2.DeleteAliasRequest(
-            sessionID=Utils.get_msg_id(session_id), objectID=Utils.get_msg_id(object_id)
+            sessionID=str(session_id), objectID=str(object_id)
         )
         try:
             response = self.stub.deleteAlias(request, metadata=self.metadata_call)
@@ -614,7 +569,7 @@ class BackendClient:
 
     def detach_object_from_session(self, object_id, session_id):
         request = dataservice_messages_pb2.DetachObjectFromSessionRequest(
-            objectID=Utils.get_msg_id(object_id), sessionID=Utils.get_msg_id(session_id)
+            objectID=str(object_id), sessionID=str(session_id)
         )
         try:
             response = self.stub.detachObjectFromSession(request, metadata=self.metadata_call)
