@@ -269,6 +269,19 @@ class HeapManager(threading.Thread):
 
             self.release_from_heap(dc_object)
 
+    # NOTE: Function from backend.api. It should not be there
+    # def register_and_store_pending(self, instance, obj_bytes, sync):
+
+    #     object_id = instance._dc_id
+
+    #     # NOTE: we are doing *two* remote calls, and wishlist => they work as a transaction
+    #     self.runtime.backend_clients["@STORAGE"].store_to_db(self.backend_id, object_id, obj_bytes)
+
+    #     # TODO: When the object metadata is updated synchronously, this should me removed
+    #     self.runtime.metadata_service.update_object(instance.metadata)
+
+    #     instance._dc_is_pending_to_register = False
+
     def gc_collect_internal(self, object_to_update):
         """Update object in db or store it if volatile"""
         raise ("To refactor")

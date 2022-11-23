@@ -19,20 +19,20 @@ logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
 class BackendAPI:
-    def __init__(self, theee_name, theee_port, etcd_host, etcd_port):
+    def __init__(self, name, port, etcd_host, etcd_port):
 
         # NOTE: the port is (atm) exclusively for unique identification of an EE
         # (given that the name is shared between all EE that share a SL, which happens in HPC deployments)
-        self.ee_name = theee_name
-        self.ee_port = theee_port
+        self.name = name
+        self.port = port
 
         # Initialize runtime
         self.runtime = BackendRuntime(self, etcd_host, etcd_port)
         set_runtime(self.runtime)
 
         # UNDONE: Do not store EE information. If restarted, create new EE uuid.
-        self.execution_environment_id = uuid.uuid4()
-        logger.info(f"Initialized EE with ID: {self.execution_environment_id}")
+        self.backend_id = uuid.uuid4()
+        logger.info(f"Initialized Backend with ID: {self.backend_id}")
 
     def exists(self, object_id):
         with UUIDLock(object_id):
@@ -46,65 +46,11 @@ class BackendAPI:
             except KeyError:
                 return False
 
-    def get_object_metadata(self, object_id):
-        """Get the MetaDataInfo for a certain object.
-
-        If we have it available in the cache, return it. Otherwise, call the
-        MetadataService for it.
-
-        Args:
-            object_id: The ID of the persistent object
-
-        Returns:
-            The MetaData for the given object.
-        """
-
-        logger.info(f"Getting MetaData for object {object_id}")
-
-        try:
-            return self.runtime.inmemory_objects[object_id].metadata
-        except KeyError:
-            return self.runtime.metadata_service.get_object_md_by_id(object_id)
-
-    def get_local_instance(self, object_id, retry=True):
-        return self.runtime.get_or_new_instance_from_db(object_id, retry)
-
-    def set_local_session(self, session_id: uuid.UUID):
-        """Check and set the session to thread_local_data.
-
-        Args:
-            session_id: The session's UUID.
-        """
-        session = self.runtime.metadata_service.get_session(session_id)
-        self.runtime.session = session
-
-    def update_hints_to_current_ee(self, objects_data_to_store):
-        """Update hints in serialized objects provided to use current backend id
-
-        Args:
-            objects_data_to_store: serialized objects to update
-        """
-        ## Update hints since this function is called from other backends
-        hints_mapping = dict()
-        for cur_obj_data in objects_data_to_store:
-            object_id = cur_obj_data.object_id
-            hints_mapping[object_id] = self.execution_environment_id
-
-        for cur_obj_data in objects_data_to_store:
-            object_id = cur_obj_data.object_id
-            metadata = cur_obj_data.metadata
-            obj_bytes = cur_obj_data.obj_bytes
-            metadata.modify_hints(hints_mapping)
-            # make persistent - session references
-            try:
-                self.runtime.add_session_reference(object_id)
-            except Exception as e:
-                # TODO: See exception in set_local_session
-                logger.debug(
-                    "Trying to add_session_reference during store of a federated object"
-                    "in a federated dataclay ==> Provided dataclayID instead of sessionID"
-                )
-                pass
+    ##############
+    ##############
+    # gRPC - API #
+    ##############
+    ##############
 
     def store_objects(self, session_id, objects_data_to_store, moving, ids_with_alias):
         """Store objects in DB
@@ -120,46 +66,7 @@ class BackendAPI:
         self.update_hints_to_current_ee(objects_data_to_store)
         self.store_in_memory(objects_data_to_store)
 
-    def register_and_store_pending(self, instance, obj_bytes, sync):
-
-        object_id = instance._dc_id
-
-        # NOTE: we are doing *two* remote calls, and wishlist => they work as a transaction
-        self.runtime.backend_clients["@STORAGE"].store_to_db(
-            self.execution_environment_id, object_id, obj_bytes
-        )
-
-        # TODO: When the object metadata is updated synchronously, this should me removed
-        self.runtime.metadata_service.update_object(instance.metadata)
-
-        instance._dc_is_pending_to_register = False
-
-    def store_in_memory(self, objects_to_store):
-        """This function will deserialize objects into dataClay memory heap using the same design as for
-        volatile parameters. Eventually, dataClay GC will collect them, and then they will be
-        registered in LogicModule if needed (if objects were created with alias, they must
-        have metadata already).
-
-        Args:
-            session_id: ID of session of make persistent call
-            objects_to_store: objects to store.
-        """
-
-        # No need to provide params specs or param order since objects are not language types
-        vol_objs = dict()
-        i = 0
-        for object_to_store in objects_to_store:
-            vol_objs[i] = object_to_store
-            i = i + 1
-        return DeserializationLibUtilsSingleton.deserialize_params(
-            SerializedParametersOrReturn(num_params=i, vol_objs=vol_objs),
-            None,
-            None,
-            None,
-            self.runtime,
-        )
-
-    def new_make_persistent(self, session_id: uuid.UUID, serialized_dict: bytes):
+    def make_persistent(self, session_id: uuid.UUID, serialized_dict: bytes):
         self.set_local_session(session_id)
 
         # Deserialize __dict__
@@ -187,10 +94,6 @@ class BackendAPI:
 
         self.runtime.metadata_service.register_object(instance.metadata)
 
-    ###############
-    # active method
-    ###############
-
     def call_active_method(self, session_id, object_id, method_name, args, kwargs):
         self.set_local_session(session_id)
 
@@ -203,10 +106,6 @@ class BackendAPI:
         if returned_value is not None:
             return pickle.dumps(returned_value)
 
-    #######
-    # Clone
-    #######
-
     def get_copy_of_object(self, session_id, object_id, recursive):
         """Returns a non-persistent copy of the object with ID provided
 
@@ -216,6 +115,8 @@ class BackendAPI:
         Returns:
             the generated non-persistent objects
         """
+
+        raise ("To refactor")
         logger.debug("[==Get==] Get copy of %s ", object_id)
 
         # Get the data service of one of the backends that contains the original object.
@@ -259,6 +160,107 @@ class BackendAPI:
         )
 
         return serialized_result
+
+    ##################
+    ##################
+    # Helper methods #
+    ##################
+    ##################
+
+    # Session
+
+    def set_local_session(self, session_id: uuid.UUID):
+        """Check and set the session to thread_local_data.
+
+        Args:
+            session_id: The session's UUID.
+        """
+        session = self.runtime.metadata_service.get_session(session_id)
+        self.runtime.session = session
+
+    # Metadata
+
+    def get_object_metadata(self, object_id):
+        """Get the MetaDataInfo for a certain object.
+
+        If we have it available in the cache, return it. Otherwise, call the
+        MetadataService for it.
+
+        Args:
+            object_id: The ID of the persistent object
+
+        Returns:
+            The MetaData for the given object.
+        """
+
+        logger.info(f"Getting MetaData for object {object_id}")
+
+        try:
+            return self.runtime.inmemory_objects[object_id].metadata
+        except KeyError:
+            return self.runtime.metadata_service.get_object_md_by_id(object_id)
+
+    # Heap
+
+    def get_local_instance(self, object_id, retry=True):
+        return self.runtime.get_or_new_instance_from_db(object_id, retry)
+
+    def update_hints_to_current_ee(self, objects_data_to_store):
+        """Update hints in serialized objects provided to use current backend id
+
+        Args:
+            objects_data_to_store: serialized objects to update
+        """
+        ## Update hints since this function is called from other backends
+        hints_mapping = dict()
+        for cur_obj_data in objects_data_to_store:
+            object_id = cur_obj_data.object_id
+            hints_mapping[object_id] = self.backend_id
+
+        for cur_obj_data in objects_data_to_store:
+            object_id = cur_obj_data.object_id
+            metadata = cur_obj_data.metadata
+            obj_bytes = cur_obj_data.obj_bytes
+            metadata.modify_hints(hints_mapping)
+            # make persistent - session references
+            try:
+                self.runtime.add_session_reference(object_id)
+            except Exception as e:
+                # TODO: See exception in set_local_session
+                logger.debug(
+                    "Trying to add_session_reference during store of a federated object"
+                    "in a federated dataclay ==> Provided dataclayID instead of sessionID"
+                )
+                pass
+
+    def store_in_memory(self, objects_to_store):
+        """This function will deserialize objects into dataClay memory heap using the same design as for
+        volatile parameters. Eventually, dataClay GC will collect them, and then they will be
+        registered in LogicModule if needed (if objects were created with alias, they must
+        have metadata already).
+
+        Args:
+            session_id: ID of session of make persistent call
+            objects_to_store: objects to store.
+        """
+
+        # No need to provide params specs or param order since objects are not language types
+        vol_objs = dict()
+        i = 0
+        for object_to_store in objects_to_store:
+            vol_objs[i] = object_to_store
+            i = i + 1
+        return DeserializationLibUtilsSingleton.deserialize_params(
+            SerializedParametersOrReturn(num_params=i, vol_objs=vol_objs),
+            None,
+            None,
+            None,
+            self.runtime,
+        )
+
+    #######
+    # Clone
+    #######
 
     ######
     # Move
@@ -449,7 +451,7 @@ class BackendAPI:
                     object_id,
                     implementation_id,
                     serialized_value,
-                    calling_backend_id=self.execution_environment_id,
+                    calling_backend_id=self.backend_id,
                 )
 
         replica_locations = instance._dc_replica_ee_ids
@@ -467,7 +469,7 @@ class BackendAPI:
                         object_id,
                         implementation_id,
                         serialized_value,
-                        calling_backend_id=self.execution_environment_id,
+                        calling_backend_id=self.backend_id,
                     )
         logger.debug(f"----> Finished synchronization of {object_id}")
 
@@ -692,7 +694,7 @@ class BackendAPI:
                         # Already Read
                         logger.debug("[==Get==] Object %s already read", current_oid)
                         continue
-                    if current_hint is not None and current_hint != self.execution_environment_id:
+                    if current_hint is not None and current_hint != self.backend_id:
                         # in another backend
                         objects_in_other_backend.append([current_oid, current_hint])
                         continue
@@ -791,7 +793,7 @@ class BackendAPI:
             if dest_replica_backend_id is not None and update_replica_locs == 1:
                 current_obj.add_replica_location(dest_replica_backend_id)
                 current_obj._dc_is_dirty = True
-                obj_with_data.metadata.origin_location = self.execution_environment_id
+                obj_with_data.metadata.origin_location = self.backend_id
             elif update_replica_locs == 2:
                 if dest_replica_backend_id is not None:
                     current_obj.remove_replica_location(dest_replica_backend_id)
@@ -919,10 +921,10 @@ class BackendAPI:
                 # IMPORTANT: only set if not already set since consolidate
                 # is always applied to original one
                 metadata.orig_object_id = orig_obj_id
-                metadata.root_location = self.execution_environment_id
+                metadata.root_location = self.backend_id
             obj_with_param_or_return.object_id = version_obj_id
 
-        if dest_backend_id == self.execution_environment_id:
+        if dest_backend_id == self.backend_id:
             self.store_objects(session_id, serialized_objs, False, None)
         else:
             client_backend = self.get_dest_ee_api(dest_backend_id)
@@ -966,7 +968,7 @@ class BackendAPI:
             serialized_objs_updated.append(serialized_obj)
 
         try:
-            if root_location == self.execution_environment_id:
+            if root_location == self.backend_id:
                 self.upsert_objects(session_id, serialized_objs_updated)
             else:
                 client_backend = self.get_dest_ee_api(root_location)
