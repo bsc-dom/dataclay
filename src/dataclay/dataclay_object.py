@@ -12,6 +12,8 @@ import logging
 import pickle
 import traceback
 import typing
+from inspect import get_annotations
+from collections import ChainMap
 import uuid
 from uuid import UUID
 
@@ -128,7 +130,7 @@ class DataClayObject:
 
     def __init_subclass__(cls) -> None:
         """Defines a @property for each annotatted attribute"""
-        for property_name in typing.get_type_hints(cls):
+        for property_name in ChainMap(*(get_annotations(c) for c in cls.__mro__)):
             if not property_name.startswith("_dc_"):
                 setattr(cls, property_name, DataClayProperty(property_name))
 
@@ -212,6 +214,10 @@ class DataClayObject:
     @property
     def dataset(self):
         return self._dc_dataset_name
+
+    @property
+    def is_persistent(self):
+        return self._dc_is_persistent
 
     @property
     def metadata(self):
