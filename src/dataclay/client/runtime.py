@@ -83,6 +83,7 @@ class ClientRuntime(DataClayRuntime):
 
             # Must be set to True before pickle.dumps to avoid infinit recursion
             instance._dc_is_persistent = True
+            instance._dc_is_loaded = False
 
             serialized_dict = pickle.dumps(instance.__dict__)
             ee_client.make_persistent(self.session.id, serialized_dict)

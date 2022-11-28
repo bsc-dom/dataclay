@@ -251,7 +251,9 @@ class DataClayRuntime(ABC):
                 except KeyError:
                     # Import class if None
                     if cls is None or master_ee_id is None:
-                        object_md = self.metadata_service.get_object_md_by_id(object_id)
+                        object_md = self.metadata_service.get_object_md_by_id(
+                            object_id, self.session.id
+                        )
                         module_name, class_name = object_md.class_name.rsplit(".", 1)
                         m = importlib.import_module(module_name)
                         cls = getattr(m, class_name)
@@ -290,6 +292,7 @@ class DataClayRuntime(ABC):
     def delete_alias(self, dc_obj):
         pass
 
+    # TODO: Check if can be deprecated and use get_all_backends
     def get_all_locations(self, object_id):
         locations = set()
         try:
@@ -297,13 +300,13 @@ class DataClayRuntime(ABC):
             locations.add(instance._dc_master_ee_id)
             locations.update(instance._dc_replica_ee_ids)
         except KeyError:
-            object_md = self.metadata_service.get_object_md_by_id(object_id)
+            object_md = self.metadata_service.get_object_md_by_id(object_id, self.session.id)
             locations.add(object_md.master_ee_id)
             locations.update(object_md.replica_ee_ids)
         return locations
 
     def update_object_metadata(self, instance):
-        object_md = self.metadata_service.get_object_md_by_id(instance._dc_id)
+        object_md = self.metadata_service.get_object_md_by_id(instance._dc_id, self.session.id)
         instance.metadata = object_md
 
     #####################

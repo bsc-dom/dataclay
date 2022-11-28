@@ -10,7 +10,7 @@ from dataclay_common.protos import (
 )
 from google.protobuf.empty_pb2 import Empty
 
-from dataclay.exceptions.exceptions import *
+from dataclay.utils.decorators import grpc_error_handler
 from dataclay.metadata.managers.dataclay import ExecutionEnvironment
 from dataclay.metadata.managers.object import ObjectMetadata
 from dataclay.metadata.managers.session import Session
@@ -40,6 +40,7 @@ class MetadataClient:
     # Session Manager #
     ###################
 
+    @grpc_error_handler
     def new_session(self, username: str, password: str, dataset_name: str) -> Session:
         request = metadata_service_pb2.NewSessionRequest(
             username=username, password=password, dataset_name=dataset_name
@@ -47,6 +48,7 @@ class MetadataClient:
         response = self.stub.NewSession(request)
         return Session.from_proto(response)
 
+    @grpc_error_handler
     def close_session(self, session_id: UUID):
         request = metadata_service_pb2.CloseSessionRequest(id=str(session_id))
         self.stub.CloseSession(request)
@@ -55,6 +57,7 @@ class MetadataClient:
     # Account Manager #
     ###################
 
+    @grpc_error_handler
     def new_account(self, username: str, password: str):
         request = metadata_service_pb2.NewAccountRequest(username=username, password=password)
         self.stub.NewAccount(request)
@@ -63,6 +66,7 @@ class MetadataClient:
     # Dataset Manager #
     ###################
 
+    @grpc_error_handler
     def new_dataset(self, username: str, password: str, dataset: str):
         request = metadata_service_pb2.NewDatasetRequest(
             username=username, password=password, dataset=dataset
@@ -73,6 +77,7 @@ class MetadataClient:
     # Dataclay Metadata #
     #####################
 
+    @grpc_error_handler
     def get_dataclay_id(self) -> UUID:
         response = self.stub.GetDataclayID(Empty())
         return UUID(response.dataclay_id)
@@ -81,6 +86,7 @@ class MetadataClient:
     # EE-SL information #
     #####################
 
+    @grpc_error_handler
     def get_all_execution_environments(
         self, language: int, get_external=True, from_backend=False
     ) -> dict:
@@ -94,6 +100,7 @@ class MetadataClient:
             result[UUID(id)] = ExecutionEnvironment.from_proto(proto)
         return result
 
+    @grpc_error_handler
     def autoregister_ee(self, id: UUID, hostname: str, port: int, sl_name: str, lang: int):
         request = metadata_service_pb2.AutoRegisterEERequest(
             id=str(id), hostname=hostname, port=port, sl_name=sl_name, lang=lang
@@ -119,18 +126,17 @@ class MetadataClient:
         object_md_proto = self.stub.GetObjectMDById(request)
         return ObjectMetadata.from_proto(object_md_proto)
 
+    @grpc_error_handler
     def get_object_md_by_alias(
         self, alias_name: str, dataset_name: str, session_id: UUID
     ) -> ObjectMetadata:
-        try:
-            request = metadata_service_pb2.GetObjectMDByAliasRequest(
-                session_id=str(session_id), alias_name=alias_name, dataset_name=dataset_name
-            )
-            object_md_proto = self.stub.GetObjectMDByAlias(request)
-            return ObjectMetadata.from_proto(object_md_proto)
-        except grpc.RpcError as e:
-            raise DataClayException(e.details()) from None
+        request = metadata_service_pb2.GetObjectMDByAliasRequest(
+            session_id=str(session_id), alias_name=alias_name, dataset_name=dataset_name
+        )
+        object_md_proto = self.stub.GetObjectMDByAlias(request)
+        return ObjectMetadata.from_proto(object_md_proto)
 
+    @grpc_error_handler
     def delete_alias(self, alias_name: str, dataset_name: str, session_id: UUID):
         request = metadata_service_pb2.DeleteAliasRequest(
             session_id=str(session_id), alias_name=alias_name, dataset_name=dataset_name

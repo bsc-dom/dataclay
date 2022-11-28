@@ -54,7 +54,7 @@ class ObjectMetadata:
     def from_proto(cls, proto):
         object_md = cls(
             uuid.UUID(proto.id),
-            proto.alias_name,
+            proto.alias_name if proto.alias_name != "" else None,
             proto.dataset_name,
             proto.class_name,
             uuid.UUID(proto.master_ee_id),
@@ -62,6 +62,7 @@ class ObjectMetadata:
             proto.language,
             proto.is_read_only,
         )
+
         return object_md
 
     def get_proto(self):

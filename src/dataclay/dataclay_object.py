@@ -215,14 +215,17 @@ class DataClayObject:
 
     @property
     def dataclay_id(self):
+        """Do not use in internal code. Use _dc_id instead."""
         return self._dc_id
 
     @property
     def dataset(self):
+        """Do not use in internal code. Use _dc_dataset_name instead."""
         return self._dc_dataset_name
 
     @property
     def is_persistent(self):
+        """_dc_is_persistent"""
         return self._dc_is_persistent
 
     @property
@@ -373,13 +376,26 @@ class DataClayObject:
     def delete_alias(cls, alias, dataset_name=None):
         get_runtime().delete_alias_in_dataclay(alias, dataset_name=dataset_name)
 
-    # BUG: Python don't have method overloading
-    # def delete_alias(self):
-    #     get_runtime().delete_alias(self)
+    def get_alias(self):
+        """
+        The alias has to be always consulted from the owner backend or etcd.
+        The alias may be removed without the client knowing it.
+        Since this method is slow, we use a getter instead of @property
+        """
+        if not self._dc_is_loaded:
+            get_runtime().update_object_metadata(self)
 
-    def get_all_locations(self):
-        """Return all the locations of this object."""
-        return get_runtime().get_all_locations(self._dc_id)
+        return self._dc_alias
+
+    def get_all_backends(self):
+        """Return all the backends of this object."""
+        if not self._dc_is_loaded:
+            get_runtime().update_object_metadata(self)
+
+        backends = set()
+        backends.add(self._dc_master_ee_id)
+        backends.update(self._dc_replica_ee_ids)
+        return backends
 
     # TODO: Implement it?
     def get_random_backend(self):
