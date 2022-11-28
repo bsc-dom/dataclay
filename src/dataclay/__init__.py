@@ -1,7 +1,7 @@
 """
 Public dataclay functions exported to use (friendly) "from dataclay import ..."
 """
-from dataclay.commonruntime.Initializer import *
-from dataclay.commonruntime.Runtime import StorageObject, get_runtime
-from dataclay.DataClayObject import DataClayObject
-from dataclay.DataClayObjMethods import dclayEmptyMethod, dclayMethod
+from dataclay.dataclay_object import DataClayObject, activemethod
+from dataclay.client import api
+
+StorageObject = DataClayObject

@@ -80,14 +80,14 @@ class DeserializationLibUtils(object):
 
         cur_deser_python_objs = dict()
         io_file = BytesIO(data)
-        object_to_fill.set_loaded(True)
-        object_to_fill.set_persistent(True)
+        object_to_fill._dc_is_loaded = True
+        object_to_fill._dc_is_persistent = True
         object_to_fill.set_original_object_id(metadata.orig_object_id)
         object_to_fill.set_origin_location(metadata.origin_location)
         object_to_fill.set_root_location(metadata.root_location)
-        object_to_fill.set_replica_locations(metadata.replica_locations)
-        object_to_fill.set_alias(metadata.alias)
-        object_to_fill.set_dataset_name(metadata.dataset_name)
+        object_to_fill._dc_replica_ee_ids = metadata.replica_locations
+        object_to_fill._dc_alias = metadata.alias
+        object_to_fill._dc_dataset_name = metadata.dataset_name
         self._create_buffer_and_deserialize(
             io_file, object_to_fill, None, metadata, cur_deser_python_objs
         )
@@ -151,7 +151,7 @@ class DeserializationLibUtils(object):
         """
 
         """ Lock object until deserialization is finished in case another instance is waiting to do the same so much """
-        runtime.lock(instance.get_object_id())
+        runtime.lock(instance._dc_id)
         try:
             metadata = param_or_ret.metadata
             io_file = BytesIO(param_or_ret.obj_bytes)
@@ -160,16 +160,16 @@ class DeserializationLibUtils(object):
                 io_file, instance, None, metadata, cur_deser_python_objs
             )
             io_file.close()
-            instance.set_persistent(False)
-            instance.set_hint(None)
+            instance._dc_is_persistent = False
+            instance._dc_master_ee_id = None
             instance.set_original_object_id(metadata.orig_object_id)
             instance.set_origin_location(metadata.origin_location)
             instance.set_root_location(metadata.root_location)
-            instance.set_replica_locations(metadata.replica_locations)
-            instance.set_alias(metadata.alias)
-            instance.set_dataset_name(metadata.dataset_name)
+            instance._dc_replica_ee_ids = metadata.replica_locations
+            instance._dc_alias = metadata.alias
+            instance._dc_dataset_name = metadata.dataset_name
         finally:
-            runtime.unlock(instance.get_object_id())
+            runtime.unlock(instance._dc_id)
 
     def deserialize_object_with_data(
         self, param_or_ret, instance, ifacebitmpas, runtime, owner_session_id, force_deserialization
@@ -195,9 +195,9 @@ class DeserializationLibUtils(object):
         Also happening in update of objects and cleaning in GC.
         """
         """ Lock object until deserialization is finished in case another instance is waiting to do the same so much """
-        runtime.lock(instance.get_object_id())
+        runtime.lock(instance._dc_id)
         try:
-            if force_deserialization or not instance.is_loaded():
+            if force_deserialization or not instance._dc_is_loaded:
                 """TODO: improve GRPC messages"""
                 metadata = param_or_ret.metadata
                 io_file = BytesIO(param_or_ret.obj_bytes)
@@ -206,24 +206,24 @@ class DeserializationLibUtils(object):
                     io_file, instance, None, metadata, cur_deser_python_objs
                 )
                 io_file.close()
-                instance.set_loaded(True)
-                instance.set_persistent(True)
+                instance._dc_is_loaded = True
+                instance._dc_is_persistent = True
                 instance.set_original_object_id(metadata.orig_object_id)
                 instance.set_origin_location(metadata.origin_location)
                 instance.set_root_location(metadata.root_location)
-                instance.set_replica_locations(metadata.replica_locations)
-                instance.set_alias(metadata.alias)
+                instance._dc_replica_ee_ids = metadata.replica_locations
+                instance._dc_alias = metadata.alias
                 if owner_session_id is not None:
-                    instance.set_owner_session_id(owner_session_id)
-                instance.set_dataset_name(metadata.dataset_name)
+                    instance._dc_owner_session_id = owner_session_id
+                instance._dc_dataset_name = metadata.dataset_name
 
         finally:
-            runtime.unlock(instance.get_object_id())
+            runtime.unlock(instance._dc_id)
 
     def deserialize_return(self, serialized_params_or_return, iface_bitmaps, return_type, runtime):
 
         if serialized_params_or_return.num_params == 0:
-            logger.verbose("No return to deserialize: returning None")
+            logger.debug("No return to deserialize: returning None")
             return None
         return self.deserialize_params_or_return(
             serialized_params_or_return, iface_bitmaps, {"0": return_type}, ["0"], runtime
@@ -248,7 +248,7 @@ class DeserializationLibUtils(object):
         for i, serialized_param in serialized_params_or_return.vol_objs.items():
             object_id = serialized_param.object_id
             class_id = serialized_param.class_id
-            logger.verbose("Deserializing volatile with object ID %s" % str(object_id))
+            logger.debug("Deserializing volatile with object ID %s" % str(object_id))
 
             if first_volatile:
                 runtime.add_volatiles_under_deserialization(
@@ -263,14 +263,14 @@ class DeserializationLibUtils(object):
             # For makePersistent or federate methods, we must know that there is a session using the object which
             # is the one that persisted/federated. Normally, we know a client is using an object if we serialize
             # it to send to him but in that case client has created/federated the object.
-            runtime.add_session_reference(deserialized_param.get_object_id())
+            runtime.add_session_reference(deserialized_param._dc_id)
 
             if i < num_params:
                 params[i] = deserialized_param
 
         """ LANGUAGE """
         for i, serialized_param in serialized_params_or_return.lang_objs.items():
-            logger.verbose("Deserializing language type at index %s" % str(i))
+            logger.debug("Deserializing language type at index %s" % str(i))
 
             obj_bytes = BytesIO(serialized_param[1])
             params[i] = self.deserialize_language(obj_bytes, param_specs[params_order[i]])
@@ -278,7 +278,7 @@ class DeserializationLibUtils(object):
 
         """ IMMUTABLES """
         for i, serialized_param in serialized_params_or_return.imm_objs.items():
-            logger.verbose("Deserializing immutable type at index %s" % str(i))
+            logger.debug("Deserializing immutable type at index %s" % str(i))
 
             obj_bytes = BytesIO(serialized_param)
             params[i] = self.deserialize_immutable(obj_bytes, param_specs[params_order[i]])
@@ -291,10 +291,10 @@ class DeserializationLibUtils(object):
             hint = serialized_param.hint
             class_id = serialized_param.class_id
 
-            logger.verbose("Deserializing persistent object with object ID %s" % str(object_id))
+            logger.debug("Deserializing persistent object with object ID %s" % str(object_id))
 
             deserialized_param = runtime.get_or_new_persistent_instance(object_id, class_id, hint)
-            deserialized_param.set_persistent(True)
+            deserialized_param._dc_is_persistent = True
             if i < num_params:
                 params[i] = deserialized_param
                 # Set hint in metadata (ToDo: create general getOrNewInstance)

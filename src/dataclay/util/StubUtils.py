@@ -5,8 +5,8 @@ import os
 
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
-from dataclay.commonruntime.Runtime import get_runtime
-from dataclay.commonruntime.Settings import settings
+from dataclay.runtime import get_runtime, settings
+from dataclay.conf import settings
 from dataclay.util.FileUtils import deploy_class
 from dataclay.util.YamlParser import Loader, dataclay_yaml_load
 
@@ -114,7 +114,7 @@ def track_local_available_classes():
 
         get_runtime().local_available_classes[class_data.classID] = "%s.%s" % (namespace, full_name)
 
-    logger.verbose("Using the following contracts: %s", contracts)
+    logger.debug("Using the following contracts: %s", contracts)
     return contracts
 
 

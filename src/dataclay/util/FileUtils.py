@@ -10,7 +10,7 @@ is done in this module.
 import logging
 import os.path
 
-from dataclay.commonruntime.Initializer import logger
+from dataclay.util.Initializer import logger
 
 __author__ = ["Alex Barcelo <alex.barcelo@bsc.es"]
 __copyright__ = "2016 Barcelona Supercomputing Center (BSC-CNS)"

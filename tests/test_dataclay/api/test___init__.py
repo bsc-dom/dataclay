@@ -5,14 +5,14 @@ from test_dataclay.test_utils import import_mock
 
 """ Mock all imports done by the tested module """
 with patch("builtins.__import__", side_effect=import_mock):
-    import dataclay.api as api
+    import dataclay.client.api as api
 
 
 class Test(TestCase):
     def setUp(self):
         # Mock logger #
         api.logger.debug = print
-        api.logger.verbose = print
+        api.logger.debug = print
 
     def tearDown(self):
         pass
@@ -30,11 +30,11 @@ class Test(TestCase):
     def test_reinitialize_clients(self):
         api.settings.logicmodule_host = "logicmodule"
         api.settings.logicmodule_port = "1024"
-        result_ready_clients = {
+        result_backend_clients = {
             "@LM": api.LMClient(api.settings.logicmodule_host, api.settings.logicmodule_port),
         }
         api.reinitialize_clients()
-        self.assertEqual(result_ready_clients, api.get_runtime().ready_clients)
+        self.assertEqual(result_backend_clients, api.get_runtime().backend_clients)
 
     def test_init_connection(self):
         pass
