@@ -111,7 +111,7 @@ class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
     def RegisterObject(self, request, context):
         try:
             object_md = ObjectMetadata.from_proto(request.object_md)
-            self.metadata_service.register_object(UUID(request.session_id), object_md)
+            self.metadata_service.register_object(object_md, UUID(request.session_id))
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -142,18 +142,16 @@ class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
                 check_session=True,
             )
         except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return common_messages_pb2.ObjectMetadata()
+            context.abort(grpc.StatusCode.INTERNAL, str(e))
         return object_md.get_proto()
 
     def DeleteAlias(self, request, context):
         try:
             self.metadata_service.delete_alias(
-                UUID(request.session_id),
                 request.alias_name,
                 request.dataset_name,
+                UUID(request.session_id),
                 check_session=True,
             )
         except Exception as e:

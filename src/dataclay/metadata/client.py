@@ -3,16 +3,17 @@ import logging
 from uuid import UUID
 
 import grpc
-from google.protobuf.empty_pb2 import Empty
-
-from dataclay.metadata.managers.dataclay import ExecutionEnvironment
-from dataclay.metadata.managers.object import ObjectMetadata
-from dataclay.metadata.managers.session import Session
 from dataclay_common.protos import (
     common_messages_pb2,
     metadata_service_pb2,
     metadata_service_pb2_grpc,
 )
+from google.protobuf.empty_pb2 import Empty
+
+from dataclay.exceptions.exceptions import *
+from dataclay.metadata.managers.dataclay import ExecutionEnvironment
+from dataclay.metadata.managers.object import ObjectMetadata
+from dataclay.metadata.managers.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -121,11 +122,14 @@ class MetadataClient:
     def get_object_md_by_alias(
         self, alias_name: str, dataset_name: str, session_id: UUID
     ) -> ObjectMetadata:
-        request = metadata_service_pb2.GetObjectMDByAliasRequest(
-            session_id=str(session_id), alias_name=alias_name, dataset_name=dataset_name
-        )
-        object_md_proto = self.stub.GetObjectMDByAlias(request)
-        return ObjectMetadata.from_proto(object_md_proto)
+        try:
+            request = metadata_service_pb2.GetObjectMDByAliasRequest(
+                session_id=str(session_id), alias_name=alias_name, dataset_name=dataset_name
+            )
+            object_md_proto = self.stub.GetObjectMDByAlias(request)
+            return ObjectMetadata.from_proto(object_md_proto)
+        except grpc.RpcError as e:
+            raise DataClayException(e.details()) from None
 
     def delete_alias(self, alias_name: str, dataset_name: str, session_id: UUID):
         request = metadata_service_pb2.DeleteAliasRequest(

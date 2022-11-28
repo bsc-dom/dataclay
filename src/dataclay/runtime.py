@@ -467,12 +467,12 @@ class DataClayRuntime(ABC):
 
         backend_client = self.get_backend_client(instance._dc_master_ee_id)
 
-        returned_value = backend_client.call_active_method(
+        serialized_response = backend_client.call_active_method(
             self.session.id, instance._dc_id, method_name, serialized_args, serialized_kwargs
         )
-        if returned_value:
-            unserialized_response = pickle.loads(returned_value)
-            return unserialized_response
+        if serialized_response:
+            response = pickle.loads(serialized_response)
+            return response
 
     # DEPRECATED: Use call_active_method
     def call_execute_to_ds(self, instance, parameters, operation_name, exec_env_id, using_hint):

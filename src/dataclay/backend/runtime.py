@@ -166,7 +166,11 @@ class BackendRuntime(DataClayRuntime):
             fat_instance = self.get_or_new_instance_from_db(instance._dc_id, True)
             assert instance is fat_instance
             # TODO: Should i set _is_dirty always or only for getter and setter??
-            return getattr(instance, method_name)(*args, **kwargs)
+            try:
+                return getattr(instance, method_name)(*args, **kwargs)
+            except Exception as e:
+                # If the method raises and exceptions, this is returned.
+                return e
         else:
             logger.debug("Object is not local")
             return super().call_active_method(instance, method_name, args, kwargs)

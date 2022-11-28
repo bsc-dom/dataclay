@@ -47,7 +47,13 @@ def activemethod(func):
             ):
                 return func(self, *args, **kwargs)
             else:
-                return get_runtime().call_active_method(self, func.__name__, args, kwargs)
+                response = get_runtime().call_active_method(self, func.__name__, args, kwargs)
+                # The method raises and Excpetions
+                # BUG: methods that returns and Exception as the normal return value,
+                # the excpetion will be raised, however, it should only be returned.
+                if isinstance(response, Exception):
+                    raise response
+                return response
         except Exception:
             traceback.print_exc()
             raise
