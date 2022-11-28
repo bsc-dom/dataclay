@@ -5,7 +5,7 @@ import os
 import uuid
 from distutils.util import strtobool
 
-import dataclay.api
+import dataclay.client.api
 
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
@@ -63,7 +63,7 @@ def initWorker(config_file_path, **kwargs):
       and/or other Persistent Object Library requirements.
     """
     logger.info("Initialization of worker through storage.api")
-    dataclay.api.pre_network_init(config_file_path)
+    dataclay.client.api.pre_network_init(config_file_path)
 
 
 def initWorkerPostFork():
@@ -80,7 +80,7 @@ def initWorkerPostFork():
     Once this method is called, dataClay can be considered "initialized".
     """
     logger.warning("Finishing initialization (post-fork)")
-    dataclay.api.reinitialize_logging()
+    dataclay.client.api.reinitialize_logging()
 
     # ToDo: this is ugly, avoid, fix the issue:
     # https://storage.bsc.es/gitlab/object_storage/poas/issues/78
@@ -93,7 +93,7 @@ def initWorkerPostFork():
 
     sleep(randint(0, 30))
     ##########################################################
-    dataclay.api.post_network_init()
+    dataclay.client.api.post_network_init()
     logger.debug("Reinitialization post-fork finished")
 
 
@@ -108,7 +108,7 @@ def finishWorkerPostFork():
     (i.e. called from the same process) call to finishWorkerPostFork.
     """
     logger.warning("Finishing dataClay (post-fork)")
-    dataclay.api.finish()
+    dataclay.client.api.finish()
     logger.debug("Finalization post-fork finished")
 
 
@@ -118,7 +118,7 @@ def init(config_file_path=None, **kwargs):
     Identical to initWorker (right now, may change).
     """
     logger.info("Initialization of storage.api")
-    dataclay.api.init(config_file_path)
+    dataclay.client.api.init(config_file_path)
 
 
 def finishWorker(**kwargs):
@@ -129,7 +129,7 @@ def finishWorker(**kwargs):
     """
     logger.info("Finalization of worker through storage.api")
     # Nothing to do here, because finishWorkerPostFork is the real hero here
-    dataclay.api.finish_tracing()  # Not enough hero for Extrae :)
+    dataclay.client.api.finish_tracing()  # Not enough hero for Extrae :)
 
 
 def finish(**kwargs):
@@ -138,7 +138,7 @@ def finish(**kwargs):
     Identical to finishworker (right now, may change).
     """
     logger.info("Finalization of storage.api")
-    dataclay.api.finish()
+    dataclay.client.api.finish()
 
 
 class TaskContext(object):

@@ -5,7 +5,7 @@ from test_dataclay.test_utils import import_mock
 
 """ Mock all imports done by the tested module """
 with patch("builtins.__import__", side_effect=import_mock):
-    import dataclay.api as api
+    import dataclay.client.api as api
 
 
 class Test(TestCase):
