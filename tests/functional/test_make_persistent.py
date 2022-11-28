@@ -1,19 +1,12 @@
 from dataclay import api
 import pytest
 from model.family import Family, Person
+from utils import init_client, mock_env_client
 
 
-@pytest.fixture
-def mock_env_client(monkeypatch):
-    monkeypatch.setenv("METADATA_SERVICE_HOST", "127.0.0.1")
-    monkeypatch.setenv("DC_USERNAME", "user")
-    monkeypatch.setenv("DC_PASSWORD", "s3cret")
-    monkeypatch.setenv("DEFAULT_DATASET", "myDataset")
-
-
-def test_make_persistent_basic(mock_env_client):
+def test_make_persistent_basic(init_client):
     """Test a simple make_persistent call"""
-    api.init()
+    # api.init()
 
     person = Person("Marc", 24)
     assert person.is_persistent == False
@@ -26,15 +19,15 @@ def test_make_persistent_basic(mock_env_client):
     person.age = 55
     assert person.age == 55
 
-    api.finish()
+    # api.finish()
 
 
-def test_make_persistent_recursive(mock_env_client):
+def test_make_persistent_recursive(init_client):
     """
     By default, make_persistent is called recursively to all
     dataclay object attributes
     """
-    api.init()
+    # api.init()
 
     family = Family()
     person = Person("Marc", 24)
@@ -45,16 +38,16 @@ def test_make_persistent_recursive(mock_env_client):
     assert person.is_persistent == True
     assert person == family.members[0]
 
-    api.finish()
+    # api.finish()
 
 
-def test_make_persistent_cycle(mock_env_client):
+def test_make_persistent_cycle(init_client):
     """
     A call to make_persistent should work even when there
     is a cycle relation between dataclay objects
     """
 
-    api.init()
+    # api.init()
 
     person_1 = Person("Marc", 24)
     person_2 = Person("Alice", 21)
