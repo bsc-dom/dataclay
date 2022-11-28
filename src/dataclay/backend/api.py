@@ -9,10 +9,10 @@ from opentelemetry import trace
 
 from dataclay import utils
 from dataclay.backend.client import BackendClient
+from dataclay.backend.runtime import BackendRuntime
 from dataclay.conf import settings
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.runtime import UUIDLock, set_runtime
-from dataclay.runtime.backend_runtime import BackendRuntime
 
 tracer = trace.get_tracer(__name__)
 logger = utils.LoggerEvent(logging.getLogger(__name__))

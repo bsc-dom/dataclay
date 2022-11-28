@@ -11,11 +11,11 @@ import logging.config
 
 from opentelemetry import trace
 
+from dataclay.client.runtime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
+from dataclay.client.runtime import ClientRuntime
 from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.runtime import get_runtime, set_runtime
-from dataclay.runtime.client_runtime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
-from dataclay.runtime.client_runtime import ClientRuntime
 
 # This will be populated during initialization
 LOCAL = _UNDEFINED_LOCAL

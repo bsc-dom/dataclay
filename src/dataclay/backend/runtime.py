@@ -10,7 +10,7 @@ from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.metadata.api import MetadataAPI
 from dataclay.runtime import UUIDLock
-from dataclay.runtime.dataclay_runtime import DataClayRuntime
+from dataclay.runtime import DataClayRuntime
 
 logger = logging.getLogger(__name__)
 

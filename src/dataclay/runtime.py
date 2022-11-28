@@ -1,9 +1,14 @@
 """ Class description goes here. """
+from __future__ import annotations
+
 import importlib
 import logging
 import uuid
 from abc import ABC, abstractmethod
 from builtins import Exception
+from contextlib import AbstractContextManager
+from threading import Condition
+from typing import TYPE_CHECKING
 from uuid import UUID
 from weakref import WeakValueDictionary
 
@@ -12,21 +17,52 @@ from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
 from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
-from dataclay.dataclay_object import DataClayObject
-from dataclay.metadata.api import MetadataAPI
-from dataclay.metadata.client import MetadataClient
-from dataclay.runtime import UUIDLock
 
-# from dataclay.exceptions.exceptions import DataClayException
-# from dataclay.paraver import (
-#     extrae_tracing_is_enabled,
-#     finish_tracing,
-#     get_current_available_task_id,
-#     get_task_id,
-#     initialize_extrae,
-# )
+if TYPE_CHECKING:
+
+    from dataclay.dataclay_object import DataClayObject
+    from dataclay.metadata.api import MetadataAPI
+    from dataclay.metadata.client import MetadataClient
+
 
 logger = logging.getLogger(__name__)
+
+
+current_runtime = None
+
+
+def get_runtime() -> DataClayRuntime:
+    return current_runtime
+
+
+def set_runtime(new_runtime):
+    global current_runtime
+    current_runtime = new_runtime
+
+
+class UUIDLock(AbstractContextManager):
+    """This class is used as a global lock for UUIDs
+
+    Use it always with context manager:
+        with UUIDLock(id):
+            ...
+    """
+
+    cv = Condition()
+    locked_objects = set()
+
+    def __init__(self, id):
+        self.id = id
+
+    def __enter__(self):
+        with self.cv:
+            self.cv.wait_for(lambda: self.id not in self.locked_objects)
+            self.locked_objects.add(self.id)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        with self.cv:
+            self.locked_objects.remove(self.id)
+            self.cv.notify_all()
 
 
 class DataClayRuntime(ABC):

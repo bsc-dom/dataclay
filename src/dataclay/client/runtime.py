@@ -13,7 +13,7 @@ from opentelemetry import trace
 from dataclay.backend.client import BackendClient
 from dataclay.dataclay_object import DataClayObject
 from dataclay.metadata.client import MetadataClient
-from dataclay.runtime.dataclay_runtime import DataClayRuntime
+from dataclay.runtime import DataClayRuntime
 
 UNDEFINED_LOCAL = object()
 
