@@ -59,3 +59,16 @@ def test_activemethod_non_defined_properties(init_client):
     dog.add_year()
     assert dog.age == 6  # Age property is not synchronized
     assert dog.get_age() == 7
+
+
+def test_activemethod_inner_make_persistent(init_client):
+    """
+    Objects crated inside an activemethod should be made persistent
+    """
+    dog = Dog("Duna", 6)
+    dog.make_persistent()
+    puppy = dog.new_puppy("Rio")
+    assert puppy.is_persistent == True
+    assert puppy == dog.puppies[0]
+    assert puppy.name == "Rio"
+    assert puppy.get_age() == 0
