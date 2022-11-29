@@ -171,30 +171,6 @@ class DataClayObject:
         self._dc_is_loaded = True
         self._dc_is_dirty = False  # Is it used, should be removed?
 
-    def initialize_object(self, **kwargs):
-        """Initializes the object"""
-
-        # Populate default internal fields
-        self._dc_id = uuid.uuid4()
-        self._dc_alias = None
-        self._dc_dataset_name = None
-        self._dc_class = self.__class__
-        self._dc_class_name = self.__class__.__module__ + "." + self.__class__.__name__
-        self._dc_is_persistent = False
-        self._dc_backend_id = (
-            get_runtime().get_hint()
-        )  # May be replaced if instantiating a thing object from different ee
-        self._dc_replica_backend_ids = []
-        self._dc_is_read_only = False
-        self._dc_is_dirty = False  # Is it used, should be removed?
-        self._dc_is_loaded = True
-
-        # Update object dict with custome kwargs
-        self.__dict__.update(kwargs)
-
-        # Add instance to heap
-        get_runtime().add_to_heap(self)
-
     @property
     def dataclay_id(self):
         """Do not use in internal code. Use _dc_id instead."""
