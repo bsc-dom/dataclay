@@ -4,6 +4,7 @@ import datetime
 import logging
 import threading
 import time
+import pickle
 
 from dataclay.backend.heapmanager import HeapManager
 from dataclay.conf import settings
@@ -18,16 +19,15 @@ current_milli_time = lambda: int(round(time.time() * 1000))
 
 
 class BackendRuntime(DataClayRuntime):
-    def __init__(self, theexec_env, etcd_host, etcd_port):
+    def __init__(self, backend, etcd_host, etcd_port):
 
         # Execution Environment using this runtime.
         # TODO: This is a bad design that could produce circular imports
         # Remove it and think a better desing.
-        self.execution_environment = theexec_env
+        self.execution_environment = backend
 
         # Initialize parent
         metadata_service = MetadataAPI(etcd_host, etcd_port)
-
         super().__init__(metadata_service)
 
         self.heap_manager = HeapManager()
@@ -60,7 +60,8 @@ class BackendRuntime(DataClayRuntime):
 
     def add_to_heap(self, instance: DataClayObject):
         self.inmemory_objects[instance._dc_id] = instance
-        self.heap_manager.retain_in_heap(instance)
+        if instance._dc_is_loaded:
+            self.heap_manager.retain_in_heap(instance)
 
     def is_exec_env(self):
         return True
@@ -78,7 +79,7 @@ class BackendRuntime(DataClayRuntime):
             raise ("Not Implemented")
             return self.get_from_sl(object_id)
             # object_md = self.metadata_service.get_object_md_by_id(object_id)
-            # cls.new_persistent(object_id, master_ee_id)
+            # cls.new_persistent(object_id, backend_id)
 
         return self.dataclay_object_loader.get_or_new_instance_from_db(object_id, retry)
 
@@ -133,24 +134,29 @@ class BackendRuntime(DataClayRuntime):
 
         # It should always have a master location, since all objects intantiated
         # in a ee, get the ee as the master location
-        # if not _master_ee_id:
-        #     instance._dc_master_ee_id = backend_id or self.get_backend_id_by_object_id(
-        #         instance._dc_id
-        #     )
 
-        if alias is not None:
-            # Add a new alias to an object.
-            # We call 'addAlias' with registration information in case we need to register it.
-            # Use cases:
-            # 1 - object was persisted without alias and not yet registered -> we need to register it with new alias.
-            # 2 - object was persisted and it is already registered -> we only add a new alias
-            # 3 - object was persisted with an alias and it must be already registered -> we add a new alias.
-            instance._dc_alias = alias
+        if instance._dc_is_persistent:
+            # TODO: If alias is not Note, update alias
+            # If backend is different than the current backend, move object
+            return
 
-            if instance._dc_is_pending_to_register:
-                self.metadata_service.register_object(instance.metadata)
+        instance._dc_alias = alias
+        instance._dc_dataset_name = self.session.dataset_name
 
-        return instance._dc_master_ee_id
+        # If backend_id is none, we register the object in the current backend
+        if backend_id is None:
+            instance._dc_backend_id = settings.DC_BACKEND_ID
+            self.metadata_service.register_object(instance.metadata)
+            instance._dc_is_persistent = True
+        else:
+            backend_client = self.get_backend_client(backend_id)
+            instance._dc_is_persistent = True
+            serialized_dict = pickle.dumps(instance.__dict__)
+            backend_client.make_persistent(self.session.id, serialized_dict)
+            instance._dc_is_loaded = False
+            instance._dc_backend_id = backend_id
+
+        return instance._dc_backend_id
 
     def call_active_method(self, instance, method_name, args: tuple, kwargs: dict):
         """This method overrides parents method.
@@ -160,7 +166,7 @@ class BackendRuntime(DataClayRuntime):
 
         # TODO: Check if the object is under deserialization ¿?
 
-        if instance._dc_master_ee_id == settings.DC_BACKEND_ID:
+        if instance._dc_backend_id == settings.DC_BACKEND_ID:
             logger.debug("Object is local")
             # get_local_instance should indeed modify the same instance instance,
             fat_instance = self.get_or_new_instance_from_db(instance._dc_id, True)
@@ -225,7 +231,7 @@ class BackendRuntime(DataClayRuntime):
 
                 # This object will soon be persistent
                 current_obj._dc_is_persistent = True
-                current_obj._dc_master_ee_id = settings.DC_BACKEND_ID
+                current_obj._dc_backend_id = settings.DC_BACKEND_ID
                 # Just in case (should have been loaded already)
                 logger.debug(
                     "Setting loaded to true from internal store for object %s" % str(object_id)
@@ -286,7 +292,7 @@ class BackendRuntime(DataClayRuntime):
                             return True
                         # deserialize it
                         metaclass_id = volatile_obj.get_class_extradata().class_id
-                        hint = volatile_obj._dc_master_ee_id
+                        hint = volatile_obj._dc_backend_id
                         self.get_or_new_volatile_instance_and_load(
                             object_id, metaclass_id, hint, obj_with_data, ifacebitmaps
                         )
@@ -468,7 +474,7 @@ class BackendRuntime(DataClayRuntime):
             iface_bitmaps=None,
             params_spec=operation.params,
             params_order=operation.paramsOrder,
-            hint_volatiles=instance._dc_master_ee_id,
+            hint_volatiles=instance._dc_backend_id,
             runtime=self,
         )
         self.execution_environment.synchronize(

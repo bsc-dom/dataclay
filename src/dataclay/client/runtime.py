@@ -7,6 +7,7 @@ dataclay.api package.
 import logging
 import pickle
 import traceback
+import random
 
 from opentelemetry import trace
 
@@ -53,49 +54,51 @@ class ClientRuntime(DataClayRuntime):
 
         if instance._dc_is_persistent:
             raise RuntimeError("Instance is already persistent")
+
+        logger.debug(f"Starting make persistent for object {instance._dc_id}")
+
+        instance._dc_alias = alias
+        instance._dc_dataset_name = self.session.dataset_name
+
+        if backend_id is None:
+            # TODO: Should i update list of backend?
+            backend_id, backend_client = random.choice(list(self.backend_clients.items()))
         else:
-            logger.debug(f"Starting make persistent for object {instance._dc_id}")
+            backend_client = self.get_backend_client(backend_id)
 
-            instance._dc_alias = alias
-            instance._dc_master_ee_id = backend_id or self.get_backend_id_by_object_id(
-                instance._dc_id
-            )
+        ######################################
+        # Serialize instance with Pickle
+        ######################################
 
-            # Gets Execution Environment client
-            try:
-                ee_client = self.backend_clients[instance._dc_master_ee_id]
-            except KeyError:
-                logger.debug(f"Client {instance._dc_master_ee_id} not found in cache!")
-                exec_env = self.get_execution_environment_info(instance._dc_master_ee_id)
-                ee_client = BackendClient(exec_env.hostname, exec_env.port)
-                self.backend_clients[instance._dc_master_ee_id] = ee_client
+        # TODO: Improve it with a single make_persistent call to ee of all
+        # dc objects, instead of one call per object
+        # TODO: Avoid some race-conditions in communication
+        # (make persistent + execute where execute arrives before).
+        # add_volatiles_under_deserialization and remove_volatiles_under_deserialization
+        # TODO: Check if we can make a use of the recursive parameter
 
-            ######################################
-            # Serialize instance with Pickle
-            ######################################
-
-            # TODO: Improve it with a single make_persistent call to ee of all
-            # dc objects, instead of one call per object
-            # TODO: Avoid some race-conditions in communication
-            # (make persistent + execute where execute arrives before).
-            # add_volatiles_under_deserialization and remove_volatiles_under_deserialization
-            # TODO: Check if we can make a use of the recursive parameter
-
+        try:
             # Must be set to True before pickle.dumps to avoid infinit recursion
             instance._dc_is_persistent = True
-            instance._dc_is_loaded = False
-
+            instance._dc_backend_id = (
+                backend_id  # TODO: Remove it when new batch system (use the latter)
+            )
             serialized_dict = pickle.dumps(instance.__dict__)
-            ee_client.make_persistent(self.session.id, serialized_dict)
-
-            return instance._dc_master_ee_id
+            backend_client.make_persistent(self.session.id, serialized_dict)
+            instance._dc_is_loaded = False
+            instance._dc_backend_id = backend_id
+            return instance._dc_backend_id
+        except Exception:
+            # TODO: In the batch system it should not be needed
+            instance._dc_is_persistent = False
+            raise
 
     # NOTE: This function may be removed.
     # When an alias is removed without having the instance, the persistent object
     # has to know it if we consult its alias, therefore, in all cases, the alias
     # will have to be updated from the single source of truth i.e. the etcd metadata
     def delete_alias(self, instance):
-        ee_id = instance._dc_master_ee_id
+        ee_id = instance._dc_backend_id
         if not ee_id:
             self.update_object_metadata(instance)
             ee_id = self.get_hint()
@@ -124,7 +127,7 @@ class ClientRuntime(DataClayRuntime):
             iface_bitmaps=None,
             params_spec=operation.params,
             params_order=operation.paramsOrder,
-            hint_volatiles=instance._dc_master_ee_id,
+            hint_volatiles=instance._dc_backend_id,
             runtime=self,
         )
         try:
@@ -142,7 +145,7 @@ class ClientRuntime(DataClayRuntime):
             if hint is None:
                 instance = self.inmemory_objects[object_id]
                 self.update_object_metadata(instance)
-                hint = instance._dc_master_ee_id
+                hint = instance._dc_backend_id
             try:
                 ee_client = self.backend_clients[hint]
             except KeyError:
@@ -154,7 +157,7 @@ class ClientRuntime(DataClayRuntime):
             traceback.print_exc()
 
     def federate_to_backend(self, instance, external_execution_environment_id, recursive):
-        hint = instance._dc_master_ee_id
+        hint = instance._dc_backend_id
         if hint is None:
             self.update_object_metadata(instance)
             hint = self.get_hint()
@@ -183,7 +186,7 @@ class ClientRuntime(DataClayRuntime):
             external_execution_environment_id,
             self.session.id,
         )
-        hint = instance._dc_master_ee_id
+        hint = instance._dc_backend_id
         if hint is None:
             self.update_object_metadata(instance)
             hint = self.get_hint()

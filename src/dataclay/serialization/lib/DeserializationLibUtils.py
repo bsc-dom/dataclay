@@ -85,7 +85,7 @@ class DeserializationLibUtils(object):
         object_to_fill.set_original_object_id(metadata.orig_object_id)
         object_to_fill.set_origin_location(metadata.origin_location)
         object_to_fill.set_root_location(metadata.root_location)
-        object_to_fill._dc_replica_ee_ids = metadata.replica_locations
+        object_to_fill._dc_replica_backend_ids = metadata.replica_locations
         object_to_fill._dc_alias = metadata.alias
         object_to_fill._dc_dataset_name = metadata.dataset_name
         self._create_buffer_and_deserialize(
@@ -161,11 +161,11 @@ class DeserializationLibUtils(object):
             )
             io_file.close()
             instance._dc_is_persistent = False
-            instance._dc_master_ee_id = None
+            instance._dc_backend_id = None
             instance.set_original_object_id(metadata.orig_object_id)
             instance.set_origin_location(metadata.origin_location)
             instance.set_root_location(metadata.root_location)
-            instance._dc_replica_ee_ids = metadata.replica_locations
+            instance._dc_replica_backend_ids = metadata.replica_locations
             instance._dc_alias = metadata.alias
             instance._dc_dataset_name = metadata.dataset_name
         finally:
@@ -211,7 +211,7 @@ class DeserializationLibUtils(object):
                 instance.set_original_object_id(metadata.orig_object_id)
                 instance.set_origin_location(metadata.origin_location)
                 instance.set_root_location(metadata.root_location)
-                instance._dc_replica_ee_ids = metadata.replica_locations
+                instance._dc_replica_backend_ids = metadata.replica_locations
                 instance._dc_alias = metadata.alias
                 if owner_session_id is not None:
                     instance._dc_owner_session_id = owner_session_id

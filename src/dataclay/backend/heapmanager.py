@@ -28,9 +28,6 @@ class HeapManager(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self, name="heap-manager")
 
-        # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
-        self.inmemory_objects = WeakValueDictionary()
-
         # Event object to communicate shutdown
         self._finished = threading.Event()
 
@@ -53,6 +50,14 @@ class HeapManager(threading.Thread):
         # is there (we cannot rely on __eq__ operations on user-defined classes.
         self.retained_objects_id = set()
 
+        # Loaded objects so they cannot be GC by PythonGC.
+        # It is very important to be a sorted dict (guaranteed in py3.7), so first elements to arrive are cleaned before,
+        # n any deserialization from DB or parameter, objects deserialized first are referrers to
+        # objects deserialized later. Second ones cannot be GC if first ones are not cleaned.
+        # During GC,we should know that somehow. It's a hint but improves GC a lot.
+        # Also, remember list must be thread-safe:
+        self.loaded_objects = dict()
+
         # Indicates if HeapManager is flushing all objects in Heap to disk.
         self.is_flushing_all = False
 
@@ -63,29 +68,29 @@ class HeapManager(threading.Thread):
     # Dict methods
     ##############
 
-    def __getitem__(self, object_id):
-        return self.inmemory_objects[object_id]
+    # def __getitem__(self, object_id):
+    #     return self.inmemory_objects[object_id]
 
-    def __setitem__(self, object_id, obj):
-        self.inmemory_objects[object_id] = obj
+    # def __setitem__(self, object_id, obj):
+    #     self.inmemory_objects[object_id] = obj
 
-    def __contains__(self, item):
-        return item in self.inmemory_objects
+    # def __contains__(self, item):
+    #     return item in self.inmemory_objects
 
-    def __len__(self):
-        return len(self.inmemory_objects)
+    # def __len__(self):
+    #     return len(self.inmemory_objects)
 
-    def __delitem__(self, object_id):
-        """Remove reference from Heap.
+    # def __delitem__(self, object_id):
+    #     """Remove reference from Heap.
 
-        Even if we remove it from the heap the object won't be Garbage collected
-        untill HeapManager flushes the object and releases it.
-        """
-        # self.inmemory_objects.pop(object_id) # Maybe this?
-        del self.inmemory_objects[object_id]
+    #     Even if we remove it from the heap the object won't be Garbage collected
+    #     untill HeapManager flushes the object and releases it.
+    #     """
+    #     # self.inmemory_objects.pop(object_id) # Maybe this?
+    #     del self.inmemory_objects[object_id]
 
-    def keys(self):
-        return self.inmemory_objects.keys()
+    # def keys(self):
+    #     return self.inmemory_objects.keys()
 
     #####
 
@@ -117,16 +122,16 @@ class HeapManager(threading.Thread):
                 num_loaded_objs = num_loaded_objs + 1
         return num_loaded_objs
 
+    #####################################
     # BackendHeapManager specific methods
+    #####################################
 
-    def retain_in_heap(self, dc_object):
+    def retain_in_heap(self, dc_obj):
         """Add a new Hard reference to the object provided. All code in stubs/exec classes using objects in dataClay heap are
         using weak references. In order to avoid objects to be GC without a flush in DB, HeapManager has hard-references to
         them and is the only one able to release them. This function creates the hard-reference.
         """
-        if dc_object._dc_id not in self.retained_objects_id:
-            self.retained_objects_id.add(dc_object._dc_id)
-            self.retained_objects.append(dc_object)
+        self.loaded_objects[dc_obj._dc_id] = dc_obj
 
     def release_from_heap(self, dc_obj):
         """Release hard reference to object provided.
@@ -135,8 +140,7 @@ class HeapManager(threading.Thread):
         """
         logger.debug("Releasing object with id %s from retained map. ", dc_obj._dc_id)
         try:
-            self.retained_objects_id.remove(dc_obj._dc_id)
-            self.retained_objects.remove(dc_obj)
+            del self.loaded_objects[dc_obj._dc_id]
         except Exception as e:
             logger.debug("Releasing object with id %s ", dc_obj._dc_id)
 
@@ -308,46 +312,37 @@ class HeapManager(threading.Thread):
         # TODO: set dataset for GC if set by user
 
     def run_task(self):
-        """
-        @postcondition: Check Python VM's memory pressure and clean if necessary. Cleaning means flushing objects, setting
+        """Check Python VM's memory pressure and clean if necessary. Cleaning means flushing objects, setting
         all fields to none (to allow GC to work better) and remove from retained references. If volatile or pending to register,
         we remove it once registered.
         """
         if self.is_flushing_all or self.is_processing_gc:
             logger.debug("[==GC==] Not running since is being processed or flush all is being done")
             return
+
         # No race condition possible here since there is a time interval for run_gc that MUST be > than time spend to check
         # flag and set to True. Should we do it atomically?
         self.is_processing_gc = True
         try:
-            logger.trace("[==GC==] Running GC")
+            logger.debug("[==GC==] Running GC")
 
             if self.__check_memory_pressure():
                 logger.debug("System memory is under pressure, proceeding to clean up objects")
-                if (
-                    logger.isEnabledFor(logging.DEBUG)
-                    and tracemalloc is not None
-                    and tracemalloc.is_tracing()
-                ):
-                    logger.debug("Doing a snapshot...")
-                    snapshot = tracemalloc.take_snapshot()
-                    top_stats = snapshot.statistics("lineno")
 
-                    print("[ Top 10 ]")
-                    for stat in top_stats[:10]:
-                        print(stat)
+                # if (
+                #     logger.isEnabledFor(logging.DEBUG)
+                #     and tracemalloc is not None
+                #     and tracemalloc.is_tracing()
+                # ):
+                #     logger.debug("Doing a snapshot...")
+                #     snapshot = tracemalloc.take_snapshot()
+                #     top_stats = snapshot.statistics("lineno")
 
-                """
-                TODO: CORRECT THESE LOGS
-                cur_frame = sys._getframe(0)
-                logger.debug("[==GC==] Is enabled? %s", str(gc.isenabled()))
-                logger.debug("[==GC==] Is retained objects tracked? %s", str(gc.is_tracked(self.retained_objects)))
-                logger.debug("[==GC==] Inmemory map %s", str(id(HeapManager.get_heap(self))))
-                logger.debug("[==GC==] Retained map %s", str(id(self.retained_objects)))
-                logger.debug("[==GC==] Threshold: %s", str(gc.get_threshold()))
-                logger.debug("[==GC==] Count: %s", str(gc.get_count()))
-                logger.debug("[==GC==] Current frame ID: %s", str(id(cur_frame)))
-                """
+                #     print("[ Top 10 ]")
+                #     for stat in top_stats[:10]:
+                #         print(stat)
+
+                # TODO: Add some logs
 
                 # Copy the references in order to process it in a plain fashion
                 retained_objects_copy = self.retained_objects[:]
@@ -366,72 +361,32 @@ class HeapManager(threading.Thread):
                     #     )
                     #     continue
 
-                    if dc_obj._dc_id in self.runtime.volatiles_under_deserialization:
-                        logger.trace("[==GC==] Not collecting since it is under deserialization.")
-                        continue
+                    # if dc_obj._dc_id in self.runtime.volatiles_under_deserialization:
+                    #     logger.trace("[==GC==] Not collecting since it is under deserialization.")
+                    #     continue
 
-                    """ 
-                    logger.debug("[==GC==] Object address in memory: %s", str(id(dc_obj)))
-                    logger.debug("[==GC==] Is tracked? %s", str(gc.is_tracked(dc_obj)))
-                    for r in gc.get_referents(dc_obj):
-                        if r == self.retained_objects:
-                            logger.debug("[==GC==] REFERENT BEFORE CLEAN FOR %s is retained map. ", (dc_obj._dc_id))
-                        elif r == HeapManager.get_heap(self):
-                            logger.debug("[==GC==] REFERENT BEFORE CLEAN FOR %s is inmemory map. ", (dc_obj._dc_id)) 
-                        else:
-                            logger.debug("[==GC==] REFERENT BEFORE CLEAN FOR %s is: %s ", (dc_obj._dc_id, str(id(r))))
-                            # logger.debug("[==GC==] REFERENT BEFORE CLEAN FOR %s is: %s ", (dc_obj._dc_id, pprint.pformat(r)))
-                    for r in gc.get_referrers(dc_obj):
-                        if r == self.retained_objects:
-                            logger.debug("[==GC==] REFERRER BEFORE CLEAN FOR %s is retained map. ", (dc_obj._dc_id))
-                        elif r == HeapManager.get_heap(self):
-                            logger.debug("[==GC==] REFERRER BEFORE CLEAN FOR %s is inmemory map. ", (dc_obj._dc_id))
-                        else:
-                            logger.debug("[==GC==] REFERRER BEFORE CLEAN FOR %s is: %s ", (dc_obj._dc_id, str(id(r))))
-                            # logger.debug("[==GC==] REFERRER BEFORE CLEAN FOR %s is: %s ", (dc_obj._dc_id, pprint.pformat(r)))
-                    """
                     self.__clean_object(dc_obj)
-                    """
-                    for r in gc.get_referents(dc_obj):
-                        if r == self.retained_objects:
-                            logger.debug("[==GC==] REFERENT FOR %s is retained map. ", (dc_obj._dc_id))
-                        elif r == HeapManager.get_heap(self):
-                            logger.debug("[==GC==] REFERENT FOR %s is inmemory map. ", (dc_obj._dc_id))
-                        else:
-                            logger.debug("[==GC==] REFERENT FOR %s is: %s ", (dc_obj._dc_id, str(id(r))))
-                            # logger.debug("[==GC==] REFERENTS FOR %s is: %s ", (dc_obj._dc_id, pprint.pformat(r)))
-                    """
-                    """
-                    for r in gc.get_referrers(dc_obj):
-                        if r == self.retained_objects:
-                            logger.debug("[==GC==] REFERRER FOR %s is retained map. ", (dc_obj._dc_id))
-                        elif r == HeapManager.get_heap(self):
-                            logger.debug("[==GC==] REFERRER FOR %s is inmemory map. ", (dc_obj._dc_id))
-                        else:
-                            logger.debug("[==GC==] ID REFERRER FOR %s is: %s ", (dc_obj._dc_id, str(id(r))))
-                            logger.debug("[==GC==] REFERRER FOR %s are: %s ", (dc_obj._dc_id, pprint.pformat(r)))
-                    """
                     del dc_obj  # Remove reference from Frame
 
                     # Big heaps
-                    n = gc.collect()
-                    if logger.isEnabledFor(logging.DEBUG) or logger.isEnabledFor(logging.TRACE):
-                        if n > 0:
-                            logger.debug("[==GC==] Collected %d", n)
-                        else:
-                            logger.trace("[==GC==] No objects collected")
-                        if gc.garbage:
-                            logger.debug("[==GC==] Uncollectable: %s", gc.garbage)
-                        else:
-                            logger.trace("[==GC==] No uncollectable objects")
+                    # n = gc.collect()
+                    # if logger.isEnabledFor(logging.DEBUG) or logger.isEnabledFor(logging.TRACE):
+                    #     if n > 0:
+                    #         logger.debug("[==GC==] Collected %d", n)
+                    #     else:
+                    #         logger.trace("[==GC==] No objects collected")
+                    #     if gc.garbage:
+                    #         logger.debug("[==GC==] Uncollectable: %s", gc.garbage)
+                    #     else:
+                    #         logger.trace("[==GC==] No uncollectable objects")
 
                     # Check memory
                     at_ease = self.__check_memory_ease()
                     if at_ease:
-                        logger.trace("[==GC==] Not collecting since memory is 'at ease' now")
+                        logger.debug("Not collecting since memory is 'at ease' now")
                         break
                     if self.is_flushing_all:
-                        logger.debug("[==GC==] Interrupted due to flush all.")
+                        logger.debug("Interrupted due to flush all.")
                         break
                 else:
                     # This block is only entered when the while has finished (with no break statement)
@@ -443,8 +398,6 @@ class HeapManager(threading.Thread):
                 logger.debug(
                     "Finishing iteration with #%d retained objects", len(self.retained_objects)
                 )
-
-                self.cleanReferencesAndLockers()
 
                 # For cyclic references
                 n = gc.collect()

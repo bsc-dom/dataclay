@@ -125,14 +125,11 @@ class DataClayObject:
     _dc_class: type
     _dc_class_name: str
     _dc_is_persistent: bool
-    _dc_master_ee_id: UUID
-    _dc_replica_ee_ids: list[UUID]
-    _dc_language: int
+    _dc_backend_id: UUID
+    _dc_replica_backend_ids: list[UUID]
     _dc_is_read_only: bool
     _dc_is_dirty: bool
-    _dc_is_pending_to_register: bool
     _dc_is_loaded: bool
-    _dc_owner_session_id: UUID
 
     def __init_subclass__(cls) -> None:
         """Defines a @property for each annotatted attribute"""
@@ -143,46 +140,36 @@ class DataClayObject:
     def __new__(cls, *args, **kwargs):
         logger.debug(f"Crated new dataclay object with args={args}, kwargs={kwargs}")
         obj = super().__new__(cls)
-        obj.initialize_object()
+        obj.set_default_fields()
+        get_runtime().add_to_heap(obj)
+
+        if get_runtime().is_exec_env():
+            obj.make_persistent()
+
         return obj
 
     @classmethod
-    def new_volatile(cls, **kwargs):
+    def new_proxy_object(cls, **kwargs):
         obj = super().__new__(cls)
-
-        new_dict = kwargs
-
-        if get_runtime().is_exec_env():
-            # *** Execution Environment flags
-            obj._dc_is_pending_to_register = True
-            new_dict["_dc_is_persistent"] = True  # All objects in the EE are persistent
-            new_dict["_dc_is_loaded"] = True
-            new_dict["_dc_is_pending_to_register"] = True
-            new_dict["_dc_master_ee_id"] = get_runtime().get_hint()  # It should be in kwargs
-
-        obj.initialize_object(**new_dict)
+        obj.set_default_fields()
+        obj.__dict__.update(kwargs)
         return obj
 
-    @classmethod
-    def new_persistent(cls, object_id, master_ee_id):
-        obj = super().__new__(cls)
+    def set_default_fields(self):
+        # Metadata fields
+        self._dc_id = uuid.uuid4()
+        self._dc_alias = None
+        self._dc_dataset_name = None
+        self._dc_class_name = self.__class__.__module__ + "." + self.__class__.__name__
+        self._dc_backend_id = None
+        self._dc_replica_backend_ids = []
+        self._dc_is_read_only = False  # Remove it?
 
-        new_dict = {}
-        new_dict["_dc_is_persistent"] = True
-        new_dict["_dc_id"] = object_id
-        new_dict["_dc_master_ee_id"] = master_ee_id
-
-        if get_runtime().is_exec_env():
-            # *** Execution Environment flags
-            # by default, loaded = true for volatiles created inside executions
-            # this function (initialize as persistent) is used for objects being
-            # deserialized and therefore they might be unloaded
-            # same happens for pending to register flag.
-            new_dict["_dc_is_loaded"] = False
-            new_dict["_dc_is_pending_to_register"] = False
-
-        obj.initialize_object(**new_dict)
-        return obj
+        # Extra fields
+        self._dc_class = self.__class__
+        self._dc_is_persistent = False  # cannot be unset (unregistered)
+        self._dc_is_loaded = True
+        self._dc_is_dirty = False  # Is it used, should be removed?
 
     def initialize_object(self, **kwargs):
         """Initializes the object"""
@@ -190,22 +177,17 @@ class DataClayObject:
         # Populate default internal fields
         self._dc_id = uuid.uuid4()
         self._dc_alias = None
-        self._dc_dataset_name = get_runtime().session.dataset_name
+        self._dc_dataset_name = None
         self._dc_class = self.__class__
         self._dc_class_name = self.__class__.__module__ + "." + self.__class__.__name__
         self._dc_is_persistent = False
-        self._dc_master_ee_id = (
+        self._dc_backend_id = (
             get_runtime().get_hint()
         )  # May be replaced if instantiating a thing object from different ee
-        self._dc_replica_ee_ids = []
-        self._dc_language = LANG_PYTHON
+        self._dc_replica_backend_ids = []
         self._dc_is_read_only = False
-        self._dc_is_dirty = False
-        self._dc_is_pending_to_register = False
+        self._dc_is_dirty = False  # Is it used, should be removed?
         self._dc_is_loaded = True
-        self._dc_owner_session_id = (
-            get_runtime().session.id
-        )  # May be removed to instantiate dc object without init()
 
         # Update object dict with custome kwargs
         self.__dict__.update(kwargs)
@@ -235,9 +217,9 @@ class DataClayObject:
             self._dc_alias,
             self._dc_dataset_name,
             self._dc_class_name,
-            self._dc_master_ee_id,
-            self._dc_replica_ee_ids,
-            self._dc_language,
+            self._dc_backend_id,
+            self._dc_replica_backend_ids,
+            LANG_PYTHON,
             self._dc_is_read_only,
         )
 
@@ -246,8 +228,8 @@ class DataClayObject:
         self._dc_id = object_md.id
         self._dc_alias = object_md.alias_name
         self._dc_dataset_name = object_md.dataset_name
-        self._dc_master_ee_id = object_md.master_ee_id
-        self._dc_replica_ee_ids = object_md.replica_ee_ids
+        self._dc_backend_id = object_md.backend_id
+        self._dc_replica_backend_ids = object_md.replica_backend_ids
         self._dc_is_read_only = object_md.is_read_only
 
     ################
@@ -256,13 +238,13 @@ class DataClayObject:
 
     def new_replica(self, backend_id=None, recursive=True):
         return get_runtime().new_replica(
-            self._dc_id, self._dc_master_ee_id, backend_id, None, recursive
+            self._dc_id, self._dc_backend_id, backend_id, None, recursive
         )
 
     def new_version(self, backend_id=None, recursive=True):
         return get_runtime().new_version(
             self._dc_id,
-            self._dc_master_ee_id,
+            self._dc_backend_id,
             self._dc_class_name,
             self._dc_dataset_name,
             backend_id,
@@ -272,7 +254,7 @@ class DataClayObject:
 
     def consolidate_version(self):
         """Consolidate: copy contents of current version object to original object"""
-        return get_runtime().consolidate_version(self._dc_id, self._dc_master_ee_id)
+        return get_runtime().consolidate_version(self._dc_id, self._dc_backend_id)
 
     def set_all(self, from_object):
         raise ("set_all need to be refactored")
@@ -355,15 +337,15 @@ class DataClayObject:
 
             return "%s:%s:%s" % (
                 self._dc_id,
-                self._dc_master_ee_id,
+                self._dc_backend_id,
                 self._dc_class_name,
             )
         else:
             return None
 
     @classmethod
-    def get_object_by_id(cls, object_id: UUID, master_ee_id: UUID = None):
-        return get_runtime().get_object_by_id(object_id, cls, master_ee_id)
+    def get_object_by_id(cls, object_id: UUID, backend_id: UUID = None):
+        return get_runtime().get_object_by_id(object_id, cls, backend_id)
 
     @classmethod
     def get_by_alias(cls, alias, dataset_name=None):
@@ -393,8 +375,8 @@ class DataClayObject:
             get_runtime().update_object_metadata(self)
 
         backends = set()
-        backends.add(self._dc_master_ee_id)
-        backends.update(self._dc_replica_ee_ids)
+        backends.add(self._dc_backend_id)
+        backends.update(self._dc_replica_backend_ids)
         return backends
 
     # TODO: Implement it?
@@ -418,7 +400,7 @@ class DataClayObject:
     # DEPRECATED
     def get_root_location(self):
         # return self.__dclay_instance_extradata.root_location
-        return self._dc_master_ee_id
+        return self._dc_backend_id
 
     # DEPRECATED
     def set_root_location(self, new_root_location):
@@ -428,7 +410,7 @@ class DataClayObject:
     # DEPRECATED
     def get_origin_location(self):
         # return self.__dclay_instance_extradata.origin_location
-        return self._dc_master_ee_id
+        return self._dc_backend_id
 
     # DEPRECATED
     def set_origin_location(self, new_origin_location):
@@ -436,18 +418,18 @@ class DataClayObject:
         pass
 
     def add_replica_location(self, new_replica_location):
-        replica_locations = self._dc_replica_ee_ids
+        replica_locations = self._dc_replica_backend_ids
         if replica_locations is None:
             replica_locations = list()
-            self._dc_replica_ee_ids = replica_locations
+            self._dc_replica_backend_ids = replica_locations
         replica_locations.append(new_replica_location)
 
     def remove_replica_location(self, old_replica_location):
-        replica_locations = self._dc_replica_ee_ids
+        replica_locations = self._dc_replica_backend_ids
         replica_locations.remove(old_replica_location)
 
     def clear_replica_locations(self):
-        replica_locations = self._dc_replica_ee_ids
+        replica_locations = self._dc_replica_backend_ids
         if replica_locations is not None:
             replica_locations.clear()
 
@@ -478,7 +460,7 @@ class DataClayObject:
         Detach object from session, i.e. remove reference from current session provided to current object,
             'dear garbage-collector, the current session is not using this object anymore'
         """
-        get_runtime().detach_object_from_session(self._dc_id, self._dc_master_ee_id)
+        get_runtime().detach_object_from_session(self._dc_id, self._dc_backend_id)
 
     #################
     # Serialization #
@@ -503,7 +485,7 @@ class DataClayObject:
         # TODO: use padding instead once new serialization is implemented
         IntegerWrapper().write(io_file, 0)
 
-        cur_master_loc = self._dc_master_ee_id
+        cur_master_loc = self._dc_backend_id
         if cur_master_loc is not None:
             StringWrapper().write(io_file, str(cur_master_loc))
         else:
@@ -610,9 +592,9 @@ class DataClayObject:
         """ deserialize master_location """
         des_master_loc_str = StringWrapper().read(io_file)
         if des_master_loc_str == "x":
-            self._dc_master_ee_id = None
+            self._dc_backend_id = None
         else:
-            self._dc_master_ee_id = UUID(des_master_loc_str)
+            self._dc_backend_id = UUID(des_master_loc_str)
 
         if hasattr(self, "__setstate__"):
             # The object has a user-defined deserialization method.
@@ -688,7 +670,7 @@ class DataClayObject:
 
         return self.get_object_by_id, (
             self._dc_id,
-            self._dc_master_ee_id,
+            self._dc_backend_id,
         )
 
     def __repr__(self):

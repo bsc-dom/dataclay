@@ -70,7 +70,7 @@ class BackendAPI:
         self.set_local_session(session_id)
 
         # Deserialize __dict__
-        dict = pickle.loads(serialized_dict)
+        object_dict = pickle.loads(serialized_dict)
 
         # NOTE: In case of circular dependencies, it is possible that
         # the volatile object is stored in the heap as a persistent object.
@@ -79,14 +79,21 @@ class BackendAPI:
         # This new_make_persistent should send all the objects (even with circular dependencies)
         # in one call to the EE
         try:
-            instance = self.runtime.inmemory_objects[dict["_dc_id"]]
-            instance.__dict__.update(dict)
-            instance._dc_is_persistent = True  # All objects in the EE are persistent
-            instance._dc_is_loaded = True
-            instance._dc_is_pending_to_register = True
-            instance._dc_master_ee_id = self.runtime.get_hint()  # It should be already defined
+            instance = self.runtime.inmemory_objects[object_dict["_dc_id"]]
+            object_dict |= {
+                "_dc_is_persistent": True,
+                "_dc_is_loaded": True,
+                "_dc_backend_id": self.backend_id,
+            }
+            instance.__dict__.update(object_dict)
         except KeyError:
-            instance = dict["_dc_class"].new_volatile(**dict)
+            object_dict |= {
+                "_dc_is_persistent": True,
+                "_dc_is_loaded": True,
+                "_dc_backend_id": self.backend_id,
+            }
+            instance = object_dict["_dc_class"].new_proxy_object(**object_dict)
+            self.runtime.add_to_heap(instance)
 
         print("\n*** unpickled_obj:", type(instance))
         print("*** unpickled_obj:", instance._dc_id)
@@ -300,7 +307,7 @@ class BackendAPI:
             for obj_found in serialized_objs:
                 logger.debug("[==MoveObjects==] Looking for metadata of %s", obj_found[0])
                 object_md = self.get_object_metadata(obj_found[0])
-                obj_location = object_md.master_ee_id
+                obj_location = object_md.backend_id
 
                 if obj_location == dest_backend_id:
                     logger.debug(
@@ -454,7 +461,7 @@ class BackendAPI:
                     calling_backend_id=self.backend_id,
                 )
 
-        replica_locations = instance._dc_replica_ee_ids
+        replica_locations = instance._dc_replica_backend_ids
         if replica_locations is not None:
             logger.debug(f"Found replica locations {replica_locations}")
             for replica_location in replica_locations:
@@ -779,15 +786,15 @@ class BackendAPI:
 
             # update_replica_locs = 1 means new replica/federation
             if dest_replica_backend_id is not None and update_replica_locs == 1:
-                if current_obj._dc_replica_ee_ids is not None:
-                    if dest_replica_backend_id in current_obj._dc_replica_ee_ids:
+                if current_obj._dc_replica_backend_ids is not None:
+                    if dest_replica_backend_id in current_obj._dc_replica_backend_ids:
                         # already replicated
                         logger.debug(f"WARNING: Found already replicated object {oid}. Skipping")
                         return None
 
             # Add object to result and obtained_objs for return and recursive
             obj_with_data = SerializationLibUtilsSingleton.serialize_dcobj_with_data(
-                current_obj, pending_objs, False, current_obj._dc_master_ee_id, self.runtime, False
+                current_obj, pending_objs, False, current_obj._dc_backend_id, self.runtime, False
             )
 
             if dest_replica_backend_id is not None and update_replica_locs == 1:
@@ -839,7 +846,7 @@ class BackendAPI:
             if hint is None:
                 logger.debug(f"[==GetObjectsInOtherBackend==] Looking for metadata of {object_id}")
                 object_md = self.get_object_metadata(object_id)
-                hint = object_md.master_ee_id
+                hint = object_md.backend_id
             try:
                 objects_in_backend = objects_per_backend[hint]
             except KeyError:
@@ -1063,7 +1070,7 @@ class BackendAPI:
 
             object_id = curr_obj_with_ids[0]
             object_md = self.get_object_metadata(object_id)
-            location = object_md.master_ee_id
+            location = object_md.backend_id
             # Update object at first location (NOT UPDATING REPLICAS!!!)
             try:
                 objects_in_backend = objects_per_backend[location]

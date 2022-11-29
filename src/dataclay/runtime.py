@@ -123,6 +123,10 @@ class DataClayRuntime(ABC):
     def make_persistent(self, instance, alias, backend_id, recursive):
         pass
 
+    @abstractmethod
+    def add_to_heap(self, instance: DataClayObject):
+        pass
+
     ########
     # Heap #
     ########
@@ -163,7 +167,7 @@ class DataClayRuntime(ABC):
     def update_object(self, into_object, from_object):
         session_id = self.session.id
 
-        backend_id = into_object._dc_master_ee_id
+        backend_id = into_object._dc_backend_id
         try:
             ee_client = self.backend_clients[backend_id]
         except KeyError:
@@ -227,15 +231,15 @@ class DataClayRuntime(ABC):
     ###################
 
     def get_object_by_id(
-        self, object_id: UUID, cls: type[DataClayObject] = None, master_ee_id: UUID = None
+        self, object_id: UUID, cls: type[DataClayObject] = None, backend_id: UUID = None
     ):
-        """Get object instance directly from an object id, use class id and master_ee_id in
+        """Get object directly from an object id, use class id and backend_id in
         case it is still not registered.
 
         Args:
             object_id: id of the object to get
             class_id: class id of the object to get
-            master_ee_id: master_ee_id of the object to get
+            backend_id: backend_id of the object to get
         Returns:
             object instance
         """
@@ -249,17 +253,25 @@ class DataClayRuntime(ABC):
                 try:
                     return self.inmemory_objects[object_id]
                 except KeyError:
-                    # Import class if None
-                    if cls is None or master_ee_id is None:
+                    # Imports class if None
+                    if cls is None or backend_id is None:
                         object_md = self.metadata_service.get_object_md_by_id(
                             object_id, self.session.id
                         )
                         module_name, class_name = object_md.class_name.rsplit(".", 1)
                         m = importlib.import_module(module_name)
                         cls = getattr(m, class_name)
-                        master_ee_id = object_md.master_ee_id
+                        backend_id = object_md.backend_id
 
-                    return cls.new_persistent(object_id, master_ee_id)
+                    # assert backend_id != self.get_hint() # TODO: Uncomment when new batch make_persistent
+                    proxy_object = cls.new_proxy_object(
+                        _dc_id=object_id,
+                        _dc_backend_id=backend_id,
+                        _dc_is_persistent=True,
+                        _dc_is_loaded=False,
+                    )
+                    self.add_to_heap(proxy_object)
+                    return proxy_object
 
     def get_object_by_alias(self, alias, dataset_name=None):
         """Get object instance from alias"""
@@ -275,7 +287,7 @@ class DataClayRuntime(ABC):
         m = importlib.import_module(module_name)
         cls = getattr(m, class_name)
 
-        return self.get_object_by_id(object_md.id, cls, object_md.master_ee_id)
+        return self.get_object_by_id(object_md.id, cls, object_md.backend_id)
 
     def get_backend_id_by_object_id(self, object_id):
         backend_ids = list(self.get_all_execution_environments_at_dataclay(self.dataclay_id))
@@ -297,12 +309,12 @@ class DataClayRuntime(ABC):
         locations = set()
         try:
             instance = self.inmemory_objects[object_id]
-            locations.add(instance._dc_master_ee_id)
-            locations.update(instance._dc_replica_ee_ids)
+            locations.add(instance._dc_backend_id)
+            locations.update(instance._dc_replica_backend_ids)
         except KeyError:
             object_md = self.metadata_service.get_object_md_by_id(object_id, self.session.id)
-            locations.add(object_md.master_ee_id)
-            locations.update(object_md.replica_ee_ids)
+            locations.add(object_md.backend_id)
+            locations.update(object_md.replica_backend_ids)
         return locations
 
     def update_object_metadata(self, instance):
@@ -468,7 +480,7 @@ class DataClayRuntime(ABC):
         # self.volatile_parameters_being_send to avoid race conditon.
         # May be necessary a custom pickle.Pickler
 
-        backend_client = self.get_backend_client(instance._dc_master_ee_id)
+        backend_client = self.get_backend_client(instance._dc_backend_id)
 
         serialized_response = backend_client.call_active_method(
             self.session.id, instance._dc_id, method_name, serialized_args, serialized_kwargs
@@ -543,11 +555,11 @@ class DataClayRuntime(ABC):
                     logger.debug("Exception dataclay during execution. Retrying...")
                     logger.debug(str(dce))
 
-                    locations = instance._dc_replica_ee_ids
+                    locations = instance._dc_replica_backend_ids
                     if locations is None or len(locations) == 0:
                         try:
                             self.update_object_metadata(instance)
-                            locations = instance._dc_replica_ee_ids
+                            locations = instance._dc_replica_backend_ids
                             new_location = False
                         except DataClayException:
                             locations = None
@@ -569,7 +581,7 @@ class DataClayRuntime(ABC):
                     if not new_location:
                         exec_env_id = next(iter(locations))
                     if using_hint:
-                        instance._dc_master_ee_id = exec_env_id
+                        instance._dc_backend_id = exec_env_id
                     logger.debug(
                         "[==Miss Jump==] MISS. The object %s was not in the exec.location %s. Retrying execution."
                         % (instance._dc_id, str(exec_env_id))
@@ -588,7 +600,7 @@ class DataClayRuntime(ABC):
                     # in the same location as the object with the method to execute
                     # ===========================================================
                     param_instance = self.inmemory_objects[param.object_id]
-                    param_instance._dc_master_ee_id = exec_env_id
+                    param_instance._dc_backend_id = exec_env_id
                 self.volatile_parameters_being_send.remove(param.object_id)
 
         if not executed:
@@ -621,7 +633,7 @@ class DataClayRuntime(ABC):
     def get_copy_of_object(self, from_object, recursive):
         session_id = self.session.id
 
-        backend_id = from_object._dc_master_ee_id
+        backend_id = from_object._dc_backend_id
         try:
             ee_client = self.backend_clients[backend_id]
         except KeyError:
@@ -659,7 +671,7 @@ class DataClayRuntime(ABC):
         if hint is None:
             instance = self.inmemory_objects[object_id]
             self.update_object_metadata(instance)
-            hint = instance._dc_master_ee_id
+            hint = instance._dc_backend_id
 
         dest_backend_id = backend_id
         dest_backend = None
