@@ -177,7 +177,7 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
 
     def MakePersistent(self, request, context):
         try:
-            self.backend.make_persistent(UUID(request.session_id), request.pickled_obj)
+            self.backend.make_persistent(UUID(request.session_id), list(request.pickled_obj))
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)

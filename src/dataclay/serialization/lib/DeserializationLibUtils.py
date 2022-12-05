@@ -81,7 +81,7 @@ class DeserializationLibUtils(object):
         cur_deser_python_objs = dict()
         io_file = BytesIO(data)
         object_to_fill._dc_is_loaded = True
-        object_to_fill._dc_is_persistent = True
+        object_to_fill._dc_is_registered = True
         object_to_fill.set_original_object_id(metadata.orig_object_id)
         object_to_fill.set_origin_location(metadata.origin_location)
         object_to_fill.set_root_location(metadata.root_location)
@@ -160,7 +160,7 @@ class DeserializationLibUtils(object):
                 io_file, instance, None, metadata, cur_deser_python_objs
             )
             io_file.close()
-            instance._dc_is_persistent = False
+            instance._dc_is_registered = False
             instance._dc_backend_id = None
             instance.set_original_object_id(metadata.orig_object_id)
             instance.set_origin_location(metadata.origin_location)
@@ -207,7 +207,7 @@ class DeserializationLibUtils(object):
                 )
                 io_file.close()
                 instance._dc_is_loaded = True
-                instance._dc_is_persistent = True
+                instance._dc_is_registered = True
                 instance.set_original_object_id(metadata.orig_object_id)
                 instance.set_origin_location(metadata.origin_location)
                 instance.set_root_location(metadata.root_location)
@@ -294,7 +294,7 @@ class DeserializationLibUtils(object):
             logger.debug("Deserializing persistent object with object ID %s" % str(object_id))
 
             deserialized_param = runtime.get_or_new_persistent_instance(object_id, class_id, hint)
-            deserialized_param._dc_is_persistent = True
+            deserialized_param._dc_is_registered = True
             if i < num_params:
                 params[i] = deserialized_param
                 # Set hint in metadata (ToDo: create general getOrNewInstance)

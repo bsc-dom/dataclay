@@ -107,13 +107,10 @@ class DataClayRuntime(ABC):
             self._dataclay_id = self.metadata_service.get_dataclay_id()
         return self._dataclay_id
 
-    def is_exec_env(self):
-        # BackendRuntime must override to True.
-        return False
-
-    def is_client(self):
-        # ClientRuntime must override to True
-        return False
+    @property
+    @abstractmethod
+    def is_backend(self):
+        pass
 
     ##
     # Common runtime API
@@ -253,25 +250,54 @@ class DataClayRuntime(ABC):
                 try:
                     return self.inmemory_objects[object_id]
                 except KeyError:
-                    # Imports class if None
-                    if cls is None or backend_id is None:
-                        object_md = self.metadata_service.get_object_md_by_id(
-                            object_id, self.session.id
-                        )
-                        module_name, class_name = object_md.class_name.rsplit(".", 1)
-                        m = importlib.import_module(module_name)
-                        cls = getattr(m, class_name)
-                        backend_id = object_md.backend_id
 
-                    # assert backend_id != self.get_hint() # TODO: Uncomment when new batch make_persistent
-                    proxy_object = cls.new_proxy_object(
-                        _dc_id=object_id,
-                        _dc_backend_id=backend_id,
-                        _dc_is_persistent=True,
-                        _dc_is_loaded=False,
+                    # NOTE: It will fail in the current make_persistent
+                    # since when cycles, we are sending a supposed
+                    # registered object which is not
+
+                    object_md = self.metadata_service.get_object_md_by_id(
+                        object_id, self.session.id
                     )
-                    self.add_to_heap(proxy_object)
+                    module_name, class_name = object_md.class_name.rsplit(".", 1)
+                    m = importlib.import_module(module_name)
+                    cls = getattr(m, class_name)
+
+                    proxy_object = cls.new_proxy_object()
+                    proxy_object.metadata = object_md
+
+                    if self.is_backend and proxy_object._dc_backend_id == settings.DC_BACKEND_ID:
+                        proxy_object._dc_is_local = True
+                    else:
+                        proxy_object._dc_is_local = False
+
+                    proxy_object._dc_is_loaded = False
+                    proxy_object._dc_is_registered = True
+
+                    logger.debug("Added new object to inmemory_objects")
+                    # Since it is no loaded, we only add it to the inmemory list
+                    self.inmemory_objects[proxy_object._dc_id] = proxy_object
                     return proxy_object
+
+                    # OLD OLD OLD
+                    # Imports class if None
+                    # if cls is None or backend_id is None:
+                    #     object_md = self.metadata_service.get_object_md_by_id(
+                    #         object_id, self.session.id
+                    #     )
+                    #     module_name, class_name = object_md.class_name.rsplit(".", 1)
+                    #     m = importlib.import_module(module_name)
+                    #     cls = getattr(m, class_name)
+                    #     backend_id = object_md.backend_id
+
+                    # # assert backend_id != self.get_hint() # TODO: Uncomment when new batch make_persistent
+                    # proxy_object = cls.new_proxy_object(
+                    #     _dc_id=object_id,
+                    #     _dc_backend_id=backend_id,
+                    #     _dc_is_registered=True,
+                    #     _dc_is_loaded=False,
+                    # )
+                    # self.add_to_heap(proxy_object)
+                    # return proxy_object
 
     def get_object_by_alias(self, alias, dataset_name=None):
         """Get object instance from alias"""
@@ -360,7 +386,7 @@ class DataClayRuntime(ABC):
 
     def update_backend_clients(self):
         self.ee_infos = self.metadata_service.get_all_execution_environments(
-            LANG_PYTHON, from_backend=self.is_exec_env()
+            LANG_PYTHON, from_backend=self.is_backend
         )
         new_backend_clients = {}
 
@@ -384,7 +410,7 @@ class DataClayRuntime(ABC):
 
     def update_ee_infos(self):
         self.ee_infos = self.metadata_service.get_all_execution_environments(
-            LANG_PYTHON, from_backend=self.is_exec_env()
+            LANG_PYTHON, from_backend=self.is_backend
         )
 
     def get_execution_environment_info(self, ee_id):
@@ -440,36 +466,6 @@ class DataClayRuntime(ABC):
     ####################
     # Remote execution #
     ####################
-
-    def run_remote(self, object_id, backend_id, operation_name, value):
-        session_id = self.session.id
-        implementation_id = self.get_implementation_id(object_id, operation_name)
-
-        try:
-            ee_client = self.backend_clients[backend_id]
-        except KeyError:
-            exec_env = self.get_execution_environment_info(backend_id)
-            ee_client = BackendClient(exec_env.hostname, exec_env.port)
-            self.backend_clients[backend_id] = ee_client
-
-        operation = self.get_operation_info(object_id, operation_name)
-        serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
-            params=(value,),
-            iface_bitmaps=None,
-            params_spec=operation.params,
-            params_order=operation.paramsOrder,
-            hint_volatiles=None,
-            runtime=self,
-        )
-
-        ret = ee_client.ds_execute_implementation(
-            object_id, implementation_id, session_id, serialized_params
-        )
-
-        if ret is not None:
-            return DeserializationLibUtilsSingleton.deserialize_return(
-                ret, None, operation.returnType, self
-            )
 
     def call_active_method(self, instance, method_name, args: tuple, kwargs: dict):
         import pickle

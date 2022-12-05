@@ -329,7 +329,7 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     @grpc_error_handler
-    def make_persistent(self, session_id: UUID, pickled_obj: bytes):
+    def make_persistent(self, session_id: UUID, pickled_obj: list[bytes]):
         request = dataservice_pb2.MakePersistentRequest(
             session_id=str(session_id), pickled_obj=pickled_obj
         )

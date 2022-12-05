@@ -152,7 +152,7 @@ class SerializationLibUtils(object):
 
                         runtime.add_session_reference(oid)
 
-                        if param._dc_is_persistent:
+                        if param._dc_is_registered:
                             logger.debug("Serializing persistent parameter/return with oid %s", oid)
 
                             class_id = param.get_class_extradata().class_id
@@ -207,7 +207,7 @@ class SerializationLibUtils(object):
                     if oid in already_serialized_params:
                         continue
 
-                    if pending_obj._dc_is_persistent:
+                    if pending_obj._dc_is_registered:
                         logger.debug(
                             "Serializing sub-object persistent parameter/return with oid %s", oid
                         )
@@ -286,7 +286,7 @@ class SerializationLibUtils(object):
             # This algorithm can be improved in both languages, Python and Java.
             if for_update is False:
                 dc_object._dc_backend_id = hint
-                dc_object._dc_is_persistent = True
+                dc_object._dc_is_registered = True
 
             object_with_data = self._create_buffer_and_serialize(
                 dc_object,

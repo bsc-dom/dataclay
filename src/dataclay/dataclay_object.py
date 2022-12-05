@@ -7,23 +7,23 @@ Note that this managers also includes most serialization/deserialization code
 related to classes and function call parameters.
 """
 
+from __future__ import annotations
+
 import functools
 import logging
-import pickle
 import traceback
-import typing
-from inspect import get_annotations
-from collections import ChainMap
 import uuid
+from collections import ChainMap
+from inspect import get_annotations
 from uuid import UUID
 
-from dataclay.metadata.managers.object import ObjectMetadata
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from opentelemetry import trace
 
+from dataclay.metadata.managers.object import ObjectMetadata
 from dataclay.runtime import get_runtime
 
-DCLAY_PROPERTY_PREFIX = "_dc_property_"
+DC_PROPERTY_PREFIX = "_dc_property_"
 
 
 tracer = trace.get_tracer(__name__)
@@ -37,14 +37,9 @@ def activemethod(func):
     def wrapper_activemethod(self, *args, **kwargs):
         logger.debug(f"Calling function {func.__name__}")
         try:
-            # If the object is not persistent executes the method locally,
-            # else, executes the method within the execution environment
-            if (
-                (get_runtime().is_exec_env() and self._dc_is_loaded)
-                or (get_runtime().is_client() and not self._dc_is_persistent)
-                or func.__name__ == "__setstate__"  # For Pickle
-                or func.__name__ == "__getstate__"  # For Pickle
-            ):
+            # If the object is local executes the method locally,
+            # else, executes the method in the backend
+            if self._dc_is_local:
                 return func(self, *args, **kwargs)
             else:
                 response = get_runtime().call_active_method(self, func.__name__, args, kwargs)
@@ -68,48 +63,52 @@ class DataClayProperty:
 
     def __init__(self, property_name):
         self.property_name = property_name
-        self.dc_property_name = DCLAY_PROPERTY_PREFIX + property_name
+        self.dc_property_name = DC_PROPERTY_PREFIX + property_name
 
-    def __get__(self, instance, owner):
-        is_exec_env = get_runtime().is_exec_env()
+    def __get__(self, instance: DataClayObject, owner):
+        """
+        | is_local | is_load |
+        | True     | True    |  B (heap) or C (not persistent)
+        | True     | False   |  B (stored)
+        | False    | True    |  -
+        | False    | False   |  B (remote) or C (persistent)
+        """
 
-        if (is_exec_env and instance._dc_is_loaded) or (
-            not is_exec_env and not instance._dc_is_persistent
-        ):
+        if instance._dc_is_local:
             try:
-                instance._dc_is_dirty = True
-                # set dirty = true for language types like lists, dicts, that are get and modified. TODO: improve this.
+                if not instance._dc_is_loaded:
+                    get_runtime().load_object_from_db(instance)
+
                 return getattr(instance, self.dc_property_name)
             except AttributeError as e:
-                logger.warning(
-                    f"Received AttributeError while accessing property {self.property_name} on instance {instance}"
-                )
-                logger.debug(f"Internal dictionary of the intance: {instance.__dict__}")
                 e.args = (e.args[0].replace(self.dc_property_name, self.property_name),)
                 raise e
         else:
-            return get_runtime().call_active_method(
+            response = get_runtime().call_active_method(
                 instance, "__getattribute__", (self.property_name,), {}
             )
+            if isinstance(response, Exception):
+                raise response
+            return response
 
-    def __set__(self, instance, value):
+    def __set__(self, instance: DataClayObject, value):
         """Setter for the dataClay property
 
         See the __get__ method for the basic behavioural explanation.
         """
         logger.debug(f"Calling setter for property {self.property_name}")
 
-        is_exec_env = get_runtime().is_exec_env()
-        if (is_exec_env and instance._dc_is_loaded) or (
-            not is_exec_env and not instance._dc_is_persistent
-        ):
+        if instance._dc_is_local:
+            if not instance._dc_is_loaded:
+                get_runtime().load_object_from_db(instance)
+
             setattr(instance, self.dc_property_name, value)
-            if is_exec_env:
-                instance._dc_is_dirty = True
         else:
-            get_runtime().call_active_method(
+            response = get_runtime().call_active_method(
                 instance, "__setattr__", (self.property_name, value), {}
             )
+            if isinstance(response, Exception):
+                raise response
 
 
 class DataClayObject:
@@ -124,12 +123,12 @@ class DataClayObject:
     _dc_dataset_name: str
     _dc_class: type
     _dc_class_name: str
-    _dc_is_persistent: bool
+    _dc_is_registered: bool
     _dc_backend_id: UUID
     _dc_replica_backend_ids: list[UUID]
     _dc_is_read_only: bool
-    _dc_is_dirty: bool
     _dc_is_loaded: bool
+    _dc_is_local: bool
 
     def __init_subclass__(cls) -> None:
         """Defines a @property for each annotatted attribute"""
@@ -143,7 +142,7 @@ class DataClayObject:
         obj.set_default_fields()
         get_runtime().add_to_heap(obj)
 
-        if get_runtime().is_exec_env():
+        if get_runtime().is_backend:
             obj.make_persistent()
 
         return obj
@@ -164,12 +163,12 @@ class DataClayObject:
         self._dc_backend_id = None
         self._dc_replica_backend_ids = []
         self._dc_is_read_only = False  # Remove it?
+        self._dc_is_local = True
 
         # Extra fields
         self._dc_class = self.__class__
-        self._dc_is_persistent = False  # cannot be unset (unregistered)
+        self._dc_is_registered = False  # cannot be unset (unregistered)
         self._dc_is_loaded = True
-        self._dc_is_dirty = False  # Is it used, should be removed?
 
     @property
     def dataclay_id(self):
@@ -183,8 +182,8 @@ class DataClayObject:
 
     @property
     def is_persistent(self):
-        """_dc_is_persistent"""
-        return self._dc_is_persistent
+        """_dc_is_registered"""
+        return self._dc_is_registered
 
     @property
     def metadata(self):
@@ -207,6 +206,15 @@ class DataClayObject:
         self._dc_backend_id = object_md.backend_id
         self._dc_replica_backend_ids = object_md.replica_backend_ids
         self._dc_is_read_only = object_md.is_read_only
+
+    def clean_dc_properties(self):
+        """
+        Used to free up space when the client or backend lose ownership of the objects;
+        or the object is being stored and unloaded
+        """
+        self.__dict__ = {
+            k: v for k, v in vars(self).items() if not k.startswith(DC_PROPERTY_PREFIX)
+        }
 
     ################
     # TODO: REFACTOR
@@ -309,7 +317,7 @@ class DataClayObject:
 
         If the object is NOT persistent, then this method returns None.
         """
-        if self._dc_is_persistent:
+        if self._dc_is_registered:
 
             return "%s:%s:%s" % (
                 self._dc_id,
@@ -320,7 +328,7 @@ class DataClayObject:
             return None
 
     @classmethod
-    def get_object_by_id(cls, object_id: UUID, backend_id: UUID = None):
+    def get_by_id(cls, object_id: UUID, backend_id: UUID = None):
         return get_runtime().get_object_by_id(object_id, cls, backend_id)
 
     @classmethod
@@ -340,6 +348,7 @@ class DataClayObject:
         The alias may be removed without the client knowing it.
         Since this method is slow, we use a getter instead of @property
         """
+        # TODO: Refactor somehow so it works in backend and client
         if not self._dc_is_loaded:
             get_runtime().update_object_metadata(self)
 
@@ -438,194 +447,6 @@ class DataClayObject:
         """
         get_runtime().detach_object_from_session(self._dc_id, self._dc_backend_id)
 
-    #################
-    # Serialization #
-    #################
-
-    def serialize(
-        self,
-        io_file,
-        ignore_user_types,
-        iface_bitmaps,
-        cur_serialized_objs,
-        pending_objs,
-        reference_counting,
-    ):
-        raise
-        # Reference counting information
-        # First integer represent the position in the buffer in which
-        # reference counting starts. This is done to avoid "holding"
-        # unnecessary information during a store or update in disk.
-
-        # in new serialization, this will be done through padding
-        # TODO: use padding instead once new serialization is implemented
-        IntegerWrapper().write(io_file, 0)
-
-        cur_master_loc = self._dc_backend_id
-        if cur_master_loc is not None:
-            StringWrapper().write(io_file, str(cur_master_loc))
-        else:
-            StringWrapper().write(io_file, str("x"))
-
-        if hasattr(self, "__getstate__"):
-            # The object has a user-defined serialization method.
-            # Use that
-            last_loaded_flag = self._dc_is_loaded
-            last_persistent_flag = self._dc_is_persistent
-
-            self._dc_is_loaded = True
-            self._dc_is_persistent = False
-
-            # Use pickle to the result of the serialization
-            state = pickle.dumps(self.__getstate__())
-
-            # Leave the previous value, probably False & True`
-            self._dc_is_loaded = last_loaded_flag
-            self._dc_is_persistent = last_persistent_flag
-
-            StringWrapper(mode="binary").write(io_file, state)
-
-        else:
-            # Regular dataClay provided serialization
-            # Get the list of properties, making sure it is sorted
-            properties = sorted(
-                self.get_class_extradata().properties.values(), key=attrgetter("position")
-            )
-
-            logger.debug("Serializing list of properties: %s", properties)
-
-            for p in properties:
-
-                try:
-                    value = object.__getattribute__(self, "%s%s" % (DCLAY_PROPERTY_PREFIX, p.name))
-                except AttributeError:
-                    value = None
-
-                logger.debug("Serializing property %s", p.name)
-
-                if value is None:
-                    BooleanWrapper().write(io_file, False)
-                else:
-                    if isinstance(p.type, UserType):
-                        if not ignore_user_types:
-                            BooleanWrapper().write(io_file, True)
-                            SerializationLibUtilsSingleton.serialize_association(
-                                io_file,
-                                value,
-                                cur_serialized_objs,
-                                pending_objs,
-                                reference_counting,
-                            )
-                        else:
-                            BooleanWrapper().write(io_file, False)
-                    else:
-                        BooleanWrapper().write(io_file, True)
-                        pck = pickle.Pickler(io_file, protocol=-1)
-                        pck.persistent_id = PersistentIdPicklerHelper(
-                            cur_serialized_objs, pending_objs, reference_counting
-                        )
-                        pck.dump(value)
-
-        # Reference counting
-        # TODO: this should be removed in new serialization
-        # TODO: (by using paddings to directly access reference counters inside metadata)
-
-        cur_stream_pos = io_file.tell()
-        io_file.seek(0)
-        IntegerWrapper().write(io_file, cur_stream_pos)
-        io_file.seek(cur_stream_pos)
-        reference_counting.serialize_reference_counting(self, io_file)
-
-    def deserialize(self, io_file, iface_bitmaps, metadata, cur_deserialized_python_objs):
-        """Reciprocal to serialize."""
-        logger.debug("Deserializing object %s", str(self._dc_id))
-
-        # Put slow debugging info inside here:
-        #
-        # NOTE: new implementation of ExecutionGateway assert is not needed and wrong
-        # if logger.isEnabledFor(DEBUG):
-        #     klass = self.__class__
-        #     logger.debug("Deserializing instance %r from class %s",
-        #                  self, klass.__name__)
-        #     logger.debug("The previous class is from module %s, in file %s",
-        #                  klass.__module__, inspect.getfile(klass))
-        #     logger.debug("The class extradata is:\n%s", klass._dclay_class_extradata)
-        #     assert klass._dclay_class_extradata == self._dclay_class_extradata
-        #
-        # LOADED FLAG = TRUE only once deserialization is finished to avoid concurrent problems!
-        # # This may be due to race conditions. It may need to do some extra locking
-        # if self.__dclay_instance_extradata.loaded_flag:
-        #     logger.debug("Loaded Flag is True")
-        # else:
-        #     self.__dclay_instance_extradata.loaded_flag = True
-
-        raise
-
-        """ reference counting """
-        """ discard padding """
-        IntegerWrapper().read(io_file)
-
-        """ deserialize master_location """
-        des_master_loc_str = StringWrapper().read(io_file)
-        if des_master_loc_str == "x":
-            self._dc_backend_id = None
-        else:
-            self._dc_backend_id = UUID(des_master_loc_str)
-
-        if hasattr(self, "__setstate__"):
-            # The object has a user-defined deserialization method.
-
-            state = pickle.loads(StringWrapper(mode="binary").read(io_file))
-            self.__setstate__(state)
-
-        else:
-            # Regular dataClay provided deserialization
-
-            # Start by getting the properties
-            properties = sorted(
-                self.get_class_extradata().properties.values(), key=attrgetter("position")
-            )
-
-            logger.trace("Tell io_file before loop: %s", io_file.tell())
-            logger.debug("Deserializing list of properties: %s", properties)
-
-            for p in properties:
-
-                logger.trace("Tell io_file in loop: %s", io_file.tell())
-                not_null = BooleanWrapper().read(io_file)
-                value = None
-                if not_null:
-                    logger.debug("Not null property %s", p.name)
-                    if isinstance(p.type, UserType):
-                        try:
-                            logger.debug("Property %s is an association", p.name)
-                            value = DeserializationLibUtilsSingleton.deserialize_association(
-                                io_file,
-                                iface_bitmaps,
-                                metadata,
-                                cur_deserialized_python_objs,
-                                get_runtime(),
-                            )
-                        except KeyError as e:
-                            logger.error("Failed to deserialize association", exc_info=True)
-                    else:
-                        try:
-                            upck = pickle.Unpickler(io_file)
-                            upck.persistent_load = PersistentLoadPicklerHelper(
-                                metadata, cur_deserialized_python_objs, get_runtime()
-                            )
-                            value = upck.load()
-                        except:
-                            traceback.print_exc()
-
-                # FIXME: setting value calls __str__ that can cause a remote call!
-                # logger.debug("Setting value %s for property %s", value, p.name)
-
-                object.__setattr__(self, "%s%s" % (DCLAY_PROPERTY_PREFIX, p.name), value)
-
-        """ reference counting bytes here """
-        """ TODO: discard bytes? """
-
     def __reduce__(self):
         """Support for pickle protocol.
 
@@ -640,18 +461,18 @@ class DataClayObject:
         """
         logger.debug("Proceeding to `__reduce__` (Pickle-related) on a DataClayObject")
 
-        if not self._dc_is_persistent:
+        if not self._dc_is_registered:
             logger.debug("Pickling of object is causing a make_persistent")
             self.make_persistent()
 
-        return self.get_object_by_id, (
+        return self.get_by_id, (
             self._dc_id,
             self._dc_backend_id,
         )
 
     def __repr__(self):
 
-        if self._dc_is_persistent:
+        if self._dc_is_registered:
             return "<%s instance with ObjectID=%s>" % (
                 self._dc_class_name,
                 self._dc_id,
@@ -666,7 +487,7 @@ class DataClayObject:
         if not isinstance(other, DataClayObject):
             return False
 
-        if not self._dc_is_persistent or not other._dc_is_persistent:
+        if not self._dc_is_registered or not other._dc_is_registered:
             return False
 
         return self._dc_id and other._dc_id and self._dc_id == other._dc_id

@@ -2,16 +2,16 @@
 
 import datetime
 import logging
+import pickle
 import threading
 import time
-import pickle
 
 from dataclay.backend.heapmanager import HeapManager
 from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
+from dataclay.exceptions import *
 from dataclay.metadata.api import MetadataAPI
-from dataclay.runtime import UUIDLock
-from dataclay.runtime import DataClayRuntime
+from dataclay.runtime import DataClayRuntime, UUIDLock
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +19,9 @@ current_milli_time = lambda: int(round(time.time() * 1000))
 
 
 class BackendRuntime(DataClayRuntime):
+
+    is_backend = True
+
     def __init__(self, backend, etcd_host, etcd_port):
 
         # Execution Environment using this runtime.
@@ -63,34 +66,21 @@ class BackendRuntime(DataClayRuntime):
         if instance._dc_is_loaded:
             self.heap_manager.retain_in_heap(instance)
 
-    def is_exec_env(self):
-        return True
+    def load_object_from_db(self, instance: DataClayObject):
+        assert instance._dc_is_local
+        assert not instance._dc_is_loaded
 
-    def get_or_new_instance_from_db(self, object_id, retry):
-        """Get object from memory or database and WAIT in case we are still waiting for it to be persisted.
-
-        Args:
-            object_id: ID of object to get or create
-            retry: indicates if we should retry and wait
-        """
         try:
-            return self.inmemory_objects[object_id]
-        except KeyError:
-            raise ("Not Implemented")
-            return self.get_from_sl(object_id)
-            # object_md = self.metadata_service.get_object_md_by_id(object_id)
-            # cls.new_persistent(object_id, backend_id)
+            path = f"{settings.STORAGE_PATH}/{instance._dc_id}"
+            object_dict = pickle.load(open(path, "rb"))
+        except Exception as e:
+            raise DataClayException("Object not found in storage") from e
 
-        return self.dataclay_object_loader.get_or_new_instance_from_db(object_id, retry)
-
-    def load_object_from_db(self, instance, retry):
-        raise
-        """
-        @postcondition: Load DataClayObject from Database
-        @param instance: DataClayObject instance to fill
-        @param retry: Indicates retry loading in case it is not in db.
-        """
-        return self.dataclay_object_loader.load_object_from_db(instance, retry)
+        # NOTE: The object_dict don't contain internal "_dc_" attributes
+        # except "_dc_properties_"
+        object_dict["_dc_is_loaded"] = True
+        instance.__dict__.update(object_dict)
+        self.heap_manager.retain_in_heap(instance)
 
     def get_hint(self):
         """
@@ -106,7 +96,7 @@ class BackendRuntime(DataClayRuntime):
         self.heap_manager.flush_all()
 
     def store_object(self, instance):
-        if not instance._dc_is_persistent:
+        if not instance._dc_is_registered:
             raise RuntimeError(
                 "StoreObject should only be called on Persistent Objects. "
                 "Ensure to call make_persistent first"
@@ -114,7 +104,7 @@ class BackendRuntime(DataClayRuntime):
 
         self.internal_store(instance, make_persistent=False)
 
-    def make_persistent(self, instance, alias, backend_id, recursive=None):
+    def make_persistent(self, instance: DataClayObject, alias, backend_id, recursive=None):
         """This method creates a new Persistent Object using the provided stub instance and,
         if indicated, all its associated objects also Logic module API used for communication
 
@@ -135,51 +125,31 @@ class BackendRuntime(DataClayRuntime):
         # It should always have a master location, since all objects intantiated
         # in a ee, get the ee as the master location
 
-        if instance._dc_is_persistent:
-            # TODO: If alias is not Note, update alias
+        if instance._dc_is_registered:
+            # TODO: If alias is not None, update alias
             # If backend is different than the current backend, move object
             return
 
         instance._dc_alias = alias
         instance._dc_dataset_name = self.session.dataset_name
 
-        # If backend_id is none, we register the object in the current backend
+        # If backend_id is none, we register the object in the current backend (usual path)
         if backend_id is None:
             instance._dc_backend_id = settings.DC_BACKEND_ID
             self.metadata_service.register_object(instance.metadata)
-            instance._dc_is_persistent = True
+            instance._dc_is_registered = True
         else:
             backend_client = self.get_backend_client(backend_id)
-            instance._dc_is_persistent = True
+            instance._dc_is_registered = True
             serialized_dict = pickle.dumps(instance.__dict__)
             backend_client.make_persistent(self.session.id, serialized_dict)
+
+            instance.clean_dc_properties()
+            instance._dc_is_local = False
             instance._dc_is_loaded = False
             instance._dc_backend_id = backend_id
 
         return instance._dc_backend_id
-
-    def call_active_method(self, instance, method_name, args: tuple, kwargs: dict):
-        """This method overrides parents method.
-        Use to check if the instance belongs to this execution environment
-        Replaces execute_implementation_aux
-        """
-
-        # TODO: Check if the object is under deserialization ¿?
-
-        if instance._dc_backend_id == settings.DC_BACKEND_ID:
-            logger.debug("Object is local")
-            # get_local_instance should indeed modify the same instance instance,
-            fat_instance = self.get_or_new_instance_from_db(instance._dc_id, True)
-            assert instance is fat_instance
-            # TODO: Should i set _is_dirty always or only for getter and setter??
-            try:
-                return getattr(instance, method_name)(*args, **kwargs)
-            except Exception as e:
-                # If the method raises and exceptions, this is returned.
-                return e
-        else:
-            logger.debug("Object is not local")
-            return super().call_active_method(instance, method_name, args, kwargs)
 
     #########################################
     # Helper functions, not commonruntime methods #
@@ -224,13 +194,13 @@ class BackendRuntime(DataClayRuntime):
 
                 if make_persistent:
                     # Ignore already persistent objects
-                    if current_obj._dc_is_persistent:
+                    if current_obj._dc_is_registered:
                         continue
 
                     obj_to_register.append(current_obj)
 
                 # This object will soon be persistent
-                current_obj._dc_is_persistent = True
+                current_obj._dc_is_registered = True
                 current_obj._dc_backend_id = settings.DC_BACKEND_ID
                 # Just in case (should have been loaded already)
                 logger.debug(
@@ -344,8 +314,7 @@ class BackendRuntime(DataClayRuntime):
         alias = instance._dc_alias
         if alias is not None:
             self.delete_alias_in_dataclay(alias, instance._dc_dataset_name)
-        instance._dc_alias = None
-        instance._dc_is_dirty = True
+            instance._dc_alias = None
 
     def close_session_in_ee(self, session_id):
         """Close session in EE. Subtract session references for GC."""

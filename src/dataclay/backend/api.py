@@ -1,9 +1,14 @@
 """ Class description goes here. """
 
+from __future__ import annotations
+
 import logging
 import pickle
 import traceback
 import uuid
+from typing import TYPE_CHECKING
+from dataclay.utils.pickle import PersistentUnpickler
+import io
 
 from opentelemetry import trace
 
@@ -14,6 +19,12 @@ from dataclay.conf import settings
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.runtime import UUIDLock, set_runtime
 
+if TYPE_CHECKING:
+
+    from dataclay.dataclay_object import DataClayObject
+
+
+logging.basicConfig(level=logging.DEBUG)
 tracer = trace.get_tracer(__name__)
 logger = utils.LoggerEvent(logging.getLogger(__name__))
 
@@ -66,52 +77,95 @@ class BackendAPI:
         self.update_hints_to_current_ee(objects_data_to_store)
         self.store_in_memory(objects_data_to_store)
 
-    def make_persistent(self, session_id: uuid.UUID, serialized_dict: bytes):
+    def make_persistent(self, session_id: uuid.UUID, serialized_dict: list[bytes]):
         self.set_local_session(session_id)
 
+        unserialized_objects = dict()
+        for obj in serialized_dict:
+            object_dict = PersistentUnpickler(io.BytesIO(obj), unserialized_objects).load()
+            object_id = object_dict["_dc_id"]
+            try:
+                unserialized_objects[object_id].__dict__.update(object_dict)
+            except KeyError:
+                cls: type[DataClayObject] = object_dict["_dc_class"]
+                proxy_object = cls.new_proxy_object()
+                unserialized_objects[object_id] = proxy_object
+                proxy_object.__dict__.update(object_dict)
+
+        for object_id, proxy_object in unserialized_objects.items():
+            print(proxy_object)
+            print(type(proxy_object))
+            proxy_object._dc_is_local = True
+            proxy_object._dc_is_loaded = True
+            proxy_object._dc_backend_id = self.backend_id
+
+            self.runtime.inmemory_objects[object_id] = proxy_object
+            self.runtime.heap_manager.retain_in_heap(proxy_object)
+
+            self.runtime.metadata_service.register_object(proxy_object.metadata)
+            proxy_object._dc_is_registered = True
+
+        # OLDOLDOLDOLD
+
         # Deserialize __dict__
-        object_dict = pickle.loads(serialized_dict)
+        # object_dict = pickle.loads(serialized_dict[0])
 
-        # NOTE: In case of circular dependencies, it is possible that
-        # the volatile object is stored in the heap as a persistent object.
-        # In this case we must update the persistent instance already stored.
-        # TODO: Remove the try when the new make_persistent is implemented.
-        # This new_make_persistent should send all the objects (even with circular dependencies)
-        # in one call to the EE
-        try:
-            instance = self.runtime.inmemory_objects[object_dict["_dc_id"]]
-            object_dict |= {
-                "_dc_is_persistent": True,
-                "_dc_is_loaded": True,
-                "_dc_backend_id": self.backend_id,
-            }
-            instance.__dict__.update(object_dict)
-        except KeyError:
-            object_dict |= {
-                "_dc_is_persistent": True,
-                "_dc_is_loaded": True,
-                "_dc_backend_id": self.backend_id,
-            }
-            instance = object_dict["_dc_class"].new_proxy_object(**object_dict)
-            self.runtime.add_to_heap(instance)
+        # # NOTE: In case of circular dependencies, it is possible that
+        # # the volatile object is stored in the heap as a persistent object.
+        # # In this case we must update the persistent instance already stored.
+        # # TODO: Remove the try when the new make_persistent is implemented.
+        # # This new_make_persistent should send all the objects (even with circular dependencies)
+        # # in one call to the EE
+        # try:
+        #     proxy_object = self.runtime.inmemory_objects[object_dict["_dc_id"]]
+        #     object_dict |= {
+        #         "_dc_is_local": True,
+        #         "_dc_is_loaded": True,
+        #         "_dc_backend_id": self.backend_id,
+        #     }
+        #     proxy_object.__dict__.update(object_dict)
+        # except KeyError:
+        #     cls: type[DataClayObject] = object_dict["_dc_class"]
+        #     proxy_object = cls.new_proxy_object()
+        #     proxy_object.__dict__.update(object_dict)
+        #     proxy_object._dc_is_local = True
+        #     proxy_object._dc_is_loaded = True
+        #     proxy_object._dc_backend_id = self.backend_id
 
-        print("\n*** unpickled_obj:", type(instance))
-        print("*** unpickled_obj:", instance._dc_id)
-        print("*** unpickled_obj:", instance.__dict__, end="\n\n")
+        #     # Since object is loaded, it is added in both inmemory and loaded list
+        #     self.runtime.inmemory_objects[proxy_object._dc_id] = proxy_object
+        #     self.runtime.heap_manager.retain_in_heap(proxy_object)
 
-        self.runtime.metadata_service.register_object(instance.metadata)
+        # print("\n*** unpickled_obj:", type(proxy_object))
+        # print("*** unpickled_obj:", proxy_object._dc_id)
+        # print("*** unpickled_obj:", proxy_object.__dict__, end="\n\n")
+
+        # self.runtime.metadata_service.register_object(proxy_object.metadata)
+        # proxy_object._dc_is_registered = True
 
     def call_active_method(self, session_id, object_id, method_name, args, kwargs):
         self.set_local_session(session_id)
 
-        instance = self.get_local_instance(object_id, True)
+        # TODO: Decide what happend when the object is not local to the current backend.
+        # It means that the client has a bad backend_id.
+        # Option 1: This backend get the correct metadata from etcd and make a new call_active_method
+        #           to the correct backend. Returns the result and the correct backend_id so the client
+        #           can update it.
+        # Option 2: We just return the correct backend_id as an error message. The client should then
+        #           repeat the call_active_method to the correct backend.
+
+        # instance = self.get_local_instance(object_id, True)
+        instance = self.runtime.get_object_by_id(object_id)
         args = pickle.loads(args)
         kwargs = pickle.loads(kwargs)
 
-        returned_value = self.runtime.call_active_method(instance, method_name, args, kwargs)
+        try:
+            response = getattr(instance, method_name)(*args, **kwargs)
+        except Exception as e:
+            response = e
 
-        if returned_value is not None:
-            return pickle.dumps(returned_value)
+        if response is not None:
+            return pickle.dumps(response)
 
     def get_copy_of_object(self, session_id, object_id, recursive):
         """Returns a non-persistent copy of the object with ID provided
@@ -208,9 +262,6 @@ class BackendAPI:
             return self.runtime.metadata_service.get_object_md_by_id(object_id)
 
     # Heap
-
-    def get_local_instance(self, object_id, retry=True):
-        return self.runtime.get_or_new_instance_from_db(object_id, retry)
 
     def update_hints_to_current_ee(self, objects_data_to_store):
         """Update hints in serialized objects provided to use current backend id
@@ -443,7 +494,7 @@ class BackendAPI:
 
         self.ds_exec_impl(object_id, implementation_id, serialized_value, session_id)
         instance = self.get_local_instance(object_id, True)
-        src_exec_env_id = instance.get_origin_location()
+        src_exec_env_id = instance._dc_backend_id()
         if src_exec_env_id is not None:
             logger.debug(f"Found origin location {src_exec_env_id}")
             if calling_backend_id is None or src_exec_env_id != calling_backend_id:

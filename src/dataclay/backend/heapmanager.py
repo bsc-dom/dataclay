@@ -16,10 +16,11 @@ import psutil
 
 from dataclay import utils
 from dataclay.conf import settings
-from dataclay.dataclay_object import DCLAY_PROPERTY_PREFIX
+from dataclay.dataclay_object import DC_PROPERTY_PREFIX
 from dataclay.runtime import UUIDLock
 
-logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))
+# logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))
+logger = logging.getLogger(__name__)
 
 
 class HeapManager(threading.Thread):
@@ -102,12 +103,12 @@ class HeapManager(threading.Thread):
     def run(self):
         """Overrides run function"""
         # gc_check_time_interval_seconds = settings.MEMMGMT_CHECK_TIME_INTERVAL / 1000.0
-        gc_check_time_interval_seconds = 1200
+        gc_check_time_interval_seconds = 10
         while True:
             logger.debug("HEAP MANAGER THREAD is awake...")
             if self._finished.is_set():
                 break
-            self.run_task()
+            self.new_run_task()
 
             # sleep for interval or until shutdown
             logger.debug("HEAP MANAGER THREAD is going to sleep...")
@@ -131,6 +132,7 @@ class HeapManager(threading.Thread):
         using weak references. In order to avoid objects to be GC without a flush in DB, HeapManager has hard-references to
         them and is the only one able to release them. This function creates the hard-reference.
         """
+        logger.debug("New object retained in heap")
         self.loaded_objects[dc_obj._dc_id] = dc_obj
 
     def release_from_heap(self, dc_obj):
@@ -174,118 +176,6 @@ class HeapManager(threading.Thread):
         return False
         return float(virtual_mem.percent) < (settings.MEMMGMT_EASE_FRACTION * 100)
 
-    # NOTE: Does it need to be nullify???
-    def __nullify_object(self, dc_object):
-        """Set all fields to none to allow GC action"""
-
-        metaclass = dc_object.get_class_extradata()
-        logger.debug("Going to clean object %s", dc_object._dc_id)
-
-        # Put here because it is critical path and I prefer to have a single isEnabledFor
-        # instead of checking it for each element
-        if logger.isEnabledFor(logging.DEBUG):
-            held_objects = WeakValueDictionary()
-
-            o = None
-            prop_name_list = metaclass.properties.keys()
-
-            logger.debug(
-                "The following attributes will be nullified from object %s: %s",
-                dc_object._dc_id,
-                ", ".join(prop_name_list),
-            )
-
-            for prop_name in prop_name_list:
-                real_prop_name = "%s%s" % (DCLAY_PROPERTY_PREFIX, prop_name)
-
-                try:
-                    o = object.__getattribute__(dc_object, real_prop_name)
-                    held_objects[prop_name] = o
-                except TypeError:
-                    # Some objects cannot be weakreferenced, but we can typically ignore them
-                    logger.trace("Ignoring attribute %s of type %s", prop_name, type(o))
-
-            # Ensure we don't keep that as a dangling active backref
-            del o
-
-        # Critical path, keep it short!
-        for prop_name in metaclass.properties.keys():
-            real_prop_name = "%s%s" % (DCLAY_PROPERTY_PREFIX, prop_name)
-            object.__setattr__(dc_object, real_prop_name, None)
-
-        if logger.isEnabledFor(logging.DEBUG):
-            # held_objects variable will be defined when TRACE-enabled.
-            held_attr_names = held_objects.keys()
-
-            if held_attr_names:
-                logger.debug(
-                    "The following attributes of object %s still have a backref active: %s",
-                    dc_object._dc_id,
-                    ", ".join(held_attr_names),
-                )
-            else:
-                logger.debug(
-                    "The garbage collector seems to have cleaned all the nullified attributes on %s",
-                    dc_object._dc_id,
-                )
-
-    def __clean_object(self, dc_object):
-        """Clean object (except if not loaded or being used).
-        Cleaning means set all fields to None to allow GC to work.
-        """
-
-        # Lock object (not locking executions!)
-        # Lock is needed in case object is being nullified and some threads requires to load it from disk.
-
-        with UUIDLock(dc_object._dc_id):
-            logger.debug("Cleaning object %s", dc_object._dc_id)
-
-            is_loaded = dc_object._dc_is_loaded
-            if not is_loaded:
-                logger.debug("Not collecting since not loaded.")
-                self.release_from_heap(dc_object)
-                return
-
-            # Set loaded flag to false, any current execution that wants to get/set a field must try to load
-            # object from DB, and lock will control that object is not being cleaned
-            dc_object._dc_is_loaded = False
-
-            # Update it
-            logger.debug("[==GC==] Updating object %s ", dc_object._dc_id)
-            self.gc_collect_internal(dc_object)
-
-            self.__nullify_object(dc_object)
-
-            # Object is not dirty anymore
-            dc_object._dc_is_dirty = False
-
-            # VERY IMPORTANT (RACE CONDITION)
-            # If some object was cleaned and removed from GC retained refs, it does NOT mean it was removed
-            # from Weak references Heap because we will ONLY remove an entry in that Heap if the GC removed it.
-            # So, if some execution is requested after we remove an entry from retained refs (we cleaned and send
-            # the object to disk), we check if the
-            # object is in Heap (see executeImplementation as an example) and therefore, we created a new reference
-            # making impossible for GC to clean the reference. We will add the object to retained refs
-            # again once it is deserialized from DB. See DeserializationLib. It's the best solution without Lockers
-            # in get and remove in Heap.
-            #
-            # Remove it from Retained refs to allow GC action.
-
-            self.release_from_heap(dc_object)
-
-    # NOTE: Function from backend.api. It should not be there
-    # def register_and_store_pending(self, instance, obj_bytes, sync):
-
-    #     object_id = instance._dc_id
-
-    #     # NOTE: we are doing *two* remote calls, and wishlist => they work as a transaction
-    #     self.runtime.backend_clients["@STORAGE"].store_to_db(self.backend_id, object_id, obj_bytes)
-
-    #     # TODO: When the object metadata is updated synchronously, this should me removed
-    #     self.runtime.metadata_service.update_object(instance.metadata)
-
-    #     instance._dc_is_pending_to_register = False
-
     def gc_collect_internal(self, object_to_update):
         """Update object in db or store it if volatile"""
         raise ("To refactor")
@@ -310,6 +200,61 @@ class HeapManager(threading.Thread):
             # do nothing
             traceback.print_exc()
         # TODO: set dataset for GC if set by user
+
+    def is_memory_under_pressure(self):
+        return True
+        return psutil.virtual_memory().percent > 80
+
+    def new_run_task(self):
+
+        if self.is_memory_under_pressure():
+            loaded_objects_copy = self.loaded_objects.copy()
+            logger.debug(f"Num loaded objects before: {len(loaded_objects_copy)}")
+
+            while loaded_objects_copy:
+
+                object_id, instance = loaded_objects_copy.popitem()
+
+                with UUIDLock(object_id):
+                    if not instance._dc_is_loaded:
+                        del self.loaded_objects[object_id]
+                        return
+
+                    instance._dc_is_loaded = False
+
+                    # TODO: update etcd metadata (since is loaded has changed)
+                    # and store object in file system
+                    import pickle
+
+                    path = f"{settings.STORAGE_PATH}/{object_id}"
+
+                    # NOTE: We do not serialize internal attributes, since this are
+                    # obtained from etcd, or are stateless
+                    dict_to_serialize = {
+                        k: v
+                        for k, v in vars(instance).items()
+                        if k.startswith(DC_PROPERTY_PREFIX) or not k.startswith("_dc_")
+                    }
+                    pickle.dump(dict_to_serialize, open(path, "wb"))
+
+                    # Remove property attributes
+                    instance.clean_dc_properties()
+
+                    del self.loaded_objects[object_id]
+
+                del instance
+
+                # TODO: ¿Do we need to call every time gc.collect()?
+                gc.collect()
+
+                if not self.is_memory_under_pressure():
+                    break
+            else:
+                logger.warning("All objects cleaned, but still system memory pressure.")
+
+            logger.debug(f"Num loaded objects after: {len(loaded_objects_copy)}")
+            del loaded_objects_copy
+            gc.collect()
 
     def run_task(self):
         """Check Python VM's memory pressure and clean if necessary. Cleaning means flushing objects, setting
@@ -345,14 +290,14 @@ class HeapManager(threading.Thread):
                 # TODO: Add some logs
 
                 # Copy the references in order to process it in a plain fashion
-                retained_objects_copy = self.retained_objects[:]
+                loaded_objects_copy = self.loaded_objects.copy()
                 logger.debug(
                     "Starting iteration with #%d retained objects", len(self.retained_objects)
                 )
 
-                while retained_objects_copy:
+                while loaded_objects_copy:
                     # We iterate through while-pop to ensure that the reference is freed
-                    dc_obj = retained_objects_copy.pop()
+                    object_id, dc_obj = loaded_objects_copy.popitem()
 
                     # NOTE: Memory pinned is never set or used
                     # if dc_obj.get_memory_pinned():
@@ -396,42 +341,42 @@ class HeapManager(threading.Thread):
                         " that there is a huge global memory pressure. Problematic."
                     )
                 logger.debug(
-                    "Finishing iteration with #%d retained objects", len(self.retained_objects)
+                    "Finishing iteration with #%d retained objects", len(self.loaded_objects)
                 )
 
                 # For cyclic references
-                n = gc.collect()
+                # n = gc.collect()
 
-                if logger.isEnabledFor(logging.DEBUG) or logger.isEnabledFor(logging.TRACE):
-                    if retained_objects_copy:
-                        logger.debug(
-                            "There are #%d remaining objects after Garbage Collection",
-                            len(retained_objects_copy),
-                        )
-                    if n > 0:
-                        logger.debug("[==GC==] Finally Collected %d", n)
-                    else:
-                        logger.trace("[==GC==] No objects collected")
-                    if gc.garbage:
-                        logger.debug("[==GC==] Uncollectable: %s", gc.garbage)
-                    else:
-                        logger.trace("[==GC==] No uncollectable objects")
+                # if logger.isEnabledFor(logging.DEBUG) or logger.isEnabledFor(logging.TRACE):
+                #     if loaded_objects_copy:
+                #         logger.debug(
+                #             "There are #%d remaining objects after Garbage Collection",
+                #             len(loaded_objects_copy),
+                #         )
+                #     if n > 0:
+                #         logger.debug("[==GC==] Finally Collected %d", n)
+                #     else:
+                #         logger.trace("[==GC==] No objects collected")
+                #     if gc.garbage:
+                #         logger.debug("[==GC==] Uncollectable: %s", gc.garbage)
+                #     else:
+                #         logger.trace("[==GC==] No uncollectable objects")
 
-                del retained_objects_copy
+                del loaded_objects_copy
 
-                if (
-                    logger.isEnabledFor(logging.DEBUG)
-                    and tracemalloc is not None
-                    and tracemalloc.is_tracing()
-                ):
-                    logger.debug("Doing a snapshot...")
-                    snapshot2 = tracemalloc.take_snapshot()
+                # if (
+                #     logger.isEnabledFor(logging.DEBUG)
+                #     and tracemalloc is not None
+                #     and tracemalloc.is_tracing()
+                # ):
+                #     logger.debug("Doing a snapshot...")
+                #     snapshot2 = tracemalloc.take_snapshot()
 
-                    top_stats = snapshot2.compare_to(snapshot, "lineno")
+                #     top_stats = snapshot2.compare_to(snapshot, "lineno")
 
-                    print("[ Top 10 differences ]")
-                    for stat in top_stats[:10]:
-                        print(stat)
+                #     print("[ Top 10 differences ]")
+                #     for stat in top_stats[:10]:
+                #         print(stat)
         except:
             # TODO: Interrupted thread for some reason (sigkill?). Make sure to flag is_processing_gc to false.
             pass

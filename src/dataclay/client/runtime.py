@@ -6,11 +6,13 @@ dataclay.api package.
 
 import logging
 import pickle
-import traceback
 import random
+import traceback
+import io
 
 from opentelemetry import trace
 
+from dataclay.utils.pickle import PersistentPickler
 from dataclay.backend.client import BackendClient
 from dataclay.dataclay_object import DataClayObject
 from dataclay.metadata.client import MetadataClient
@@ -25,6 +27,7 @@ logger = logging.getLogger(__name__)
 class ClientRuntime(DataClayRuntime):
 
     session = None
+    is_backend = False
 
     def __init__(self, metadata_service_host, metadata_service_port):
         # Initialize parent
@@ -34,10 +37,7 @@ class ClientRuntime(DataClayRuntime):
     def add_to_heap(self, instance: DataClayObject):
         self.inmemory_objects[instance._dc_id] = instance
 
-    def is_client(self):
-        return True
-
-    def make_persistent(self, instance, alias, backend_id, recursive):
+    def make_persistent(self, instance: DataClayObject, alias, backend_id, recursive):
         """This method creates a new Persistent Object using the provided stub
         instance and, if indicated, all its associated objects also Logic module API used for communication
         This function is called from a stub/execution class
@@ -52,7 +52,7 @@ class ClientRuntime(DataClayRuntime):
             ID of the backend in which the object was persisted.
         """
 
-        if instance._dc_is_persistent:
+        if instance._dc_is_registered:
             raise RuntimeError("Instance is already persistent")
 
         logger.debug(f"Starting make persistent for object {instance._dc_id}")
@@ -77,21 +77,38 @@ class ClientRuntime(DataClayRuntime):
         # add_volatiles_under_deserialization and remove_volatiles_under_deserialization
         # TODO: Check if we can make a use of the recursive parameter
 
-        try:
-            # Must be set to True before pickle.dumps to avoid infinit recursion
-            instance._dc_is_persistent = True
-            instance._dc_backend_id = (
-                backend_id  # TODO: Remove it when new batch system (use the latter)
-            )
-            serialized_dict = pickle.dumps(instance.__dict__)
-            backend_client.make_persistent(self.session.id, serialized_dict)
-            instance._dc_is_loaded = False
-            instance._dc_backend_id = backend_id
-            return instance._dc_backend_id
-        except Exception:
-            # TODO: In the batch system it should not be needed
-            instance._dc_is_persistent = False
-            raise
+        f = io.BytesIO()
+        serialized_local_dicts = []
+        visited_objects = {instance._dc_id: instance}
+
+        PersistentPickler(f, visited_objects, serialized_local_dicts).dump(instance.__dict__)
+        serialized_local_dicts.append(f.getvalue())
+        backend_client.make_persistent(self.session.id, serialized_local_dicts)
+
+        for dc_object in visited_objects.values():
+            dc_object.clean_dc_properties()
+            dc_object._dc_is_registered = True
+            dc_object._dc_is_local = False
+            dc_object._dc_is_loaded = False
+            dc_object._dc_backend_id = backend_id
+
+        # try:
+        #     # Must be set to True before pickle.dumps to avoid infinit recursion
+        #     instance._dc_is_registered = True  # Removed it in new system
+        #     instance._dc_backend_id = backend_id  # TODO: Remove it when new batch system (use the latter) Needed for cycles
+        #     serialized_dict = pickle.dumps(instance.__dict__)
+        #     backend_client.make_persistent(self.session.id, serialized_dict)
+
+        #     instance.clean_dc_properties()
+        #     instance._dc_is_loaded = False
+        #     instance._dc_is_local = False
+        #     instance._dc_backend_id = backend_id
+        # except Exception:
+        #     # TODO: In the batch system it should not be needed
+        #     instance._dc_is_registered = False
+        #     raise
+
+        return instance._dc_backend_id
 
     # NOTE: This function may be removed.
     # When an alias is removed without having the instance, the persistent object
