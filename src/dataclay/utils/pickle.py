@@ -21,14 +21,13 @@ class PersistentPickler(pickle.Pickler):
         self.serialized = serialized
 
     def persistent_id(self, obj):
-        logger.debug(f"inside pickler {obj}")
         if isinstance(obj, DataClayObject):
             if obj._dc_is_local:
 
                 if obj._dc_id not in self.visited_objects:
                     self.visited_objects[obj._dc_id] = obj
                     f = io.BytesIO()
-                    PersistentPickler(f, self.visited_objects, self.serialized).dump(obj.__dict__)
+                    PersistentPickler(f, self.visited_objects, self.serialized).dump(obj._dc_dict)
                     self.serialized.append(f.getvalue())
 
                 return ("local", obj._dc_id, obj.__class__)
@@ -39,7 +38,7 @@ class PersistentPickler(pickle.Pickler):
 
 
 class PersistentUnpickler(pickle.Unpickler):
-    def __init__(self, file, unserialized: dict):
+    def __init__(self, file, unserialized: dict[UUID, DataClayObject]):
         super().__init__(file)
         self.unserialized = unserialized
 
@@ -55,4 +54,4 @@ class PersistentUnpickler(pickle.Unpickler):
                 self.unserialized[object_id] = proxy_object
                 return proxy_object
 
-        raise pickle.UnpicklingError("This is just an example for one persistent object!")
+        raise pickle.UnpicklingError("unsupported persistent object")

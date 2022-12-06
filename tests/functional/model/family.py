@@ -7,12 +7,14 @@ class Person(DataClayObject):
     name: str
     age: int
     spouse: Person
+    dog: Dog
 
     @activemethod
     def __init__(self, name, age):
         self.name = name
         self.age = age
         self.spouse = None
+        self.dog = None
 
     @activemethod
     def add_year(self):
@@ -22,21 +24,28 @@ class Person(DataClayObject):
 class Dog(DataClayObject):
 
     name: str
+    age: int
     puppies: list[Dog]
 
     @activemethod
     def __init__(self, name, age):
         self.name = name
         self.age = age
+        self.dog_age = age * 7
         self.puppies = []
 
     @activemethod
     def add_year(self):
         self.age += 1
+        self.dog_age = self.age * 7
 
     @activemethod
-    def get_age(self):
-        return self.age
+    def get_dog_age(self):
+        try:
+            return self.dog_age
+        except Exception:
+            self.dog_age = self.age * 7
+            return self.dog_age
 
     @activemethod
     def new_puppy(self, name):

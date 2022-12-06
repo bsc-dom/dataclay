@@ -14,10 +14,10 @@ def test_activemethod_argument_make_persistent(init_client):
     family = Family()
     person = Person("Marc", 24)
     family.make_persistent()
-    assert person.is_persistent == False
+    assert person.is_registered == False
 
     family.add(person)
-    assert person.is_persistent == True
+    assert person.is_registered == True
     assert person == family.members[0]
 
 
@@ -53,12 +53,12 @@ def test_activemethod_non_defined_properties(init_client):
     """
     # api.init()
     dog = Dog("Duna", 6)
-    assert dog.age == 6
+    assert dog.dog_age == 6 * 7
 
     dog.make_persistent()
     dog.add_year()
-    assert dog.age == 6  # Age property is not synchronized
-    assert dog.get_age() == 7
+    assert dog.dog_age == 6 * 7  # Age property is not synchronized
+    assert dog.get_dog_age() == 7 * 7
 
 
 def test_activemethod_inner_make_persistent(init_client):
@@ -68,7 +68,7 @@ def test_activemethod_inner_make_persistent(init_client):
     dog = Dog("Duna", 6)
     dog.make_persistent()
     puppy = dog.new_puppy("Rio")
-    assert puppy.is_persistent == True
+    assert puppy.is_registered == True
     assert puppy == dog.puppies[0]
     assert puppy.name == "Rio"
-    assert puppy.get_age() == 0
+    assert puppy.age == 0

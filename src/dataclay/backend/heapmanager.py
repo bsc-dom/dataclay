@@ -12,12 +12,19 @@ try:
 except ImportError:
     tracemalloc = None
 
+from typing import TYPE_CHECKING
+
 import psutil
 
 from dataclay import utils
 from dataclay.conf import settings
 from dataclay.dataclay_object import DC_PROPERTY_PREFIX
 from dataclay.runtime import UUIDLock
+
+if TYPE_CHECKING:
+    from uuid import UUID
+
+    from dataclay.dataclay_object import DataClayObject
 
 # logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))
 logger = logging.getLogger(__name__)
@@ -57,7 +64,7 @@ class HeapManager(threading.Thread):
         # objects deserialized later. Second ones cannot be GC if first ones are not cleaned.
         # During GC,we should know that somehow. It's a hint but improves GC a lot.
         # Also, remember list must be thread-safe:
-        self.loaded_objects = dict()
+        self.loaded_objects: dict[UUID, DataClayObject] = dict()
 
         # Indicates if HeapManager is flushing all objects in Heap to disk.
         self.is_flushing_all = False
@@ -228,14 +235,9 @@ class HeapManager(threading.Thread):
 
                     path = f"{settings.STORAGE_PATH}/{object_id}"
 
-                    # NOTE: We do not serialize internal attributes, since this are
+                    # NOTE: We do not serialize internal attributes, since these are
                     # obtained from etcd, or are stateless
-                    dict_to_serialize = {
-                        k: v
-                        for k, v in vars(instance).items()
-                        if k.startswith(DC_PROPERTY_PREFIX) or not k.startswith("_dc_")
-                    }
-                    pickle.dump(dict_to_serialize, open(path, "wb"))
+                    pickle.dump(instance._dc_properties, open(path, "wb"))
 
                     # Remove property attributes
                     instance.clean_dc_properties()

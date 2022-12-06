@@ -70,8 +70,6 @@ class ClientRuntime(DataClayRuntime):
         # Serialize instance with Pickle
         ######################################
 
-        # TODO: Improve it with a single make_persistent call to ee of all
-        # dc objects, instead of one call per object
         # TODO: Avoid some race-conditions in communication
         # (make persistent + execute where execute arrives before).
         # add_volatiles_under_deserialization and remove_volatiles_under_deserialization
@@ -81,7 +79,7 @@ class ClientRuntime(DataClayRuntime):
         serialized_local_dicts = []
         visited_objects = {instance._dc_id: instance}
 
-        PersistentPickler(f, visited_objects, serialized_local_dicts).dump(instance.__dict__)
+        PersistentPickler(f, visited_objects, serialized_local_dicts).dump(instance._dc_dict)
         serialized_local_dicts.append(f.getvalue())
         backend_client.make_persistent(self.session.id, serialized_local_dicts)
 
@@ -91,22 +89,6 @@ class ClientRuntime(DataClayRuntime):
             dc_object._dc_is_local = False
             dc_object._dc_is_loaded = False
             dc_object._dc_backend_id = backend_id
-
-        # try:
-        #     # Must be set to True before pickle.dumps to avoid infinit recursion
-        #     instance._dc_is_registered = True  # Removed it in new system
-        #     instance._dc_backend_id = backend_id  # TODO: Remove it when new batch system (use the latter) Needed for cycles
-        #     serialized_dict = pickle.dumps(instance.__dict__)
-        #     backend_client.make_persistent(self.session.id, serialized_dict)
-
-        #     instance.clean_dc_properties()
-        #     instance._dc_is_loaded = False
-        #     instance._dc_is_local = False
-        #     instance._dc_backend_id = backend_id
-        # except Exception:
-        #     # TODO: In the batch system it should not be needed
-        #     instance._dc_is_registered = False
-        #     raise
 
         return instance._dc_backend_id
 

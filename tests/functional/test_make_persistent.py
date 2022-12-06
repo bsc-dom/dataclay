@@ -1,6 +1,6 @@
 from dataclay import api
 import pytest
-from model.family import Family, Person
+from model.family import Family, Person, Dog
 from utils import init_client, mock_env_client
 
 
@@ -9,10 +9,10 @@ def test_make_persistent_basic(init_client):
     # api.init()
 
     person = Person("Marc", 24)
-    assert person.is_persistent == False
+    assert person.is_registered == False
 
     person.make_persistent()
-    assert person.is_persistent == True
+    assert person.is_registered == True
     assert person.name == "Marc"
     assert person.age == 24
 
@@ -31,12 +31,17 @@ def test_make_persistent_recursive(init_client):
 
     family = Family()
     person = Person("Marc", 24)
+    dog = Dog("Rio", 5)
     family.add(person)
-    assert person.is_persistent == False
+    person.dog = dog
+    assert person.is_registered == False
+    assert dog.is_registered == False
 
     family.make_persistent()
-    assert person.is_persistent == True
+    assert person.is_registered == True
     assert person == family.members[0]
+    assert dog.is_registered == True
+    assert dog == person.dog
 
     # api.finish()
 
@@ -55,7 +60,7 @@ def test_make_persistent_cycle(init_client):
     person_2.spouse = person_1
     person_1.make_persistent()
 
-    assert person_1.is_persistent == True
-    assert person_2.is_persistent == True
+    assert person_1.is_registered == True
+    assert person_2.is_registered == True
     assert person_1 == person_2.spouse
     assert person_2 == person_1.spouse

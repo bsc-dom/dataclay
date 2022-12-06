@@ -79,7 +79,7 @@ class BackendRuntime(DataClayRuntime):
         # NOTE: The object_dict don't contain internal "_dc_" attributes
         # except "_dc_properties_"
         object_dict["_dc_is_loaded"] = True
-        instance.__dict__.update(object_dict)
+        vars(instance).update(object_dict)
         self.heap_manager.retain_in_heap(instance)
 
     def get_hint(self):
@@ -138,16 +138,6 @@ class BackendRuntime(DataClayRuntime):
             instance._dc_backend_id = settings.DC_BACKEND_ID
             self.metadata_service.register_object(instance.metadata)
             instance._dc_is_registered = True
-        else:
-            backend_client = self.get_backend_client(backend_id)
-            instance._dc_is_registered = True
-            serialized_dict = pickle.dumps(instance.__dict__)
-            backend_client.make_persistent(self.session.id, serialized_dict)
-
-            instance.clean_dc_properties()
-            instance._dc_is_local = False
-            instance._dc_is_loaded = False
-            instance._dc_backend_id = backend_id
 
         return instance._dc_backend_id
 

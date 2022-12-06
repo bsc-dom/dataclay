@@ -181,9 +181,19 @@ class DataClayObject:
         return self._dc_dataset_name
 
     @property
-    def is_persistent(self):
+    def is_registered(self):
         """_dc_is_registered"""
         return self._dc_is_registered
+
+    @property
+    def _dc_dict(self):
+        """Returns __dict__ with only _dc_ attributes"""
+        return {k: v for k, v in vars(self).items() if k.startswith("_dc_")}
+
+    @property
+    def _dc_properties(self):
+        """Returns __dict__ with only _dc_property_ attributes"""
+        return {k: v for k, v in vars(self).items() if k.startswith(DC_PROPERTY_PREFIX)}
 
     @property
     def metadata(self):
