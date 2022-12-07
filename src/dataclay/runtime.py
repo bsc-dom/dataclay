@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from dataclay.dataclay_object import DataClayObject
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
+    from dataclay.metadata.managers.object import ObjectMetadata
 
 
 logger = logging.getLogger(__name__)
@@ -227,18 +228,9 @@ class DataClayRuntime(ABC):
     # Object Metadata #
     ###################
 
-    def get_object_by_id(
-        self, object_id: UUID, cls: type[DataClayObject] = None, backend_id: UUID = None
-    ):
-        """Get object directly from an object id, use class id and backend_id in
-        case it is still not registered.
-
-        Args:
-            object_id: id of the object to get
-            class_id: class id of the object to get
-            backend_id: backend_id of the object to get
-        Returns:
-            object instance
+    def get_object_by_id(self, object_id: UUID, object_md: ObjectMetadata = None) -> DataClayObject:
+        """Get dataclay object from inmemory_objects. If not present, get object metadata
+        and create new proxy object.
         """
         logger.debug(f"Get object {object_id} by id")
 
@@ -251,13 +243,13 @@ class DataClayRuntime(ABC):
                     return self.inmemory_objects[object_id]
                 except KeyError:
 
-                    # NOTE: It will fail in the current make_persistent
-                    # since when cycles, we are sending a supposed
-                    # registered object which is not
+                    # NOTE: When the object is not in the inmemory_objects,
+                    # we get the object metadata from etcd, and create a new proxy
+                    # object from it.
 
-                    object_md = self.metadata_service.get_object_md_by_id(
-                        object_id, self.session.id
-                    )
+                    if object_md is None:
+                        object_md = self.metadata_service.get_object_md_by_id(object_id)
+
                     module_name, class_name = object_md.class_name.rsplit(".", 1)
                     m = importlib.import_module(module_name)
                     cls = getattr(m, class_name)
@@ -273,47 +265,19 @@ class DataClayRuntime(ABC):
                     proxy_object._dc_is_loaded = False
                     proxy_object._dc_is_registered = True
 
-                    logger.debug("Added new object to inmemory_objects")
                     # Since it is no loaded, we only add it to the inmemory list
                     self.inmemory_objects[proxy_object._dc_id] = proxy_object
                     return proxy_object
 
-                    # OLD OLD OLD
-                    # Imports class if None
-                    # if cls is None or backend_id is None:
-                    #     object_md = self.metadata_service.get_object_md_by_id(
-                    #         object_id, self.session.id
-                    #     )
-                    #     module_name, class_name = object_md.class_name.rsplit(".", 1)
-                    #     m = importlib.import_module(module_name)
-                    #     cls = getattr(m, class_name)
-                    #     backend_id = object_md.backend_id
-
-                    # # assert backend_id != self.get_hint() # TODO: Uncomment when new batch make_persistent
-                    # proxy_object = cls.new_proxy_object(
-                    #     _dc_id=object_id,
-                    #     _dc_backend_id=backend_id,
-                    #     _dc_is_registered=True,
-                    #     _dc_is_loaded=False,
-                    # )
-                    # self.add_to_heap(proxy_object)
-                    # return proxy_object
-
-    def get_object_by_alias(self, alias, dataset_name=None):
+    def get_object_by_alias(self, alias, dataset_name=None) -> DataClayObject:
         """Get object instance from alias"""
 
         if dataset_name is None:
             dataset_name = self.session.dataset_name
 
-        object_md = self.metadata_service.get_object_md_by_alias(
-            alias, dataset_name, self.session.id
-        )
+        object_md = self.metadata_service.get_object_md_by_alias(alias, dataset_name)
 
-        module_name, class_name = object_md.class_name.rsplit(".", 1)
-        m = importlib.import_module(module_name)
-        cls = getattr(m, class_name)
-
-        return self.get_object_by_id(object_md.id, cls, object_md.backend_id)
+        return self.get_object_by_id(object_md.id, object_md)
 
     def get_backend_id_by_object_id(self, object_id):
         backend_ids = list(self.get_all_execution_environments_at_dataclay(self.dataclay_id))
@@ -338,13 +302,13 @@ class DataClayRuntime(ABC):
             locations.add(instance._dc_backend_id)
             locations.update(instance._dc_replica_backend_ids)
         except KeyError:
-            object_md = self.metadata_service.get_object_md_by_id(object_id, self.session.id)
+            object_md = self.metadata_service.get_object_md_by_id(object_id)
             locations.add(object_md.backend_id)
             locations.update(object_md.replica_backend_ids)
         return locations
 
-    def update_object_metadata(self, instance):
-        object_md = self.metadata_service.get_object_md_by_id(instance._dc_id, self.session.id)
+    def update_object_metadata(self, instance: DataClayObject):
+        object_md = self.metadata_service.get_object_md_by_id(instance._dc_id)
         instance.metadata = object_md
 
     #####################

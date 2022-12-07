@@ -19,6 +19,9 @@ logger = logging.getLogger(__name__)
 
 
 class MetadataClient:
+
+    session: Session
+
     def __init__(self, hostname, port):
         self.address = f"{hostname}:{port}"
         self.channel = grpc.insecure_channel(self.address)
@@ -118,20 +121,18 @@ class MetadataClient:
         )
         self.stub.RegisterObject(request)
 
-    # TODO: Check if used
-    def get_object_md_by_id(self, object_id: UUID, session_id: UUID) -> ObjectMetadata:
+    @grpc_error_handler
+    def get_object_md_by_id(self, object_id: UUID) -> ObjectMetadata:
         request = metadata_service_pb2.GetObjectMDByIdRequest(
-            session_id=str(session_id), object_id=str(object_id)
+            session_id=str(self.session.id), object_id=str(object_id)
         )
         object_md_proto = self.stub.GetObjectMDById(request)
         return ObjectMetadata.from_proto(object_md_proto)
 
     @grpc_error_handler
-    def get_object_md_by_alias(
-        self, alias_name: str, dataset_name: str, session_id: UUID
-    ) -> ObjectMetadata:
+    def get_object_md_by_alias(self, alias_name: str, dataset_name: str) -> ObjectMetadata:
         request = metadata_service_pb2.GetObjectMDByAliasRequest(
-            session_id=str(session_id), alias_name=alias_name, dataset_name=dataset_name
+            session_id=str(self.session.id), alias_name=alias_name, dataset_name=dataset_name
         )
         object_md_proto = self.stub.GetObjectMDByAlias(request)
         return ObjectMetadata.from_proto(object_md_proto)

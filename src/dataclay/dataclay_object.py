@@ -338,8 +338,8 @@ class DataClayObject:
             return None
 
     @classmethod
-    def get_by_id(cls, object_id: UUID, backend_id: UUID = None):
-        return get_runtime().get_object_by_id(object_id, cls, backend_id)
+    def get_by_id(cls, object_id: UUID):
+        return get_runtime().get_object_by_id(object_id)
 
     @classmethod
     def get_by_alias(cls, alias, dataset_name=None):
@@ -475,10 +475,7 @@ class DataClayObject:
             logger.debug("Pickling of object is causing a make_persistent")
             self.make_persistent()
 
-        return self.get_by_id, (
-            self._dc_id,
-            self._dc_backend_id,
-        )
+        return self.get_by_id, (self._dc_id,)
 
     def __repr__(self):
 

@@ -203,8 +203,7 @@ def init():
             settings.DC_USERNAME, settings.DC_PASSWORD, settings.DEFAULT_DATASET
         )
         runtime.session = session
-
-        init_span.add_event("marcevent - after new session")
+        runtime.metadata_service.session = session
 
         # Cache the execution environment infos
         runtime.update_backend_clients()
