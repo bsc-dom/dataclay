@@ -12,7 +12,7 @@ import io
 
 from opentelemetry import trace
 
-from dataclay.utils.pickle import PersistentPickler
+from dataclay.utils.pickle import RecursiveLocalPickler
 from dataclay.backend.client import BackendClient
 from dataclay.dataclay_object import DataClayObject
 from dataclay.metadata.client import MetadataClient
@@ -79,7 +79,7 @@ class ClientRuntime(DataClayRuntime):
         serialized_local_dicts = []
         visited_objects = {instance._dc_id: instance}
 
-        PersistentPickler(f, visited_objects, serialized_local_dicts).dump(instance._dc_dict)
+        RecursiveLocalPickler(f, visited_objects, serialized_local_dicts).dump(instance._dc_dict)
         serialized_local_dicts.append(f.getvalue())
         backend_client.make_persistent(self.session.id, serialized_local_dicts)
 

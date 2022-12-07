@@ -7,7 +7,7 @@ import pickle
 import traceback
 import uuid
 from typing import TYPE_CHECKING
-from dataclay.utils.pickle import PersistentUnpickler
+from dataclay.utils.pickle import RecursiveLocalUnpickler
 import io
 
 from opentelemetry import trace
@@ -82,7 +82,9 @@ class BackendAPI:
 
         unserialized_objects = dict()
         for serial_dict in serialized_dicts:
-            object_dict = PersistentUnpickler(io.BytesIO(serial_dict), unserialized_objects).load()
+            object_dict = RecursiveLocalUnpickler(
+                io.BytesIO(serial_dict), unserialized_objects
+            ).load()
             object_id = object_dict["_dc_id"]
 
             try:

@@ -9,7 +9,7 @@ from dataclay.runtime import get_runtime
 logger = logging.getLogger(__name__)
 
 
-class PersistentPickler(pickle.Pickler):
+class RecursiveLocalPickler(pickle.Pickler):
     def __init__(
         self,
         file,
@@ -27,7 +27,9 @@ class PersistentPickler(pickle.Pickler):
                 if obj._dc_id not in self.visited_objects:
                     self.visited_objects[obj._dc_id] = obj
                     f = io.BytesIO()
-                    PersistentPickler(f, self.visited_objects, self.serialized).dump(obj._dc_dict)
+                    RecursiveLocalPickler(f, self.visited_objects, self.serialized).dump(
+                        obj._dc_dict
+                    )
                     self.serialized.append(f.getvalue())
 
                 return ("local", obj._dc_id, obj.__class__)
@@ -37,7 +39,7 @@ class PersistentPickler(pickle.Pickler):
             return None
 
 
-class PersistentUnpickler(pickle.Unpickler):
+class RecursiveLocalUnpickler(pickle.Unpickler):
     def __init__(self, file, unserialized: dict[UUID, DataClayObject]):
         super().__init__(file)
         self.unserialized = unserialized
