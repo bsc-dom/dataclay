@@ -59,7 +59,7 @@ class CounterLock:
     def acquire(self, timeout=None):
         with self.cv:
             if self.cv.wait_for(lambda: self.counter == 0, timeout):
-                return self.lock.acquire()
+                return self.lock.acquire(blocking=False)
             else:
                 return False
 
