@@ -79,9 +79,9 @@ def activemethod(func):
             # If the object is local executes the method locally,
             # else, executes the method in the backend
             if self._dc_is_local:
-                self._xdci_active_counter.add()
+                self._xdc_active_counter.add()
                 result = func(self, *args, **kwargs)
-                self._xdci_active_counter.sub()
+                self._xdc_active_counter.sub()
                 return result
             else:
                 response = get_runtime().call_active_method(self, func.__name__, args, kwargs)
@@ -172,7 +172,7 @@ class DataClayObject:
     _dc_is_read_only: bool
     _dc_is_loaded: bool
     _dc_is_local: bool
-    # _xdci_active_counter: CounterLock # Commented to not break Pickle...
+    # _xdc_active_counter: CounterLock # Commented to not break Pickle...
 
     def __init_subclass__(cls) -> None:
         """Defines a @property for each annotatted attribute"""
@@ -213,7 +213,7 @@ class DataClayObject:
         self._dc_class = self.__class__
         self._dc_is_registered = False  # cannot be unset (unregistered)
         self._dc_is_loaded = True
-        self._xdci_active_counter = CounterLock()
+        self._xdc_active_counter = CounterLock()
 
     @property
     def dataclay_id(self):
