@@ -34,6 +34,8 @@ logger = logging.getLogger(__name__)
 class CounterLock:
     """Counter lock that can only be acquired when the internal counter is zero.
 
+    If the lock is acquired, it cannot be incremented until the lock is release.
+
     Use the lock with context manager:
         with counter_lock:
             ...
@@ -44,12 +46,12 @@ class CounterLock:
         self.cv = threading.Condition()
         self.counter = 0
 
-    def add(self, value):
+    def add(self, value=1):
         with self.cv:
             self.cv.wait_for(lambda: not self.lock.locked())
             self.counter += value
 
-    def sub(self, value):
+    def sub(self, value=1):
         with self.cv:
             self.counter -= value
             self.cv.notify_all()
@@ -77,9 +79,9 @@ def activemethod(func):
             # If the object is local executes the method locally,
             # else, executes the method in the backend
             if self._dc_is_local:
-                self._xdci_active_counter.inc()
+                self._xdci_active_counter.add()
                 result = func(self, *args, **kwargs)
-                self._xdci_active_counter.dec()
+                self._xdci_active_counter.sub()
                 return result
             else:
                 response = get_runtime().call_active_method(self, func.__name__, args, kwargs)

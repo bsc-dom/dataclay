@@ -94,9 +94,9 @@ class HeapManager(threading.Thread):
 
         instance = self.loaded_objects[object_id]
 
-        xxx = instance._xdci_active_counter.acquire(timeout=0)
-        print("XXXXXXXXXXXX", xxx)
-        if xxx:
+        # NOTE: If the another thread is executing any activemethod,
+        # the instance won't be stored, and will be kept in memory
+        if instance._xdci_active_counter.acquire(timeout=0):
             try:
                 with UUIDLock(object_id):
 
