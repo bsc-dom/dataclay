@@ -96,7 +96,7 @@ class HeapManager(threading.Thread):
 
         # NOTE: If the another thread is executing any activemethod,
         # the instance won't be stored, and will be kept in memory
-        if instance._xdci_active_counter.acquire(timeout=0):
+        if instance._xdc_active_counter.acquire(timeout=0):
             try:
                 with UUIDLock(object_id):
 
@@ -115,7 +115,7 @@ class HeapManager(threading.Thread):
 
                     del self.loaded_objects[object_id]
             finally:
-                instance._xdci_active_counter.release()
+                instance._xdc_active_counter.release()
 
     def is_memory_under_pressure(self):
         """Check if memory is under pressure
