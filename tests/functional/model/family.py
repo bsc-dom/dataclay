@@ -56,7 +56,7 @@ class Dog(DataClayObject):
 
 class Family(DataClayObject):
 
-    members: list[Person]
+    members: list[Person | Dog]
 
     @activemethod
     def __init__(self):
@@ -74,3 +74,13 @@ class Family(DataClayObject):
             result.append(" - Name: %s, age: %d" % (p.name, p.age))
 
         return "\n".join(result)
+
+    @activemethod
+    def test_retain_and_flush(self):
+        from dataclay.runtime import get_runtime
+
+        members = self.members
+        get_runtime().heap_manager.flush_all()
+        dog = Dog("Rio", 4)
+        members.append(dog)
+        assert self.members == members

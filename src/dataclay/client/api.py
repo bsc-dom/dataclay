@@ -236,8 +236,8 @@ def finish():
         global _connection_initialized
         logger.info("Finishing dataClay API")
         # finish_tracing()
-        get_runtime().close_session()
-        get_runtime().stop_runtime()
+
+        get_runtime().stop()
 
         # unload settings
         # unload_settings()

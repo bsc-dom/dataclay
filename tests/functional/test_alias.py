@@ -7,6 +7,10 @@ from utils import init_client, mock_env_client
 
 
 def test_get_by_alias(init_client):
+    try:
+        Person.delete_alias("test_get_by_alias")
+    except:
+        pass
     person = Person("Marc", 24)
     person.make_persistent(alias="test_get_by_alias")
     assert person.get_alias() == "test_get_by_alias"

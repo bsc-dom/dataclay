@@ -135,10 +135,6 @@ class DataClayRuntime(ABC):
     def heap_size(self):
         return len(self.inmemory_objects)
 
-    # TODO: Only in backend?
-    # def count_loaded_objs(self):
-    #     return self.heap_manager.count_loaded_objs()
-
     #############
     # Volatiles #
     #############
@@ -845,6 +841,10 @@ class DataClayRuntime(ABC):
     # Shutdown #
     ############
 
+    @abstractmethod
+    def stop(self):
+        pass
+
     def stop_gc(self):
         """Stop GC. useful for shutdown."""
         # Stop HeapManager
@@ -854,7 +854,7 @@ class DataClayRuntime(ABC):
         self.heap_manager.join()
         logger.debug("GC stopped.")
 
-    def stop_runtime(self):
+    def close_backend_clients(self):
         """Stop connections and daemon threads."""
 
         logger.debug("** Stopping runtime **")
@@ -864,10 +864,6 @@ class DataClayRuntime(ABC):
             client.close()
 
         self.backend_clients = {}
-
-        # Stop HeapManager
-        # TODO: Now only backend have heap manager
-        # self.stop_gc()
 
     ################## EXTRAE IGNORED FUNCTIONS ###########################
     deactivate_tracing.do_not_trace = True

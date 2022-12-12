@@ -16,6 +16,7 @@ import uuid
 from collections import ChainMap
 from inspect import get_annotations
 from uuid import UUID
+import threading
 
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from opentelemetry import trace
@@ -30,17 +31,56 @@ tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 
+class CounterLock:
+    """Counter lock that can only be acquired when the internal counter is zero.
+
+    Use the lock with context manager:
+        with counter_lock:
+            ...
+    """
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.cv = threading.Condition()
+        self.counter = 0
+
+    def add(self, value):
+        with self.cv:
+            self.cv.wait_for(lambda: not self.lock.locked())
+            self.counter += value
+
+    def sub(self, value):
+        with self.cv:
+            self.counter -= value
+            self.cv.notify_all()
+
+    def acquire(self, timeout=None):
+        with self.cv:
+            if self.cv.wait_for(lambda: self.counter == 0, timeout):
+                return self.lock.acquire()
+            else:
+                return False
+
+    def release(self):
+        with self.cv:
+            self.lock.release()
+            self.cv.notify_all()
+
+
 def activemethod(func):
     """Decorator for DataClayObject active methods"""
 
     @functools.wraps(func)
-    def wrapper_activemethod(self, *args, **kwargs):
-        logger.debug(f"Calling function {func.__name__}")
+    def wrapper_activemethod(self: DataClayObject, *args, **kwargs):
+        logger.debug(f"Calling activemethod {func.__name__}")
         try:
             # If the object is local executes the method locally,
             # else, executes the method in the backend
             if self._dc_is_local:
-                return func(self, *args, **kwargs)
+                self._xdci_active_counter.inc()
+                result = func(self, *args, **kwargs)
+                self._xdci_active_counter.dec()
+                return result
             else:
                 response = get_runtime().call_active_method(self, func.__name__, args, kwargs)
                 # The method raises and Excpetions
@@ -73,6 +113,7 @@ class DataClayProperty:
         | False    | True    |  -
         | False    | False   |  B (remote) or C (persistent)
         """
+        logger.debug(f"Calling getter for property {self.property_name}")
 
         if instance._dc_is_local:
             try:
@@ -129,6 +170,7 @@ class DataClayObject:
     _dc_is_read_only: bool
     _dc_is_loaded: bool
     _dc_is_local: bool
+    # _xdci_active_counter: CounterLock # Commented to not break Pickle...
 
     def __init_subclass__(cls) -> None:
         """Defines a @property for each annotatted attribute"""
@@ -169,6 +211,7 @@ class DataClayObject:
         self._dc_class = self.__class__
         self._dc_is_registered = False  # cannot be unset (unregistered)
         self._dc_is_loaded = True
+        self._xdci_active_counter = CounterLock()
 
     @property
     def dataclay_id(self):

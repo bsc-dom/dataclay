@@ -110,9 +110,6 @@ class ClientRuntime(DataClayRuntime):
         ee_client.delete_alias(self.session.id, instance._dc_id)
         instance._dc_alias = None
 
-    def close_session(self):
-        self.metadata_service.close_session(self.session.id)
-
     def get_hint(self):
         return None
 
@@ -199,3 +196,8 @@ class ClientRuntime(DataClayRuntime):
         ee_client.unfederate(
             self.session.id, instance._dc_id, external_execution_environment_id, recursive
         )
+
+    def stop(self):
+        self.metadata_service.close_session(self.session.id)
+        self.close_backend_clients()
+        self.metadata_service.close()

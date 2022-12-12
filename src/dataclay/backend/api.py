@@ -1149,8 +1149,7 @@ class BackendAPI:
     ##########
 
     def stop(self):
-        self.runtime.stop_gc()
-        self.runtime.flush_all()
+        self.runtime.stop()
         # TODO: delete the EE entry in ETCD using MetadataService, or use Lease
 
     #########

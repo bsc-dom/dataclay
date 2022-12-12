@@ -67,20 +67,23 @@ class BackendRuntime(DataClayRuntime):
             self.heap_manager.retain_in_heap(instance)
 
     def load_object_from_db(self, instance: DataClayObject):
-        assert instance._dc_is_local
-        assert not instance._dc_is_loaded
+        with UUIDLock(instance._dc_id):
+            if instance._dc_is_loaded or not instance._dc_is_local:
+                # The object is already loaded or not local. It may had been loaded
+                # in another thread while waiting for lock
+                return
 
-        try:
-            path = f"{settings.STORAGE_PATH}/{instance._dc_id}"
-            object_dict = pickle.load(open(path, "rb"))
-        except Exception as e:
-            raise DataClayException("Object not found in storage") from e
+            try:
+                path = f"{settings.STORAGE_PATH}/{instance._dc_id}"
+                object_dict = pickle.load(open(path, "rb"))
+            except Exception as e:
+                raise DataClayException("Object not found in storage") from e
 
-        # NOTE: The object_dict don't contain internal "_dc_" attributes
-        # except "_dc_properties_"
-        object_dict["_dc_is_loaded"] = True
-        vars(instance).update(object_dict)
-        self.heap_manager.retain_in_heap(instance)
+            # NOTE: The object_dict don't contain internal "_dc_" attributes
+            # except "_dc_properties_"
+            object_dict["_dc_is_loaded"] = True
+            vars(instance).update(object_dict)
+            self.heap_manager.retain_in_heap(instance)
 
     def get_hint(self):
         """
@@ -88,12 +91,6 @@ class BackendRuntime(DataClayRuntime):
         @return Hint of current EE
         """
         return settings.DC_BACKEND_ID
-
-    def flush_all(self):
-        """
-        @postcondition: Flush all objects in memory to disk.
-        """
-        self.heap_manager.flush_all()
 
     def store_object(self, instance):
         if not instance._dc_is_registered:
@@ -120,7 +117,7 @@ class BackendRuntime(DataClayRuntime):
             ID of the backend in which te object was persisted.
         """
         del recursive
-        logger.debug(f"Starting make persistent for instance {instance._dc_id}")
+        logger.debug(f"Starting make_persistent for object {instance._dc_id}")
 
         # It should always have a master location, since all objects intantiated
         # in a ee, get the ee as the master location
@@ -477,3 +474,14 @@ class BackendRuntime(DataClayRuntime):
         self.execution_environment.unfederate(
             session_id, object_id, external_execution_environment_id, recursive
         )
+
+    def stop(self):
+        # Stop HeapManager
+        logger.debug("Stopping GC. Sending shutdown event.")
+        self.heap_manager.shutdown()
+        logger.debug("Waiting for GC.")
+        self.heap_manager.join()
+        logger.debug("GC stopped.")
+
+        self.close_backend_clients()
+        self.heap_manager.flush_all()
