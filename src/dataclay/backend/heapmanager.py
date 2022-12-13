@@ -139,7 +139,7 @@ class HeapManager(threading.Thread):
     def run_task(self):
 
         if self.flush_all_lock.locked():
-            logger.debug("Already running flush_all")
+            logger.debug("Already flushing all objects")
             return
 
         # Enters if memory is under pressure and the lock is not locked
@@ -159,7 +159,7 @@ class HeapManager(threading.Thread):
                     if self.is_memory_at_ease() or self.flush_all_lock.locked():
                         break
                 else:
-                    logger.warning("All objects cleaned, but still system memory pressure.")
+                    logger.warning("All objects cleaned, but memory is not at ease.")
 
                 logger.debug(f"Num loaded objects after: {len(self.loaded_objects)}")
                 del loaded_objects_keys
