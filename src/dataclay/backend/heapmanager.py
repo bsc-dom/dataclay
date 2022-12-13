@@ -169,7 +169,7 @@ class HeapManager(threading.Thread):
                 self.run_task_lock.release()
 
     def flush_all(self):
-        """Stores all objects in memory into disk.
+        """Stores and unloads all loaded objects to disk.
 
         This function is usually called at shutdown of the backend.
         """
@@ -177,15 +177,20 @@ class HeapManager(threading.Thread):
         if self.flush_all_lock.acquire(blocking=False):
 
             try:
-                logger.debug("Flushing all loaded objects")
+                logger.debug(
+                    f"Starting to flush all loaded objects. Num ({len(self.loaded_objects)})"
+                )
 
                 if self.run_task_lock.acquire(timeout=self.MAX_TIME_WAIT_FOR_GC_TO_FINISH):
                     self.run_task_lock.release()
 
                 for object_id in list(self.loaded_objects):
                     self.unload_object(object_id)
+
+                logger.debug(f"Num loaded objects not flushed: {len(self.loaded_objects)}")
+
             finally:
                 self.flush_all_lock.release()
 
         else:
-            logger.debug("Already running flush_all")
+            logger.debug("Already flushing all objects")

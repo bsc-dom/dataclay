@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class CounterLock:
-    """Counter lock that can only be acquired when the internal counter is zero.
+    """Atomic Counter lock that can only be acquired when the internal counter is zero.
 
     If the lock is acquired, it cannot be incremented until the lock is release.
 
@@ -74,7 +74,7 @@ def activemethod(func):
 
     @functools.wraps(func)
     def wrapper_activemethod(self: DataClayObject, *args, **kwargs):
-        logger.debug(f"Calling activemethod {func.__name__}")
+        logger.debug(f"Calling activemethod {func.__name__} on {self._dc_id}")
         try:
             # If the object is local executes the method locally,
             # else, executes the method in the backend
@@ -115,7 +115,9 @@ class DataClayProperty:
         | False    | True    |  -
         | False    | False   |  B (remote) or C (persistent)
         """
-        logger.debug(f"Calling getter for property {self.property_name}")
+        logger.debug(
+            f"Calling getter for property {instance.__class__.__name__}.{self.property_name} on {instance._dc_id}"
+        )
 
         if instance._dc_is_local:
             try:
@@ -139,7 +141,9 @@ class DataClayProperty:
 
         See the __get__ method for the basic behavioural explanation.
         """
-        logger.debug(f"Calling setter for property {self.property_name}")
+        logger.debug(
+            f"Calling setter for property {instance.__class__.__name__}.{self.property_name} on {instance._dc_id}"
+        )
 
         if instance._dc_is_local:
             if not instance._dc_is_loaded:
@@ -181,7 +185,7 @@ class DataClayObject:
                 setattr(cls, property_name, DataClayProperty(property_name))
 
     def __new__(cls, *args, **kwargs):
-        logger.debug(f"Crated new dataclay object with args={args}, kwargs={kwargs}")
+        logger.debug(f"Creating new {cls.__name__} instance with args={args}, kwargs={kwargs}")
         obj = super().__new__(cls)
         obj.set_default_fields()
         get_runtime().add_to_heap(obj)

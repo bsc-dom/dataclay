@@ -76,11 +76,29 @@ class Family(DataClayObject):
         return "\n".join(result)
 
     @activemethod
-    def test_retain_and_flush(self):
+    def test_self_is_not_unloaded(self):
+        """Testing that while executing the activemethod in a Backend,
+        the current instance must not be unloaded/nullified, in order to
+        guarantee properties mutability.
+        """
         from dataclay.runtime import get_runtime
 
         members = self.members
         get_runtime().heap_manager.flush_all()
         dog = Dog("Rio", 4)
         members.append(dog)
-        assert self.members == members
+        # If the current instance was nullified,
+        # mutable "members" won't be consistent with the attribute
+        assert members is self.members
+
+    @activemethod
+    def test_reference_is_unloaded(self):
+        from dataclay.runtime import get_runtime
+
+        new_family = Family()
+        members = new_family.members
+        get_runtime().heap_manager.flush_all()
+        dog = Dog("Rio", 4)
+        members.append(dog)
+        assert members is not self.members
+        assert members != self.members

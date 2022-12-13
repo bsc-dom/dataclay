@@ -4,9 +4,17 @@ from model.family import Family, Person, Dog
 from utils import init_client, mock_env_client
 
 
-def test_retain_and_flush(init_client):
+def test_self_is_not_unloaded(init_client):
     """Test a simple make_persistent call"""
     # api.init()
     family = Family()
     family.make_persistent()
-    family.test_retain_and_flush()
+    family.test_self_is_not_unloaded()
+
+
+def test_reference_is_unloaded(init_client):
+    """Test a simple make_persistent call"""
+    # api.init()
+    family = Family()
+    family.make_persistent()
+    family.test_reference_is_unloaded()
