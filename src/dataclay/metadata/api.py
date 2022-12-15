@@ -1,5 +1,6 @@
 import logging
 import uuid
+import grpc
 from uuid import UUID
 
 import etcd3
@@ -39,6 +40,14 @@ class MetadataAPI:
         self.dataclay_mgr = DataclayManager(self.etcd_client)
 
         logger.info("Initialized MetadataService")
+
+    def is_ready(self, timeout=None):
+        try:
+            grpc.channel_ready_future(self.etcd_client.channel).result(timeout)
+        except grpc.FutureTimeoutError:
+            return False
+        else:
+            return True
 
     ###################
     # Session Manager #
@@ -188,8 +197,8 @@ class MetadataAPI:
 
     @tracer.start_as_current_span("get_dataclay_id")
     def get_dataclay_id(self) -> UUID:
-        dataclay = self.dataclay_mgr.get_dataclay("this")
-        return dataclay.id
+        dataclay_id = self.dataclay_mgr.get_dataclay_id()
+        return dataclay_id
 
     @tracer.start_as_current_span("get_num_objects")
     def get_num_objects(self, language):

@@ -103,8 +103,14 @@ docker buildx build --platform linux/amd64,linux/arm64 \
 
 ```bash
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/dspython:edge \
+-t bscdataclay/pyclay:edge \
 --build-arg PYTHON_VERSION=3.10-bullseye --push .
+```
+
+Internal testing
+```bash
+docker build -t bscdataclay/pyclay:edge \
+--build-arg PYTHON_VERSION=3.10-bullseye .
 ```
 
 To use buildx for different architectures you may need to install `QEMU` binaries. You can install them with:

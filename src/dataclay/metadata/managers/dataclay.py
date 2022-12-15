@@ -124,6 +124,13 @@ class DataclayManager:
             raise DataclayDoesNotExistError(dataclay_id)
         return Dataclay.from_json(value)
 
+    def get_dataclay_id(self):
+        key = "/this"
+        value = self.etcd_client.get(key)[0]
+        if value is None:
+            raise DataclayDoesNotExistError("this")
+        return uuid.UUID(value.decode())
+
     def get_storage_location(self, sl_name):
         key = f"/storagelocation/{sl_name}"
         value = self.etcd_client.get(key)[0]

@@ -14,4 +14,4 @@ RUN mkdir -p /dataclay/storage; \
 
 # set workdir and entrypoint
 WORKDIR /workdir
-ENTRYPOINT ["python", "-m", "dataclay.executionenv.server"]
+CMD echo "MAMA"

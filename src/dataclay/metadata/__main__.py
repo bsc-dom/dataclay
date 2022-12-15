@@ -1,6 +1,7 @@
 import signal
 import threading
 import uuid
+import logging
 from concurrent import futures
 
 import grpc
@@ -10,14 +11,20 @@ from dataclay.conf import settings
 from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.servicer import MetadataServicer
 
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 
 def serve():
 
     stop_event = threading.Event()
 
     metadata_service = MetadataAPI(settings.ETCD_HOST, settings.ETCD_PORT)
+    if not metadata_service.is_ready(timeout=10):
+        logger.error("Etcd is not ready. Aborting!")
+        raise
 
-    dataclay_id = uuid.uuid4()
+    dataclay_id = metadata_service.get_dataclay_id()
 
     metadata_service.autoregister_mds(
         dataclay_id,
@@ -25,6 +32,8 @@ def serve():
         settings.METADATA_SERVICE_PORT,
         is_this=True,
     )
+
+    logger.info("Metadata service has been registered")
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.THREAD_POOL_WORKERS))
     metadata_service_pb2_grpc.add_MetadataServiceServicer_to_server(
