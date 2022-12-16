@@ -14,4 +14,3 @@ RUN mkdir -p /dataclay/storage; \
 
 # set workdir and entrypoint
 WORKDIR /workdir
-CMD echo "MAMA"
