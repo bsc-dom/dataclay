@@ -77,6 +77,8 @@ class Settings:
     # Indicates storage path for persistent data
     STORAGE_PATH = os.getenv("STORAGE_PATH", default="/dataclay/storage/")
 
+    # ETCD_PATH ¿?
+
     ###########
     # Tracing #
     ###########

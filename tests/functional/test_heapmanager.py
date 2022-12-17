@@ -1,7 +1,6 @@
 from dataclay import api
 import pytest
 from model.family import Family, Person, Dog
-from utils import init_client, mock_env_client
 
 
 def test_self_is_not_unloaded(init_client):

@@ -1,7 +1,6 @@
 from dataclay import api
 import pytest
 from model.family import Family, Person, Dog
-from utils import init_client, mock_env_client
 
 
 def test_make_persistent_basic(init_client):
