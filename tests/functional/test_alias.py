@@ -1,4 +1,3 @@
-from dataclay import api
 from dataclay.exceptions import *
 
 import pytest

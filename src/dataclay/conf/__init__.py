@@ -109,14 +109,16 @@ class Settings:
         self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
 
     # TODO: Rename to client_proeprties?
-    def load_client_properties(self):
-        self.METADATA_SERVICE_HOST = os.environ["METADATA_SERVICE_HOST"]
-        self.METADATA_SERVICE_PORT = int(os.getenv("METADATA_SERVICE_PORT", "16587"))
+    def load_client_properties(
+        self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
+    ):
+        self.METADATA_SERVICE_HOST = host or os.environ["METADATA_SERVICE_HOST"]
+        self.METADATA_SERVICE_PORT = port or int(os.getenv("METADATA_SERVICE_PORT", "16587"))
 
-        self.DC_USERNAME = os.environ["DC_USERNAME"]
-        self.DC_PASSWORD = os.environ["DC_PASSWORD"]
-        self.DEFAULT_DATASET = os.environ["DEFAULT_DATASET"]
-        self.LOCAL_BACKEND = os.getenv("LOCAL_BACKEND")
+        self.DC_USERNAME = username or os.environ["DC_USERNAME"]
+        self.DC_PASSWORD = password or os.environ["DC_PASSWORD"]
+        self.DEFAULT_DATASET = dataset or os.environ["DEFAULT_DATASET"]
+        self.LOCAL_BACKEND = local_backend or os.getenv("LOCAL_BACKEND")
 
     def load_metadata_properties(self):
         self.THREAD_POOL_WORKERS = os.getenv("THREAD_POOL_WORKERS", default=None)

@@ -1,4 +1,3 @@
-from dataclay import api
 import pytest
 from model.family import Family, Person, Dog
 
@@ -8,8 +7,6 @@ def test_activemethod_argument_make_persistent(init_client):
     A dataclay object is made persistent when passed as an argument
     to an activemethod of a persistent object
     """
-    # api.init()
-
     family = Family()
     person = Person("Marc", 24)
     family.make_persistent()
@@ -24,7 +21,6 @@ def test_activemethod_persistent_argument(init_client):
     """
     Persistent objects can be sent as activemethod arguments
     """
-    # api.init()
     family = Family()
     person = Person("Marc", 24)
     family.make_persistent()
@@ -37,7 +33,6 @@ def test_activemethod_defined_properties(init_client):
     """
     Object properties defined in class annotations are sychronized between the client and backend
     """
-    # api.init()
     person = Person("Marc", 24)
     assert person.age == 24
 
@@ -50,7 +45,6 @@ def test_activemethod_non_defined_properties(init_client):
     """
     Object properties not defined in class annotations are not synchronized between the client and backend
     """
-    # api.init()
     dog = Dog("Duna", 6)
     assert dog.dog_age == 6 * 7
 

@@ -24,33 +24,98 @@ LOCAL = _UNDEFINED_LOCAL
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
-_connection_initialized = False
-_initialized = False
+
+def client(host=None, port=None, username=None, password=None, dataset=None, local_backend=None):
+    return ClientAPI(
+        host=host,
+        port=port,
+        username=username,
+        password=password,
+        dataset=dataset,
+        local_backend=local_backend,
+    )
 
 
-# def client(username, password, etcd_ip,):
-#     return ClientAPI()
+class ClientAPI:
+    def __init__(
+        self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
+    ):
 
+        self.is_initialized = False
 
-def is_initialized() -> bool:
-    """Simple query for the _initialized flag.
+        self.host = host
+        self.port = port
+        self.username = username
+        self.password = password
+        self.dataset = dataset
+        self.local_backend = local_backend
 
-    :return: True if `init` has already been called, False otherwise.
-    """
-    return _initialized
+        # Set LOCAL_BACKEND
+        # if settings.LOCAL_BACKEND:
+        #     for ee_id, ee_info in self.runtime.ee_infos.items():
+        #         if ee_info.sl_name == settings.LOCAL_BACKEND:
+        #             global LOCAL
+        #             LOCAL = ee_id
+        #             break
+        #     else:
+        #         logger.warning(f"Backend with name '{settings.LOCAL_BACKEND}' not found, ignoring")
 
+    @tracer.start_as_current_span("start")
+    def start(self):
+        """Initialization made on the client-side, with .env settings
 
-# def reinitialize_logging() -> None:
-#     """
-#     Restart logging system with new logging dict configuration
-#     :return: None
-#     """
-#     warnings.warn("deprecated", DeprecationWarning)
-#     dictconfig = _get_logging_dict_config()
-#     logger.debug("Ready to close loggers, bye bye!")
-#     dictconfig["disable_existing_loggers"] = False
-#     logging.config.dictConfig(dictconfig)
-#     logger.debug("Logging reinitialized. Welcome back!")
+        Note that after a successful call to this method, subsequent calls will be
+        a no-operation.
+        """
+
+        if self.is_initialized:
+            logger.warning("Already initialized. Ignoring")
+            return
+
+        logger.info("Initializing client")
+
+        self.old_settings_dict = settings.__dict__.copy()
+        settings.load_client_properties(
+            self.host, self.port, self.username, self.password, self.dataset, self.local_backend
+        )
+
+        self.old_runtime = get_runtime()
+        self.runtime = ClientRuntime(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
+        set_runtime(self.runtime)
+
+        # Create a new session
+        self.session = self.runtime.metadata_service.new_session(
+            settings.DC_USERNAME, settings.DC_PASSWORD, settings.DEFAULT_DATASET
+        )
+        self.runtime.session = self.session
+        self.runtime.metadata_service.session = self.session
+
+        # Cache the execution environment infos
+        self.runtime.update_backend_clients()
+
+        # Cache the dataclay_id, to avoid later request
+        self.runtime.dataclay_id
+
+        logger.debug(f"Started session {self.session.id}")
+        self.is_initialized = True
+
+    @tracer.start_as_current_span("stop")
+    def stop(self):
+        if not self.is_initialized:
+            logger.warning("Already finished. Ignoring")
+            return
+
+        logger.info("Finishing client API")
+        self.runtime.stop()
+        settings.__dict__.update(self.old_settings_dict)
+        self.is_initialized = False
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, *args):
+        self.stop()
 
 
 ###############
@@ -162,87 +227,6 @@ def federate_all_objects(dest_dataclay_id):
     :rtype: None
     """
     return get_runtime().federate_all_objects(dest_dataclay_id)
-
-
-# TODO: Structure in smaller functions
-def init():
-    """Initialization made on the client-side, with .env settings
-
-    Note that after a successful call to this method, subsequent calls will be
-    a no-operation.
-    """
-
-    with tracer.start_as_current_span("init") as init_span:
-
-        logger.info("Initializing dataClay API")
-
-        # Checks if dataclay is already initialized
-        global _initialized
-        if _initialized:
-            logger.warning("Already initialized --ignoring")
-            return
-
-        settings.load_client_properties()
-
-        # Initialize ClientRuntime
-        runtime = ClientRuntime(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
-        set_runtime(runtime)
-
-        # TODO: Do we need it for federation?
-        # Get dataclay id and map it to Metadata Service client
-        # runtime.backend_clients[runtime.metadata_service.get_dataclay_id()] = client
-
-        # wait for 1 python backend
-        # TODO: implement get_backends_info in MDS
-        # while len(get_backends_info()) < 1:
-        #     logger.info("Waiting for any python backend to be ready ...")
-        #     sleep(2)
-
-        # Create a new session
-        session = runtime.metadata_service.new_session(
-            settings.DC_USERNAME, settings.DC_PASSWORD, settings.DEFAULT_DATASET
-        )
-        runtime.session = session
-        runtime.metadata_service.session = session
-
-        # Cache the execution environment infos
-        runtime.update_backend_clients()
-
-        # Cache the dataclay_id, to avoid later request
-        runtime.dataclay_id
-
-        # Set LOCAL_BACKEND
-        if settings.LOCAL_BACKEND:
-            for ee_id, ee_info in runtime.ee_infos.items():
-                if ee_info.sl_name == settings.LOCAL_BACKEND:
-                    global LOCAL
-                    LOCAL = ee_id
-                    break
-            else:
-                logger.warning(f"Backend with name '{settings.LOCAL_BACKEND}' not found, ignoring")
-
-        _initialized = True
-        logger.debug(f"Started session {session.id}")
-
-        init_span.add_event("marcevent - ending init")
-
-
-def finish():
-    with tracer.start_as_current_span("finish") as span:
-        global _initialized
-        if not _initialized:
-            logger.warning("Already finished --ignoring")
-            return
-        global _connection_initialized
-        logger.info("Finishing dataClay API")
-        # finish_tracing()
-
-        get_runtime().stop()
-
-        # unload settings
-        # unload_settings()
-        _initialized = False
-        _connection_initialized = False
 
 
 ######################################

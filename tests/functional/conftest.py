@@ -1,4 +1,4 @@
-from dataclay import api
+import dataclay
 import uuid
 import time
 import subprocess
@@ -57,49 +57,19 @@ def start_backend(start_mds, dataclay_path):
     backend.kill()
 
 
-# @pytest.fixture(scope="session")
-# def start_dataclay(tmp_path_factory):
-
-#     etcd = subprocess.Popen(["etcd", "--data-dir", f"{tmp_path_factory}/metadata.etcd"])
-#     subprocess.run(["etcdctl", "put", "/this", str(uuid.uuid4())])
-#     time.sleep(1)
-
-#     env = os.environ | {"ETCD_HOST": "127.0.0.1", "STORAGE_PATH": f"{tmp_path_factory}/storage"}
-#     mds = subprocess.Popen(["python", "-m", "dataclay.metadata"], env=env)
-#     time.sleep(1)
-
-#     backend = subprocess.Popen(["python", "-m", "dataclay.backend"], env=env)
-#     time.sleep(1)
-
-#     env = os.environ | {"METADATA_SERVICE_HOST": "127.0.0.1"}
-
-#     subprocess.run(
-#         ["python", "-m", "dataclay.metadata.cli", "new_account", "user", "s3cret"], env=env
-#     )
-#     subprocess.run(
-#         ["python", "-m", "dataclay.metadata.cli", "new_dataset", "user", "s3cret", "myDataset"],
-#         env=env,
-#     )
-#     subprocess.run(
-#         ["python", "-m", "dataclay.metadata.cli", "new_dataset", "user", "s3cret", "auxDataset"],
-#         env=env,
-#     )
-
-#     yield 123
-#     backend.kill()
-#     mds.kill()
-#     etcd.kill()
+# @pytest.fixture
+# def mock_env_client(monkeypatch):
+#     monkeypatch.setenv("METADATA_SERVICE_HOST", "127.0.0.1")
+#     monkeypatch.setenv("DC_USERNAME", "user")
+#     monkeypatch.setenv("DC_PASSWORD", "s3cret")
+#     monkeypatch.setenv("DEFAULT_DATASET", "myDataset")
 
 
 @pytest.fixture
-def mock_env_client(start_backend, monkeypatch):
-    monkeypatch.setenv("METADATA_SERVICE_HOST", "127.0.0.1")
-    monkeypatch.setenv("DC_USERNAME", "user")
-    monkeypatch.setenv("DC_PASSWORD", "s3cret")
-    monkeypatch.setenv("DEFAULT_DATASET", "myDataset")
-
-
-@pytest.fixture
-def init_client(mock_env_client):
-    yield api.init()
-    api.finish()
+def init_client(start_backend):
+    client = dataclay.client(
+        host="127.0.0.1", username="user", password="s3cret", dataset="myDataset"
+    )
+    client.start()
+    yield client
+    client.stop()
