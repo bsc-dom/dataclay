@@ -36,6 +36,16 @@ def client(host=None, port=None, username=None, password=None, dataset=None, loc
     )
 
 
+def init():
+    client_api = ClientAPI()
+    client_api.start()
+    return client_api
+
+
+def finish():
+    pass
+
+
 class ClientAPI:
     def __init__(
         self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
@@ -109,6 +119,9 @@ class ClientAPI:
         self.runtime.stop()
         settings.__dict__.update(self.old_settings_dict)
         self.is_initialized = False
+
+    def __del__(self):
+        self.stop()
 
     def __enter__(self):
         self.start()

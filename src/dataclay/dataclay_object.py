@@ -31,7 +31,7 @@ tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 
-class CounterLock:
+class ReadWriteLock:
     """Atomic Counter lock that can only be acquired when the internal counter is zero.
 
     If the lock is acquired, it cannot be incremented until the lock is release.
@@ -58,6 +58,7 @@ class CounterLock:
 
     def acquire(self, timeout=None):
         with self.cv:
+            # NOTE: Timeout to avoid dead lock when activemethod call flush_all
             if self.cv.wait_for(lambda: self.counter == 0, timeout):
                 return self.lock.acquire(blocking=False)
             else:
@@ -79,6 +80,7 @@ def activemethod(func):
             # If the object is local executes the method locally,
             # else, executes the method in the backend
             if self._dc_is_local:
+                # TODO: Use active_counter only if inside backend
                 self._xdc_active_counter.add()
                 result = func(self, *args, **kwargs)
                 self._xdc_active_counter.sub()
@@ -176,7 +178,7 @@ class DataClayObject:
     _dc_is_read_only: bool
     _dc_is_loaded: bool
     _dc_is_local: bool
-    # _xdc_active_counter: CounterLock # Commented to not break Pickle...
+    # _xdc_active_counter: ReadWriteLock # Commented to not break Pickle...
 
     def __init_subclass__(cls) -> None:
         """Defines a @property for each annotatted attribute"""
@@ -217,7 +219,7 @@ class DataClayObject:
         self._dc_class = self.__class__
         self._dc_is_registered = False  # cannot be unset (unregistered)
         self._dc_is_loaded = True
-        self._xdc_active_counter = CounterLock()
+        self._xdc_active_counter = ReadWriteLock()
 
     @property
     def dataclay_id(self):
