@@ -5,11 +5,11 @@ import os
 import pickle
 import re
 
-from dataclay.util.Initializer import size_tracking
 from dataclay.serialization.python.DataClayPythonWrapper import DataClayPythonWrapper
 from dataclay.serialization.python.lang.BooleanWrapper import BooleanWrapper
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
 from dataclay.serialization.python.lang.StringWrapper import StringWrapper
+from dataclay.util.Initializer import size_tracking
 
 logger = logging.getLogger(__name__)
 

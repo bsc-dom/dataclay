@@ -1,8 +1,8 @@
 import json
 import logging
 
-from passlib.hash import bcrypt
 from opentelemetry import trace
+from passlib.hash import bcrypt
 
 from dataclay.exceptions.exceptions import *
 from dataclay.utils.json import UUIDEncoder, uuid_parser

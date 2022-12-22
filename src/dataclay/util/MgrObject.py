@@ -4,9 +4,9 @@ import logging
 
 from yaml import Dumper, Loader, dump, load
 
-from dataclay.util.Initializer import size_tracking
 from dataclay.serialization.DataClaySerializable import DataClaySerializable
 from dataclay.serialization.python.lang.StringWrapper import StringWrapper
+from dataclay.util.Initializer import size_tracking
 
 logger = logging.getLogger(__name__)
 

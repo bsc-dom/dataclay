@@ -9,10 +9,10 @@ import dataclay.client.api
 
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
-from dataclay.runtime import get_runtime
 
 # Also "publish" the split method
 from dataclay.contrib.splitting import split
+from dataclay.runtime import get_runtime
 
 # The StorageDict and StorageList data structures
 from .models.storagedict import StorageDict

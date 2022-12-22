@@ -15,11 +15,12 @@ requires some specific methods from here. But this may change in the future.
 
 import os.path
 
+from dataclay.conf import settings
+from dataclay.runtime import get_runtime, settings
+from dataclay.util.YamlParser import dataclay_yaml_load
+
 # from lru import LRU
 
-from dataclay.runtime import get_runtime, settings
-from dataclay.conf import settings
-from dataclay.util.YamlParser import dataclay_yaml_load
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"

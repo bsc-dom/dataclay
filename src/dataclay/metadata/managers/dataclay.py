@@ -1,9 +1,10 @@
 import json
 import uuid
 
-from dataclay.exceptions.exceptions import *
 from dataclay_common.protos import common_messages_pb2
 from dataclay_common.protos.common_messages_pb2 import LANG_NONE
+
+from dataclay.exceptions.exceptions import *
 from dataclay.utils.json import UUIDEncoder, uuid_parser
 
 

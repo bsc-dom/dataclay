@@ -1,9 +1,11 @@
 import logging
 import uuid
-import grpc
 from uuid import UUID
 
 import etcd3
+import grpc
+from opentelemetry import trace
+
 from dataclay.exceptions.exceptions import *
 from dataclay.metadata.managers.account import Account, AccountManager
 from dataclay.metadata.managers.dataclay import (
@@ -15,8 +17,6 @@ from dataclay.metadata.managers.dataclay import (
 from dataclay.metadata.managers.dataset import Dataset, DatasetManager
 from dataclay.metadata.managers.object import ObjectManager, ObjectMetadata
 from dataclay.metadata.managers.session import Session, SessionManager
-
-from opentelemetry import trace
 
 FEDERATOR_ACCOUNT_USERNAME = "Federator"
 EXTERNAL_OBJECTS_DATASET_NAME = "ExternalObjects"

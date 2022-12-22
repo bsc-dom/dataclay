@@ -1,7 +1,8 @@
-from dataclay import DataClayObject, activemethod
+from typing import Any
+
 import numpy as np
 
-from typing import Any
+from dataclay import DataClayObject, activemethod
 
 
 class Matrix(DataClayObject):

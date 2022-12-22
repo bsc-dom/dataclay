@@ -1,5 +1,5 @@
 import pytest
-from model.family import Family, Person, Dog
+from model.family import Dog, Family, Person
 
 
 def test_make_persistent_basic(init_client):

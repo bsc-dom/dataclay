@@ -3,6 +3,7 @@ import logging
 import os
 
 import grpc
+
 from dataclay.metadata.client import MetadataClient
 
 logging.basicConfig(level=logging.DEBUG)

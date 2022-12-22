@@ -1,8 +1,10 @@
-import dataclay
-import time
-import subprocess
 import os
+import subprocess
+import time
+
 import pytest
+
+import dataclay
 
 
 @pytest.fixture(scope="session")

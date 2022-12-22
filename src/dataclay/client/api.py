@@ -7,8 +7,8 @@ core and sets the "client" mode for the library.
 
 __all__ = ["init", "finish", "DataClayObject"]
 
-import logging.config
 import logging
+import logging.config
 
 from opentelemetry import trace
 

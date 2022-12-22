@@ -1,5 +1,7 @@
 """ Class description goes here. """
-from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
+from dataclay.serialization.lib.ObjectWithDataParamOrReturn import (
+    ObjectWithDataParamOrReturn,
+)
 
 """Deserialization code related to DataClay objects
 
@@ -17,7 +19,9 @@ from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.exceptions.exceptions import InvalidPythonSignature
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper
 from dataclay.serialization.python.lang.VLQIntegerWrapper import VLQIntegerWrapper
-from dataclay.serialization.python.util.PyTypeWildcardWrapper import PyTypeWildcardWrapper
+from dataclay.serialization.python.util.PyTypeWildcardWrapper import (
+    PyTypeWildcardWrapper,
+)
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
 __copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"

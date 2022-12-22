@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
+import io
 import logging
 import pickle
 import traceback
 import uuid
 from typing import TYPE_CHECKING
-from dataclay.utils.pickle import RecursiveLocalUnpickler
-import io
 
 from opentelemetry import trace
 
@@ -18,6 +17,7 @@ from dataclay.backend.runtime import BackendRuntime
 from dataclay.conf import settings
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.runtime import UUIDLock, set_runtime
+from dataclay.utils.pickle import RecursiveLocalUnpickler
 
 if TYPE_CHECKING:
 

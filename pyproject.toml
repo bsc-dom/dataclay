@@ -7,3 +7,9 @@ build-backend = "setuptools.build_meta"
 # addopts = [
 #     "--import-mode=importlib",
 # ]
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 100

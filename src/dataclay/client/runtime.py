@@ -4,19 +4,19 @@ The `init` and `finish` functions are availble through the
 dataclay.api package.
 """
 
+import io
 import logging
 import pickle
 import random
 import traceback
-import io
 
 from opentelemetry import trace
 
-from dataclay.utils.pickle import RecursiveLocalPickler
 from dataclay.backend.client import BackendClient
 from dataclay.dataclay_object import DataClayObject
 from dataclay.metadata.client import MetadataClient
 from dataclay.runtime import DataClayRuntime
+from dataclay.utils.pickle import RecursiveLocalPickler
 
 UNDEFINED_LOCAL = object()
 

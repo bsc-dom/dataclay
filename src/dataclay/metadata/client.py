@@ -10,10 +10,10 @@ from dataclay_common.protos import (
 )
 from google.protobuf.empty_pb2 import Empty
 
-from dataclay.utils.decorators import grpc_error_handler
 from dataclay.metadata.managers.dataclay import ExecutionEnvironment
 from dataclay.metadata.managers.object import ObjectMetadata
 from dataclay.metadata.managers.session import Session
+from dataclay.utils.decorators import grpc_error_handler
 
 logger = logging.getLogger(__name__)
 

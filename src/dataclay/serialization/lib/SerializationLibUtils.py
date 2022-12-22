@@ -12,9 +12,13 @@ import dataclay_common.protos.common_messages_pb2 as common_messages
 import dataclay
 from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.exceptions.exceptions import InvalidPythonSignature
-from dataclay.serialization.lib.ObjectWithDataParamOrReturn import ObjectWithDataParamOrReturn
+from dataclay.serialization.lib.ObjectWithDataParamOrReturn import (
+    ObjectWithDataParamOrReturn,
+)
 from dataclay.serialization.lib.PersistentParamOrReturn import PersistentParamOrReturn
-from dataclay.serialization.lib.SerializedParametersOrReturn import SerializedParametersOrReturn
+from dataclay.serialization.lib.SerializedParametersOrReturn import (
+    SerializedParametersOrReturn,
+)
 from dataclay.serialization.python.lang.VLQIntegerWrapper import VLQIntegerWrapper
 from dataclay.serialization.python.util.PyTypeWildcardWrapper import (
     PyTypeWildcardWrapper,

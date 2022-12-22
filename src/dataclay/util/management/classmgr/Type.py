@@ -41,7 +41,9 @@ class Type(ManagementObject):
             full_name = type_instance.get_class_extradata().full_name
             namespace = type_instance.get_class_extradata().namespace
             # TODO: Check UserType fields
-            from .UserType import UserType  # Import after creation to avoid circular imports
+            from .UserType import (
+                UserType,  # Import after creation to avoid circular imports
+            )
 
             return UserType(
                 namespace=namespace,
@@ -101,7 +103,9 @@ class Type(ManagementObject):
             if namespace in NATIVE_PACKAGES:
                 return Type(signature=type_str, includes=[])
             else:
-                from .UserType import UserType  # Import after creation to avoid circular imports
+                from .UserType import (
+                    UserType,  # Import after creation to avoid circular imports
+                )
 
                 return UserType(
                     namespace=namespace,

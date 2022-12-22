@@ -11,12 +11,12 @@ from __future__ import annotations
 
 import functools
 import logging
+import threading
 import traceback
 import uuid
 from collections import ChainMap
 from inspect import get_annotations
 from uuid import UUID
-import threading
 
 from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from opentelemetry import trace

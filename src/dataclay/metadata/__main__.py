@@ -1,7 +1,7 @@
+import logging
 import signal
 import threading
 import uuid
-import logging
 from concurrent import futures
 
 import grpc
