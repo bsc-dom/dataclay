@@ -16,6 +16,6 @@ tests/mock/client.properties
 .tox
 *__pycache__*
 /.idea/
-/venv/
+/venv*/
 /pyclay.iml
 /.vscode

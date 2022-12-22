@@ -99,10 +99,9 @@ class BackendClient:
     def is_ready(self, timeout=None):
         try:
             grpc.channel_ready_future(self.channel).result(timeout)
+            return True
         except grpc.FutureTimeoutError:
             return False
-        else:
-            return True
 
     def close(self):
         """Closing channel by deleting channel and stub"""

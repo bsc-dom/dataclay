@@ -1,5 +1,4 @@
 import dataclay
-import uuid
 import time
 import subprocess
 import os
@@ -7,38 +6,21 @@ import pytest
 
 
 @pytest.fixture(scope="session")
-def dataclay_path(tmp_path_factory):
-    dataclay_path = tmp_path_factory.mktemp("dataclay")
-    storage_path = dataclay_path / "storage"
-    storage_path.mkdir()
-    return dataclay_path
+def docker_compose_command():
+    return "docker compose"
 
 
 @pytest.fixture(scope="session")
-def start_etcd(dataclay_path):
-    etcd = subprocess.Popen(["etcd", "--data-dir", "metadata.etcd"], cwd=dataclay_path)
-    subprocess.run(["etcdctl", "put", "/this", str(uuid.uuid4())])
-    time.sleep(1)
-    yield etcd
-    etcd.kill()
+def http_service(docker_ip, docker_services):
+    """Ensure that HTTP service is up and responsive."""
 
-
-@pytest.fixture(scope="session")
-def start_mds(start_etcd, dataclay_path):
-    env = os.environ | {"ETCD_HOST": "127.0.0.1", "STORAGE_PATH": f"{dataclay_path}/storage"}
-    mds = subprocess.Popen(["python", "-m", "dataclay.metadata"], env=env, cwd=dataclay_path)
-    time.sleep(1)
-    yield mds
-    mds.kill()
-
-
-@pytest.fixture(scope="session")
-def start_backend(start_mds, dataclay_path):
-    env = os.environ | {"ETCD_HOST": "127.0.0.1", "STORAGE_PATH": f"{dataclay_path}/storage"}
-    backend = subprocess.Popen(
-        ["python", "-m", "dataclay.backend"], env=env, cwd="tests/functional"
-    )
-    time.sleep(1)
+    # `port_for` takes a container port and returns the corresponding host port
+    # port = docker_services.port_for("httpbin", 80)
+    # url = "http://{}:{}".format(docker_ip, port)
+    # docker_services.wait_until_responsive(
+    #     timeout=30.0, pause=0.1, check=lambda: is_responsive("127.0.0.1", 2379, 1)
+    # )
+    time.sleep(5)
 
     env = os.environ | {"METADATA_SERVICE_HOST": "127.0.0.1"}
 
@@ -53,20 +35,12 @@ def start_backend(start_mds, dataclay_path):
         ["python", "-m", "dataclay.metadata.cli", "new_dataset", "user", "s3cret", "auxDataset"],
         env=env,
     )
-    yield backend
-    backend.kill()
+
+    return "hello"
 
 
-# @pytest.fixture
-# def mock_env_client(monkeypatch):
-#     monkeypatch.setenv("METADATA_SERVICE_HOST", "127.0.0.1")
-#     monkeypatch.setenv("DC_USERNAME", "user")
-#     monkeypatch.setenv("DC_PASSWORD", "s3cret")
-#     monkeypatch.setenv("DEFAULT_DATASET", "myDataset")
-
-
-@pytest.fixture
-def init_client(start_backend):
+@pytest.fixture(scope="session")
+def init_client(http_service):
     client = dataclay.client(
         host="127.0.0.1", username="user", password="s3cret", dataset="myDataset"
     )

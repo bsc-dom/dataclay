@@ -113,6 +113,13 @@ docker build -t bscdataclay/pyclay:edge \
 --build-arg PYTHON_VERSION=3.10-bullseye .
 ```
 
+Internal dev testing
+```bash
+docker build -t bscdataclay/pyclay:dev -f Dockerfile.dev \
+--build-arg PYTHON_VERSION=3.10-bullseye .
+```
+
+
 To use buildx for different architectures you may need to install `QEMU` binaries. You can install them with:
 
 ```bash
