@@ -10,7 +10,7 @@ from dataclay_common.protos import (
 )
 from google.protobuf.empty_pb2 import Empty
 
-from dataclay.metadata.managers.dataclay import ExecutionEnvironment
+from dataclay.metadata.managers.dataclay import Backend
 from dataclay.metadata.managers.object import ObjectMetadata
 from dataclay.metadata.managers.session import Session
 from dataclay.utils.decorators import grpc_error_handler
@@ -99,7 +99,7 @@ class MetadataClient:
 
         result = dict()
         for id, proto in response.exec_envs.items():
-            result[UUID(id)] = ExecutionEnvironment.from_proto(proto)
+            result[UUID(id)] = Backend.from_proto(proto)
         return result
 
     @grpc_error_handler

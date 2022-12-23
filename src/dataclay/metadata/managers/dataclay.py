@@ -8,7 +8,7 @@ from dataclay.exceptions.exceptions import *
 from dataclay.utils.json import UUIDEncoder, uuid_parser
 
 
-class ExecutionEnvironment:
+class Backend:
     def __init__(self, id, hostname, port, sl_name, language, dataclay_id):
         self.id = id
         self.hostname = hostname
@@ -18,7 +18,7 @@ class ExecutionEnvironment:
         self.dataclay_id = dataclay_id
 
     def key(self):
-        return f"/executionenvironment/{self.id}"
+        return f"/backend/{self.id}"
 
     def value(self):
         return json.dumps(self.__dict__, cls=UUIDEncoder)
@@ -41,7 +41,7 @@ class ExecutionEnvironment:
 
     # TODO: Improve it with __getattributes__ and interface
     def get_proto(self):
-        return common_messages_pb2.ExecutionEnvironment(
+        return common_messages_pb2.Backend(
             id=str(self.id),
             hostname=self.hostname,
             port=self.port,
@@ -108,12 +108,12 @@ class DataclayManager:
     def get_all_execution_environments(self, lang=None):
         """Get all execution environments"""
 
-        prefix = "/executionenvironment/"
+        prefix = "/backend/"
         values = self.etcd_client.get_prefix(prefix)
         exec_envs = dict()
         for value, metadata in values:
             key = metadata.key.decode().split("/")[-1]
-            exec_env = ExecutionEnvironment.from_json(value)
+            exec_env = Backend.from_json(value)
             if lang is None or lang == LANG_NONE or exec_env.language == lang:
                 exec_envs[uuid.UUID(key)] = exec_env
         return exec_envs
@@ -142,7 +142,7 @@ class DataclayManager:
     def exists_ee(self, id):
         """Returns true if the execution environment exists"""
 
-        key = f"/executionenvironment/{id}"
+        key = f"/backend/{id}"
         value = self.etcd_client.get(key)[0]
         return value is not None
 
@@ -153,7 +153,7 @@ class DataclayManager:
         value = self.etcd_client.get(key)[0]
         return value is not None
 
-    def new_execution_environment(self, exe_env: ExecutionEnvironment):
+    def new_execution_environment(self, exe_env: Backend):
         """Creates a new execution environment. Checks that it doesn't exists"""
 
         with self.etcd_client.lock(self.lock):

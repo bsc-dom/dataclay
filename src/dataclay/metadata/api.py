@@ -9,9 +9,9 @@ from opentelemetry import trace
 from dataclay.exceptions.exceptions import *
 from dataclay.metadata.managers.account import Account, AccountManager
 from dataclay.metadata.managers.dataclay import (
+    Backend,
     Dataclay,
     DataclayManager,
-    ExecutionEnvironment,
     StorageLocation,
 )
 from dataclay.metadata.managers.dataset import Dataset, DatasetManager
@@ -239,10 +239,8 @@ class MetadataAPI:
         """Autoregister execution environment"""
         with tracer.start_as_current_span("autoregister_ee", attributes=locals()):
             # TODO: Check if ee already exists. If so, update its information.
-            # TODO: Check connection to ExecutionEnvironment
-            exe_env = ExecutionEnvironment(
-                id, hostname, port, sl_name, lang, self.get_dataclay_id()
-            )
+            # TODO: Check connection to Backend
+            exe_env = Backend(id, hostname, port, sl_name, lang, self.get_dataclay_id())
             self.dataclay_mgr.new_execution_environment(exe_env)
             # TODO: Deploy classes to backend? (better call from ee)
             logger.info(
