@@ -3,16 +3,16 @@ import logging
 from uuid import UUID
 
 import grpc
-from dataclay_common.protos import (
-    common_messages_pb2,
-    metadata_service_pb2,
-    metadata_service_pb2_grpc,
-)
 from google.protobuf.empty_pb2 import Empty
 
 from dataclay.metadata.managers.dataclay import Backend
 from dataclay.metadata.managers.object import ObjectMetadata
 from dataclay.metadata.managers.session import Session
+from dataclay.protos import (
+    common_messages_pb2,
+    metadata_service_pb2,
+    metadata_service_pb2_grpc,
+)
 from dataclay.utils.decorators import grpc_error_handler
 
 logger = logging.getLogger(__name__)

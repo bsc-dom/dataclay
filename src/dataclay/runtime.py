@@ -13,10 +13,10 @@ from uuid import UUID
 from weakref import WeakValueDictionary
 
 import grpc
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 
 from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
+from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 
 if TYPE_CHECKING:
 

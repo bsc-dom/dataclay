@@ -17,9 +17,9 @@ sugar, but should be taken into account for cross-language correctness.
 from collections import namedtuple
 from functools import partial
 
-from dataclay_common.protos.common_messages_pb2 import Langs
 from yaml import Loader, dump, load
 
+from dataclay.protos.common_messages_pb2 import Langs
 from dataclay.util.YamlIgnores import IGNORE_CLASSES, IGNORE_PREFIXES
 
 from .ids import _uuid

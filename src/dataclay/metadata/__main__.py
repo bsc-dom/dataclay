@@ -5,11 +5,11 @@ import uuid
 from concurrent import futures
 
 import grpc
-from dataclay_common.protos import metadata_service_pb2_grpc
 
 from dataclay.conf import settings
 from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.servicer import MetadataServicer
+from dataclay.protos import metadata_service_pb2_grpc
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

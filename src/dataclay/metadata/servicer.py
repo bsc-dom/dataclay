@@ -3,14 +3,14 @@ import traceback
 from uuid import UUID
 
 import grpc
-from dataclay_common.protos import (
+from google.protobuf.empty_pb2 import Empty
+
+from dataclay.metadata.managers.object import ObjectMetadata
+from dataclay.protos import (
     common_messages_pb2,
     metadata_service_pb2,
     metadata_service_pb2_grpc,
 )
-from google.protobuf.empty_pb2 import Empty
-
-from dataclay.metadata.managers.object import ObjectMetadata
 
 logger = logging.getLogger(__name__)
 

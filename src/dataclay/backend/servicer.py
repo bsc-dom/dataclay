@@ -13,18 +13,18 @@ from concurrent import futures
 from uuid import UUID
 
 import grpc
-from dataclay_common.protos import (
-    common_messages_pb2,
-    dataservice_messages_pb2,
-    dataservice_pb2_grpc,
-)
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from google.protobuf.empty_pb2 import Empty
 from google.protobuf.wrappers_pb2 import BytesValue
 
 from dataclay.backend.api import BackendAPI
 from dataclay.conf import settings
 from dataclay.exceptions.exceptions import DataClayException
+from dataclay.protos import (
+    common_messages_pb2,
+    dataservice_messages_pb2,
+    dataservice_pb2_grpc,
+)
+from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.runtime import get_runtime
 
 logger = logging.getLogger(__name__)

@@ -5,16 +5,16 @@ import traceback
 from uuid import UUID
 
 import grpc
-from dataclay_common.protos import common_messages_pb2 as CommonMessages
-from dataclay_common.protos import (
-    dataservice_messages_pb2,
-    dataservice_pb2,
-    dataservice_pb2_grpc,
-)
 from grpc._cython.cygrpc import ChannelArgKey
 
 from dataclay.conf import settings
 from dataclay.exceptions.exceptions import DataClayException
+from dataclay.protos import common_messages_pb2 as CommonMessages
+from dataclay.protos import (
+    dataservice_messages_pb2,
+    dataservice_pb2,
+    dataservice_pb2_grpc,
+)
 from dataclay.utils.decorators import grpc_error_handler
 
 logger = logging.getLogger(__name__)

@@ -13,8 +13,7 @@ functions are more or less adapted here.
 import logging
 from io import BytesIO
 
-import dataclay_common.protos.common_messages_pb2 as common_messages
-
+import dataclay.protos.common_messages_pb2 as common_messages
 from dataclay.communication.grpc.Utils import get_metadata
 from dataclay.exceptions.exceptions import InvalidPythonSignature
 from dataclay.serialization.python.lang.IntegerWrapper import IntegerWrapper

@@ -18,10 +18,10 @@ from collections import ChainMap
 from inspect import get_annotations
 from uuid import UUID
 
-from dataclay_common.protos.common_messages_pb2 import LANG_PYTHON
 from opentelemetry import trace
 
 from dataclay.metadata.managers.object import ObjectMetadata
+from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.runtime import get_runtime
 
 DC_PROPERTY_PREFIX = "_dc_property_"

@@ -1,10 +1,10 @@
 import json
 import uuid
 
-from dataclay_common.protos import common_messages_pb2
 from opentelemetry import trace
 
 from dataclay.exceptions.exceptions import *
+from dataclay.protos import common_messages_pb2
 from dataclay.utils.json import UUIDEncoder, uuid_parser
 
 tracer = trace.get_tracer(__name__)
