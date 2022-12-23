@@ -29,7 +29,7 @@ services:
       - ETCD_HOST=etcd
     command: python -m dataclay.metadata
     volumes:
-      - .:/pyclay
+      - .:/pyclay:ro
 
   backend:
     image: "bscdataclay/pyclay:dev"
@@ -43,5 +43,5 @@ services:
       - DEBUG=true
     command: python -m dataclay.backend
     volumes:
-      - .:/pyclay
-      - ./tests/functional/model:/workdir/model
+      - .:/pyclay:ro
+      - ./tests/functional/model:/workdir/model:ro
