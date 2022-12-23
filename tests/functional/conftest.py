@@ -13,7 +13,12 @@ def docker_compose_command():
 
 
 @pytest.fixture(scope="session")
-def http_service(docker_ip, docker_services):
+def docker_compose_file(pytestconfig):
+    return os.path.join(str(pytestconfig.rootdir), "tests/functional", "docker-compose.yml")
+
+
+@pytest.fixture(scope="session")
+def deploy_dataclay(docker_ip, docker_services):
     """Ensure that HTTP service is up and responsive."""
 
     # `port_for` takes a container port and returns the corresponding host port
@@ -42,7 +47,7 @@ def http_service(docker_ip, docker_services):
 
 
 @pytest.fixture(scope="session")
-def init_client(http_service):
+def start_client(deploy_dataclay):
     client = dataclay.client(
         host="127.0.0.1", username="user", password="s3cret", dataset="myDataset"
     )

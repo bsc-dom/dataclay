@@ -15,7 +15,7 @@ services:
     depends_on:
       - etcd
     restart: "no"
-    command: etcdctl put --endpoints http://etcd:2379 /this ${DATACLAY_ID:?err}
+    command: etcdctl put --endpoints http://etcd:2379 /this b59fda54-c5a5-4629-9227-fde096a0c799
 
 
   metadata-service:
@@ -29,7 +29,7 @@ services:
       - ETCD_HOST=etcd
     command: python -m dataclay.metadata
     volumes:
-      - ../:/pyclay
+      - ../../:/pyclay
 
   backend:
     image: "bscdataclay/pyclay:dev"
@@ -43,5 +43,5 @@ services:
       - DEBUG=true
     command: python -m dataclay.backend
     volumes:
-      - ../:/pyclay
-      - ./functional/model:/workdir/model
+      - ../../:/pyclay
+      - ./model:/workdir/model
