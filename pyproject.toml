@@ -2,14 +2,11 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-# [tool.pytest.ini_options]
-# pythonpath = "tests/functional"
-# addopts = [
-#     "--import-mode=importlib",
-# ]
-
 [tool.isort]
 profile = "black"
 
 [tool.black]
 line-length = 100
+
+[tool.pylint.format]
+max-line-length = 100
