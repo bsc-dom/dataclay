@@ -1,0 +1,3 @@
+[submodule "dataclay-common"]
+	path = dataclay-common
+	url = git@github.com:bsc-dom/dataclay-common.git
