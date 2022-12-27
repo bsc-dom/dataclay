@@ -10,23 +10,18 @@ services:
       - 2379:2379
       - 2380:2380
 
-  etcdsetup:
-    image: "bitnami/etcd:latest"
-    depends_on:
-      - etcd
-    restart: "no"
-    command: etcdctl put --endpoints http://etcd:2379 /this b59fda54-c5a5-4629-9227-fde096a0c799
-
-
   metadata-service:
     image: "bscdataclay/pyclay:dev"
     depends_on:
-      etcdsetup:
-        condition: service_completed_successfully
+      - etcd
     ports:
       - "16587:16587"
     environment:
       - ETCD_HOST=etcd
+      - ETCD_PORT
+      - DATACLAY_ID
+      - DATACLAY_PASSWORD
+      - DATACLAY_USER
     command: python -m dataclay.metadata
     volumes:
       - ../../:/pyclay:ro
@@ -34,12 +29,11 @@ services:
   backend:
     image: "bscdataclay/pyclay:dev"
     depends_on:
-      etcdsetup:
-        condition: service_completed_successfully
+      - etcd
     environment:
-      - DC_BACKEND_NAME=DS1
       - ETCD_HOST=etcd
-      - ETCD_PORT=2379
+      - ETCD_PORT
+      - DC_BACKEND_NAME
       - DEBUG=true
     command: python -m dataclay.backend
     volumes:

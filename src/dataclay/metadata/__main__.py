@@ -7,6 +7,7 @@ from concurrent import futures
 import grpc
 
 from dataclay.conf import settings
+from dataclay.exceptions.exceptions import *
 from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.servicer import MetadataServicer
 from dataclay.protos import metadata_service_pb2_grpc
@@ -24,7 +25,12 @@ def serve():
         logger.error("Etcd is not ready. Aborting!")
         raise
 
-    dataclay_id = metadata_service.get_dataclay_id()
+    try:
+        dataclay_id = metadata_service.get_dataclay_id()
+        settings.DATACLAY_ID = dataclay_id
+    except DataclayDoesNotExistError:
+        dataclay_id = settings.DATACLAY_ID
+        metadata_service.put_dataclay_id(dataclay_id)
 
     metadata_service.autoregister_mds(
         dataclay_id,

@@ -199,6 +199,10 @@ class MetadataAPI:
         dataclay_id = self.dataclay_mgr.get_dataclay_id()
         return dataclay_id
 
+    @tracer.start_as_current_span("put_dataclay_id")
+    def put_dataclay_id(self, dataclay_id) -> UUID:
+        self.dataclay_mgr.put_dataclay_id(dataclay_id)
+
     @tracer.start_as_current_span("get_num_objects")
     def get_num_objects(self, language):
         all_object_md = self.object_mgr.get_all_object_md(language)

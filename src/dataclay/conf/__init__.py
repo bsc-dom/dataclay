@@ -1,6 +1,7 @@
 import logging
 import os
 import socket
+import uuid
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -133,6 +134,8 @@ class Settings:
             "METADATA_SERVICE_HOST", socket.gethostbyname(socket.gethostname())
         )
         self.METADATA_SERVICE_PORT = int(os.getenv("METADATA_SERVICE_PORT", "16587"))
+
+        self.DATACLAY_ID = os.getenv("DATACLAY_ID", uuid.uuid4())
 
 
 settings = Settings()

@@ -131,6 +131,9 @@ class DataclayManager:
             raise DataclayDoesNotExistError("this")
         return uuid.UUID(value.decode())
 
+    def put_dataclay_id(self, dataclay_id):
+        self.etcd_client.put("/this", str(dataclay_id))
+
     def get_storage_location(self, sl_name):
         key = f"/storagelocation/{sl_name}"
         value = self.etcd_client.get(key)[0]
