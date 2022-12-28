@@ -41,14 +41,17 @@ def serve():
         settings.ETCD_PORT,
     )
 
-    max_workers = settings.THREAD_POOL_WORKERS
-    address = str(settings.SERVER_LISTEN_ADDR) + ":" + str(settings.SERVER_LISTEN_PORT)
+    if not backend.is_ready(timeout=10):
+        logger.error("Backend is not ready. Aborting!")
+        raise
 
     server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=max_workers),
+        futures.ThreadPoolExecutor(max_workers=settings.THREAD_POOL_WORKERS),
         options=[("grpc.max_send_message_length", -1), ("grpc.max_receive_message_length", -1)],
     )
     dataservice_pb2_grpc.add_DataServiceServicer_to_server(BackendServicer(backend), server)
+
+    address = f"{settings.SERVER_LISTEN_ADDR}:{settings.SERVER_LISTEN_PORT}"
     server.add_insecure_port(address)
     server.start()
 
