@@ -174,6 +174,25 @@ class DataclayAlreadyExistError(DataclayError):
         return f"Dataclay {self.dataclay_id} already exist!"
 
 
+###############
+# Dataclay ID #
+###############
+
+
+class DataclayIdError(DataClayException):
+    pass
+
+
+class DataclayIdDoesNotExistError(DataclayIdError):
+    def __str__(self):
+        return f"Dataclay ID does not exist!"
+
+
+class DataclayIdAlreadyExistError(DataclayIdError):
+    def __str__(self):
+        return f"Dataclay ID already exist!"
+
+
 ###################
 # StorageLocation #
 ###################

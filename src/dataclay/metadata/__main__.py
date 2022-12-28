@@ -25,12 +25,17 @@ def serve():
         logger.error("Etcd is not ready. Aborting!")
         raise
 
-    try:
-        dataclay_id = metadata_service.get_dataclay_id()
-        settings.DATACLAY_ID = dataclay_id
-    except DataclayDoesNotExistError:
-        dataclay_id = settings.DATACLAY_ID
-        metadata_service.put_dataclay_id(dataclay_id)
+    # get or set (if not exists) dataclay_id
+    with metadata_service.etcd_client.lock("dataclay_id"):
+        try:
+            dataclay_id = metadata_service.get_dataclay_id()
+            settings.DATACLAY_ID = dataclay_id
+        except DataclayIdDoesNotExistError:
+            dataclay_id = settings.DATACLAY_ID
+            metadata_service.put_dataclay_id(dataclay_id)
+            metadata_service.new_superuser(
+                settings.DATACLAY_USER, settings.DATACLAY_PASSWORD, settings.DATACLAY_DATASET
+            )
 
     metadata_service.autoregister_mds(
         dataclay_id,

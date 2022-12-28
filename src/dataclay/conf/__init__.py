@@ -136,6 +136,9 @@ class Settings:
         self.METADATA_SERVICE_PORT = int(os.getenv("METADATA_SERVICE_PORT", "16587"))
 
         self.DATACLAY_ID = os.getenv("DATACLAY_ID", uuid.uuid4())
+        self.DATACLAY_PASSWORD = os.environ["DATACLAY_PASSWORD"]
+        self.DATACLAY_USER = os.getenv("DATACLAY_USER", "dataclay")
+        self.DATACLAY_DATASET = os.getenv("DATACLAY_DATASET", self.DATACLAY_USER)
 
 
 settings = Settings()

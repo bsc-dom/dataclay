@@ -13,7 +13,14 @@ logger = logging.getLogger(__name__)
 
 # TODO: Extend class to generic with key(), value(), ...
 class Account:
-    def __init__(self, username, password=None, hashed_password=None, role="NORMAL", datasets=None):
+    def __init__(
+        self,
+        username: str,
+        password: str = None,
+        hashed_password: str = None,
+        role: str = "NORMAL",
+        datasets: list = None,
+    ):
         self.username = username
         if password is not None:
             self.hashed_password = bcrypt.hash(password)

@@ -80,7 +80,6 @@ class MetadataAPI:
                 raise DatasetIsNotAccessibleError(dataset_name, username)
 
             # Creates a new session
-            # TODO: ¿Remove namespaces from Session and Account?
             session = Session(
                 id=uuid.uuid4(),
                 username=username,
@@ -119,6 +118,21 @@ class MetadataAPI:
     ###################
     # Account Manager #
     ###################
+
+    def new_superuser(self, username: str, password: str, dataset_name: str):
+        # Creates new account and put it to etcd
+        account = Account(username, password, role="ADMIN")
+
+        # Creates new dataset and updates account's list of datasets
+        dataset = Dataset(dataset_name, username)
+        account.datasets.append(dataset_name)
+
+        # Put new dataset and account to etcd
+        # Order matters to check that dataset name is not registered
+        self.dataset_mgr.new_dataset(dataset)
+        self.account_mgr.new_account(account)
+
+        logger.info(f"Created new account for {username} with dataset {dataset.name}")
 
     def new_account(self, username: str, password: str):
         """Registers a new account
@@ -246,7 +260,7 @@ class MetadataAPI:
             # TODO: Check connection to Backend
             exe_env = Backend(id, hostname, port, sl_name, lang, self.get_dataclay_id())
             self.dataclay_mgr.new_execution_environment(exe_env)
-            # TODO: Deploy classes to backend? (better call from ee)
+
             logger.info(
                 f"Autoregistered ee with id={id}, hostname={hostname}, port={port}, sl_name={sl_name}"
             )

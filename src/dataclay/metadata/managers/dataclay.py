@@ -128,7 +128,7 @@ class DataclayManager:
         key = "/this"
         value = self.etcd_client.get(key)[0]
         if value is None:
-            raise DataclayDoesNotExistError("this")
+            raise DataclayIdDoesNotExistError
         return uuid.UUID(value.decode())
 
     def put_dataclay_id(self, dataclay_id):

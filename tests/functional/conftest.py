@@ -2,6 +2,7 @@ import os
 import subprocess
 import time
 
+import grpc
 import pytest
 
 import dataclay
@@ -19,37 +20,19 @@ def docker_compose_file(pytestconfig):
 
 @pytest.fixture(scope="session")
 def deploy_dataclay(docker_ip, docker_services):
-    """Ensure that HTTP service is up and responsive."""
+    """Ensure that services are up and responsive."""
 
-    # `port_for` takes a container port and returns the corresponding host port
-    # port = docker_services.port_for("httpbin", 80)
-    # url = "http://{}:{}".format(docker_ip, port)
-    # docker_services.wait_until_responsive(
-    #     timeout=30.0, pause=0.1, check=lambda: is_responsive("127.0.0.1", 2379, 1)
-    # )
-    time.sleep(5)
+    mds_port = docker_services.port_for("metadata-service", 16587)
+    grpc.channel_ready_future(grpc.insecure_channel(f"127.0.0.1:{mds_port}")).result(timeout=10)
 
-    env = os.environ | {"METADATA_SERVICE_HOST": "127.0.0.1"}
-
-    subprocess.run(
-        ["python", "-m", "dataclay.metadata.cli", "new_account", "user", "s3cret"], env=env
-    )
-    subprocess.run(
-        ["python", "-m", "dataclay.metadata.cli", "new_dataset", "user", "s3cret", "myDataset"],
-        env=env,
-    )
-    subprocess.run(
-        ["python", "-m", "dataclay.metadata.cli", "new_dataset", "user", "s3cret", "auxDataset"],
-        env=env,
-    )
-
-    return "hello"
+    backend_port = docker_services.port_for("backend", 6867)
+    grpc.channel_ready_future(grpc.insecure_channel(f"127.0.0.1:{backend_port}")).result(timeout=10)
 
 
 @pytest.fixture(scope="session")
 def start_client(deploy_dataclay):
     client = dataclay.client(
-        host="127.0.0.1", username="user", password="s3cret", dataset="myDataset"
+        host="127.0.0.1", username="testuser", password="s3cret", dataset="testuser"
     )
     client.start()
     yield client

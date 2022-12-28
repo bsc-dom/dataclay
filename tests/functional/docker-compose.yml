@@ -15,7 +15,7 @@ services:
     depends_on:
       - etcd
     ports:
-      - "16587:16587"
+      - 16587:16587
     environment:
       - ETCD_HOST=etcd
       - ETCD_PORT
@@ -30,6 +30,8 @@ services:
     image: "bscdataclay/pyclay:dev"
     depends_on:
       - etcd
+    ports:
+      - 6867:6867
     environment:
       - ETCD_HOST=etcd
       - ETCD_PORT
