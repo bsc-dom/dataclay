@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from dataclay.dataclay_object import DataClayObject
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
+    from dataclay.metadata.managers.dataclay import Backend
     from dataclay.metadata.managers.object import ObjectMetadata
 
 
@@ -67,16 +68,9 @@ class UUIDLock(AbstractContextManager):
 
 
 class DataClayRuntime(ABC):
-
-    backend_clients: dict[UUID, BackendClient]
-
     def __init__(self, metadata_service: MetadataAPI | MetadataClient):
 
-        # Cache of EE info
-        self.ee_infos = dict()
-
-        # GRPC clients
-        self.backend_clients = dict()
+        self.backend_clients: dict[UUID, BackendClient] = dict()
 
         # Indicates volatiles being send - to avoid race-conditions
         self.volatile_parameters_being_send = set()
@@ -162,12 +156,7 @@ class DataClayRuntime(ABC):
         session_id = self.session.id
 
         backend_id = into_object._dc_backend_id
-        try:
-            ee_client = self.backend_clients[backend_id]
-        except KeyError:
-            exec_env = self.get_execution_environment_info(backend_id)
-            ee_client = BackendClient(exec_env.hostname, exec_env.port)
-            self.backend_clients[backend_id] = ee_client
+        ee_client = self.get_backend_client(backend_id)
 
         # We serialize objects like volatile parameters
         parameters = list()
@@ -275,10 +264,6 @@ class DataClayRuntime(ABC):
 
         return self.get_object_by_id(object_md.id, object_md)
 
-    def get_backend_id_by_object_id(self, object_id):
-        backend_ids = list(self.get_all_execution_environments_at_dataclay(self.dataclay_id))
-        return backend_ids[hash(object_id) % len(backend_ids)]
-
     def delete_alias_in_dataclay(self, alias, dataset_name):
 
         if dataset_name is None:
@@ -345,13 +330,13 @@ class DataClayRuntime(ABC):
             return self.backend_clients[backend_id]
 
     def update_backend_clients(self):
-        self.ee_infos = self.metadata_service.get_all_execution_environments(
+        backend_infos = self.metadata_service.get_all_execution_environments(
             LANG_PYTHON, from_backend=self.is_backend
         )
         new_backend_clients = {}
 
         # TODO: Update backend_clients using multithreading
-        for id, info in self.ee_infos.items():
+        for id, info in backend_infos.items():
             if id in self.backend_clients:
                 if self.backend_clients[id].is_ready(settings.TIMEOUT_CHANNEL_READY):
                     new_backend_clients[id] = self.backend_clients[id]
@@ -361,67 +346,9 @@ class DataClayRuntime(ABC):
             if backend_client.is_ready():
                 new_backend_clients[id] = backend_client
             else:
-                del self.ee_infos[id]
+                del backend_infos[id]
 
         self.backend_clients = new_backend_clients
-
-    # TODO: Remove self.ee_infos and only use self.backend_clients with
-    # attributes containing the ones in ee_infos
-
-    def update_ee_infos(self):
-        self.ee_infos = self.metadata_service.get_all_execution_environments(
-            LANG_PYTHON, from_backend=self.is_backend
-        )
-
-    def get_execution_environment_info(self, ee_id):
-        try:
-            return self.ee_infos[ee_id]
-        except KeyError:
-            self.update_ee_infos()
-            return self.ee_infos[ee_id]
-
-    def get_all_execution_environments_at_host(self, hostname):
-        filtered_ee_infos = {k: v for k, v in self.ee_infos.items() if v.hostname == hostname}
-        if not filtered_ee_infos:
-            self.update_ee_infos()
-            filtered_ee_infos = {k: v for k, v in self.ee_infos.items() if v.hostname == hostname}
-
-        return filtered_ee_infos
-
-    def get_all_execution_environments_at_dataclay(self, dataclay_id):
-        filtered_ee_infos = {k: v for k, v in self.ee_infos.items() if v.dataclay_id == dataclay_id}
-        if not filtered_ee_infos:
-            self.update_ee_infos()
-            filtered_ee_infos = {
-                k: v for k, v in self.ee_infos.items() if v.dataclay_id == dataclay_id
-            }
-
-        return filtered_ee_infos
-
-    def get_all_execution_environments_with_name(self, sl_name):
-
-        filtered_ee_infos = {
-            k: v
-            for k, v in self.ee_infos.items()
-            if v.sl_name == sl_name and v.dataclay_id == self.dataclay_id
-        }
-        if not filtered_ee_infos:
-            self.update_ee_infos()
-            filtered_ee_infos = {
-                k: v
-                for k, v in self.ee_infos.items()
-                if v.sl_name == sl_name and v.dataclay_id == self.dataclay_id
-            }
-
-        return filtered_ee_infos
-
-    def get_execution_environments_names(self):
-        self.update_ee_infos()
-        ee_names = [v.sl_name for v in self.ee_infos.values() if v.dataclay_id == self.dataclay_id]
-
-        logger.debug(f"ExecutionEnvironmentsInfo returned #{len(ee_names)} values")
-
-        return ee_names
 
     ####################
     # Remote execution #
@@ -475,19 +402,8 @@ class DataClayRuntime(ABC):
         num_misses = 0
         executed = False
         for _ in range(max_retry):
-            try:
-                logger.debug("Obtaining API for remote execution in %s ", exec_env_id)
-                ee_client = self.backend_clients[exec_env_id]
-            except KeyError:
-                exec_env = self.get_execution_environment_info(exec_env_id)
-                logger.debug(
-                    "Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
-                    exec_env_id,
-                    exec_env.hostname,
-                    exec_env.port,
-                )
-                ee_client = BackendClient(exec_env.hostname, exec_env.port)
-                self.backend_clients[exec_env_id] = ee_client
+
+            ee_client = self.get_backend_client(backend_id)
 
             try:
                 logger.debug("Calling remote EE %s ", exec_env_id)
@@ -590,12 +506,8 @@ class DataClayRuntime(ABC):
         session_id = self.session.id
 
         backend_id = from_object._dc_backend_id
-        try:
-            ee_client = self.backend_clients[backend_id]
-        except KeyError:
-            exec_env = self.get_execution_environment_info(backend_id)
-            ee_client = BackendClient(exec_env.hostname, exec_env.port)
-            self.backend_clients[backend_id] = ee_client
+
+        ee_client = self.get_backend_client(backend_id)
 
         copiedObject = ee_client.ds_get_copy_of_object(session_id, from_object._dc_id, recursive)
         result = DeserializationLibUtilsSingleton.deserialize_params_or_return(
@@ -623,6 +535,7 @@ class DataClayRuntime(ABC):
                 some exec env in host provided or random exec env.
         """
 
+        raise Exception("Deprecated?¿")
         # NOTE ¿It should never happen?
         if hint is None:
             instance = self.inmemory_objects[object_id]
@@ -725,13 +638,7 @@ class DataClayRuntime(ABC):
             self.update_object_metadata(instance)
             hint = self.get_hint(object_id)
 
-        try:
-            ee_client = self.backend_clients[hint]
-        except KeyError:
-            backend_to_call = self.get_execution_environment_info(hint)
-            ee_client = BackendClient(backend_to_call.hostname, backend_to_call.port)
-            self.backend_clients[hint] = ee_client
-
+        ee_client = self.get_backend_client(hint)
         ee_client.consolidate_version(self.session.id, object_id)
         logger.debug(f"Finished consolidate version of {object_id}")
 

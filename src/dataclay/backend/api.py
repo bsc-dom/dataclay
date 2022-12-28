@@ -5,6 +5,7 @@ from __future__ import annotations
 import io
 import logging
 import pickle
+import time
 import traceback
 import uuid
 from typing import TYPE_CHECKING
@@ -15,6 +16,7 @@ from dataclay import utils
 from dataclay.backend.client import BackendClient
 from dataclay.backend.runtime import BackendRuntime
 from dataclay.conf import settings
+from dataclay.exceptions import *
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.runtime import UUIDLock, set_runtime
 from dataclay.utils.pickle import RecursiveLocalUnpickler
@@ -44,6 +46,23 @@ class BackendAPI:
         # UNDONE: Do not store EE information. If restarted, create new EE uuid.
         self.backend_id = uuid.uuid4()
         logger.info(f"Initialized Backend with ID: {self.backend_id}")
+
+    def is_ready(self, timeout=None):
+        ref = time.time()
+        now = ref
+        if self.runtime.metadata_service.is_ready(timeout):
+
+            # Check that dataclay_id is defined. If it is not defined, it could break things
+            while (now - ref) < timeout:
+                try:
+                    dataclay_id = self.runtime.metadata_service.get_dataclay_id()
+                    settings.DATACLAY_ID = dataclay_id
+                    return True
+                except DataclayIdDoesNotExistError:
+                    time.sleep(0.5)
+                    now = time.time()
+
+        return False
 
     def exists(self, object_id):
         with UUIDLock(object_id):
@@ -407,26 +426,6 @@ class BackendAPI:
     # Replicas
     ##########
 
-    def get_dest_ee_api(self, dest_backend_id):
-        """Get API to connect to destination Execution environment with id provided
-
-        Args:
-            dest_backend_id: ID of destination backend
-        """
-        backend = self.runtime.get_execution_environment_info(dest_backend_id)
-        try:
-            client_backend = self.runtime.backend_clients[dest_backend_id]
-        except KeyError:
-            logger.debug(
-                "Not found Client to ExecutionEnvironment {%s}!" " Starting it at %s:%d",
-                dest_backend_id,
-                backend.hostname,
-                backend.port,
-            )
-            client_backend = BackendClient(backend.hostname, backend.port)
-            self.runtime.backend_clients[dest_backend_id] = client_backend
-        return client_backend
-
     def new_replica(self, session_id, object_id, dest_backend_id, recursive):
         """Creates a new replica of the object with ID provided in the backend specified.
 
@@ -441,7 +440,7 @@ class BackendAPI:
         serialized_objs = self.get_objects(
             session_id, {object_id}, set(), recursive, dest_backend_id, 1
         )
-        client_backend = self.get_dest_ee_api(dest_backend_id)
+        client_backend = self.runtime.get_backend_client(dest_backend_id)
         client_backend.ds_store_objects(session_id, serialized_objs, False, None)
         replicated_ids = set()
         for serialized_obj in serialized_objs:
@@ -464,7 +463,7 @@ class BackendAPI:
             logger.debug(f"Found origin location {src_exec_env_id}")
             if calling_backend_id is None or src_exec_env_id != calling_backend_id:
                 # do not synchronize to calling source (avoid infinite loops)
-                dest_backend = self.get_dest_ee_api(src_exec_env_id)
+                dest_backend = self.runtime.get_backend_client(src_exec_env_id)
                 logger.debug(
                     f"----> Propagating synchronization of {object_id} to origin location {src_exec_env_id}"
                 )
@@ -483,7 +482,7 @@ class BackendAPI:
             for replica_location in replica_locations:
                 if calling_backend_id is None or replica_location != calling_backend_id:
                     # do not synchronize to calling source (avoid infinite loops)
-                    dest_backend = self.get_dest_ee_api(replica_location)
+                    dest_backend = self.runtime.get_backend_client(replica_location)
                     logger.debug(
                         f"----> Propagating synchronization of {object_id} to replica location {replica_location}"
                     )
@@ -517,7 +516,7 @@ class BackendAPI:
         serialized_objs = self.get_objects(
             session_id, object_ids, set(), recursive, external_execution_env_id, 1
         )
-        client_backend = self.get_dest_ee_api(external_execution_env_id)
+        client_backend = self.runtime.get_backend_client(external_execution_env_id)
         client_backend.notify_federation(session_id, serialized_objs)
         # TODO: add federation reference to object send ?? how is it working with replicas?
         logger.debug("<---- Finished federation of %s", object_id)
@@ -596,7 +595,7 @@ class BackendAPI:
                         objs_in_backend.add(serialized_obj.object_id)
 
             for external_ee_id, objs_in_backend in unfederate_per_backend.items():
-                client_backend = self.get_dest_ee_api(external_ee_id)
+                client_backend = self.runtime.get_backend_client(external_ee_id)
                 client_backend.notify_unfederation(session_id, objs_in_backend)
 
             logger.debug("<---- Finished unfederation of %s", object_ids)
@@ -950,7 +949,7 @@ class BackendAPI:
         if dest_backend_id == self.backend_id:
             self.store_objects(session_id, serialized_objs, False, None)
         else:
-            client_backend = self.get_dest_ee_api(dest_backend_id)
+            client_backend = self.runtime.get_backend_client(dest_backend_id)
             client_backend.ds_store_objects(session_id, serialized_objs, False, None)
         version_obj_id = original_to_version[object_id]
         logger.debug(f"<---- Finished new version of {object_id} as {version_obj_id}")
@@ -994,7 +993,7 @@ class BackendAPI:
             if root_location == self.backend_id:
                 self.upsert_objects(session_id, serialized_objs_updated)
             else:
-                client_backend = self.get_dest_ee_api(root_location)
+                client_backend = self.runtime.get_backend_client(root_location)
                 client_backend.ds_upsert_objects(session_id, serialized_objs_updated)
         except Exception as e:
             traceback.print_exc()

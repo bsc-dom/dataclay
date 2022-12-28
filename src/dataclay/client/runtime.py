@@ -107,12 +107,8 @@ class ClientRuntime(DataClayRuntime):
         if not ee_id:
             self.update_object_metadata(instance)
             ee_id = self.get_hint()
-        try:
-            ee_client = self.backend_clients[ee_id]
-        except KeyError:
-            ee_info = self.get_execution_environment_info(ee_id)
-            ee_client = BackendClient(ee_info.hostname, ee_info.port)
-            self.backend_clients[ee_id] = ee_client
+
+        ee_client = self.get_backend_client(ee_id)
         ee_client.delete_alias(self.session.id, instance._dc_id)
         instance._dc_alias = None
 
@@ -132,12 +128,8 @@ class ClientRuntime(DataClayRuntime):
             hint_volatiles=instance._dc_backend_id,
             runtime=self,
         )
-        try:
-            ee_client = self.backend_clients[dest_backend_id]
-        except KeyError:
-            exec_env = self.get_execution_environment_info(dest_backend_id)
-            ee_client = BackendClient(exec_env.hostname, exec_env.port)
-            self.backend_clients[dest_backend_id] = ee_client
+
+        ee_client = self.get_backend_client(dest_backend_id)
         ee_client.synchronize(
             self.session.id, instance._dc_id, implementation_id, serialized_params
         )
@@ -148,12 +140,8 @@ class ClientRuntime(DataClayRuntime):
                 instance = self.inmemory_objects[object_id]
                 self.update_object_metadata(instance)
                 hint = instance._dc_backend_id
-            try:
-                ee_client = self.backend_clients[hint]
-            except KeyError:
-                ee_info = self.get_execution_environment_info(hint)
-                ee_client = BackendClient(ee_info.hostname, ee_info.port)
-                self.backend_clients[hint] = ee_client
+
+            ee_client = self.get_backend_client(hint)
             ee_client.detach_object_from_session(object_id, self.session.id)
         except:
             traceback.print_exc()
@@ -163,12 +151,8 @@ class ClientRuntime(DataClayRuntime):
         if hint is None:
             self.update_object_metadata(instance)
             hint = self.get_hint()
-        try:
-            ee_client = self.backend_clients[hint]
-        except KeyError:
-            exec_env = self.get_execution_environment_info(hint)
-            ee_client = BackendClient(exec_env.hostname, exec_env.port)
-            self.backend_clients[hint] = ee_client
+
+        ee_client = self.get_backend_client(hint)
 
         logger.debug(
             "[==FederateObject==] Starting federation of object by %s calling EE %s with dest dataClay %s, and session %s",
@@ -192,12 +176,7 @@ class ClientRuntime(DataClayRuntime):
         if hint is None:
             self.update_object_metadata(instance)
             hint = self.get_hint()
-        try:
-            ee_client = self.backend_clients[hint]
-        except KeyError:
-            exec_env = self.get_execution_environment_info(hint)
-            ee_client = BackendClient(exec_env.hostname, exec_env.port)
-            self.backend_clients[hint] = ee_client
+        ee_client = self.get_backend_client(hint)
 
         ee_client.unfederate(
             self.session.id, instance._dc_id, external_execution_environment_id, recursive

@@ -136,46 +136,20 @@ class ClientAPI:
 ###############
 
 
-def get_backends():
-    """Return all the dataClay backend present in the system."""
-    result = get_runtime().get_execution_environments_names()
-    logger.debug("Got %i python backend/s", len(result))
-    return result
+# def get_backends():
+#     """Return all the dataClay backend present in the system."""
+#     result = get_runtime().get_execution_environments_names()
+#     logger.debug("Got %i python backend/s", len(result))
+#     return result
 
 
-def get_backends_info():
-    """Return all the dataClay BackendInfo present in the system."""
-    get_runtime().update_ee_infos()
-    result = get_runtime().ee_infos
-    logger.debug(f"Got {len(result)} python backend/s")
-    return result
-
-
-def get_backend_id_by_name(name):
-    """Return dataClay backend present in the system with name provided."""
-    all_backends = get_runtime().get_all_execution_environments_with_name(name)
-    for backend in all_backends.values():
-        if backend.sl_name == name:
-            return backend.id
-    return None
-
-
-def get_external_backend_id_by_name(name, external_dataclay_id):
-    """Return dataClay backend present in the system with name provided."""
-    all_backends = get_runtime().get_all_execution_environments_at_dataclay(external_dataclay_id)
-    for backend in all_backends.values():
-        if backend.sl_name == name:
-            return backend.id
-    return None
-
-
-def get_backend_id(hostname, port):
-    """Return dataClay backend present in the system with name provided."""
-    host_ee_infos = get_runtime().get_all_execution_environments_at_host(hostname)
-    for backend in host_ee_infos.values():
-        if backend.port == port:
-            return backend.id
-    return None
+# def get_backend_id(hostname, port):
+#     """Return dataClay backend present in the system with name provided."""
+#     host_ee_infos = get_runtime().get_all_execution_environments_at_host(hostname)
+#     for backend in host_ee_infos.values():
+#         if backend.port == port:
+#             return backend.id
+#     return None
 
 
 ##########
