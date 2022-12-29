@@ -20,7 +20,7 @@ def serve():
 
     stop_event = threading.Event()
 
-    metadata_service = MetadataAPI(settings.ETCD_HOST, settings.ETCD_PORT)
+    metadata_service = MetadataAPI(settings.ETCD_HOSTNAME, settings.ETCD_PORT)
     if not metadata_service.is_ready(timeout=10):
         logger.error("Etcd is not ready. Aborting!")
         raise
@@ -39,8 +39,8 @@ def serve():
 
     metadata_service.autoregister_mds(
         dataclay_id,
-        settings.METADATA_SERVICE_HOST,
-        settings.METADATA_SERVICE_PORT,
+        settings.DATACLAY_METADATA_HOSTNAME,
+        settings.DATACLAY_METADATA_PORT,
         is_this=True,
     )
 

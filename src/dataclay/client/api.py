@@ -90,7 +90,9 @@ class ClientAPI:
         )
 
         self.old_runtime = get_runtime()
-        self.runtime = ClientRuntime(settings.METADATA_SERVICE_HOST, settings.METADATA_SERVICE_PORT)
+        self.runtime = ClientRuntime(
+            settings.DATACLAY_METADATA_HOSTNAME, settings.DATACLAY_METADATA_PORT
+        )
         set_runtime(self.runtime)
 
         # Create a new session

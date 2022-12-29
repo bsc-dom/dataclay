@@ -17,7 +17,7 @@ services:
     ports:
       - 16587:16587
     environment:
-      - ETCD_HOST=etcd
+      - ETCD_HOSTNAME=etcd
       - ETCD_PORT
       - DATACLAY_ID
       - DATACLAY_PASSWORD
@@ -34,7 +34,7 @@ services:
     ports:
       - 6867:6867
     environment:
-      - ETCD_HOST=etcd
+      - ETCD_HOSTNAME=etcd
       - ETCD_PORT
       - DATACLAY_BACKEND_ID
       - DATACLAY_BACKEND_NAME

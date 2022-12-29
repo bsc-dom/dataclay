@@ -37,7 +37,7 @@ def serve():
     backend = BackendAPI(
         settings.DATACLAY_BACKEND_NAME,
         settings.DATACLAY_BACKEND_PORT,
-        settings.ETCD_HOST,
+        settings.ETCD_HOSTNAME,
         settings.ETCD_PORT,
     )
 
@@ -55,14 +55,10 @@ def serve():
     server.add_insecure_port(address)
     server.start()
 
-    local_ip = os.getenv("DATASERVICE_HOST", "")
-    if not local_ip:
-        local_ip = socket.gethostbyname(socket.gethostname())
-
     # Autoregister of ExecutionEnvironment to MetadataService
     backend.runtime.metadata_service.autoregister_ee(
         settings.DATACLAY_BACKEND_ID,
-        local_ip,
+        settings.DATACLAY_BACKEND_HOSTNAME,
         settings.DATACLAY_BACKEND_PORT,
         settings.DATACLAY_BACKEND_NAME,
         LANG_PYTHON,

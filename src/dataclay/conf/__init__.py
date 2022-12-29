@@ -105,16 +105,19 @@ class Settings:
 
         self.DATACLAY_BACKEND_LISTEN_ADDRESS = "0.0.0.0"
         self.DATACLAY_BACKEND_PORT = int(os.getenv("DATACLAY_BACKEND_PORT", "6867"))
+        self.DATACLAY_BACKEND_HOSTNAME = os.getenv(
+            "DATACLAY_BACKEND_HOSTNAME", socket.gethostbyname(socket.gethostname())
+        )
 
-        self.ETCD_HOST = os.environ["ETCD_HOST"]
+        self.ETCD_HOSTNAME = os.environ["ETCD_HOSTNAME"]
         self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
 
     # TODO: Rename to client_proeprties?
     def load_client_properties(
         self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
     ):
-        self.METADATA_SERVICE_HOST = host or os.environ["METADATA_SERVICE_HOST"]
-        self.METADATA_SERVICE_PORT = port or int(os.getenv("METADATA_SERVICE_PORT", "16587"))
+        self.DATACLAY_METADATA_HOSTNAME = host or os.environ["DATACLAY_METADATA_HOSTNAME"]
+        self.DATACLAY_METADATA_PORT = port or int(os.getenv("DATACLAY_METADATA_PORT", "16587"))
 
         self.DC_USERNAME = username or os.environ["DC_USERNAME"]
         self.DC_PASSWORD = password or os.environ["DC_PASSWORD"]
@@ -126,14 +129,12 @@ class Settings:
 
         self.DATACLAY_METADATA_LISTEN_ADDRESS = "0.0.0.0"
         self.DATACLAY_METADATA_PORT = int(os.getenv("DATACLAY_METADATA_PORT", "16587"))
-
-        self.ETCD_HOST = os.environ["ETCD_HOST"]
-        self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
-
-        self.METADATA_SERVICE_HOST = os.getenv(
-            "METADATA_SERVICE_HOST", socket.gethostbyname(socket.gethostname())
+        self.DATACLAY_METADATA_HOSTNAME = os.getenv(
+            "DATACLAY_METADATA_HOSTNAME", socket.gethostbyname(socket.gethostname())
         )
-        self.METADATA_SERVICE_PORT = int(os.getenv("METADATA_SERVICE_PORT", "16587"))
+
+        self.ETCD_HOSTNAME = os.environ["ETCD_HOSTNAME"]
+        self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
 
         self.DATACLAY_ID = os.getenv("DATACLAY_ID", uuid.uuid4())
         self.DATACLAY_PASSWORD = os.environ["DATACLAY_PASSWORD"]
