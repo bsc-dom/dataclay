@@ -51,7 +51,7 @@ def serve():
         MetadataServicer(metadata_service), server
     )
 
-    address = f"{settings.SERVER_LISTEN_ADDR}:{settings.SERVER_LISTEN_PORT}"
+    address = f"{settings.SERVER_LISTEN_ADDR}:{settings.DATACLAY_METADATA_PORT}"
     server.add_insecure_port(address)
     server.start()
 

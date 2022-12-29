@@ -35,8 +35,8 @@ def serve():
     stop_event = threading.Event()
 
     backend = BackendAPI(
-        settings.DC_BACKEND_NAME,
-        settings.SERVER_LISTEN_PORT,
+        settings.DATACLAY_BACKEND_NAME,
+        settings.DATACLAY_BACKEND_PORT,
         settings.ETCD_HOST,
         settings.ETCD_PORT,
     )
@@ -51,7 +51,7 @@ def serve():
     )
     dataservice_pb2_grpc.add_DataServiceServicer_to_server(BackendServicer(backend), server)
 
-    address = f"{settings.SERVER_LISTEN_ADDR}:{settings.SERVER_LISTEN_PORT}"
+    address = f"{settings.SERVER_LISTEN_ADDR}:{settings.DATACLAY_BACKEND_PORT}"
     server.add_insecure_port(address)
     server.start()
 
@@ -59,15 +59,12 @@ def serve():
     if not local_ip:
         local_ip = socket.gethostbyname(socket.gethostname())
 
-    # Set settings backend id
-    settings.DC_BACKEND_ID = backend.backend_id
-
     # Autoregister of ExecutionEnvironment to MetadataService
     backend.runtime.metadata_service.autoregister_ee(
-        backend.backend_id,
+        settings.DATACLAY_BACKEND_ID,
         local_ip,
-        settings.SERVER_LISTEN_PORT,
-        settings.DC_BACKEND_NAME,
+        settings.DATACLAY_BACKEND_PORT,
+        settings.DATACLAY_BACKEND_NAME,
         LANG_PYTHON,
     )
 

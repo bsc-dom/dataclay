@@ -22,6 +22,7 @@ services:
       - DATACLAY_ID
       - DATACLAY_PASSWORD
       - DATACLAY_USER
+      - DATACLAY_METADATA_PORT=16587
     command: python -m dataclay.metadata
     volumes:
       - ../../:/pyclay:ro
@@ -35,9 +36,12 @@ services:
     environment:
       - ETCD_HOST=etcd
       - ETCD_PORT
-      - DC_BACKEND_NAME
+      - DATACLAY_BACKEND_ID
+      - DATACLAY_BACKEND_NAME
+      - DATACLAY_BACKEND_PORT=6867
       - DEBUG=true
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro
       - ./model:/workdir/model:ro
+

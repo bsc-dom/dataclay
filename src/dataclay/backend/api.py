@@ -44,7 +44,7 @@ class BackendAPI:
         set_runtime(self.runtime)
 
         # UNDONE: Do not store EE information. If restarted, create new EE uuid.
-        self.backend_id = uuid.uuid4()
+        self.backend_id = settings.DATACLAY_BACKEND_ID
         logger.info(f"Initialized Backend with ID: {self.backend_id}")
 
     def is_ready(self, timeout=None):

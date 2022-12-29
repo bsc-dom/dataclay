@@ -90,7 +90,7 @@ class BackendRuntime(DataClayRuntime):
         @postcondition: Get hint of the current EE
         @return Hint of current EE
         """
-        return settings.DC_BACKEND_ID
+        return settings.DATACLAY_BACKEND_ID
 
     def store_object(self, instance):
         if not instance._dc_is_registered:
@@ -132,7 +132,7 @@ class BackendRuntime(DataClayRuntime):
 
         # If backend_id is none, we register the object in the current backend (usual path)
         if backend_id is None:
-            instance._dc_backend_id = settings.DC_BACKEND_ID
+            instance._dc_backend_id = settings.DATACLAY_BACKEND_ID
             self.metadata_service.register_object(instance.metadata)
             instance._dc_is_registered = True
 
@@ -188,7 +188,7 @@ class BackendRuntime(DataClayRuntime):
 
                 # This object will soon be persistent
                 current_obj._dc_is_registered = True
-                current_obj._dc_backend_id = settings.DC_BACKEND_ID
+                current_obj._dc_backend_id = settings.DATACLAY_BACKEND_ID
                 # Just in case (should have been loaded already)
                 logger.debug(
                     "Setting loaded to true from internal store for object %s" % str(object_id)
@@ -402,7 +402,7 @@ class BackendRuntime(DataClayRuntime):
         :returns: Bytes of object
         :rtype: Byte array
         """
-        return self.backend_clients["@STORAGE"].get_from_db(settings.DC_BACKEND_ID, object_id)
+        return self.backend_clients["@STORAGE"].get_from_db(settings.DATACLAY_BACKEND_ID, object_id)
 
     def update_to_sl(self, object_id, obj_bytes, dirty):
         """Update to SL associated to this EE.
@@ -416,7 +416,7 @@ class BackendRuntime(DataClayRuntime):
         :rtype: None
         """
         return self.backend_clients["@STORAGE"].update_to_db(
-            settings.DC_BACKEND_ID, object_id, obj_bytes, dirty
+            settings.DATACLAY_BACKEND_ID, object_id, obj_bytes, dirty
         )
 
     def synchronize(self, instance, operation_name, params):

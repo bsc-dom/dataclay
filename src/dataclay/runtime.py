@@ -242,7 +242,10 @@ class DataClayRuntime(ABC):
                     proxy_object = cls.new_proxy_object()
                     proxy_object.metadata = object_md
 
-                    if self.is_backend and proxy_object._dc_backend_id == settings.DC_BACKEND_ID:
+                    if (
+                        self.is_backend
+                        and proxy_object._dc_backend_id == settings.DATACLAY_BACKEND_ID
+                    ):
                         proxy_object._dc_is_local = True
                     else:
                         proxy_object._dc_is_local = False

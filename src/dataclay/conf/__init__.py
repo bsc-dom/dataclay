@@ -100,11 +100,11 @@ class Settings:
     def load_backend_properties(self):
         self.THREAD_POOL_WORKERS = os.getenv("THREAD_POOL_WORKERS", default=None)
 
-        self.DC_BACKEND_ID = None
-        self.DC_BACKEND_NAME = os.getenv("DC_BACKEND_NAME")
+        self.DATACLAY_BACKEND_ID = os.getenv("DATACLAY_BACKEND_ID", uuid.uuid4())
+        self.DATACLAY_BACKEND_NAME = os.getenv("DATACLAY_BACKEND_NAME")
 
         self.SERVER_LISTEN_ADDR = "0.0.0.0"
-        self.SERVER_LISTEN_PORT = int(os.getenv("DATASERVICE_PYTHON_PORT_TCP", "6867"))
+        self.DATACLAY_BACKEND_PORT = int(os.getenv("DATACLAY_BACKEND_PORT", "6867"))
 
         self.ETCD_HOST = os.environ["ETCD_HOST"]
         self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
@@ -125,7 +125,7 @@ class Settings:
         self.THREAD_POOL_WORKERS = os.getenv("THREAD_POOL_WORKERS", default=None)
 
         self.SERVER_LISTEN_ADDR = "0.0.0.0"
-        self.SERVER_LISTEN_PORT = int(os.getenv("METADATA_SERVICE_PORT_TCP", "16587"))
+        self.DATACLAY_METADATA_PORT = int(os.getenv("DATACLAY_METADATA_PORT", "16587"))
 
         self.ETCD_HOST = os.environ["ETCD_HOST"]
         self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
