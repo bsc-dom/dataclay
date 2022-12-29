@@ -103,7 +103,7 @@ class Settings:
         self.DATACLAY_BACKEND_ID = os.getenv("DATACLAY_BACKEND_ID", uuid.uuid4())
         self.DATACLAY_BACKEND_NAME = os.getenv("DATACLAY_BACKEND_NAME")
 
-        self.SERVER_LISTEN_ADDR = "0.0.0.0"
+        self.DATACLAY_BACKEND_LISTEN_ADDRESS = "0.0.0.0"
         self.DATACLAY_BACKEND_PORT = int(os.getenv("DATACLAY_BACKEND_PORT", "6867"))
 
         self.ETCD_HOST = os.environ["ETCD_HOST"]
@@ -124,7 +124,7 @@ class Settings:
     def load_metadata_properties(self):
         self.THREAD_POOL_WORKERS = os.getenv("THREAD_POOL_WORKERS", default=None)
 
-        self.SERVER_LISTEN_ADDR = "0.0.0.0"
+        self.DATACLAY_METADATA_LISTEN_ADDRESS = "0.0.0.0"
         self.DATACLAY_METADATA_PORT = int(os.getenv("DATACLAY_METADATA_PORT", "16587"))
 
         self.ETCD_HOST = os.environ["ETCD_HOST"]

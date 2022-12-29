@@ -51,7 +51,7 @@ def serve():
     )
     dataservice_pb2_grpc.add_DataServiceServicer_to_server(BackendServicer(backend), server)
 
-    address = f"{settings.SERVER_LISTEN_ADDR}:{settings.DATACLAY_BACKEND_PORT}"
+    address = f"{settings.DATACLAY_BACKEND_LISTEN_ADDRESS}:{settings.DATACLAY_BACKEND_PORT}"
     server.add_insecure_port(address)
     server.start()
 
