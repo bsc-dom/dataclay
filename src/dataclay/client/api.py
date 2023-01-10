@@ -97,7 +97,7 @@ class ClientAPI:
 
         # Create a new session
         self.session = self.runtime.metadata_service.new_session(
-            settings.DC_USERNAME, settings.DC_PASSWORD, settings.DEFAULT_DATASET
+            settings.DC_USERNAME, settings.DC_PASSWORD, settings.DC_DATASET
         )
         self.runtime.session = self.session
         self.runtime.metadata_service.session = self.session

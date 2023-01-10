@@ -121,7 +121,7 @@ class Settings:
 
         self.DC_USERNAME = username or os.environ["DC_USERNAME"]
         self.DC_PASSWORD = password or os.environ["DC_PASSWORD"]
-        self.DEFAULT_DATASET = dataset or os.environ["DEFAULT_DATASET"]
+        self.DC_DATASET = dataset or os.environ["DC_DATASET"]
         self.LOCAL_BACKEND = local_backend or os.getenv("LOCAL_BACKEND")
 
     def load_metadata_properties(self):
