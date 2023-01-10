@@ -6,24 +6,49 @@ from opentelemetry import trace
 from dataclay.exceptions.exceptions import *
 from dataclay.utils.json import UUIDEncoder, uuid_parser
 
+from dataclasses import dataclass
+
 tracer = trace.get_tracer(__name__)
 
 
-class Dataset:
-    def __init__(self, name, owner, is_public=False):
-        """
-        Args:
-            name: Name of the dataset.
-            owner: Username of the dataset owner.
-            is_public: If dataset has public access.
-        """
-        self.name = name
-        self.owner = owner
-        self.is_public = is_public
+from abc import ABC, abstractmethod
 
+
+class KeyValue(ABC):
+    @property
+    @abstractmethod
+    def key(self):
+        pass
+
+    @property
+    @abstractmethod
+    def value(self):
+        pass
+
+    @property
+    @abstractmethod
+    def path(self):
+        pass
+
+    @classmethod
+    def from_json(cls, s):
+        return cls(**json.loads(s, object_hook=uuid_parser))
+
+
+@dataclass
+class Dataset(KeyValue):
+
+    path = "/dataset/"
+
+    name: str
+    owner: str
+    is_public: bool = False
+
+    @property
     def key(self):
         return f"/dataset/{self.name}"
 
+    @property
     def value(self):
         return json.dumps(self.__dict__, cls=UUIDEncoder)
 

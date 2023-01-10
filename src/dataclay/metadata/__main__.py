@@ -26,7 +26,8 @@ def serve():
         raise
 
     # get or set (if not exists) dataclay_id
-    with metadata_service.etcd_client.lock("dataclay_id"):
+    # TODO: Refactor this ugly thing
+    with metadata_service.kv_client.lock("dataclay_id"):
         try:
             dataclay_id = metadata_service.get_dataclay_id()
             settings.DATACLAY_ID = dataclay_id

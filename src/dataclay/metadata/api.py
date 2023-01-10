@@ -3,8 +3,10 @@ import uuid
 from uuid import UUID
 
 import etcd3
+import redis
 import grpc
 from opentelemetry import trace
+from dataclay.metadata.managers.kvmanager import KVManager
 
 from dataclay.exceptions.exceptions import *
 from dataclay.metadata.managers.account import Account, AccountManager
@@ -30,20 +32,22 @@ logger = logging.getLogger(__name__)
 class MetadataAPI:
     def __init__(self, etcd_host, etcd_port):
         # Creates etcd client
-        self.etcd_client = etcd3.client(etcd_host, etcd_port)
+        self.kv_client = etcd3.client(etcd_host, etcd_port)
+        self.r_kv_client = redis.Redis(decode_responses=True)
 
         # Creates managers for each class
-        self.account_mgr = AccountManager(self.etcd_client)
-        self.session_mgr = SessionManager(self.etcd_client)
-        self.dataset_mgr = DatasetManager(self.etcd_client)
-        self.object_mgr = ObjectManager(self.etcd_client)
-        self.dataclay_mgr = DataclayManager(self.etcd_client)
+        self.account_mgr = AccountManager(self.kv_client)
+        self.session_mgr = SessionManager(self.kv_client)
+        self.dataset_mgr = DatasetManager(self.kv_client)
+        self.object_mgr = ObjectManager(self.kv_client)
+        self.dataclay_mgr = DataclayManager(self.kv_client)
+        self.kv_manager = KVManager(self.r_kv_client)
 
         logger.info("Initialized MetadataService")
 
     def is_ready(self, timeout=None):
         try:
-            grpc.channel_ready_future(self.etcd_client.channel).result(timeout)
+            grpc.channel_ready_future(self.kv_client.channel).result(timeout)
             return True
         except grpc.FutureTimeoutError:
             return False
@@ -71,11 +75,14 @@ class MetadataAPI:
         ):
             # Validates account credentials
             account = self.account_mgr.get_account(username)
+            # account = self.kv_manager.get(Account, username)
+
             if not account.verify(password):
                 raise AccountInvalidCredentialsError(username)
 
             # Validates accounts access to dataset_name
-            dataset = self.dataset_mgr.get_dataset(dataset_name)
+            dataset = self.kv_manager.get_kv(Dataset, dataset_name)
+
             if not dataset.is_public and dataset_name not in account.datasets:
                 raise DatasetIsNotAccessibleError(dataset_name, username)
 
@@ -129,7 +136,7 @@ class MetadataAPI:
 
         # Put new dataset and account to etcd
         # Order matters to check that dataset name is not registered
-        self.dataset_mgr.new_dataset(dataset)
+        self.kv_manager.set_new(dataset)
         self.account_mgr.new_account(account)
 
         logger.info(f"Created new account for {username} with dataset {dataset.name}")
@@ -188,7 +195,7 @@ class MetadataAPI:
 
             # Put new dataset to etcd and updates account metadata
             # Order matters to check that dataset name is not registered
-            self.dataset_mgr.new_dataset(dataset)
+            self.kv_manager.set_new(dataset)
             self.account_mgr.put_account(account)
 
             logger.info(f"Created {dataset.name} dataset for {username} account")
