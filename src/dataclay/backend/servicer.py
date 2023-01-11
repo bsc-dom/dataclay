@@ -446,13 +446,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
         except Exception as ex:
             return dataservice_messages_pb2.ExistsResponse(excInfo=self.get_exception_info(ex))
 
-    def getNumObjectsInEE(self, request, context):
-        try:
-            num_objs = self.backend.get_num_objects()
-            return common_messages_pb2.GetNumObjectsResponse(numObjs=num_objs)
-        except Exception as ex:
-            return common_messages_pb2.GetNumObjectsResponse(excInfo=self.get_exception_info(ex))
-
     def updateRefs(self, request, context):
         try:
 

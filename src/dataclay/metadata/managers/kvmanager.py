@@ -41,5 +41,15 @@ class KVManager:
 
         return kv_class.from_json(value)
 
+    def getdel_kv(self, kv_class: KeyValue, id):
+        """Get kv_class and delete key"""
+
+        name = kv_class.path + str(id)
+        value = self.r_client.getdel(name)
+        if value is None:
+            raise DoesNotExistError(name)
+
+        return kv_class.from_json(value)
+
     def lock(self, name):
         return self.r_client.lock("/lock" + name)

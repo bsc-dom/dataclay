@@ -16,9 +16,8 @@ class KeyValue(ABC):
         pass
 
     @property
-    @abstractmethod
     def value(self):
-        pass
+        return json.dumps(self.__dict__, cls=UUIDEncoder)
 
     @property
     @abstractmethod
@@ -41,6 +40,65 @@ class KeyValue(ABC):
 
 
 @dataclass
+class ObjectMetadata(KeyValue):
+
+    path = "/object/"
+
+    id: UUID = None
+    alias_name: str = None
+    dataset_name: str = None
+    class_name: UUID = None
+    backend_id: UUID = None
+    replica_backend_ids: UUID = None
+    language: str = None
+    is_read_onlye: bool = False
+
+    @property
+    def key(self):
+        return self.path + str(self.id)
+
+    @classmethod
+    def from_proto(cls, proto):
+        object_md = cls(
+            UUID(proto.id),
+            proto.alias_name if proto.alias_name != "" else None,
+            proto.dataset_name,
+            proto.class_name,
+            UUID(proto.backend_id),
+            list(map(UUID, proto.replica_backend_ids)),
+            proto.language,
+            proto.is_read_only,
+        )
+        return object_md
+
+    def get_proto(self):
+        return common_messages_pb2.ObjectMetadata(
+            id=str(self.id),
+            alias_name=self.alias_name,
+            dataset_name=self.dataset_name,
+            class_name=self.class_name,
+            backend_id=str(self.backend_id),
+            replica_backend_ids=list(map(str, self.replica_backend_ids)),
+            language=self.language,
+            is_read_only=self.is_read_only,
+        )
+
+
+@dataclass
+class Alias(KeyValue):
+
+    path = "/alias/"
+
+    name: str
+    dataset_name: str
+    object_id: UUID
+
+    @property
+    def key(self):
+        return self.path + f"{self.dataset_name}/{self.name}"
+
+
+@dataclass
 class Session(KeyValue):
 
     path = "/session/"
@@ -52,11 +110,7 @@ class Session(KeyValue):
 
     @property
     def key(self):
-        return f"/session/{self.id}"
-
-    @property
-    def value(self):
-        return json.dumps(self.__dict__, cls=UUIDEncoder)
+        return self.path + str(self.id)
 
     @classmethod
     def from_proto(cls, proto):
@@ -92,11 +146,7 @@ class Account(KeyValue):
 
     @property
     def key(self):
-        return f"/account/{self.username}"
-
-    @property
-    def value(self):
-        return json.dumps(self.__dict__, cls=UUIDEncoder)
+        return self.path + self.username
 
     @classmethod
     def new(cls, username, password, role="NORMAL", datasets=None):
@@ -123,12 +173,4 @@ class Dataset(KeyValue):
 
     @property
     def key(self):
-        return f"/dataset/{self.name}"
-
-    @property
-    def value(self):
-        return json.dumps(self.__dict__, cls=UUIDEncoder)
-
-    @classmethod
-    def from_json(cls, s):
-        return cls(**json.loads(s, object_hook=uuid_parser))
+        return self.path + self.name

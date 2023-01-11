@@ -1140,9 +1140,6 @@ class BackendAPI:
         instance = self.get_local_instance(object_id, True)
         self.runtime.delete_alias(instance)
 
-    def get_num_objects(self):
-        return self.runtime.count_loaded_objs()
-
     ##########
     # Shutdown
     ##########

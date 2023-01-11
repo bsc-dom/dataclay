@@ -15,8 +15,7 @@ from dataclay.metadata.managers.dataclay import (
     DataclayManager,
     StorageLocation,
 )
-from dataclay.metadata.managers.kvdata import Dataset, Account, Session
-from dataclay.metadata.managers.object import ObjectManager, ObjectMetadata
+from dataclay.metadata.managers.kvdata import Dataset, Account, Session, ObjectMetadata, Alias
 
 FEDERATOR_ACCOUNT_USERNAME = "Federator"
 EXTERNAL_OBJECTS_DATASET_NAME = "ExternalObjects"
@@ -34,7 +33,6 @@ class MetadataAPI:
         self.r_kv_client = redis.Redis(decode_responses=True)
 
         # Creates managers for each class
-        self.object_mgr = ObjectManager(self.kv_client)
         self.dataclay_mgr = DataclayManager(self.kv_client)
         self.kv_manager = KVManager(self.r_kv_client)
 
@@ -187,17 +185,6 @@ class MetadataAPI:
             logger.info(f"Created {dataset.name} dataset for {username} account")
 
     #####################
-    # Metaclass Manager #
-    #####################
-
-    # TODO: Deprecate it, no need when using class_name instead of class_id
-    # def get_metaclass(self, metaclass_id: UUID):
-    #     with tracer.start_as_current_span(
-    #         "get_metaclass", attributes={"metaclass_id": metaclass_id}
-    #     ):
-    #         return self.metaclass_mgr.get_metaclass(metaclass_id)
-
-    #####################
     # Dataclay Metadata #
     #####################
 
@@ -209,11 +196,6 @@ class MetadataAPI:
     @tracer.start_as_current_span("put_dataclay_id")
     def put_dataclay_id(self, dataclay_id) -> UUID:
         self.dataclay_mgr.put_dataclay_id(dataclay_id)
-
-    @tracer.start_as_current_span("get_num_objects")
-    def get_num_objects(self, language):
-        all_object_md = self.object_mgr.get_all_object_md(language)
-        return len(all_object_md)
 
     def autoregister_mds(self, id: UUID, hostname: str, port: int, is_this=False):
         """Autoregister Metadata Service"""
@@ -262,37 +244,23 @@ class MetadataAPI:
     # Object Metadata #
     ###################
 
+    @tracer.start_as_current_span("register_object")
     def register_object(self, object_md: ObjectMetadata, session_id: UUID = None):
-        with tracer.start_as_current_span(
-            "register_object", attributes={"object_id": object_md.id}
-        ):
-            # NOTE: If only EE can register objects, no need to check session
-            # Checks that session exists and is active
-            # session = self.session_mgr.get_session(session_id)
-            # if not session.is_active:
-            #     raise SessionIsNotActiveError(session_id)
+        # NOTE: If only EE can register objects, no need to check session
+        # Checks that session exists and is active
+        # session = self.session_mgr.get_session(session_id)
+        # if not session.is_active:
+        #     raise SessionIsNotActiveError(session_id)
 
-            # NOTE: If a session can just access one dataset, then this
-            # dataset will always be the session's default dataset.
-            # object_md.dataset_name = session.dataset_name
+        # NOTE: If a session can just access one dataset, then this
+        # dataset will always be the session's default dataset.
+        # object_md.dataset_name = session.dataset_name
 
-            self.object_mgr.register_object(object_md)
+        if object_md.alias_name:
+            alias = Alias(object_md.alias_name, object_md.dataset_name, object_md.id)
+            self.kv_manager.set_new(alias)
 
-    # NOTE: It should be used to update synchronously the metadata, not only
-    # when the service shutdowns
-    def update_object(self, object_md: ObjectMetadata, session_id: UUID = None):
-        with tracer.start_as_current_span("update_object", attributes={"object_id": object_md.id}):
-            # NOTE: If only EE can update objects, no need to check session
-            # Checks that session exists and is active
-            # session = self.session_mgr.get_session(session_id)
-            # if not session.is_active:
-            #     raise SessionIsNotActiveError(session_id)
-
-            # NOTE: If a session can just access one dataset, then this
-            # dataset will always be the session's default dataset.
-            # object_md.dataset_name = session.dataset_name
-
-            self.object_mgr.update_object(object_md)
+        self.kv_manager.set_new(object_md)
 
     @tracer.start_as_current_span("start_as_current_span")
     def get_object_md_by_id(self, object_id: UUID, session_id=None, check_session=False):
@@ -301,55 +269,52 @@ class MetadataAPI:
             if not session.is_active:
                 raise SessionIsNotActiveError(session_id)
 
-        object_md = self.object_mgr.get_object_md(object_id)
+        object_md = self.kv_manager.get_kv(ObjectMetadata, object_id)
         return object_md
 
+    @tracer.start_as_current_span("get_object_md_by_alias")
     def get_object_md_by_alias(
         self, alias_name: str, dataset_name: str, session_id: UUID = None, check_session=False
     ):
-        with tracer.start_as_current_span(
-            "get_object_md_by_alias",
-            attributes={
-                "alias_name": alias_name,
-                "dataset_name": dataset_name,
-            },
-        ):
-            if check_session:
-                # Checks that session exists and is active
-                session = self.kv_manager.get_kv(Session, session_id)
-                if not session.is_active:
-                    raise SessionIsNotActiveError(session_id)
+        if check_session:
+            # Checks that session exists and is active
+            session = self.kv_manager.get_kv(Session, session_id)
+            if not session.is_active:
+                raise SessionIsNotActiveError(session_id)
 
-                # Checks that datset_name is empty or equal to session's dataset
-                if not dataset_name:
-                    dataset_name = session.dataset_name
-                elif dataset_name != session.dataset_name:
-                    raise DatasetIsNotAccessibleError(dataset_name, session.username)
+            # Checks that datset_name is empty or equal to session's dataset
+            if not dataset_name:
+                dataset_name = session.dataset_name
+            elif dataset_name != session.dataset_name:
+                raise DatasetIsNotAccessibleError(dataset_name, session.username)
 
-            alias = self.object_mgr.get_alias(alias_name, dataset_name)
-            object_md = self.object_mgr.get_object_md(alias.object_id)
-            return object_md
+        alias = self.kv_manager.get_kv(Alias, f"{dataset_name}/{alias_name}")
+        return self.kv_manager.get_kv(ObjectMetadata, alias.object_id)
 
+    @tracer.start_as_current_span("delete_alias")
     def delete_alias(
         self, alias_name: str, dataset_name: str, session_id: UUID, check_session=False
     ):
-        with tracer.start_as_current_span(
-            "delete_alias",
-            attributes={"alias_name": alias_name, "dataset_name": dataset_name},
-        ):
 
-            # NOTE: If the session is not checked, we supose the dataset_name is correct
-            #       since only the EE is able to set check_session to False
-            if check_session:
-                # Checks that session exist and is active
-                session = self.kv_manager.get_kv(Session, session_id)
-                if not session.is_active:
-                    raise SessionIsNotActiveError(session_id)
+        # NOTE: If the session is not checked, we supose the dataset_name is correct
+        #       since only the EE is able to set check_session to False
+        if check_session:
+            # Checks that session exist and is active
+            session = self.kv_manager.get_kv(Session, session_id)
+            if not session.is_active:
+                raise SessionIsNotActiveError(session_id)
 
-                # Check that the dataset_name is the same as session's dataset
-                if not dataset_name:
-                    dataset_name = session.dataset_name
-                elif dataset_name != session.dataset_name:
-                    raise DatasetIsNotAccessibleError(dataset_name, session.username)
+            # Check that the dataset_name is the same as session's dataset
+            if not dataset_name:
+                dataset_name = session.dataset_name
+            elif dataset_name != session.dataset_name:
+                raise DatasetIsNotAccessibleError(dataset_name, session.username)
 
-            self.object_mgr.delete_alias(alias_name, dataset_name)
+        alias = self.kv_manager.getdel_kv(Alias, f"{dataset_name}/{alias_name}")
+
+        with self.kv_manager.lock(ObjectMetadata.path + alias.object_id):
+            object_md = self.kv_manager.get_kv(ObjectMetadata, alias.object_id)
+
+            # Remove alias from object metadata
+            object_md.alias_name = None
+            self.kv_manager.set(object_md)

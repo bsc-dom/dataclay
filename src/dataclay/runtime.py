@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
     from dataclay.metadata.managers.dataclay import Backend
-    from dataclay.metadata.managers.object import ObjectMetadata
+    from dataclay.metadata.managers.kvdata import ObjectMetadata
 
 
 logger = logging.getLogger(__name__)
@@ -294,13 +294,6 @@ class DataClayRuntime(ABC):
     def update_object_metadata(self, instance: DataClayObject):
         object_md = self.metadata_service.get_object_md_by_id(instance._dc_id)
         instance.metadata = object_md
-
-    #####################
-    # Dataclay Metadata #
-    #####################
-
-    def get_num_objects(self):
-        return self.metadata_service.get_num_objects(LANG_PYTHON)
 
     #####################
     # Garbage collector #

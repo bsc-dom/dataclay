@@ -6,8 +6,8 @@ import grpc
 from google.protobuf.empty_pb2 import Empty
 
 from dataclay.metadata.managers.dataclay import Backend
-from dataclay.metadata.managers.object import ObjectMetadata
-from dataclay.metadata.managers.session import Session
+from dataclay.metadata.managers.kvdata import Session, ObjectMetadata
+
 from dataclay.protos import (
     common_messages_pb2,
     metadata_service_pb2,
