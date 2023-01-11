@@ -15,9 +15,8 @@ from dataclay.metadata.managers.dataclay import (
     DataclayManager,
     StorageLocation,
 )
-from dataclay.metadata.managers.kvdata import Dataset, Account
+from dataclay.metadata.managers.kvdata import Dataset, Account, Session
 from dataclay.metadata.managers.object import ObjectManager, ObjectMetadata
-from dataclay.metadata.managers.session import Session, SessionManager
 
 FEDERATOR_ACCOUNT_USERNAME = "Federator"
 EXTERNAL_OBJECTS_DATASET_NAME = "ExternalObjects"
@@ -35,7 +34,6 @@ class MetadataAPI:
         self.r_kv_client = redis.Redis(decode_responses=True)
 
         # Creates managers for each class
-        self.session_mgr = SessionManager(self.kv_client)
         self.object_mgr = ObjectManager(self.kv_client)
         self.dataclay_mgr = DataclayManager(self.kv_client)
         self.kv_manager = KVManager(self.r_kv_client)
@@ -53,6 +51,7 @@ class MetadataAPI:
     # Session Manager #
     ###################
 
+    @tracer.start_as_current_span("new_session")
     def new_session(self, username: str, password: str, dataset_name: str) -> Session:
         """Registers a new session
 
@@ -67,56 +66,46 @@ class MetadataAPI:
         Raises:
             Exception('Account is not valid!'): If wrong credentials
         """
-        with tracer.start_as_current_span(
-            "new_session", attributes={"username": username, "dataset_name": dataset_name}
-        ):
-            # Validates account credentials
-            account = self.kv_manager.get_kv(Account, username)
 
-            if not account.verify(password):
-                raise AccountInvalidCredentialsError(username)
+        # Validates account credentials
+        account = self.kv_manager.get_kv(Account, username)
 
-            # Validates accounts access to dataset_name
-            dataset = self.kv_manager.get_kv(Dataset, dataset_name)
+        if not account.verify(password):
+            raise AccountInvalidCredentialsError(username)
 
-            if not dataset.is_public and dataset_name not in account.datasets:
-                raise DatasetIsNotAccessibleError(dataset_name, username)
+        # Validates accounts access to dataset_name
+        dataset = self.kv_manager.get_kv(Dataset, dataset_name)
 
-            # Creates a new session
-            session = Session(
-                id=uuid.uuid4(),
-                username=username,
-                dataset_name=dataset_name,
-                is_active=True,
-            )
-            self.session_mgr.put_session(session)
+        if not dataset.is_public and dataset_name not in account.datasets:
+            raise DatasetIsNotAccessibleError(dataset_name, username)
 
-            logger.info(f"Created new session for {username} with id {session.id}")
-            return session
+        # Creates a new session
+        session = Session(uuid.uuid4(), username, dataset_name)
+        self.kv_manager.set(session)
 
+        logger.info(f"Created new session for {username} with id {session.id}")
+        return session
+
+    @tracer.start_as_current_span("get_session")
     def get_session(self, session_id: UUID) -> Session:
-        with tracer.start_as_current_span(
-            "get_session", attributes={"session_id": str(session_id)}
-        ):
-            return self.session_mgr.get_session(session_id)
+        return self.kv_manager.get_kv(Session, session_id)
 
+    @tracer.start_as_current_span("close_session")
     def close_session(self, session_id: UUID):
-        with tracer.start_as_current_span(
-            "close_session", attributes={"session_id": str(session_id)}
-        ):
-            # TODO: decide if close session remove the entry from etcd
-            #       or just set the flag is_active to false
+        # TODO: decide if close session remove the entry from etcd
+        #       or just set the flag is_active to false
 
-            # session = self.session_mgr.get_session(session_id)
-            # if not session.is_active:
-            #     raise SessionIsNotActiveError(session_id)
+        # session = self.session_mgr.get_session(session_id)
+        # if not session.is_active:
+        #     raise SessionIsNotActiveError(session_id)
 
-            # session.is_active = False
-            # self.session_mgr.put_session(session)
+        # session.is_active = False
+        # self.session_mgr.put_session(session)
 
-            if not self.session_mgr.exists_session(session_id):
-                raise SessionDoesNotExistError(session_id)
-            # self.session_mgr.delete_session(session_id)
+        # if not self.session_mgr.exists_session(session_id):
+        #     raise SessionDoesNotExistError(session_id)
+        # self.session_mgr.delete_session(session_id)
+        pass
 
     ###################
     # Account Manager #
@@ -305,19 +294,15 @@ class MetadataAPI:
 
             self.object_mgr.update_object(object_md)
 
-    def get_object_md_by_id(
-        self, object_id: UUID, session_id=None, check_session=False
-    ) -> ObjectMetadata:
-        with tracer.start_as_current_span(
-            "get_object_md_by_id", attributes={"object_id": object_id}
-        ):
-            if check_session:
-                session = self.session_mgr.get_session(session_id)
-                if not session.is_active:
-                    raise SessionIsNotActiveError(session_id)
+    @tracer.start_as_current_span("start_as_current_span")
+    def get_object_md_by_id(self, object_id: UUID, session_id=None, check_session=False):
+        if check_session:
+            session = self.kv_manager.get_kv(Session, session_id)
+            if not session.is_active:
+                raise SessionIsNotActiveError(session_id)
 
-            object_md = self.object_mgr.get_object_md(object_id)
-            return object_md
+        object_md = self.object_mgr.get_object_md(object_id)
+        return object_md
 
     def get_object_md_by_alias(
         self, alias_name: str, dataset_name: str, session_id: UUID = None, check_session=False
@@ -331,7 +316,7 @@ class MetadataAPI:
         ):
             if check_session:
                 # Checks that session exists and is active
-                session = self.session_mgr.get_session(session_id)
+                session = self.kv_manager.get_kv(Session, session_id)
                 if not session.is_active:
                     raise SessionIsNotActiveError(session_id)
 
@@ -357,7 +342,7 @@ class MetadataAPI:
             #       since only the EE is able to set check_session to False
             if check_session:
                 # Checks that session exist and is active
-                session = self.session_mgr.get_session(session_id)
+                session = self.kv_manager.get_kv(Session, session_id)
                 if not session.is_active:
                     raise SessionIsNotActiveError(session_id)
 

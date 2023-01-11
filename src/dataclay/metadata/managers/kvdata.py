@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from passlib.hash import bcrypt
 
+from dataclay.protos import common_messages_pb2
+from uuid import UUID
 from dataclay.exceptions import *
 from dataclay.utils.json import UUIDEncoder, uuid_parser
 
@@ -36,6 +38,43 @@ class KeyValue(ABC):
     #         raise DoesNotExistError(name)
 
     #     return cls.from_json(value)
+
+
+@dataclass
+class Session(KeyValue):
+
+    path = "/session/"
+
+    id: UUID
+    username: str
+    dataset_name: str
+    is_active: bool = True
+
+    @property
+    def key(self):
+        return f"/session/{self.id}"
+
+    @property
+    def value(self):
+        return json.dumps(self.__dict__, cls=UUIDEncoder)
+
+    @classmethod
+    def from_proto(cls, proto):
+        session = cls(
+            UUID(proto.id),
+            proto.username,
+            proto.dataset_name,
+            proto.is_active,
+        )
+        return session
+
+    def get_proto(self):
+        return common_messages_pb2.Session(
+            id=str(self.id),
+            username=self.username,
+            dataset_name=self.dataset_name,
+            is_active=self.is_active,
+        )
 
 
 @dataclass

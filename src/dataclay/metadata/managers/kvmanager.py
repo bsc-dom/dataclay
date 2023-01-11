@@ -12,7 +12,10 @@ class KVManager:
         self.r_client = kv_client
 
     def set_new(self, kv_object):
-        """Creates a new dataset. Checks that the dataset doesn't exists."""
+        """Creates a new dataset. Checks that the dataset doesn't exists.
+
+        Use "set" if the kew is using a UUID, in order to optimize for etcd (if used)
+        """
 
         if not self.r_client.set(kv_object.key, kv_object.value, nx=True):
             raise AlreadyExistError(kv_object.key)
@@ -31,7 +34,7 @@ class KVManager:
     def get_kv(self, kv_class: KeyValue, id):
         """Get kv_class"""
 
-        name = kv_class.path + id
+        name = kv_class.path + str(id)
         value = self.r_client.get(name)
         if value is None:
             raise DoesNotExistError(name)
