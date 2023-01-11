@@ -9,14 +9,13 @@ from opentelemetry import trace
 from dataclay.metadata.managers.kvmanager import KVManager
 
 from dataclay.exceptions.exceptions import *
-from dataclay.metadata.managers.account import Account, AccountManager
 from dataclay.metadata.managers.dataclay import (
     Backend,
     Dataclay,
     DataclayManager,
     StorageLocation,
 )
-from dataclay.metadata.managers.dataset import Dataset, DatasetManager
+from dataclay.metadata.managers.kvdata import Dataset, Account
 from dataclay.metadata.managers.object import ObjectManager, ObjectMetadata
 from dataclay.metadata.managers.session import Session, SessionManager
 
@@ -36,9 +35,7 @@ class MetadataAPI:
         self.r_kv_client = redis.Redis(decode_responses=True)
 
         # Creates managers for each class
-        self.account_mgr = AccountManager(self.kv_client)
         self.session_mgr = SessionManager(self.kv_client)
-        self.dataset_mgr = DatasetManager(self.kv_client)
         self.object_mgr = ObjectManager(self.kv_client)
         self.dataclay_mgr = DataclayManager(self.kv_client)
         self.kv_manager = KVManager(self.r_kv_client)
@@ -74,8 +71,7 @@ class MetadataAPI:
             "new_session", attributes={"username": username, "dataset_name": dataset_name}
         ):
             # Validates account credentials
-            account = self.account_mgr.get_account(username)
-            # account = self.kv_manager.get(Account, username)
+            account = self.kv_manager.get_kv(Account, username)
 
             if not account.verify(password):
                 raise AccountInvalidCredentialsError(username)
@@ -128,7 +124,7 @@ class MetadataAPI:
 
     def new_superuser(self, username: str, password: str, dataset_name: str):
         # Creates new account and put it to etcd
-        account = Account(username, password, role="ADMIN")
+        account = Account.new(username, password, role="ADMIN")
 
         # Creates new dataset and updates account's list of datasets
         dataset = Dataset(dataset_name, username)
@@ -137,7 +133,7 @@ class MetadataAPI:
         # Put new dataset and account to etcd
         # Order matters to check that dataset name is not registered
         self.kv_manager.set_new(dataset)
-        self.account_mgr.new_account(account)
+        self.kv_manager.set_new(account)
 
         logger.info(f"Created new account for {username} with dataset {dataset.name}")
 
@@ -155,8 +151,8 @@ class MetadataAPI:
             # TODO: Ask for admin credentials for creating the account.
 
             # Creates new account and put it to etcd
-            account = Account(username, password)
-            self.account_mgr.new_account(account)
+            account = Account.new(username, password)
+            self.kv_manager.set_new(account)
 
             logger.info(f"Created new account for {username}")
 
@@ -164,6 +160,7 @@ class MetadataAPI:
     # Dataset Manager #
     ###################
 
+    @tracer.start_as_current_span("new_dataset")
     def new_dataset(self, username: str, password: str, dataset_name: str):
         """Registers a new dataset
 
@@ -180,12 +177,12 @@ class MetadataAPI:
         Raises:
             Exception('Account is not valid!'): If wrong credentials
         """
-        with tracer.start_as_current_span(
-            "new_dataset", attributes={"username": username, "dataset_name": dataset_name}
-        ):
+
+        # Lock to update account.datasets without race condition
+        with self.kv_manager.lock(Account.path + username):
 
             # Validates account credentials
-            account = self.account_mgr.get_account(username)
+            account = self.kv_manager.get_kv(Account, username)
             if not account.verify(password):
                 raise AccountInvalidCredentialsError(username)
 
@@ -193,10 +190,10 @@ class MetadataAPI:
             dataset = Dataset(dataset_name, username)
             account.datasets.append(dataset_name)
 
-            # Put new dataset to etcd and updates account metadata
+            # Put new dataset to kv and updates account metadata
             # Order matters to check that dataset name is not registered
             self.kv_manager.set_new(dataset)
-            self.account_mgr.put_account(account)
+            self.kv_manager.update(account)
 
             logger.info(f"Created {dataset.name} dataset for {username} account")
 

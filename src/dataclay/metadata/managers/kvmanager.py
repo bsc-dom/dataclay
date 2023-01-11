@@ -1,5 +1,10 @@
+from __future__ import annotations
 import redis
 from dataclay.exceptions.exceptions import *
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclay.metadata.managers.kvdata import KeyValue
 
 
 class KVManager:
@@ -12,7 +17,18 @@ class KVManager:
         if not self.r_client.set(kv_object.key, kv_object.value, nx=True):
             raise AlreadyExistError(kv_object.key)
 
-    def get_kv(self, kv_class, id):
+    def set(self, kv_object):
+        self.r_client.set(kv_object.key, kv_object.value)
+
+    def update(self, kv_object):
+        """Updates a key that already exists.
+
+        It could be used "set(..)" instead, but "update" makes sure the key was not deleted
+        """
+        if not self.r_client.set(kv_object.key, kv_object.value, xx=True):
+            raise DoesNotExistError(kv_object.key)
+
+    def get_kv(self, kv_class: KeyValue, id):
         """Get kv_class"""
 
         name = kv_class.path + id
@@ -21,3 +37,6 @@ class KVManager:
             raise DoesNotExistError(name)
 
         return kv_class.from_json(value)
+
+    def lock(self, name):
+        return self.r_client.lock("/lock" + name)
