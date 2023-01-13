@@ -1,7 +1,6 @@
 import logging
 import signal
 import threading
-import uuid
 from concurrent import futures
 
 import grpc
@@ -22,7 +21,7 @@ def serve():
 
     metadata_service = MetadataAPI(settings.ETCD_HOSTNAME, settings.ETCD_PORT)
     if not metadata_service.is_ready(timeout=10):
-        logger.error("Etcd is not ready. Aborting!")
+        logger.error("KV store is not ready. Aborting!")
         raise
 
     # Try to set the dataclay id if don't exists yet

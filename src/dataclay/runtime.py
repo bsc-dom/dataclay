@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from dataclay.dataclay_object import DataClayObject
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
-    from dataclay.metadata.managers.kvdata import ObjectMetadata
+    from dataclay.metadata.kvdata import ObjectMetadata
 
 
 logger = logging.getLogger(__name__)

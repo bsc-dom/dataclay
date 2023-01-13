@@ -1,16 +1,12 @@
 import logging
 import uuid
 from uuid import UUID
-import time
 
-import etcd3
-import redis
-import grpc
 from opentelemetry import trace
-from dataclay.metadata.managers.kvmanager import KVManager
+from dataclay.metadata.redismanager import RedisManager
 
 from dataclay.exceptions.exceptions import *
-from dataclay.metadata.managers.kvdata import (
+from dataclay.metadata.kvdata import (
     Dataset,
     Account,
     Session,
@@ -30,34 +26,14 @@ logger = logging.getLogger(__name__)
 
 
 class MetadataAPI:
-    def __init__(self, etcd_host, etcd_port):
-        # Creates etcd client
-        # self.kv_client = etcd3.client(etcd_host, etcd_port)
-        self.kv_client = redis.Redis(decode_responses=True)
+    def __init__(self, kv_hostname, kv_port):
 
-        # Creates managers for each class
-        self.kv_manager = KVManager(self.kv_client)
+        self.kv_manager = RedisManager()
 
         logger.info("Initialized MetadataService")
 
     def is_ready(self, timeout=None, pause=0.5):
-        ref = time.time()
-        now = ref
-
-        while (now - ref) < timeout:
-            try:
-                if isinstance(self.kv_client, redis.Redis):
-                    return self.kv_client.ping()
-                elif isinstance(self.kv_client, etcd3.client):
-                    grpc.channel_ready_future(self.kv_client.channel).result(timeout)
-                    return True
-            except redis.ConnectionError:
-                time.sleep(pause)
-                now = time.time()
-            except grpc.FutureTimeoutError:
-                return False
-
-        return False
+        return self.kv_manager.is_ready(timeout=timeout, pause=pause)
 
     ###################
     # Session Manager #

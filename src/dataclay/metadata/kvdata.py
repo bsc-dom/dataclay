@@ -28,7 +28,7 @@ class KeyValue(ABC):
     def from_json(cls, s):
         return cls(**json.loads(s, object_hook=uuid_parser))
 
-    # NOTE: This is an alternative of "KVManager.get_kv(...)"
+    # NOTE: This is an alternative of "RedisManager.get_kv(...)"
     # @classmethod
     # def from_kv(cls, kv_manager, id):
     #     name = cls.path + id

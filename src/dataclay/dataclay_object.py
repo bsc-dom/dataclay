@@ -20,7 +20,7 @@ from uuid import UUID
 
 from opentelemetry import trace
 
-from dataclay.metadata.managers.kvdata import ObjectMetadata
+from dataclay.metadata.kvdata import ObjectMetadata
 from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.runtime import get_runtime
 

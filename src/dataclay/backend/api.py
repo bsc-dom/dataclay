@@ -47,19 +47,19 @@ class BackendAPI:
         self.backend_id = settings.DATACLAY_BACKEND_ID
         logger.info(f"Initialized Backend with ID: {self.backend_id}")
 
-    def is_ready(self, timeout=None):
+    def is_ready(self, timeout=None, pause=0.5):
         ref = time.time()
         now = ref
         if self.runtime.metadata_service.is_ready(timeout):
 
             # Check that dataclay_id is defined. If it is not defined, it could break things
-            while (now - ref) < timeout:
+            while timeout is None or (now - ref) < timeout:
                 try:
                     dataclay_id = self.runtime.metadata_service.get_dataclay("this").id
                     settings.DATACLAY_ID = dataclay_id
                     return True
                 except DoesNotExistError:
-                    time.sleep(0.5)
+                    time.sleep(pause)
                     now = time.time()
 
         return False

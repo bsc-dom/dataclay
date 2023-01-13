@@ -1,15 +1,27 @@
 from __future__ import annotations
 import redis
+import time
 from dataclay.exceptions.exceptions import *
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from dataclay.metadata.managers.kvdata import KeyValue
+    from dataclay.metadata.kvdata import KeyValue
 
 
-class KVManager:
-    def __init__(self, kv_client: redis.Redis):
-        self.r_client = kv_client
+class RedisManager:
+    def __init__(self):
+        self.r_client = redis.Redis(decode_responses=True)
+
+    def is_ready(self, timeout=None, pause=0.5):
+        ref = time.time()
+        now = ref
+        while timeout is None or (now - ref) < timeout:
+            try:
+                return self.r_client.ping()
+            except redis.ConnectionError:
+                time.sleep(pause)
+                now = time.time()
+        return False
 
     def set_new(self, kv_object):
         """Creates a new dataset. Checks that the dataset doesn't exists.
