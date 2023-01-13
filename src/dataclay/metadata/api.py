@@ -35,9 +35,9 @@ class MetadataAPI:
     def is_ready(self, timeout=None, pause=0.5):
         return self.kv_manager.is_ready(timeout=timeout, pause=pause)
 
-    ###################
-    # Session Manager #
-    ###################
+    ###########
+    # Session #
+    ###########
 
     @tracer.start_as_current_span("new_session")
     def new_session(self, username: str, password: str, dataset_name: str) -> Session:
@@ -95,9 +95,9 @@ class MetadataAPI:
         # self.session_mgr.delete_session(session_id)
         pass
 
-    ###################
-    # Account Manager #
-    ###################
+    ###########
+    # Account #
+    ###########
 
     def new_superuser(self, username: str, password: str, dataset_name: str):
         # Creates new account and put it to etcd
@@ -133,9 +133,9 @@ class MetadataAPI:
 
             logger.info(f"Created new account for {username}")
 
-    ###################
-    # Dataset Manager #
-    ###################
+    ###########
+    # Dataset #
+    ###########
 
     @tracer.start_as_current_span("new_dataset")
     def new_dataset(self, username: str, password: str, dataset_name: str):
@@ -174,9 +174,9 @@ class MetadataAPI:
 
             logger.info(f"Created {dataset.name} dataset for {username} account")
 
-    #####################
-    # Dataclay Metadata #
-    #####################
+    ############
+    # Dataclay #
+    ############
 
     @tracer.start_as_current_span("new_dataclay")
     def new_dataclay(self, dataclay_id, hostname, port, is_this=False):
@@ -187,9 +187,9 @@ class MetadataAPI:
     def get_dataclay(self, dataclay_id: UUID | str) -> Dataclay:
         return self.kv_manager.get_kv(Dataclay, dataclay_id)
 
-    #####################
-    # EE-SL information #
-    #####################
+    ###########
+    # Backend #
+    ###########
 
     @tracer.start_as_current_span("get_all_backends")
     def get_all_backends(self, from_backend=False) -> dict:
@@ -205,7 +205,7 @@ class MetadataAPI:
         logger.info(f"Registered new backend with id={id}, hostname={hostname}, port={port}")
 
     ###################
-    # Object Metadata #
+    # Dataclay Object #
     ###################
 
     @tracer.start_as_current_span("register_object")
@@ -254,6 +254,10 @@ class MetadataAPI:
 
         alias = self.kv_manager.get_kv(Alias, f"{dataset_name}/{alias_name}")
         return self.kv_manager.get_kv(ObjectMetadata, alias.object_id)
+
+    #########
+    # Alias #
+    #########
 
     @tracer.start_as_current_span("delete_alias")
     def delete_alias(
