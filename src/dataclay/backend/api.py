@@ -55,10 +55,10 @@ class BackendAPI:
             # Check that dataclay_id is defined. If it is not defined, it could break things
             while (now - ref) < timeout:
                 try:
-                    dataclay_id = self.runtime.metadata_service.get_dataclay_id()
+                    dataclay_id = self.runtime.metadata_service.get_dataclay("this").id
                     settings.DATACLAY_ID = dataclay_id
                     return True
-                except DataclayIdDoesNotExistError:
+                except DoesNotExistError:
                     time.sleep(0.5)
                     now = time.time()
 

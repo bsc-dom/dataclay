@@ -51,5 +51,13 @@ class KVManager:
 
         return kv_class.from_json(value)
 
+    def getprefix(self, kv_class: KeyValue, prefix):
+        result = dict()
+        for key in self.r_client.scan_iter(prefix + "*"):
+            value = self.r_client.get(key)
+            value = kv_class.from_json(value)
+            result[key.removeprefix(prefix)] = value
+        return result
+
     def lock(self, name):
         return self.r_client.lock("/lock" + name)

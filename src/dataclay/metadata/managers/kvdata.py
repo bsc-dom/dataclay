@@ -40,6 +40,71 @@ class KeyValue(ABC):
 
 
 @dataclass
+class Dataclay(KeyValue):
+
+    path = "/dataclay/"
+
+    id: UUID
+    hostname: str
+    port: int
+    is_this: bool = False
+
+    @property
+    def key(self):
+        return self.path + ("this" if self.is_this else str(id))
+
+    @classmethod
+    def from_proto(cls, proto):
+        return cls(
+            UUID(proto.id),
+            proto.hostname,
+            proto.port,
+            proto.is_this,
+        )
+
+    def get_proto(self):
+        return common_messages_pb2.Dataclay(
+            id=str(self.id),
+            hostname=self.hostname,
+            port=self.port,
+            is_this=self.is_this,
+        )
+
+
+@dataclass
+class Backend(KeyValue):
+
+    path = "/backend/"
+
+    id: UUID
+    hostname: str
+    port: int
+    dataclay_id: UUID
+
+    @property
+    def key(self):
+        return self.path + str(self.id)
+
+    @classmethod
+    def from_proto(cls, proto):
+        return cls(
+            UUID(proto.id),
+            proto.hostname,
+            proto.port,
+            UUID(proto.dataclay_id),
+        )
+
+    # TODO: Improve it with __getattributes__ and interface
+    def get_proto(self):
+        return common_messages_pb2.Backend(
+            id=str(self.id),
+            hostname=self.hostname,
+            port=self.port,
+            dataclay_id=str(self.dataclay_id),
+        )
+
+
+@dataclass
 class ObjectMetadata(KeyValue):
 
     path = "/object/"
@@ -59,7 +124,7 @@ class ObjectMetadata(KeyValue):
 
     @classmethod
     def from_proto(cls, proto):
-        object_md = cls(
+        return cls(
             UUID(proto.id),
             proto.alias_name if proto.alias_name != "" else None,
             proto.dataset_name,
@@ -69,7 +134,6 @@ class ObjectMetadata(KeyValue):
             proto.language,
             proto.is_read_only,
         )
-        return object_md
 
     def get_proto(self):
         return common_messages_pb2.ObjectMetadata(
@@ -114,13 +178,7 @@ class Session(KeyValue):
 
     @classmethod
     def from_proto(cls, proto):
-        session = cls(
-            UUID(proto.id),
-            proto.username,
-            proto.dataset_name,
-            proto.is_active,
-        )
-        return session
+        return cls(UUID(proto.id), proto.username, proto.dataset_name, proto.is_active)
 
     def get_proto(self):
         return common_messages_pb2.Session(

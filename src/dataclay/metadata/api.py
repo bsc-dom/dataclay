@@ -1,6 +1,7 @@
 import logging
 import uuid
 from uuid import UUID
+import time
 
 import etcd3
 import redis
@@ -9,13 +10,15 @@ from opentelemetry import trace
 from dataclay.metadata.managers.kvmanager import KVManager
 
 from dataclay.exceptions.exceptions import *
-from dataclay.metadata.managers.dataclay import (
+from dataclay.metadata.managers.kvdata import (
+    Dataset,
+    Account,
+    Session,
+    ObjectMetadata,
+    Alias,
     Backend,
     Dataclay,
-    DataclayManager,
-    StorageLocation,
 )
-from dataclay.metadata.managers.kvdata import Dataset, Account, Session, ObjectMetadata, Alias
 
 FEDERATOR_ACCOUNT_USERNAME = "Federator"
 EXTERNAL_OBJECTS_DATASET_NAME = "ExternalObjects"
@@ -29,21 +32,32 @@ logger = logging.getLogger(__name__)
 class MetadataAPI:
     def __init__(self, etcd_host, etcd_port):
         # Creates etcd client
-        self.kv_client = etcd3.client(etcd_host, etcd_port)
-        self.r_kv_client = redis.Redis(decode_responses=True)
+        # self.kv_client = etcd3.client(etcd_host, etcd_port)
+        self.kv_client = redis.Redis(decode_responses=True)
 
         # Creates managers for each class
-        self.dataclay_mgr = DataclayManager(self.kv_client)
-        self.kv_manager = KVManager(self.r_kv_client)
+        self.kv_manager = KVManager(self.kv_client)
 
         logger.info("Initialized MetadataService")
 
-    def is_ready(self, timeout=None):
-        try:
-            grpc.channel_ready_future(self.kv_client.channel).result(timeout)
-            return True
-        except grpc.FutureTimeoutError:
-            return False
+    def is_ready(self, timeout=None, pause=0.5):
+        ref = time.time()
+        now = ref
+
+        while (now - ref) < timeout:
+            try:
+                if isinstance(self.kv_client, redis.Redis):
+                    return self.kv_client.ping()
+                elif isinstance(self.kv_client, etcd3.client):
+                    grpc.channel_ready_future(self.kv_client.channel).result(timeout)
+                    return True
+            except redis.ConnectionError:
+                time.sleep(pause)
+                now = time.time()
+            except grpc.FutureTimeoutError:
+                return False
+
+        return False
 
     ###################
     # Session Manager #
@@ -188,57 +202,31 @@ class MetadataAPI:
     # Dataclay Metadata #
     #####################
 
-    @tracer.start_as_current_span("get_dataclay_id")
-    def get_dataclay_id(self) -> UUID:
-        dataclay_id = self.dataclay_mgr.get_dataclay_id()
-        return dataclay_id
+    @tracer.start_as_current_span("new_dataclay")
+    def new_dataclay(self, dataclay_id, hostname, port, is_this=False):
+        dataclay = Dataclay(dataclay_id, hostname, port, is_this)
+        self.kv_manager.set_new(dataclay)
 
-    @tracer.start_as_current_span("put_dataclay_id")
-    def put_dataclay_id(self, dataclay_id) -> UUID:
-        self.dataclay_mgr.put_dataclay_id(dataclay_id)
-
-    def autoregister_mds(self, id: UUID, hostname: str, port: int, is_this=False):
-        """Autoregister Metadata Service"""
-        with tracer.start_as_current_span(
-            "autoregister_mds",
-            attributes={"id": str(id), "hostname": hostname, "port": port, "is_this": is_this},
-        ):
-            dataclay = Dataclay(id, hostname, port, is_this)
-            self.dataclay_mgr.new_dataclay(dataclay)
-
-    # TODO: Check if needed
-    def get_dataclay(self, dataclay_id: UUID) -> Dataclay:
-        with tracer.start_as_current_span("get_dataclay", attributes={"dataclay_id": dataclay_id}):
-            return self.dataclay_mgr.get_dataclay(dataclay_id)
+    @tracer.start_as_current_span("get_dataclay")
+    def get_dataclay(self, dataclay_id: UUID | str) -> Dataclay:
+        return self.kv_manager.get_kv(Dataclay, dataclay_id)
 
     #####################
     # EE-SL information #
     #####################
 
-    def get_storage_location(self, sl_name: str) -> StorageLocation:
-        with tracer.start_as_current_span("get_storage_location", attributes=locals()):
-            return self.dataclay_mgr.get_storage_location(sl_name)
+    @tracer.start_as_current_span("get_all_backends")
+    def get_all_backends(self, from_backend=False) -> dict:
+        """Get all backends"""
+        result = self.kv_manager.getprefix(Backend, "/backend/")
+        return {UUID(k): v for k, v in result.items()}
 
-    @tracer.start_as_current_span("get_all_execution_environments")
-    def get_all_execution_environments(
-        self, language: int, get_external=True, from_backend=False
-    ) -> dict:
-        """Get all execution environments"""
-        # TODO: get_external should
-        # TODO: Use exposed_ip_for_client if not from_backend to hide information?
-        return self.dataclay_mgr.get_all_execution_environments(language)
-
-    def autoregister_ee(self, id: UUID, hostname: str, port: int, sl_name: str, lang: int):
-        """Autoregister execution environment"""
-        with tracer.start_as_current_span("autoregister_ee", attributes=locals()):
-            # TODO: Check if ee already exists. If so, update its information.
-            # TODO: Check connection to Backend
-            exe_env = Backend(id, hostname, port, sl_name, lang, self.get_dataclay_id())
-            self.dataclay_mgr.new_execution_environment(exe_env)
-
-            logger.info(
-                f"Autoregistered ee with id={id}, hostname={hostname}, port={port}, sl_name={sl_name}"
-            )
+    @tracer.start_as_current_span("register_backend")
+    def register_backend(self, id: UUID, hostname: str, port: int, dataclay_id: UUID):
+        """Register backend"""
+        backend = Backend(id, hostname, port, dataclay_id)
+        self.kv_manager.set_new(backend)
+        logger.info(f"Registered new backend with id={id}, hostname={hostname}, port={port}")
 
     ###################
     # Object Metadata #

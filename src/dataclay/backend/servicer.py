@@ -56,12 +56,11 @@ def serve():
     server.start()
 
     # Autoregister of ExecutionEnvironment to MetadataService
-    backend.runtime.metadata_service.autoregister_ee(
+    backend.runtime.metadata_service.register_backend(
         settings.DATACLAY_BACKEND_ID,
         settings.DATACLAY_BACKEND_HOSTNAME,
         settings.DATACLAY_BACKEND_PORT,
-        settings.DATACLAY_BACKEND_NAME,
-        LANG_PYTHON,
+        settings.DATACLAY_ID,
     )
 
     # Set signal hook for SIGINT and SIGTERM

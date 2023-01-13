@@ -25,25 +25,20 @@ def serve():
         logger.error("Etcd is not ready. Aborting!")
         raise
 
-    # get or set (if not exists) dataclay_id
-    # TODO: Refactor this ugly thing
-    with metadata_service.kv_client.lock("dataclay_id"):
-        try:
-            dataclay_id = metadata_service.get_dataclay_id()
-            settings.DATACLAY_ID = dataclay_id
-        except DataclayIdDoesNotExistError:
-            dataclay_id = settings.DATACLAY_ID
-            metadata_service.put_dataclay_id(dataclay_id)
-            metadata_service.new_superuser(
-                settings.DATACLAY_USER, settings.DATACLAY_PASSWORD, settings.DATACLAY_DATASET
-            )
-
-    metadata_service.autoregister_mds(
-        dataclay_id,
-        settings.DATACLAY_METADATA_HOSTNAME,
-        settings.DATACLAY_METADATA_PORT,
-        is_this=True,
-    )
+    # Try to set the dataclay id if don't exists yet
+    try:
+        metadata_service.new_dataclay(
+            settings.DATACLAY_ID,
+            settings.DATACLAY_METADATA_HOSTNAME,
+            settings.DATACLAY_METADATA_PORT,
+            is_this=True,
+        )
+    except AlreadyExistError:
+        settings.DATACLAY_ID = metadata_service.get_dataclay("this").id
+    else:
+        metadata_service.new_superuser(
+            settings.DATACLAY_USER, settings.DATACLAY_PASSWORD, settings.DATACLAY_DATASET
+        )
 
     logger.info("Metadata service has been registered")
 
