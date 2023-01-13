@@ -22,15 +22,10 @@ class BackendRuntime(DataClayRuntime):
 
     is_backend = True
 
-    def __init__(self, backend, etcd_host, etcd_port):
-
-        # Execution Environment using this runtime.
-        # TODO: This is a bad design that could produce circular imports
-        # Remove it and think a better desing.
-        self.execution_environment = backend
+    def __init__(self, kv_hostname, kv_port):
 
         # Initialize parent
-        metadata_service = MetadataAPI(etcd_host, etcd_port)
+        metadata_service = MetadataAPI(kv_hostname, kv_port)
         super().__init__(metadata_service)
 
         self.heap_manager = HeapManager()
@@ -326,6 +321,7 @@ class BackendRuntime(DataClayRuntime):
         )
 
     def synchronize(self, instance, operation_name, params):
+        raise Exception("To refactor")
         session_id = self.session.id
         object_id = instance._dc_id
         operation = self.get_operation_info(instance._dc_id, operation_name)
@@ -356,6 +352,7 @@ class BackendRuntime(DataClayRuntime):
                     del self.references_hold_by_sessions[object_id]
 
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
+        raise Exception("To refactor")
         object_id = dc_obj._dc_id
         session_id = self.session.id
         logger.debug(
@@ -369,6 +366,7 @@ class BackendRuntime(DataClayRuntime):
         )
 
     def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
+        raise Exception("To refactor")
         object_id = dc_obj._dc_id
         session_id = self.session.id
         logger.debug(

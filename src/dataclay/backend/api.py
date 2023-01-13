@@ -32,7 +32,7 @@ logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
 class BackendAPI:
-    def __init__(self, name, port, etcd_host, etcd_port):
+    def __init__(self, name, port, kv_hostname, kv_port):
 
         # NOTE: the port is (atm) exclusively for unique identification of an EE
         # (given that the name is shared between all EE that share a SL, which happens in HPC deployments)
@@ -40,7 +40,7 @@ class BackendAPI:
         self.port = port
 
         # Initialize runtime
-        self.runtime = BackendRuntime(self, etcd_host, etcd_port)
+        self.runtime = BackendRuntime(kv_hostname, kv_port)
         set_runtime(self.runtime)
 
         # UNDONE: Do not store EE information. If restarted, create new EE uuid.

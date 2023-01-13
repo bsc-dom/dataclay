@@ -1,12 +1,8 @@
 """ Class description goes here. """
 
-"""gRPC ExecutionEnvironment Server code - StorageLocation/EE methods."""
-
 import logging
-import os
 import pickle
 import signal
-import socket
 import threading
 import traceback
 from concurrent import futures
@@ -24,7 +20,6 @@ from dataclay.protos import (
     dataservice_messages_pb2,
     dataservice_pb2_grpc,
 )
-from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.runtime import get_runtime
 
 logger = logging.getLogger(__name__)
