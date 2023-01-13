@@ -615,6 +615,7 @@ class DataClayRuntime(ABC):
         return version_id, dest_backend.id
 
     def consolidate_version(self, object_id, hint):
+        raise Exception("To refactor")
         # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
         logger.debug(f"Starting consolidate version of {object_id}")
 

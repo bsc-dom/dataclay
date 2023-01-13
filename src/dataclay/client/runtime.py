@@ -103,19 +103,12 @@ class ClientRuntime(DataClayRuntime):
     # has to know it if we consult its alias, therefore, in all cases, the alias
     # will have to be updated from the single source of truth i.e. the etcd metadata
     def delete_alias(self, instance):
-        ee_id = instance._dc_backend_id
-        if not ee_id:
-            self.update_object_metadata(instance)
-            ee_id = self.get_hint()
-
-        ee_client = self.get_backend_client(ee_id)
-        ee_client.delete_alias(self.session.id, instance._dc_id)
+        backend_client = self.get_backend_client(instance._dc_backend_id)
+        backend_client.delete_alias(self.session.id, instance._dc_id)
         instance._dc_alias = None
 
-    def get_hint(self):
-        return None
-
     def synchronize(self, instance, operation_name, params):
+        raise Exception("To refactor")
         dest_backend_id = self.get_hint()
         operation = self.get_operation_info(instance._dc_id, operation_name)
         implementation_id = self.get_implementation_id(instance._dc_id, operation_name)

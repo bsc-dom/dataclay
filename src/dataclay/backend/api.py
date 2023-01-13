@@ -161,7 +161,7 @@ class BackendAPI:
             the generated non-persistent objects
         """
 
-        raise ("To refactor")
+        raise Exception("To refactor")
         logger.debug("[==Get==] Get copy of %s ", object_id)
 
         # Get the data service of one of the backends that contains the original object.
@@ -322,6 +322,7 @@ class BackendAPI:
         Returns:
             Set of moved objects.
         """
+        raise Exception("To refactor")
         update_metadata_of = set()
 
         try:
@@ -849,6 +850,7 @@ class BackendAPI:
         Returns:
             List of serialized objects
         """
+        raise Exception("To refactor")
         result = list()
 
         # Prepare to unify calls (only one call for DS)
@@ -1079,6 +1081,7 @@ class BackendAPI:
         Returns:
             ID of objects and for each object, its bytes.
         """
+        raise Exception("To refactor")
         # Prepare to unify calls (only one call for DS)
         objects_per_backend = dict()
         for curr_obj_with_ids in objects_in_other_backends:
@@ -1136,6 +1139,7 @@ class BackendAPI:
     #######
 
     def delete_alias(self, session_id, object_id):
+        raise Exception("To refactor.")
         self.set_local_session(session_id)
         instance = self.get_local_instance(object_id, True)
         self.runtime.delete_alias(instance)
