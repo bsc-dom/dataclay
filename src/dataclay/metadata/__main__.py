@@ -19,7 +19,7 @@ def serve():
 
     stop_event = threading.Event()
 
-    metadata_service = MetadataAPI(settings.ETCD_HOSTNAME, settings.ETCD_PORT)
+    metadata_service = MetadataAPI(settings.KV_HOST, settings.KV_PORT)
     if not metadata_service.is_ready(timeout=10):
         logger.error("KV store is not ready. Aborting!")
         raise

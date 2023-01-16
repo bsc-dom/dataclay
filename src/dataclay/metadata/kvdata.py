@@ -116,7 +116,7 @@ class ObjectMetadata(KeyValue):
     backend_id: UUID = None
     replica_backend_ids: UUID = None
     language: str = None
-    is_read_onlye: bool = False
+    is_read_only: bool = False
 
     @property
     def key(self):

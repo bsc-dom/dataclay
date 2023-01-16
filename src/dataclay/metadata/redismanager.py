@@ -9,8 +9,8 @@ if TYPE_CHECKING:
 
 
 class RedisManager:
-    def __init__(self):
-        self.r_client = redis.Redis(decode_responses=True)
+    def __init__(self, host, port=6379):
+        self.r_client = redis.Redis(host=host, port=port, decode_responses=True)
 
     def is_ready(self, timeout=None, pause=0.5):
         ref = time.time()

@@ -1,24 +1,30 @@
 version: '3.9'
 services:
 
-  etcd:
-    image: "bitnami/etcd:latest"
-    environment:
-      - ALLOW_NONE_AUTHENTICATION=yes
-      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+  # etcd:
+  #   image: "bitnami/etcd:latest"
+  #   environment:
+  #     - ALLOW_NONE_AUTHENTICATION=yes
+  #     - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+  #   ports:
+  #     - 2379:2379
+  #     - 2380:2380
+
+  redis:
+    image: redis:latest
     ports:
-      - 2379:2379
-      - 2380:2380
+      - 6379:6379
+
 
   metadata-service:
     image: "bscdataclay/pyclay:dev"
     depends_on:
-      - etcd
+      - redis
     ports:
       - 16587:16587
     environment:
-      - ETCD_HOSTNAME=etcd
-      - ETCD_PORT
+      - KV_HOST=redis
+      - KV_PORT=6379
       - DATACLAY_ID
       - DATACLAY_PASSWORD
       - DATACLAY_USER
@@ -30,12 +36,12 @@ services:
   backend:
     image: "bscdataclay/pyclay:dev"
     depends_on:
-      - etcd
+      - redis
     ports:
       - 6867:6867
     environment:
-      - ETCD_HOSTNAME=etcd
-      - ETCD_PORT
+      - KV_HOST=redis
+      - KV_PORT=6379
       - DATACLAY_BACKEND_ID
       - DATACLAY_BACKEND_NAME
       - DATACLAY_BACKEND_PORT=6867

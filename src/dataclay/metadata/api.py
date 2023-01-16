@@ -26,9 +26,9 @@ logger = logging.getLogger(__name__)
 
 
 class MetadataAPI:
-    def __init__(self, kv_hostname, kv_port):
+    def __init__(self, kv_host, kv_port):
 
-        self.kv_manager = RedisManager()
+        self.kv_manager = RedisManager(kv_host, kv_port)
 
         logger.info("Initialized MetadataService")
 
@@ -280,7 +280,7 @@ class MetadataAPI:
 
         alias = self.kv_manager.getdel_kv(Alias, f"{dataset_name}/{alias_name}")
 
-        with self.kv_manager.lock(ObjectMetadata.path + alias.object_id):
+        with self.kv_manager.lock(ObjectMetadata.path + str(alias.object_id)):
             object_md = self.kv_manager.get_kv(ObjectMetadata, alias.object_id)
 
             # Remove alias from object metadata

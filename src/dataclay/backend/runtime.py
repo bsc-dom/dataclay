@@ -22,10 +22,10 @@ class BackendRuntime(DataClayRuntime):
 
     is_backend = True
 
-    def __init__(self, kv_hostname, kv_port):
+    def __init__(self, kv_host, kv_port):
 
         # Initialize parent
-        metadata_service = MetadataAPI(kv_hostname, kv_port)
+        metadata_service = MetadataAPI(kv_host, kv_port)
         super().__init__(metadata_service)
 
         self.heap_manager = HeapManager()

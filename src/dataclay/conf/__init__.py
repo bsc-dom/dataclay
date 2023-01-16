@@ -109,8 +109,11 @@ class Settings:
             "DATACLAY_BACKEND_HOSTNAME", socket.gethostbyname(socket.gethostname())
         )
 
-        self.ETCD_HOSTNAME = os.environ["ETCD_HOSTNAME"]
-        self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
+        # self.ETCD_HOSTNAME = os.environ["ETCD_HOSTNAME"]
+        # self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
+
+        self.KV_HOST = os.environ["KV_HOST"]
+        self.KV_PORT = int(os.getenv("KV_PORT", "6379"))
 
     # TODO: Rename to client_proeprties?
     def load_client_properties(
@@ -133,8 +136,11 @@ class Settings:
             "DATACLAY_METADATA_HOSTNAME", socket.gethostbyname(socket.gethostname())
         )
 
-        self.ETCD_HOSTNAME = os.environ["ETCD_HOSTNAME"]
-        self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
+        # self.ETCD_HOSTNAME = os.environ["ETCD_HOSTNAME"]
+        # self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
+
+        self.KV_HOST = os.environ["KV_HOST"]
+        self.KV_PORT = int(os.getenv("KV_PORT", "6379"))
 
         self.DATACLAY_ID = os.getenv("DATACLAY_ID", uuid.uuid4())
         self.DATACLAY_PASSWORD = os.environ["DATACLAY_PASSWORD"]
