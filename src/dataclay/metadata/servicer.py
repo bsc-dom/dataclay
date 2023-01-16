@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import traceback
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 import grpc
@@ -13,8 +14,6 @@ from dataclay.protos import (
     metadata_service_pb2,
     metadata_service_pb2_grpc,
 )
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from dataclay.metadata.api import MetadataAPI

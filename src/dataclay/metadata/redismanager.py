@@ -1,8 +1,11 @@
 from __future__ import annotations
-import redis
+
 import time
-from dataclay.exceptions.exceptions import *
 from typing import TYPE_CHECKING
+
+import redis
+
+from dataclay.exceptions.exceptions import *
 
 if TYPE_CHECKING:
     from dataclay.metadata.kvdata import KeyValue

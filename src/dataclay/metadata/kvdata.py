@@ -1,11 +1,12 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from uuid import UUID
+
 from passlib.hash import bcrypt
 
-from dataclay.protos import common_messages_pb2
-from uuid import UUID
 from dataclay.exceptions import *
+from dataclay.protos import common_messages_pb2
 from dataclay.utils.json import UUIDEncoder, uuid_parser
 
 

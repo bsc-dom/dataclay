@@ -5,8 +5,7 @@ from uuid import UUID
 import grpc
 from google.protobuf.empty_pb2 import Empty
 
-from dataclay.metadata.kvdata import Session, ObjectMetadata, Backend, Dataclay
-
+from dataclay.metadata.kvdata import Backend, Dataclay, ObjectMetadata, Session
 from dataclay.protos import (
     common_messages_pb2,
     metadata_service_pb2,
