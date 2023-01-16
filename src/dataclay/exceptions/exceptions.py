@@ -13,6 +13,26 @@ class DataClayException(Exception):
 # NEW EXCEPTIONS #
 ##################
 
+##############
+# KV Generic #
+##############
+
+
+class AlreadyExistError(DataClayException):
+    def __init__(self, id):
+        self.id = id
+
+    def __str__(self):
+        return f"{self.id} already exist"
+
+
+class DoesNotExistError(DataClayException):
+    def __init__(self, id):
+        self.id = id
+
+    def __str__(self):
+        return f"{self.id} does not exist"
+
 
 ###########
 # Account #

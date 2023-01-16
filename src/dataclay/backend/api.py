@@ -32,7 +32,7 @@ logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
 class BackendAPI:
-    def __init__(self, name, port, etcd_host, etcd_port):
+    def __init__(self, name, port, kv_host, kv_port):
 
         # NOTE: the port is (atm) exclusively for unique identification of an EE
         # (given that the name is shared between all EE that share a SL, which happens in HPC deployments)
@@ -40,26 +40,26 @@ class BackendAPI:
         self.port = port
 
         # Initialize runtime
-        self.runtime = BackendRuntime(self, etcd_host, etcd_port)
+        self.runtime = BackendRuntime(kv_host, kv_port)
         set_runtime(self.runtime)
 
         # UNDONE: Do not store EE information. If restarted, create new EE uuid.
         self.backend_id = settings.DATACLAY_BACKEND_ID
         logger.info(f"Initialized Backend with ID: {self.backend_id}")
 
-    def is_ready(self, timeout=None):
+    def is_ready(self, timeout=None, pause=0.5):
         ref = time.time()
         now = ref
         if self.runtime.metadata_service.is_ready(timeout):
 
             # Check that dataclay_id is defined. If it is not defined, it could break things
-            while (now - ref) < timeout:
+            while timeout is None or (now - ref) < timeout:
                 try:
-                    dataclay_id = self.runtime.metadata_service.get_dataclay_id()
+                    dataclay_id = self.runtime.metadata_service.get_dataclay("this").id
                     settings.DATACLAY_ID = dataclay_id
                     return True
-                except DataclayIdDoesNotExistError:
-                    time.sleep(0.5)
+                except DoesNotExistError:
+                    time.sleep(pause)
                     now = time.time()
 
         return False
@@ -161,7 +161,7 @@ class BackendAPI:
             the generated non-persistent objects
         """
 
-        raise ("To refactor")
+        raise Exception("To refactor")
         logger.debug("[==Get==] Get copy of %s ", object_id)
 
         # Get the data service of one of the backends that contains the original object.
@@ -322,6 +322,7 @@ class BackendAPI:
         Returns:
             Set of moved objects.
         """
+        raise Exception("To refactor")
         update_metadata_of = set()
 
         try:
@@ -849,6 +850,7 @@ class BackendAPI:
         Returns:
             List of serialized objects
         """
+        raise Exception("To refactor")
         result = list()
 
         # Prepare to unify calls (only one call for DS)
@@ -1079,6 +1081,7 @@ class BackendAPI:
         Returns:
             ID of objects and for each object, its bytes.
         """
+        raise Exception("To refactor")
         # Prepare to unify calls (only one call for DS)
         objects_per_backend = dict()
         for curr_obj_with_ids in objects_in_other_backends:
@@ -1136,12 +1139,10 @@ class BackendAPI:
     #######
 
     def delete_alias(self, session_id, object_id):
+        raise Exception("To refactor.")
         self.set_local_session(session_id)
         instance = self.get_local_instance(object_id, True)
         self.runtime.delete_alias(instance)
-
-    def get_num_objects(self):
-        return self.runtime.count_loaded_objs()
 
     ##########
     # Shutdown

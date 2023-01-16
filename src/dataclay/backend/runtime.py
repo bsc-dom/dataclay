@@ -22,15 +22,10 @@ class BackendRuntime(DataClayRuntime):
 
     is_backend = True
 
-    def __init__(self, backend, etcd_host, etcd_port):
-
-        # Execution Environment using this runtime.
-        # TODO: This is a bad design that could produce circular imports
-        # Remove it and think a better desing.
-        self.execution_environment = backend
+    def __init__(self, kv_host, kv_port):
 
         # Initialize parent
-        metadata_service = MetadataAPI(etcd_host, etcd_port)
+        metadata_service = MetadataAPI(kv_host, kv_port)
         super().__init__(metadata_service)
 
         self.heap_manager = HeapManager()
@@ -85,22 +80,6 @@ class BackendRuntime(DataClayRuntime):
             vars(instance).update(object_dict)
             self.heap_manager.retain_in_heap(instance)
 
-    def get_hint(self):
-        """
-        @postcondition: Get hint of the current EE
-        @return Hint of current EE
-        """
-        return settings.DATACLAY_BACKEND_ID
-
-    def store_object(self, instance):
-        if not instance._dc_is_registered:
-            raise RuntimeError(
-                "StoreObject should only be called on Persistent Objects. "
-                "Ensure to call make_persistent first"
-            )
-
-        self.internal_store(instance, make_persistent=False)
-
     def make_persistent(self, instance: DataClayObject, alias, backend_id, recursive=None):
         """This method creates a new Persistent Object using the provided stub instance and,
         if indicated, all its associated objects also Logic module API used for communication
@@ -142,90 +121,6 @@ class BackendRuntime(DataClayRuntime):
     # Helper functions, not commonruntime methods #
     #########################################
 
-    def internal_store(self, instance, make_persistent=True):
-        """Perform the storage (StoreObject call) for an instance.
-
-        This function works for two main scenarios: the makePersistent one (in
-        which the instance is not yet persistent) and the update (in which the
-        instance is persistent).
-
-        The return dictionary is the same in both cases, but note that the update
-        should not use the provided instance for updating metadata to the LM.
-
-        Args:
-            instance: The DataClayObject willing to be stored.
-            make_persistent: Flag, True when DS_STORE_OBJECT should be called
-                and False when DS_UPSERT_OBJECT is the method to be called.
-        Returns:
-            A dictionary containing the classes for all stored objects.
-        """
-        client = self.backend_clients["@STORAGE"]
-
-        pending_objs = [instance]
-        stored_objects_classes = dict()
-        serialized_objs = list()
-        obj_to_register = []
-
-        dataset_name = self.session.dataset_name
-
-        while pending_objs:
-            current_obj = pending_objs.pop()
-            # Lock and make sure it is loaded
-            current_obj_id = current_obj._dc_id
-            with UUIDLock(current_obj_id):
-                if not current_obj._dc_is_loaded:
-                    current_obj = self.get_or_new_instance_from_db(current_obj_id, False)
-
-                dcc_extradata = current_obj.get_class_extradata()
-                object_id = current_obj._dc_id
-
-                if make_persistent:
-                    # Ignore already persistent objects
-                    if current_obj._dc_is_registered:
-                        continue
-
-                    obj_to_register.append(current_obj)
-
-                # This object will soon be persistent
-                current_obj._dc_is_registered = True
-                current_obj._dc_backend_id = settings.DATACLAY_BACKEND_ID
-                # Just in case (should have been loaded already)
-                logger.debug(
-                    "Setting loaded to true from internal store for object %s" % str(object_id)
-                )
-                current_obj._dc_is_loaded = True
-
-                logger.debug(
-                    "Ready to make persistent object {%s} of class %s {%s}"
-                    % (object_id, dcc_extradata.classname, dcc_extradata.class_id)
-                )
-
-                stored_objects_classes[object_id] = dcc_extradata.class_id
-
-                # If we are not in a make_persistent, the dataset_name hint is null (?)
-                serialized_objs.append(
-                    SerializationLibUtilsSingleton.serialize_dcobj_with_data(
-                        current_obj, pending_objs, False, None, self, False
-                    )
-                )
-
-        if make_persistent:
-
-            # TODO: It may create a lot of overhead. Better use a batch call to register
-            # all objects at once. Also, it may not be necessary to even register the
-            # objects at this point, since the metadata may be already registered.
-            for instance in obj_to_register:
-                self.metadata_service.register_object(instance.metadata)
-
-            client.ds_store_objects(
-                self.session.id,
-                serialized_objs,
-                False,
-                None,
-            )
-        else:
-            client.ds_upsert_objects(self.session.id, serialized_objs)
-
     def check_and_fill_volatile_under_deserialization(self, volatile_obj, ifacebitmaps):
         """Check if there is a volatile object with ID provided pending to deserialize and if so, deserialize it since it is needed.
         :param volatile_obj: object to check
@@ -235,6 +130,8 @@ class BackendRuntime(DataClayRuntime):
         :type ifacebitmaps: dict
         :rtype: boolean
         """
+
+        raise Exception("To refactor")
 
         object_id = volatile_obj._dc_id
         if hasattr(self.thread_local_data, "volatiles_under_deserialization"):
@@ -261,6 +158,8 @@ class BackendRuntime(DataClayRuntime):
         @summary Add +1 reference associated to thread session
         @param object_id ID of object.
         """
+        raise Exception("To refactor")
+
         session_id = self.session.id
         if session_id is None:
             # session id can be none in case of when federated
@@ -316,6 +215,8 @@ class BackendRuntime(DataClayRuntime):
         @summary Get retained refs by this EE
         @return Retained refs (alias, sessions, ...)
         """
+        raise Exception("To refactor")
+
         retained_refs = set()
 
         """ memory references """
@@ -420,6 +321,7 @@ class BackendRuntime(DataClayRuntime):
         )
 
     def synchronize(self, instance, operation_name, params):
+        raise Exception("To refactor")
         session_id = self.session.id
         object_id = instance._dc_id
         operation = self.get_operation_info(instance._dc_id, operation_name)
@@ -450,6 +352,7 @@ class BackendRuntime(DataClayRuntime):
                     del self.references_hold_by_sessions[object_id]
 
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
+        raise Exception("To refactor")
         object_id = dc_obj._dc_id
         session_id = self.session.id
         logger.debug(
@@ -463,6 +366,7 @@ class BackendRuntime(DataClayRuntime):
         )
 
     def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
+        raise Exception("To refactor")
         object_id = dc_obj._dc_id
         session_id = self.session.id
         logger.debug(

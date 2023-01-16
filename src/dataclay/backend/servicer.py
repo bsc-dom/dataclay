@@ -1,12 +1,8 @@
 """ Class description goes here. """
 
-"""gRPC ExecutionEnvironment Server code - StorageLocation/EE methods."""
-
 import logging
-import os
 import pickle
 import signal
-import socket
 import threading
 import traceback
 from concurrent import futures
@@ -24,7 +20,6 @@ from dataclay.protos import (
     dataservice_messages_pb2,
     dataservice_pb2_grpc,
 )
-from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.runtime import get_runtime
 
 logger = logging.getLogger(__name__)
@@ -37,8 +32,8 @@ def serve():
     backend = BackendAPI(
         settings.DATACLAY_BACKEND_NAME,
         settings.DATACLAY_BACKEND_PORT,
-        settings.ETCD_HOSTNAME,
-        settings.ETCD_PORT,
+        settings.KV_HOST,
+        settings.KV_PORT,
     )
 
     if not backend.is_ready(timeout=10):
@@ -56,12 +51,11 @@ def serve():
     server.start()
 
     # Autoregister of ExecutionEnvironment to MetadataService
-    backend.runtime.metadata_service.autoregister_ee(
+    backend.runtime.metadata_service.register_backend(
         settings.DATACLAY_BACKEND_ID,
         settings.DATACLAY_BACKEND_HOSTNAME,
         settings.DATACLAY_BACKEND_PORT,
-        settings.DATACLAY_BACKEND_NAME,
-        LANG_PYTHON,
+        settings.DATACLAY_ID,
     )
 
     # Set signal hook for SIGINT and SIGTERM
@@ -445,13 +439,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             return dataservice_messages_pb2.ExistsResponse(exists=exists)
         except Exception as ex:
             return dataservice_messages_pb2.ExistsResponse(excInfo=self.get_exception_info(ex))
-
-    def getNumObjectsInEE(self, request, context):
-        try:
-            num_objs = self.backend.get_num_objects()
-            return common_messages_pb2.GetNumObjectsResponse(numObjs=num_objs)
-        except Exception as ex:
-            return common_messages_pb2.GetNumObjectsResponse(excInfo=self.get_exception_info(ex))
 
     def updateRefs(self, request, context):
         try:

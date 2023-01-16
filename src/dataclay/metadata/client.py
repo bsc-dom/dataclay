@@ -5,9 +5,7 @@ from uuid import UUID
 import grpc
 from google.protobuf.empty_pb2 import Empty
 
-from dataclay.metadata.managers.dataclay import Backend
-from dataclay.metadata.managers.object import ObjectMetadata
-from dataclay.metadata.managers.session import Session
+from dataclay.metadata.kvdata import Backend, Dataclay, ObjectMetadata, Session
 from dataclay.protos import (
     common_messages_pb2,
     metadata_service_pb2,
@@ -80,34 +78,24 @@ class MetadataClient:
     #####################
 
     @grpc_error_handler
-    def get_dataclay_id(self) -> UUID:
-        response = self.stub.GetDataclayID(Empty())
-        return UUID(response.dataclay_id)
+    def get_dataclay(self, id) -> UUID:
+        request = metadata_service_pb2.GetDataclayRequest(dataclay_id=str(id))
+        response = self.stub.GetDataclay(request)
+        return Dataclay.from_proto(response)
 
     #####################
     # EE-SL information #
     #####################
 
     @grpc_error_handler
-    def get_all_execution_environments(
-        self, language: int, get_external=True, from_backend=False
-    ) -> dict:
-        request = metadata_service_pb2.GetAllExecutionEnvironmentsRequest(
-            language=language, get_external=get_external, from_backend=from_backend
-        )
-        response = self.stub.GetAllExecutionEnvironments(request)
+    def get_all_backends(self, from_backend=False) -> dict:
+        request = metadata_service_pb2.GetAllBackendsRequest(from_backend=from_backend)
+        response = self.stub.GetAllBackends(request)
 
         result = dict()
-        for id, proto in response.exec_envs.items():
+        for id, proto in response.backends.items():
             result[UUID(id)] = Backend.from_proto(proto)
         return result
-
-    @grpc_error_handler
-    def autoregister_ee(self, id: UUID, hostname: str, port: int, sl_name: str, lang: int):
-        request = metadata_service_pb2.AutoRegisterEERequest(
-            id=str(id), hostname=hostname, port=port, sl_name=sl_name, lang=lang
-        )
-        self.stub.AutoregisterEE(request)
 
     ###################
     # Object Metadata #

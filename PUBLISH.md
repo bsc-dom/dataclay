@@ -107,12 +107,6 @@ docker buildx build --platform linux/amd64,linux/arm64 \
 --build-arg PYTHON_VERSION=3.10-bullseye --push .
 ```
 
-Internal testing
-```bash
-docker build -t bscdataclay/pyclay:edge \
---build-arg PYTHON_VERSION=3.10-bullseye .
-```
-
 Internal dev testing
 ```bash
 docker build -t bscdataclay/pyclay:dev -f Dockerfile.dev \

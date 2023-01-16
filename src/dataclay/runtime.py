@@ -23,8 +23,7 @@ if TYPE_CHECKING:
     from dataclay.dataclay_object import DataClayObject
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
-    from dataclay.metadata.managers.dataclay import Backend
-    from dataclay.metadata.managers.object import ObjectMetadata
+    from dataclay.metadata.kvdata import ObjectMetadata
 
 
 logger = logging.getLogger(__name__)
@@ -94,13 +93,6 @@ class DataClayRuntime(ABC):
     @abstractmethod
     def session(self):
         pass
-
-    @property
-    def dataclay_id(self):
-        """Get dataClay UUID of current dataClay"""
-        if self._dataclay_id is None:
-            self._dataclay_id = self.metadata_service.get_dataclay_id()
-        return self._dataclay_id
 
     @property
     @abstractmethod
@@ -296,13 +288,6 @@ class DataClayRuntime(ABC):
         instance.metadata = object_md
 
     #####################
-    # Dataclay Metadata #
-    #####################
-
-    def get_num_objects(self):
-        return self.metadata_service.get_num_objects(LANG_PYTHON)
-
-    #####################
     # Garbage collector #
     #####################
 
@@ -333,9 +318,7 @@ class DataClayRuntime(ABC):
             return self.backend_clients[backend_id]
 
     def update_backend_clients(self):
-        backend_infos = self.metadata_service.get_all_execution_environments(
-            LANG_PYTHON, from_backend=self.is_backend
-        )
+        backend_infos = self.metadata_service.get_all_backends(from_backend=self.is_backend)
         new_backend_clients = {}
 
         # TODO: Update backend_clients using multithreading
@@ -632,6 +615,7 @@ class DataClayRuntime(ABC):
         return version_id, dest_backend.id
 
     def consolidate_version(self, object_id, hint):
+        raise Exception("To refactor")
         # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
         logger.debug(f"Starting consolidate version of {object_id}")
 

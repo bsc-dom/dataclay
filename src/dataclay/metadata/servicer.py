@@ -1,16 +1,23 @@
+from __future__ import annotations
+
 import logging
 import traceback
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 import grpc
 from google.protobuf.empty_pb2 import Empty
 
-from dataclay.metadata.managers.object import ObjectMetadata
+from dataclay.metadata.kvdata import ObjectMetadata
 from dataclay.protos import (
     common_messages_pb2,
     metadata_service_pb2,
     metadata_service_pb2_grpc,
 )
+
+if TYPE_CHECKING:
+    from dataclay.metadata.api import MetadataAPI
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +25,7 @@ logger = logging.getLogger(__name__)
 class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
     """Provides methods that implement functionality of metadata server"""
 
-    def __init__(self, metadata_service):
+    def __init__(self, metadata_service: MetadataAPI):
         self.metadata_service = metadata_service
         logger.debug("Initialized MetadataServiceServicer")
 
@@ -66,43 +73,28 @@ class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
             return Empty()
         return Empty()
 
-    def GetDataclayID(self, _, context):
+    def GetDataclay(self, request, context):
         try:
-            dataclay_id = self.metadata_service.get_dataclay_id()
+            dataclay = self.metadata_service.get_dataclay(UUID(request.dataclay_id))
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return metadata_service_pb2.GetDataclayIDResponse()
-        return metadata_service_pb2.GetDataclayIDResponse(dataclay_id=str(dataclay_id))
+            return common_messages_pb2.Dataclay()
+        return dataclay.get_proto()
 
-    def GetAllExecutionEnvironments(self, request, context):
+    def GetAllBackends(self, request, context):
         try:
-            exec_envs = self.metadata_service.get_all_execution_environments(
-                request.language, request.get_external, request.from_backend
-            )
+            backends = self.metadata_service.get_all_backends(request.from_backend)
             response = dict()
-            for id, exec_env in exec_envs.items():
-                response[str(id)] = exec_env.get_proto()
+            for id, backend in backends.items():
+                response[str(id)] = backend.get_proto()
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return metadata_service_pb2.GetAllExecutionEnvironmentsResponse()
-        return metadata_service_pb2.GetAllExecutionEnvironmentsResponse(exec_envs=response)
-
-    # TODO: Remove it. EE can access ETCD directly.
-    def AutoregisterEE(self, request, context):
-        try:
-            self.metadata_service.autoregister_ee(
-                UUID(request.id), request.hostname, request.port, request.sl_name, request.lang
-            )
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
-        return Empty()
+            return metadata_service_pb2.GetAllBackendsResponse()
+        return metadata_service_pb2.GetAllBackendsResponse(backends=response)
 
     ###################
     # Object Metadata #

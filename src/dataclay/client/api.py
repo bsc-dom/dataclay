@@ -106,7 +106,7 @@ class ClientAPI:
         self.runtime.update_backend_clients()
 
         # Cache the dataclay_id, to avoid later request
-        self.runtime.dataclay_id
+        # self.runtime.dataclay_id
 
         logger.debug(f"Started session {self.session.id}")
         self.is_initialized = True
@@ -168,9 +168,9 @@ def register_dataclay(id, hostname, port):
     return get_runtime().register_external_dataclay(id, hostname, port)
 
 
-def get_dataclay_id():
-    """Get dataClay ID"""
-    return get_runtime().dataclay_id
+# def get_dataclay_id():
+#     """Get dataClay ID"""
+#     return get_runtime().dataclay_id
 
 
 def import_models_from_external_dataclay(namespace, ext_dataclay_id) -> None:

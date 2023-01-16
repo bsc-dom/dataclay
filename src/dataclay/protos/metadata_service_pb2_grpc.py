@@ -41,20 +41,15 @@ class MetadataServiceStub(object):
                 request_serializer=protos_dot_metadata__service__pb2.NewDatasetRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.GetAllExecutionEnvironments = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/GetAllExecutionEnvironments',
-                request_serializer=protos_dot_metadata__service__pb2.GetAllExecutionEnvironmentsRequest.SerializeToString,
-                response_deserializer=protos_dot_metadata__service__pb2.GetAllExecutionEnvironmentsResponse.FromString,
+        self.GetAllBackends = channel.unary_unary(
+                '/protos.metadata_service.MetadataService/GetAllBackends',
+                request_serializer=protos_dot_metadata__service__pb2.GetAllBackendsRequest.SerializeToString,
+                response_deserializer=protos_dot_metadata__service__pb2.GetAllBackendsResponse.FromString,
                 )
-        self.GetDataclayID = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/GetDataclayID',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=protos_dot_metadata__service__pb2.GetDataclayIDResponse.FromString,
-                )
-        self.AutoregisterEE = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/AutoregisterEE',
-                request_serializer=protos_dot_metadata__service__pb2.AutoRegisterEERequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        self.GetDataclay = channel.unary_unary(
+                '/protos.metadata_service.MetadataService/GetDataclay',
+                request_serializer=protos_dot_metadata__service__pb2.GetDataclayRequest.SerializeToString,
+                response_deserializer=protos_dot_common__messages__pb2.Dataclay.FromString,
                 )
         self.RegisterObject = channel.unary_unary(
                 '/protos.metadata_service.MetadataService/RegisterObject',
@@ -114,22 +109,15 @@ class MetadataServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetAllExecutionEnvironments(self, request, context):
+    def GetAllBackends(self, request, context):
         """EE-SL information
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetDataclayID(self, request, context):
+    def GetDataclay(self, request, context):
         """Federation
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def AutoregisterEE(self, request, context):
-        """Autoregister
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -188,20 +176,15 @@ def add_MetadataServiceServicer_to_server(servicer, server):
                     request_deserializer=protos_dot_metadata__service__pb2.NewDatasetRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'GetAllExecutionEnvironments': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetAllExecutionEnvironments,
-                    request_deserializer=protos_dot_metadata__service__pb2.GetAllExecutionEnvironmentsRequest.FromString,
-                    response_serializer=protos_dot_metadata__service__pb2.GetAllExecutionEnvironmentsResponse.SerializeToString,
+            'GetAllBackends': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAllBackends,
+                    request_deserializer=protos_dot_metadata__service__pb2.GetAllBackendsRequest.FromString,
+                    response_serializer=protos_dot_metadata__service__pb2.GetAllBackendsResponse.SerializeToString,
             ),
-            'GetDataclayID': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetDataclayID,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=protos_dot_metadata__service__pb2.GetDataclayIDResponse.SerializeToString,
-            ),
-            'AutoregisterEE': grpc.unary_unary_rpc_method_handler(
-                    servicer.AutoregisterEE,
-                    request_deserializer=protos_dot_metadata__service__pb2.AutoRegisterEERequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            'GetDataclay': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetDataclay,
+                    request_deserializer=protos_dot_metadata__service__pb2.GetDataclayRequest.FromString,
+                    response_serializer=protos_dot_common__messages__pb2.Dataclay.SerializeToString,
             ),
             'RegisterObject': grpc.unary_unary_rpc_method_handler(
                     servicer.RegisterObject,
@@ -319,7 +302,7 @@ class MetadataService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetAllExecutionEnvironments(request,
+    def GetAllBackends(request,
             target,
             options=(),
             channel_credentials=None,
@@ -329,14 +312,14 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetAllExecutionEnvironments',
-            protos_dot_metadata__service__pb2.GetAllExecutionEnvironmentsRequest.SerializeToString,
-            protos_dot_metadata__service__pb2.GetAllExecutionEnvironmentsResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetAllBackends',
+            protos_dot_metadata__service__pb2.GetAllBackendsRequest.SerializeToString,
+            protos_dot_metadata__service__pb2.GetAllBackendsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetDataclayID(request,
+    def GetDataclay(request,
             target,
             options=(),
             channel_credentials=None,
@@ -346,26 +329,9 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetDataclayID',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            protos_dot_metadata__service__pb2.GetDataclayIDResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def AutoregisterEE(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/AutoregisterEE',
-            protos_dot_metadata__service__pb2.AutoRegisterEERequest.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetDataclay',
+            protos_dot_metadata__service__pb2.GetDataclayRequest.SerializeToString,
+            protos_dot_common__messages__pb2.Dataclay.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
