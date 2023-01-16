@@ -33,7 +33,7 @@ services:
     volumes:
       - ../../:/pyclay:ro
 
-  backend:
+  backend_1:
     image: "bscdataclay/pyclay:dev"
     depends_on:
       - redis
@@ -51,3 +51,40 @@ services:
       - ../../:/pyclay:ro
       - ./model:/workdir/model:ro
 
+
+  backend_2:
+    image: "bscdataclay/pyclay:dev"
+    depends_on:
+      - redis
+    ports:
+      - 6868:6868
+    environment:
+      - KV_HOST=redis
+      - KV_PORT=6379
+      - DATACLAY_BACKEND_ID
+      - DATACLAY_BACKEND_NAME
+      - DATACLAY_BACKEND_PORT=6868
+      - DEBUG=true
+    command: python -m dataclay.backend
+    volumes:
+      - ../../:/pyclay:ro
+      - ./model:/workdir/model:ro
+
+
+  backend_3:
+    image: "bscdataclay/pyclay:dev"
+    depends_on:
+      - redis
+    ports:
+      - 6869:6869
+    environment:
+      - KV_HOST=redis
+      - KV_PORT=6379
+      - DATACLAY_BACKEND_ID
+      - DATACLAY_BACKEND_NAME
+      - DATACLAY_BACKEND_PORT=6869
+      - DEBUG=true
+    command: python -m dataclay.backend
+    volumes:
+      - ../../:/pyclay:ro
+      - ./model:/workdir/model:ro

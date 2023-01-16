@@ -25,8 +25,8 @@ def deploy_dataclay(docker_ip, docker_services):
     mds_port = docker_services.port_for("metadata-service", 16587)
     grpc.channel_ready_future(grpc.insecure_channel(f"127.0.0.1:{mds_port}")).result(timeout=10)
 
-    backend_port = docker_services.port_for("backend", 6867)
-    grpc.channel_ready_future(grpc.insecure_channel(f"127.0.0.1:{backend_port}")).result(timeout=10)
+    # backend_port = docker_services.port_for("backend", 6867)
+    # grpc.channel_ready_future(grpc.insecure_channel(f"127.0.0.1:{backend_port}")).result(timeout=10)
 
 
 @pytest.fixture(scope="session")
