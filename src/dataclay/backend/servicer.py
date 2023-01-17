@@ -78,7 +78,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
         self.backend = backend
         BackendServicer.interceptor = interceptor
 
-
     def MakePersistent(self, request, context):
         try:
             self.backend.make_persistent(UUID(request.session_id), list(request.pickled_obj))
@@ -98,25 +97,44 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
                 request.args,
                 request.kwargs,
             )
+            return BytesValue(value=returned_value)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
             return BytesValue()
-        return BytesValue(value=returned_value)
 
+    #################
+    # Store Methods #
+    #################
 
     def GetCopyOfObject(self, request, context):
         try:
-            result = self.backend.get_copy_of_object(UUID(request.session_id), UUID(request.object_id), request.recursive)
+            result = self.backend.get_copy_of_object(
+                UUID(request.session_id), UUID(request.object_id), request.recursive
+            )
+            return BytesValue(value=result)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
             return BytesValue()
-        return BytesValue(value=result)
 
+    def UpdateObject(self, request, context):
+        try:
+            self.backend.update_object(
+                UUID(request.session_id), UUID(request.object_id), request.serialized_properties
+            )
+            return Empty()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+
+    ###########
     # END NEW #
+    ###########
 
     def storeObjects(self, request, context):
 
@@ -139,11 +157,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
         except Exception as ex:
             return self.get_exception_info(ex)
 
-
-    
-
-    
-
     def synchronize(self, request, context):
         raise ("To refactor")
         try:
@@ -156,25 +169,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
                 session_id, object_id, implementation_id, serialized_params, calling_backend_id
             )
             return common_messages_pb2.ExceptionInfo()
-        except DataClayException as ex:
-            return self.get_exception_info(ex)
-
-
-
-    def updateObject(self, request, context):
-        raise ("To refactor")
-        try:
-
-            self.backend.update_object(
-                UUID(request.sessionID),
-                UUID(request.intoObjectID),
-                Utils.get_param_or_return(request.fromObject),
-            )
-
-            logger.debug("updateObject finished, sending response")
-
-            return common_messages_pb2.ExceptionInfo()
-
         except DataClayException as ex:
             return self.get_exception_info(ex)
 

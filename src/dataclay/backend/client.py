@@ -114,7 +114,6 @@ class BackendClient:
         self.channel = None
         self.stub = None
 
-
     @grpc_error_handler
     def make_persistent(self, session_id: UUID, pickled_obj: list[bytes]):
         request = dataservice_pb2.MakePersistentRequest(
@@ -122,7 +121,7 @@ class BackendClient:
         )
         self.stub.MakePersistent(request)
 
-
+    @grpc_error_handler
     def call_active_method(self, session_id, object_id, method_name, args, kwargs):
         request = dataservice_pb2.CallActiveMethodRequest(
             session_id=str(session_id),
@@ -137,6 +136,9 @@ class BackendClient:
         response = self.stub.CallActiveMethod(request)
         return response.value
 
+    #################
+    # Store Methods #
+    #################
 
     @grpc_error_handler
     def get_copy_of_object(self, session_id: UUID, object_id: UUID, recursive):
@@ -149,7 +151,18 @@ class BackendClient:
         response = self.stub.GetCopyOfObject(request)
         return response.value
 
+    @grpc_error_handler
+    def update_object(self, session_id: UUID, object_id: UUID, serialized_properties):
+        request = dataservice_pb2.UpdateObjectRequest(
+            session_id=str(session_id),
+            object_id=str(object_id),
+            serialized_properties=serialized_properties,
+        )
+        self.stub.UpdateObject(request)
+
+    ###########
     # END NEW #
+    ###########
 
     def ds_store_objects(self, session_id, objects, moving, ids_with_alias):
 
@@ -177,25 +190,6 @@ class BackendClient:
 
         except RuntimeError as e:
             traceback.print_exc(file=sys.stdout)
-            raise e
-
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-
-
-    def ds_update_object(self, session_id, into_object_id, from_object):
-        raise ("To refactor")
-        request = dataservice_messages_pb2.UpdateObjectRequest(
-            sessionID=str(session_id),
-            intoObjectID=str(into_object_id),
-            fromObject=Utils.get_param_or_return(from_object),
-        )
-
-        try:
-            response = self.stub.updateObject(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
             raise e
 
         if response.isException:
@@ -293,8 +287,6 @@ class BackendClient:
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-
-
     def federate(self, session_id, object_id, external_execution_env_id, recursive):
         try:
             request = dataservice_messages_pb2.FederateRequest(
@@ -367,7 +359,6 @@ class BackendClient:
 
         if response.isException:
             raise DataClayException(response.exceptionMessage)
-
 
     def synchronize(self, session_id, object_id, implementation_id, params, calling_backend_id):
         raise ("To refactor")

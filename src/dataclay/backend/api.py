@@ -151,6 +151,10 @@ class BackendAPI:
         if response is not None:
             return pickle.dumps(response)
 
+    #################
+    # Store Methods #
+    #################
+
     def get_copy_of_object(self, session_id, object_id, recursive):
         """Returns a non-persistent copy of the object with ID provided
 
@@ -160,55 +164,35 @@ class BackendAPI:
         Returns:
             the generated non-persistent objects
         """
+        # TODO: Check the session has persmissio for object_id
+        self.set_local_session(session_id)
 
         instance = self.runtime.get_object_by_id(object_id)
-        serialized_dict = pickle.dumps(instance._dc_properties)
-        return serialized_dict
+        # NOTE: The object should be loaded
+        # self.runtime.load_object_from_db(instance)
 
-        # raise Exception("To refactor")
-        logger.debug("[==Get==] Get copy of %s ", object_id)
+        serialized_properties = pickle.dumps(instance._dc_properties)
+        return serialized_properties
 
-        # Get the data service of one of the backends that contains the original object.
-        object_ids = set()
-        object_ids.add(object_id)
+    def update_object(self, session_id, object_id, serialized_properties):
+        # raise ("update_object need to be refactored")
+        """Updates an object with ID provided with contents from another object
 
-        serialized_objs = self.get_objects(session_id, object_ids, set(), recursive, None, 0)
+        Args:
+            session_id: ID of session
+            object_id: ID of the object to be updated
+            serialized_properties: Serialized dc_properties
+        """
 
-        # Prepare OIDs
-        logger.debug("[==Get==] Serialized objects obtained to create a copy of %s", object_id)
-        original_to_version = dict()
+        # TODO: Check the session has persmissio for object_id
+        self.set_local_session(session_id)
 
-        # Store version in this backend (if already stored, just skip it)
-        for obj_with_param_or_return in serialized_objs:
-            orig_obj_id = obj_with_param_or_return.object_id
-            version_obj_id = uuid.uuid4()
-            original_to_version[orig_obj_id] = version_obj_id
+        instance = self.runtime.get_object_by_id(object_id)
+        # NOTE: The object should be loaded
+        # self.runtime.load_object_from_db(instance)
 
-        for obj_with_param_or_return in serialized_objs:
-            orig_obj_id = obj_with_param_or_return.object_id
-            version_obj_id = original_to_version[orig_obj_id]
-            metadata = obj_with_param_or_return.metadata
-            self._modify_metadata_oids(metadata, original_to_version)
-            obj_with_param_or_return.object_id = version_obj_id
-
-        i = 0
-        imm_objs = dict()
-        lang_objs = dict()
-        vol_params = dict()
-        pers_params = dict()
-        for obj in serialized_objs:
-            vol_params[i] = obj
-            i = i + 1
-
-        serialized_result = SerializedParametersOrReturn(
-            num_params=i,
-            imm_objs=imm_objs,
-            lang_objs=lang_objs,
-            vol_objs=vol_params,
-            pers_objs=pers_params,
-        )
-
-        return serialized_result
+        object_properties = pickle.loads(serialized_properties)
+        vars(instance).update(object_properties)
 
     ##################
     ##################
@@ -218,6 +202,7 @@ class BackendAPI:
 
     # Session
 
+    # TODO: Move it to the runtime
     def set_local_session(self, session_id: uuid.UUID):
         """Check and set the session to thread_local_data.
 
@@ -229,6 +214,7 @@ class BackendAPI:
 
     # Metadata
 
+    # TODO: Move it to the runtime
     def get_object_metadata(self, object_id):
         """Get the MetaDataInfo for a certain object.
 
@@ -248,36 +234,6 @@ class BackendAPI:
             return self.runtime.inmemory_objects[object_id].metadata
         except KeyError:
             return self.runtime.metadata_service.get_object_md_by_id(object_id)
-
-    # Heap
-
-    def update_hints_to_current_ee(self, objects_data_to_store):
-        """Update hints in serialized objects provided to use current backend id
-
-        Args:
-            objects_data_to_store: serialized objects to update
-        """
-        ## Update hints since this function is called from other backends
-        hints_mapping = dict()
-        for cur_obj_data in objects_data_to_store:
-            object_id = cur_obj_data.object_id
-            hints_mapping[object_id] = self.backend_id
-
-        for cur_obj_data in objects_data_to_store:
-            object_id = cur_obj_data.object_id
-            metadata = cur_obj_data.metadata
-            obj_bytes = cur_obj_data.obj_bytes
-            metadata.modify_hints(hints_mapping)
-            # make persistent - session references
-            try:
-                self.runtime.add_session_reference(object_id)
-            except Exception as e:
-                # TODO: See exception in set_local_session
-                logger.debug(
-                    "Trying to add_session_reference during store of a federated object"
-                    "in a federated dataclay ==> Provided dataclayID instead of sessionID"
-                )
-                pass
 
     def store_in_memory(self, objects_to_store):
         """This function will deserialize objects into dataClay memory heap using the same design as for
@@ -303,10 +259,6 @@ class BackendAPI:
             None,
             self.runtime,
         )
-
-    #######
-    # Clone
-    #######
 
     ######
     # Move
@@ -654,28 +606,6 @@ class BackendAPI:
     ###############
     # Update Object
     ###############
-
-    def update_object(self, session_id, into_object_id, from_object):
-        raise ("update_object need to be refactored")
-        """Updates an object with ID provided with contents from another object
-
-        Args:
-            session_id: ID of session
-            into_object_id: ID of the object to be updated
-            from_object: object with contents to be used
-        """
-        self.set_local_session(session_id)
-        logger.debug("[==PutObject==] Updating object %s", into_object_id)
-        object_into = self.runtime.get_or_new_instance_from_db(into_object_id, False)
-        object_from = DeserializationLibUtilsSingleton.deserialize_params_or_return(
-            from_object, None, None, None, self.runtime
-        )[0]
-        object_into.set_all(object_from)
-        logger.debug(
-            "[==PutObject==] Updated object %s from object %s",
-            into_object_id,
-            object_from._dc_id,
-        )
 
     def get_objects(
         self,

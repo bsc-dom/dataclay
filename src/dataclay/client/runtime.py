@@ -1,18 +1,12 @@
-"""Initialization and finalization of dataClay client API.
-
-The `init` and `finish` functions are availble through the
-dataclay.api package.
-"""
+""" ClientRuntime """
 
 import io
 import logging
-import pickle
 import random
 import traceback
 
 from opentelemetry import trace
 
-from dataclay.backend.client import BackendClient
 from dataclay.dataclay_object import DataClayObject
 from dataclay.metadata.client import MetadataClient
 from dataclay.runtime import DataClayRuntime
@@ -98,6 +92,10 @@ class ClientRuntime(DataClayRuntime):
 
         return instance._dc_backend_id
 
+    #########
+    # Alias #
+    #########
+
     # NOTE: This function may be removed.
     # When an alias is removed without having the instance, the persistent object
     # has to know it if we consult its alias, therefore, in all cases, the alias
@@ -106,6 +104,10 @@ class ClientRuntime(DataClayRuntime):
         backend_client = self.get_backend_client(instance._dc_backend_id)
         backend_client.delete_alias(self.session.id, instance._dc_id)
         instance._dc_alias = None
+
+    ############
+    # Replicas #
+    ############
 
     def synchronize(self, instance, operation_name, params):
         raise Exception("To refactor")
@@ -127,6 +129,10 @@ class ClientRuntime(DataClayRuntime):
             self.session.id, instance._dc_id, implementation_id, serialized_params
         )
 
+    #####################
+    # Garbage collector #
+    #####################
+
     def detach_object_from_session(self, object_id, hint):
         try:
             if hint is None:
@@ -138,6 +144,10 @@ class ClientRuntime(DataClayRuntime):
             ee_client.detach_object_from_session(object_id, self.session.id)
         except:
             traceback.print_exc()
+
+    ##############
+    # Federation #
+    ##############
 
     def federate_to_backend(self, instance, external_execution_environment_id, recursive):
         hint = instance._dc_backend_id
@@ -174,6 +184,10 @@ class ClientRuntime(DataClayRuntime):
         ee_client.unfederate(
             self.session.id, instance._dc_id, external_execution_environment_id, recursive
         )
+
+    ############
+    # Shutdown #
+    ############
 
     def stop(self):
         self.metadata_service.close_session(self.session.id)

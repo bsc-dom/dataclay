@@ -11,8 +11,8 @@ from threading import Condition
 from typing import TYPE_CHECKING
 from uuid import UUID
 from weakref import WeakValueDictionary
+import pickle
 
-import grpc
 
 from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
@@ -24,6 +24,8 @@ if TYPE_CHECKING:
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
     from dataclay.metadata.kvdata import ObjectMetadata
+    from dataclay.backend.runtime import BackendRuntime
+    from dataclay.client.runtime import ClientRuntime
 
 
 logger = logging.getLogger(__name__)
@@ -32,7 +34,7 @@ logger = logging.getLogger(__name__)
 current_runtime = None
 
 
-def get_runtime() -> DataClayRuntime:
+def get_runtime() -> ClientRuntime | BackendRuntime:
     return current_runtime
 
 
@@ -70,16 +72,7 @@ class DataClayRuntime(ABC):
     def __init__(self, metadata_service: MetadataAPI | MetadataClient):
 
         self.backend_clients: dict[UUID, BackendClient] = dict()
-
-        # Indicates volatiles being send - to avoid race-conditions
-        self.volatile_parameters_being_send = set()
-
-        # Current dataClay ID
         self._dataclay_id = None
-
-        # volatiles currently under deserialization
-        self.volatiles_under_deserialization = dict()
-
         self.metadata_service = metadata_service
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
@@ -111,99 +104,9 @@ class DataClayRuntime(ABC):
     def add_to_heap(self, instance: DataClayObject):
         pass
 
-    ########
-    # Heap #
-    ########
-
-    def exists(self, object_id):
-        return object_id in self.inmemory_objects
-
-    def heap_size(self):
-        return len(self.inmemory_objects)
-
-    #############
-    # Volatiles #
-    #############
-
-    def add_volatiles_under_deserialization(self, volatiles):
-        """Add volatiles provided to be 'under deserialization' in case any execution
-        in a volatile is thrown before it is completely deserialized.
-
-        This is needed in case any deserialization depends on another (not for race conditions)
-        like hashcodes or other similar cases.
-
-        Args:
-            volatiles: volatiles under deserialization
-        """
-        for vol_obj in volatiles:
-            self.volatiles_under_deserialization[vol_obj.object_id] = vol_obj
-
-    def remove_volatiles_under_deserialization(self, volatiles):
-        """Remove volatiles under deserialization"""
-        for vol_obj in volatiles:
-            if vol_obj.object_id in self.volatiles_under_deserialization:
-                del self.volatiles_under_deserialization[vol_obj.object_id]
-
-    def update_object(self, into_object, from_object):
-        session_id = self.session.id
-
-        backend_id = into_object._dc_backend_id
-        ee_client = self.get_backend_client(backend_id)
-
-        # We serialize objects like volatile parameters
-        parameters = list()
-        parameters.append(from_object)
-        # TODO: modify serialize_params_or_return to not require this
-        params_order = list()
-        params_order.append("object")
-        params_spec = dict()
-        params_spec["object"] = "DataClayObject"  # not used, see serialized_params_or_return
-        serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
-            params=parameters,
-            iface_bitmaps=None,
-            params_spec=params_spec,
-            params_order=params_order,
-            hint_volatiles=backend_id,
-            runtime=self,
-            recursive=True,
-            for_update=True,
-        )
-
-        vol_objects = serialized_params.vol_objs
-        if vol_objects is not None:
-            new_ids = dict()
-
-            for tag in vol_objects:
-                cur_oid = serialized_params.vol_objs[tag].object_id
-                if cur_oid not in new_ids:
-                    if cur_oid == from_object._dc_id:
-                        new_ids[cur_oid] = into_object._dc_id
-                    else:
-                        new_ids[cur_oid] = uuid.uuid4()
-
-                serialized_params.vol_objs[tag] = ObjectWithDataParamOrReturn(
-                    new_ids[cur_oid],
-                    serialized_params.vol_objs[tag].class_id,
-                    serialized_params.vol_objs[tag].metadata,
-                    serialized_params.vol_objs[tag].obj_bytes,
-                )
-
-            for vol_tag in vol_objects:
-                oids = serialized_params.vol_objs[vol_tag].metadata.tags_to_oids
-                for tag, oid in oids.items():
-                    if oid in new_ids:
-                        try:
-                            serialized_params.vol_objs[vol_tag].metadata.tags_to_oids[
-                                tag
-                            ] = new_ids[oid]
-                        except KeyError:
-                            pass
-
-        ee_client.ds_update_object(session_id, into_object._dc_id, serialized_params)
-
-    ###################
-    # Object Metadata #
-    ###################
+    ##############
+    # Get Object #
+    ##############
 
     def get_object_by_id(self, object_id: UUID, object_md: ObjectMetadata = None) -> DataClayObject:
         """Get dataclay object from inmemory_objects. If not present, get object metadata
@@ -246,6 +149,7 @@ class DataClayRuntime(ABC):
                     proxy_object._dc_is_registered = True
 
                     # Since it is no loaded, we only add it to the inmemory list
+                    # The object will be loaded if needed calling "load_object_from_db"
                     self.inmemory_objects[proxy_object._dc_id] = proxy_object
                     return proxy_object
 
@@ -259,6 +163,33 @@ class DataClayRuntime(ABC):
 
         return self.get_object_by_id(object_md.id, object_md)
 
+    ##################
+    # Active Methods #
+    ##################
+
+    def call_active_method(self, instance, method_name, args: tuple, kwargs: dict):
+        import pickle
+
+        serialized_args = pickle.dumps(args)
+        serialized_kwargs = pickle.dumps(kwargs)
+        # TODO: Add serialized volatile objects to
+        # self.volatile_parameters_being_send to avoid race conditon.
+        # May be necessary a custom pickle.Pickler
+        # TODO: Check if race conditions can happend (chek old call_execute_to_ds)
+
+        backend_client = self.get_backend_client(instance._dc_backend_id)
+
+        serialized_response = backend_client.call_active_method(
+            self.session.id, instance._dc_id, method_name, serialized_args, serialized_kwargs
+        )
+        if serialized_response:
+            response = pickle.loads(serialized_response)
+            return response
+
+    #########
+    # Alias #
+    #########
+
     def delete_alias_in_dataclay(self, alias, dataset_name):
 
         if dataset_name is None:
@@ -270,45 +201,13 @@ class DataClayRuntime(ABC):
     def delete_alias(self, dc_obj):
         pass
 
-    # TODO: Check if can be deprecated and use get_all_backends
-    def get_all_locations(self, object_id):
-        locations = set()
-        try:
-            instance = self.inmemory_objects[object_id]
-            locations.add(instance._dc_backend_id)
-            locations.update(instance._dc_replica_backend_ids)
-        except KeyError:
-            object_md = self.metadata_service.get_object_md_by_id(object_id)
-            locations.add(object_md.backend_id)
-            locations.update(object_md.replica_backend_ids)
-        return locations
-
     def update_object_metadata(self, instance: DataClayObject):
         object_md = self.metadata_service.get_object_md_by_id(instance._dc_id)
         instance.metadata = object_md
 
-    #####################
-    # Garbage collector #
-    #####################
-
-    @abstractmethod
-    def detach_object_from_session(self, object_id, hint):
-        """Detach object from current session in use, i.e. remove reference from current session provided to object,
-
-        'Dear garbage-collector, current session is not using the object anymore'
-        """
-        pass
-
-    def add_session_reference(self, object_id):
-        """reference associated to thread session
-
-        Only implemented in BackendRuntime
-        """
-        pass
-
-    ##########################
-    # Execution Environments #
-    ##########################
+    ############
+    # Backends #
+    ############
 
     def get_backend_client(self, backend_id: UUID) -> BackendClient:
         try:
@@ -336,171 +235,58 @@ class DataClayRuntime(ABC):
 
         self.backend_clients = new_backend_clients
 
-    ####################
-    # Remote execution #
-    ####################
+    #################
+    # Store Methods #
+    #################
 
-    def call_active_method(self, instance, method_name, args: tuple, kwargs: dict):
-        import pickle
-
-        serialized_args = pickle.dumps(args)
-        serialized_kwargs = pickle.dumps(kwargs)
-        # TODO: Add serialized volatile objects to
-        # self.volatile_parameters_being_send to avoid race conditon.
-        # May be necessary a custom pickle.Pickler
-
-        backend_client = self.get_backend_client(instance._dc_backend_id)
-
-        serialized_response = backend_client.call_active_method(
-            self.session.id, instance._dc_id, method_name, serialized_args, serialized_kwargs
-        )
-        if serialized_response:
-            response = pickle.loads(serialized_response)
-            return response
-
-    # DEPRECATED: Use call_active_method
-    def call_execute_to_ds(self, instance, parameters, operation_name, exec_env_id, using_hint):
-        raise Exception("Deprecated")
-        object_id = instance._dc_id
-        operation = self.get_operation_info(object_id, operation_name)
-        session_id = self.session.id
-        implementation_id = self.get_implementation_id(object_id, operation_name)
-
-        print("----", locals())
-        print("----", dir())
-
-        # // === SERIALIZE PARAMETERS === //
-        serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
-            params=parameters,
-            iface_bitmaps=None,
-            params_spec=operation.params,
-            params_order=operation.paramsOrder,
-            hint_volatiles=exec_env_id,
-            runtime=self,
-        )
-
-        if serialized_params is not None and serialized_params.vol_objs is not None:
-            for param in serialized_params.vol_objs.values():
-                self.volatile_parameters_being_send.add(param.object_id)
-
-        # // === EXECUTE === //
-        max_retry = settings.MAX_EXECUTION_RETRIES
-        num_misses = 0
-        executed = False
-        for _ in range(max_retry):
-
-            ee_client = self.get_backend_client(backend_id)
-
-            try:
-                logger.debug("Calling remote EE %s ", exec_env_id)
-                ret = ee_client.ds_execute_implementation(
-                    object_id, implementation_id, session_id, serialized_params
-                )
-                executed = True
-                break
-
-            except (DataClayException, grpc.RpcError) as dce:
-                logger.warning("Execution resulted in an error, retrying...", exc_info=dce)
-
-                is_race_condition = False
-                if serialized_params is not None and serialized_params.persistent_refs is not None:
-                    for param in serialized_params.persistent_refs:
-                        if param.object_id in self.volatile_parameters_being_send:
-                            is_race_condition = True
-                            break
-                if not is_race_condition:
-                    num_misses = num_misses + 1
-                    logger.debug("Exception dataclay during execution. Retrying...")
-                    logger.debug(str(dce))
-
-                    locations = instance._dc_replica_backend_ids
-                    if locations is None or len(locations) == 0:
-                        try:
-                            self.update_object_metadata(instance)
-                            locations = instance._dc_replica_backend_ids
-                            new_location = False
-                        except DataClayException:
-                            locations = None
-
-                    if locations is None:
-                        logger.warning(
-                            "Execution failed and no metadata available. Cannot continue"
-                        )
-                        raise
-
-                    for loc in locations:
-                        logger.debug("Found location %s" % str(loc))
-                        if loc != exec_env_id:
-                            exec_env_id = loc
-                            logger.debug("Found different location %s" % str(loc))
-                            new_location = True
-                            break
-
-                    if not new_location:
-                        exec_env_id = next(iter(locations))
-                    if using_hint:
-                        instance._dc_backend_id = exec_env_id
-                    logger.debug(
-                        "[==Miss Jump==] MISS. The object %s was not in the exec.location %s. Retrying execution."
-                        % (instance._dc_id, str(exec_env_id))
-                    )
-
-        if serialized_params is not None and serialized_params.vol_objs is not None:
-            for param in serialized_params.vol_objs.values():
-                if num_misses > 0:
-                    # ===========================================================
-                    # if there was a miss, it means that the persistent object in which we were executing
-                    # was not in the choosen location. As you can see in the serialize parameters function above
-                    # we provide the execution environment as hint to set to volatile parameters. In EE, before
-                    # deserialization of volatiles we check if the persistent object in which to execute a method is
-                    # there, if not, EE raises and exception. Therefore, if there was a miss, we know that the
-                    # hint we set in volatile parameters is wrong, because they are going to be deserialized/stored
-                    # in the same location as the object with the method to execute
-                    # ===========================================================
-                    param_instance = self.inmemory_objects[param.object_id]
-                    param_instance._dc_backend_id = exec_env_id
-                self.volatile_parameters_being_send.remove(param.object_id)
-
-        if not executed:
-            raise RuntimeError(
-                "[dataClay] ERROR: Trying to execute remotely object  but something went wrong. "
-                "Maybe the object is still not stored (in case of asynchronous makepersistent) and "
-                "waiting time is not enough. Maybe the object does not exist anymore due to a remove. "
-                "Or Maybe an exception happened in the server and the call failed."
-            )
-
-        result = None
-        if ret is None:
-            logger.debug(f"Result of operation named {operation_name} received: None")
-        else:
-            logger.debug(
-                f"Deserializing result of operation named {operation_name}, return type is {operation.returnType.signature}"
-            )
-            result = DeserializationLibUtilsSingleton.deserialize_return(
-                ret, None, operation.returnType, self
-            )
-            logger.debug(
-                f"Deserialization of result of operation named {operation_name} successfully finished."
-            )
-        return result
-
-    #####################
-    # Clone and replica #
-    #####################
-
+    # NOTE: Maybe it should be only in client runtime ¿?
     def get_copy_of_object(self, instance, recursive):
         backend_id = instance._dc_backend_id
         backend_client = self.get_backend_client(backend_id)
 
-        import pickle
-        serialized_dict = backend_client.get_copy_of_object(self.session.id, instance._dc_id, recursive)
-        object_dict = pickle.loads(serialized_dict)
+        serialized_properties = backend_client.get_copy_of_object(
+            self.session.id, instance._dc_id, recursive
+        )
+        object_properties = pickle.loads(serialized_properties)
 
         proxy_object = instance._dc_class.new_proxy_object()
-        vars(proxy_object).update(object_dict)
+        vars(proxy_object).update(object_properties)
         self.add_to_heap(proxy_object)
 
         return proxy_object
+
+    # NOTE: Maybe it should be only in client runtime ¿?
+    # If can also be executed in active_method, then if the object is local,
+    # don't call the gRPC client
+    def update_object(self, instance, new_instance):
+        backend_id = instance._dc_backend_id
+        backend_client = self.get_backend_client(backend_id)
+
+        serialized_properties = pickle.dumps(new_instance._dc_properties)
+        backend_client.update_object(self.session.id, instance._dc_id, serialized_properties)
+
+    #####################
+    # Garbage collector #
+    #####################
+
+    @abstractmethod
+    def detach_object_from_session(self, object_id, hint):
+        """Detach object from current session in use, i.e. remove reference from current session provided to object,
+
+        'Dear garbage-collector, current session is not using the object anymore'
+        """
+        pass
+
+    def add_session_reference(self, object_id):
+        """reference associated to thread session
+
+        Only implemented in BackendRuntime
+        """
+        pass
+
+    ############
+    # Replicas #
+    ############
 
     # TODO: Change name to something like get_other_backend...
     def prepare_for_new_replica_version_consolidate(

@@ -1,10 +1,9 @@
-""" Class description goes here. """
+""" BackendRuntime """
 
 import datetime
 import logging
 import pickle
 import threading
-import time
 
 from dataclay.backend.heapmanager import HeapManager
 from dataclay.conf import settings
@@ -14,8 +13,6 @@ from dataclay.metadata.api import MetadataAPI
 from dataclay.runtime import DataClayRuntime, UUIDLock
 
 logger = logging.getLogger(__name__)
-
-current_milli_time = lambda: int(round(time.time() * 1000))
 
 
 class BackendRuntime(DataClayRuntime):
@@ -70,14 +67,14 @@ class BackendRuntime(DataClayRuntime):
 
             try:
                 path = f"{settings.STORAGE_PATH}/{instance._dc_id}"
-                object_dict = pickle.load(open(path, "rb"))
+                object_properties = pickle.load(open(path, "rb"))
             except Exception as e:
                 raise DataClayException("Object not found in storage") from e
 
-            # NOTE: The object_dict don't contain internal "_dc_" attributes
+            # NOTE: The object_properties don't contain internal "_dc_" attributes
             # except "_dc_properties_"
-            object_dict["_dc_is_loaded"] = True
-            vars(instance).update(object_dict)
+            object_properties["_dc_is_loaded"] = True
+            vars(instance).update(object_properties)
             self.heap_manager.retain_in_heap(instance)
 
     def make_persistent(self, instance: DataClayObject, alias, backend_id, recursive=None):
@@ -117,41 +114,19 @@ class BackendRuntime(DataClayRuntime):
 
         return instance._dc_backend_id
 
-    #########################################
-    # Helper functions, not commonruntime methods #
-    #########################################
+    #########
+    # Alias #
+    #########
 
-    def check_and_fill_volatile_under_deserialization(self, volatile_obj, ifacebitmaps):
-        """Check if there is a volatile object with ID provided pending to deserialize and if so, deserialize it since it is needed.
-        :param volatile_obj: object to check
-        :param ifacebitmaps: Interface bitmaps for deserialization
-        :returns: true if it was filled and volatile, false otherwise
-        :type volatile_obj: DataClayObject
-        :type ifacebitmaps: dict
-        :rtype: boolean
-        """
+    def delete_alias(self, instance):
+        alias = instance._dc_alias
+        if alias is not None:
+            self.delete_alias_in_dataclay(alias, instance._dc_dataset_name)
+            instance._dc_alias = None
 
-        raise Exception("To refactor")
-
-        object_id = volatile_obj._dc_id
-        if hasattr(self.thread_local_data, "volatiles_under_deserialization"):
-            if self.thread_local_data.volatiles_under_deserialization is not None:
-                for obj_with_data in self.thread_local_data.volatiles_under_deserialization:
-                    curr_obj_id = obj_with_data.object_id
-                    if object_id == curr_obj_id:
-                        if hasattr(volatile_obj, "__setstate__"):
-                            # Return true like the object is already deserialized, this will allow
-                            # any volatile under deserialization with __setstate__ to be actually deserialized
-                            # TODO: check race conditions
-                            return True
-                        # deserialize it
-                        metaclass_id = volatile_obj.get_class_extradata().class_id
-                        hint = volatile_obj._dc_backend_id
-                        self.get_or_new_volatile_instance_and_load(
-                            object_id, metaclass_id, hint, obj_with_data, ifacebitmaps
-                        )
-                        return True
-        return False
+    #####################
+    # Garbage collector #
+    #####################
 
     def add_session_reference(self, object_id):
         """
@@ -196,11 +171,17 @@ class BackendRuntime(DataClayRuntime):
             with UUIDLock(session_id):
                 self.session_expires_dates[session_id] = expiration_date
 
-    def delete_alias(self, instance):
-        alias = instance._dc_alias
-        if alias is not None:
-            self.delete_alias_in_dataclay(alias, instance._dc_dataset_name)
-            instance._dc_alias = None
+    def detach_object_from_session(self, object_id, _):
+        cur_session = self.session.id
+        if object_id in self.references_hold_by_sessions:
+            sessions_of_obj = self.references_hold_by_sessions.get(object_id)
+            if cur_session in sessions_of_obj:
+                sessions_of_obj.remove(cur_session)
+                logger.debug(
+                    "Session %s removed from object %s" % (str(cur_session), str(object_id))
+                )
+                if len(sessions_of_obj) == 0:
+                    del self.references_hold_by_sessions[object_id]
 
     def close_session_in_ee(self, session_id):
         """Close session in EE. Subtract session references for GC."""
@@ -296,29 +277,9 @@ class BackendRuntime(DataClayRuntime):
 
         return retained_refs
 
-    def get_from_sl(self, object_id):
-        """Get from SL associated to this EE.
-        :param object_id: id of the object to get
-        :type object_id: ObjectID
-        :returns: Bytes of object
-        :rtype: Byte array
-        """
-        return self.backend_clients["@STORAGE"].get_from_db(settings.DATACLAY_BACKEND_ID, object_id)
-
-    def update_to_sl(self, object_id, obj_bytes, dirty):
-        """Update to SL associated to this EE.
-        :param object_id: id of the object
-        :param obj_bytes: bytes to update
-        :param dirty: indicates if object is dirty or not
-        :returns: None
-        :type object_id: ObjectID
-        :type obj_bytes: Byte array
-        :type dirty: Boolean
-        :rtype: None
-        """
-        return self.backend_clients["@STORAGE"].update_to_db(
-            settings.DATACLAY_BACKEND_ID, object_id, obj_bytes, dirty
-        )
+    ############
+    # Replicas #
+    ############
 
     def synchronize(self, instance, operation_name, params):
         raise Exception("To refactor")
@@ -339,17 +300,9 @@ class BackendRuntime(DataClayRuntime):
             session_id, object_id, implementation_id, serialized_params
         )
 
-    def detach_object_from_session(self, object_id, _):
-        cur_session = self.session.id
-        if object_id in self.references_hold_by_sessions:
-            sessions_of_obj = self.references_hold_by_sessions.get(object_id)
-            if cur_session in sessions_of_obj:
-                sessions_of_obj.remove(cur_session)
-                logger.debug(
-                    "Session %s removed from object %s" % (str(cur_session), str(object_id))
-                )
-                if len(sessions_of_obj) == 0:
-                    del self.references_hold_by_sessions[object_id]
+    ###############
+    # Federations #
+    ###############
 
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
         raise Exception("To refactor")
@@ -378,6 +331,10 @@ class BackendRuntime(DataClayRuntime):
         self.execution_environment.unfederate(
             session_id, object_id, external_execution_environment_id, recursive
         )
+
+    ############
+    # Shutdown #
+    ############
 
     def stop(self):
         # Stop HeapManager
