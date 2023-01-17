@@ -168,8 +168,8 @@ class BackendAPI:
         self.set_local_session(session_id)
 
         instance = self.runtime.get_object_by_id(object_id)
-        # NOTE: The object should be loaded
-        # self.runtime.load_object_from_db(instance)
+        # NOTE: The object should be loaded to get the _dc_properties
+        self.runtime.load_object_from_db(instance)
 
         serialized_properties = pickle.dumps(instance._dc_properties)
         return serialized_properties
@@ -188,8 +188,8 @@ class BackendAPI:
         self.set_local_session(session_id)
 
         instance = self.runtime.get_object_by_id(object_id)
-        # NOTE: The object should be loaded
-        # self.runtime.load_object_from_db(instance)
+        # NOTE: The object should be loaded to get the _dc_properties
+        self.runtime.load_object_from_db(instance)
 
         object_properties = pickle.loads(serialized_properties)
         vars(instance).update(object_properties)
