@@ -161,7 +161,11 @@ class BackendAPI:
             the generated non-persistent objects
         """
 
-        raise Exception("To refactor")
+        instance = self.runtime.get_object_by_id(object_id)
+        serialized_dict = pickle.dumps(instance._dc_properties)
+        return serialized_dict
+
+        # raise Exception("To refactor")
         logger.debug("[==Get==] Get copy of %s ", object_id)
 
         # Get the data service of one of the backends that contains the original object.

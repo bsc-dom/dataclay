@@ -277,45 +277,10 @@ class DataClayObject:
             k: v for k, v in vars(self).items() if not k.startswith(DC_PROPERTY_PREFIX)
         }
 
-    ################
-    # TODO: REFACTOR
-    ################
 
-    def new_replica(self, backend_id=None, recursive=True):
-        return get_runtime().new_replica(
-            self._dc_id, self._dc_backend_id, backend_id, None, recursive
-        )
-
-    def new_version(self, backend_id=None, recursive=True):
-        return get_runtime().new_version(
-            self._dc_id,
-            self._dc_backend_id,
-            self._dc_class_name,
-            self._dc_dataset_name,
-            backend_id,
-            None,
-            recursive,
-        )
-
-    def consolidate_version(self):
-        """Consolidate: copy contents of current version object to original object"""
-        return get_runtime().consolidate_version(self._dc_id, self._dc_backend_id)
-
-    def set_all(self, from_object):
-        raise ("set_all need to be refactored")
-        properties = sorted(
-            self.get_class_extradata().properties.values(), key=attrgetter("position")
-        )
-
-        logger.debug("Set all properties from object %s", from_object._dc_id)
-
-        for p in properties:
-            value = getattr(from_object, p.name)
-            setattr(self, p.name, value)
-
-    ################
-    ################
-    ################
+    ###########################
+    # Object Oriented Methods #
+    ###########################
 
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
 
@@ -329,8 +294,47 @@ class DataClayObject:
                 self, alias=alias, backend_id=backend_id, recursive=recursive
             )
 
-    def get_execution_environments_info(self):
-        return get_runtime().ee_infos
+    @classmethod
+    def get_by_id(cls, object_id: UUID):
+        return get_runtime().get_object_by_id(object_id)
+
+    @classmethod
+    def get_by_alias(cls, alias, dataset_name=None):
+        # NOTE: "safe" was removed. The object_id cannot be obtained from alias string.
+        # NOTE: The alias is unique for each dataset. dataset_name is added. If none,
+        #       the default_dataset is used.
+        return get_runtime().get_object_by_alias(alias, dataset_name)
+
+    @classmethod
+    def delete_alias(cls, alias, dataset_name=None):
+        get_runtime().delete_alias_in_dataclay(alias, dataset_name=dataset_name)
+
+    def get_alias(self):
+        """
+        The alias has to be always consulted from the owner backend or etcd.
+        The alias may be removed without the client knowing it.
+        Since this method is slow, we use a getter instead of @property
+        """
+        # TODO: Refactor somehow so it works in backend and client
+        if not self._dc_is_loaded:
+            get_runtime().update_object_metadata(self)
+
+        return self._dc_alias
+
+    def get_all_backends(self):
+        """Return all the backends of this object."""
+        if not self._dc_is_loaded:
+            get_runtime().update_object_metadata(self)
+
+        backends = set()
+        backends.add(self._dc_backend_id)
+        backends.update(self._dc_replica_backend_ids)
+        return backends
+
+
+    ########################
+    # Object Store Methods #
+    ########################
 
     @classmethod
     def dc_clone_by_alias(cls, alias, recursive=False):
@@ -338,10 +342,7 @@ class DataClayObject:
         return o.dc_clone(recursive)
 
     def dc_clone(self, recursive=False):
-        """
-        @postcondition: Returns a non-persistent object as a copy of the current object
-        @return: DataClayObject non-persistent instance
-        """
+        """Returns a non-persistent object as a copy of the current object"""
         return get_runtime().get_copy_of_object(self, recursive)
 
     @classmethod
@@ -388,46 +389,41 @@ class DataClayObject:
         else:
             return None
 
-    @classmethod
-    def get_by_id(cls, object_id: UUID):
-        return get_runtime().get_object_by_id(object_id)
+    ################
+    # TODO: REFACTOR
+    ################
 
-    @classmethod
-    def get_by_alias(cls, alias, dataset_name=None):
-        # NOTE: "safe" was removed. The object_id cannot be obtained from alias string.
-        # NOTE: The alias is unique for each dataset. dataset_name is added. If none,
-        #       the default_dataset is used.
-        return get_runtime().get_object_by_alias(alias, dataset_name)
+    def new_replica(self, backend_id=None, recursive=True):
+        return get_runtime().new_replica(
+            self._dc_id, self._dc_backend_id, backend_id, None, recursive
+        )
 
-    @classmethod
-    def delete_alias(cls, alias, dataset_name=None):
-        get_runtime().delete_alias_in_dataclay(alias, dataset_name=dataset_name)
+    def new_version(self, backend_id=None, recursive=True):
+        return get_runtime().new_version(
+            self._dc_id,
+            self._dc_backend_id,
+            self._dc_class_name,
+            self._dc_dataset_name,
+            backend_id,
+            None,
+            recursive,
+        )
 
-    def get_alias(self):
-        """
-        The alias has to be always consulted from the owner backend or etcd.
-        The alias may be removed without the client knowing it.
-        Since this method is slow, we use a getter instead of @property
-        """
-        # TODO: Refactor somehow so it works in backend and client
-        if not self._dc_is_loaded:
-            get_runtime().update_object_metadata(self)
+    def consolidate_version(self):
+        """Consolidate: copy contents of current version object to original object"""
+        return get_runtime().consolidate_version(self._dc_id, self._dc_backend_id)
 
-        return self._dc_alias
+    def set_all(self, from_object):
+        raise ("set_all need to be refactored")
+        properties = sorted(
+            self.get_class_extradata().properties.values(), key=attrgetter("position")
+        )
 
-    def get_all_backends(self):
-        """Return all the backends of this object."""
-        if not self._dc_is_loaded:
-            get_runtime().update_object_metadata(self)
+        logger.debug("Set all properties from object %s", from_object._dc_id)
 
-        backends = set()
-        backends.add(self._dc_backend_id)
-        backends.update(self._dc_replica_backend_ids)
-        return backends
-
-    # TODO: Implement it?
-    def get_random_backend(self):
-        pass
+        for p in properties:
+            value = getattr(from_object, p.name)
+            setattr(self, p.name, value)
 
     #################################
     # Extradata getters and setters #

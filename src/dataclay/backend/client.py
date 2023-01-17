@@ -114,61 +114,42 @@ class BackendClient:
         self.channel = None
         self.stub = None
 
-    # def ds_deploy_metaclasses(self, namespace_name, deployment_pack):
-    #     deployment_pack_dict = dict()
 
-    #     for k, v in deployment_pack.items():
-    #         deployment_pack_dict[k] = dataclay_yaml_dump(v)
-
-    #     request = dataservice_messages_pb2.DeployMetaClassesRequest(
-    #         namespace=namespace_name, deploymentPack=deployment_pack_dict
-    #     )
-
-    #     try:
-    #         response = self.stub.deployMetaClasses(request=request, metadata=self.metadata_call)
-
-    #     except RuntimeError as e:
-    #         raise e
-
-    #     if response.isException:
-    #         raise DataClayException(response.exceptionMessage)
-
-    def ds_new_persistent_instance(
-        self, session_id, class_id, implementation_id, i_face_bitmaps, params
-    ):
-
-        raise ("To refactor")
-        logger.debug(
-            "Ready to call to a DS to build a new persistent instance for class {%s}", class_id
+    @grpc_error_handler
+    def make_persistent(self, session_id: UUID, pickled_obj: list[bytes]):
+        request = dataservice_pb2.MakePersistentRequest(
+            session_id=str(session_id), pickled_obj=pickled_obj
         )
-        temp_iface_b = dict()
-        temp_param = None
+        self.stub.MakePersistent(request)
 
-        if i_face_bitmaps is not None:
-            for k, v in i_face_bitmaps.items():
-                temp_iface_b[k] = v
 
-        if params is not None:
-            temp_param = Utils.get_param_or_return(params)
-
-        request = dataservice_messages_pb2.NewPersistentInstanceRequest(
-            sessionID=str(session_id),
-            classID=str(class_id),
-            implementationID=str(implementation_id),
-            ifaceBitMaps=temp_iface_b,
-            params=temp_param,
+    def call_active_method(self, session_id, object_id, method_name, args, kwargs):
+        request = dataservice_pb2.CallActiveMethodRequest(
+            session_id=str(session_id),
+            object_id=str(object_id),
+            method_name=method_name,
+            args=args,
+            kwargs=kwargs,
         )
 
-        try:
-            response = self.stub.newPersistentInstance(request, metadata=self.metadata_call)
+        # TODO: Make it possible for the client to try..except, any possible exception from
+        # the method execution.
+        response = self.stub.CallActiveMethod(request)
+        return response.value
 
-        except RuntimeError as e:
-            raise e
 
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
+    @grpc_error_handler
+    def get_copy_of_object(self, session_id: UUID, object_id: UUID, recursive):
+        request = dataservice_pb2.GetCopyOfObjectRequest(
+            session_id=str(session_id),
+            object_id=str(object_id),
+            recursive=recursive,
+        )
 
-        return UUID(response.objectID)
+        response = self.stub.GetCopyOfObject(request)
+        return response.value
+
+    # END NEW #
 
     def ds_store_objects(self, session_id, objects, moving, ids_with_alias):
 
@@ -201,26 +182,7 @@ class BackendClient:
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    def ds_get_copy_of_object(self, session_id, object_id, recursive):
-        raise ("To refactor")
-        request = dataservice_messages_pb2.GetCopyOfObjectRequest(
-            sessionID=str(session_id),
-            objectID=str(object_id),
-            recursive=recursive,
-        )
 
-        try:
-            response = self.stub.getCopyOfObject(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            raise e
-
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        serialized_obj = Utils.get_param_or_return(response.ret)
-
-        return serialized_obj
 
     def ds_update_object(self, session_id, into_object_id, from_object):
         raise ("To refactor")
@@ -331,12 +293,7 @@ class BackendClient:
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    @grpc_error_handler
-    def make_persistent(self, session_id: UUID, pickled_obj: list[bytes]):
-        request = dataservice_pb2.MakePersistentRequest(
-            session_id=str(session_id), pickled_obj=pickled_obj
-        )
-        self.stub.MakePersistent(request)
+
 
     def federate(self, session_id, object_id, external_execution_env_id, recursive):
         try:
@@ -411,19 +368,6 @@ class BackendClient:
         if response.isException:
             raise DataClayException(response.exceptionMessage)
 
-    def call_active_method(self, session_id, object_id, method_name, args, kwargs):
-        request = dataservice_pb2.CallActiveMethodRequest(
-            session_id=str(session_id),
-            object_id=str(object_id),
-            method_name=method_name,
-            args=args,
-            kwargs=kwargs,
-        )
-
-        # TODO: Make it possible for the client to try..except, any possible exception from
-        # the method execution.
-        response = self.stub.CallActiveMethod(request)
-        return response.value
 
     def synchronize(self, session_id, object_id, implementation_id, params, calling_backend_id):
         raise ("To refactor")

@@ -78,71 +78,45 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
         self.backend = backend
         BackendServicer.interceptor = interceptor
 
-    def ass_client(self):
-        self.client = get_runtime().backend_clients["@STORAGE"]
 
-    def get_exception_info(self, ex):
-        ex_message = None
-        logger.warning("Exception produced type: %s", type(ex))
-        if hasattr(ex, "message"):
-            ex_message = ex.message
-            logger.warning("Exception produced with message:\n%s", ex_message)
-
+    def MakePersistent(self, request, context):
         try:
-            ex_serialized = pickle.dumps(ex)
-        except TypeError:
-            logger.warning("Could not serialize %s", ex)
-            ex_serialized = None
+            self.backend.make_persistent(UUID(request.session_id), list(request.pickled_obj))
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+        return Empty()
 
-        return common_messages_pb2.ExceptionInfo(
-            isException=True,
-            serializedException=ex_serialized,
-            exceptionMessage=Utils.prepare_exception(ex_message, Utils.return_stack()),
-        )
-
-    def deployMetaClasses(self, request, context):
-
-        logger.debug("[deployMetaClasses] Deploying classes")
-
+    def CallActiveMethod(self, request, context):
         try:
-            namespace = request.namespace
-            classes_map_yamls = request.deploymentPack
-            self.backend.ds_deploy_metaclasses(namespace, classes_map_yamls)
-            return common_messages_pb2.ExceptionInfo()
+            returned_value = self.backend.call_active_method(
+                UUID(request.session_id),
+                UUID(request.object_id),
+                request.method_name,
+                request.args,
+                request.kwargs,
+            )
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return BytesValue()
+        return BytesValue(value=returned_value)
 
-        except Exception as ex:
-            return self.get_exception_info(ex)
 
-    def newPersistentInstance(self, request, context):
-        raise ("To refactor")
-
+    def GetCopyOfObject(self, request, context):
         try:
-            iface_bit_maps = {}
+            result = self.backend.get_copy_of_object(UUID(request.session_id), UUID(request.object_id), request.recursive)
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return BytesValue()
+        return BytesValue(value=result)
 
-            for k, v in request.ifaceBitMaps.items():
-                iface_bit_maps[UUID(k)] = bytes(v, "utf-8")
-
-            params = []
-
-            if request.params:
-                params = Utils.get_param_or_return(request.params)
-
-            oid = self.client.ds_new_persistent_instance(
-                UUID(request.sessionID),
-                UUID(request.classID),
-                UUID(request.implementationID),
-                iface_bit_maps,
-                params,
-            )
-
-            return dataservice_messages_pb2.NewPersistentInstanceResponse(
-                objectID=Utils.get_msg_id(oid)
-            )
-
-        except Exception as ex:
-            return dataservice_messages_pb2.NewPersistentInstanceResponse(
-                excInfo=self.get_exception_info(ex)
-            )
+    # END NEW #
 
     def storeObjects(self, request, context):
 
@@ -165,90 +139,10 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
         except Exception as ex:
             return self.get_exception_info(ex)
 
-    def MakePersistent(self, request, context):
-        try:
-            self.backend.make_persistent(UUID(request.session_id), list(request.pickled_obj))
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
-        return Empty()
 
-    def federate(self, request, context):
-        try:
-            logger.debug("Federation started")
-            self.backend.federate(
-                UUID(request.sessionID),
-                UUID(request.objectID),
-                UUID(request.externalExecutionEnvironmentID),
-                request.recursive,
-            )
-            logger.debug("Federation finished, sending response")
-            return common_messages_pb2.ExceptionInfo()
-        except Exception as ex:
-            traceback.print_exc()
-            return self.get_exception_info(ex)
+    
 
-    def unfederate(self, request, context):
-        try:
-            logger.debug("Unfederation started")
-            self.backend.unfederate(
-                UUID(request.sessionID),
-                UUID(request.objectID),
-                UUID(request.externalExecutionEnvironmentID),
-                request.recursive,
-            )
-            logger.debug("Unfederation finished, sending response")
-            return common_messages_pb2.ExceptionInfo()
-        except Exception as ex:
-            return self.get_exception_info(ex)
-
-    def notifyFederation(self, request, context):
-        try:
-            logger.debug("Notify Federation started")
-            objects_to_persist = []
-            for vol_param in request.objects:
-                param = Utils.get_obj_with_data_param_or_return(vol_param)
-                objects_to_persist.append(param)
-            session_id = UUID(request.sessionID)
-            self.backend.notify_federation(session_id, objects_to_persist)
-            logger.debug("Notify Federation finished, sending response")
-            return common_messages_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            return self.get_exception_info(ex)
-
-    def notifyUnfederation(self, request, context):
-        try:
-            logger.debug("Notify Unfederation started")
-            session_id = UUID(request.sessionID)
-            object_ids = set()
-            for oid in request.objectIDs:
-                object_ids.add(UUID(oid))
-            self.backend.notify_unfederation(session_id, object_ids)
-            logger.debug("Notify Unfederation finished, sending response")
-            return common_messages_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            traceback.print_exc()
-            return self.get_exception_info(ex)
-
-    def CallActiveMethod(self, request, context):
-        try:
-            returned_value = self.backend.call_active_method(
-                UUID(request.session_id),
-                UUID(request.object_id),
-                request.method_name,
-                request.args,
-                request.kwargs,
-            )
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return BytesValue()
-        return BytesValue(value=returned_value)
+    
 
     def synchronize(self, request, context):
         raise ("To refactor")
@@ -265,19 +159,7 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
         except DataClayException as ex:
             return self.get_exception_info(ex)
 
-    def getCopyOfObject(self, request, context):
-        raise ("To refactor")
-        try:
-            result = self.backend.get_copy_of_object(
-                UUID(request.sessionID), UUID(request.objectID), request.recursive
-            )
 
-            return dataservice_messages_pb2.GetCopyOfObjectResponse(
-                ret=Utils.get_param_or_return(result)
-            )
-
-        except Exception as ex:
-            return dataservice_messages_pb2.GetObjectsResponse(excInfo=self.get_exception_info(ex))
 
     def updateObject(self, request, context):
         raise ("To refactor")
@@ -534,6 +416,73 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             return dataservice_messages_pb2.MigrateObjectsResponse(
                 excInfo=self.get_exception_info(ex)
             )
+
+    ##############
+    # Federation #
+    ##############
+
+    def federate(self, request, context):
+        try:
+            logger.debug("Federation started")
+            self.backend.federate(
+                UUID(request.sessionID),
+                UUID(request.objectID),
+                UUID(request.externalExecutionEnvironmentID),
+                request.recursive,
+            )
+            logger.debug("Federation finished, sending response")
+            return common_messages_pb2.ExceptionInfo()
+        except Exception as ex:
+            traceback.print_exc()
+            return self.get_exception_info(ex)
+
+    def unfederate(self, request, context):
+        try:
+            logger.debug("Unfederation started")
+            self.backend.unfederate(
+                UUID(request.sessionID),
+                UUID(request.objectID),
+                UUID(request.externalExecutionEnvironmentID),
+                request.recursive,
+            )
+            logger.debug("Unfederation finished, sending response")
+            return common_messages_pb2.ExceptionInfo()
+        except Exception as ex:
+            return self.get_exception_info(ex)
+
+    def notifyFederation(self, request, context):
+        try:
+            logger.debug("Notify Federation started")
+            objects_to_persist = []
+            for vol_param in request.objects:
+                param = Utils.get_obj_with_data_param_or_return(vol_param)
+                objects_to_persist.append(param)
+            session_id = UUID(request.sessionID)
+            self.backend.notify_federation(session_id, objects_to_persist)
+            logger.debug("Notify Federation finished, sending response")
+            return common_messages_pb2.ExceptionInfo()
+
+        except Exception as ex:
+            return self.get_exception_info(ex)
+
+    def notifyUnfederation(self, request, context):
+        try:
+            logger.debug("Notify Unfederation started")
+            session_id = UUID(request.sessionID)
+            object_ids = set()
+            for oid in request.objectIDs:
+                object_ids.add(UUID(oid))
+            self.backend.notify_unfederation(session_id, object_ids)
+            logger.debug("Notify Unfederation finished, sending response")
+            return common_messages_pb2.ExceptionInfo()
+
+        except Exception as ex:
+            traceback.print_exc()
+            return self.get_exception_info(ex)
+
+    ###########
+    # Tracing #
+    ###########
 
     def activateTracing(self, request, context):
         try:

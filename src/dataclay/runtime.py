@@ -488,19 +488,19 @@ class DataClayRuntime(ABC):
     # Clone and replica #
     #####################
 
-    def get_copy_of_object(self, from_object, recursive):
-        session_id = self.session.id
+    def get_copy_of_object(self, instance, recursive):
+        backend_id = instance._dc_backend_id
+        backend_client = self.get_backend_client(backend_id)
 
-        backend_id = from_object._dc_backend_id
+        import pickle
+        serialized_dict = backend_client.get_copy_of_object(self.session.id, instance._dc_id, recursive)
+        object_dict = pickle.loads(serialized_dict)
 
-        ee_client = self.get_backend_client(backend_id)
+        proxy_object = instance._dc_class.new_proxy_object()
+        vars(proxy_object).update(object_dict)
+        self.add_to_heap(proxy_object)
 
-        copiedObject = ee_client.ds_get_copy_of_object(session_id, from_object._dc_id, recursive)
-        result = DeserializationLibUtilsSingleton.deserialize_params_or_return(
-            copiedObject, None, None, None, self
-        )
-
-        return result[0]
+        return proxy_object
 
     # TODO: Change name to something like get_other_backend...
     def prepare_for_new_replica_version_consolidate(
