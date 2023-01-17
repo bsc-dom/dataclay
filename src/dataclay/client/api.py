@@ -132,6 +132,14 @@ class ClientAPI:
     def __exit__(self, *args):
         self.stop()
 
+    def get_all_backends(self):
+        self.runtime.update_backend_clients()
+        return self.runtime.backend_clients.keys()
+
+    def get_all_backends_clients(self):
+        self.runtime.update_backend_clients()
+        return self.runtime.backend_clients
+
 
 ###############
 # Backends info

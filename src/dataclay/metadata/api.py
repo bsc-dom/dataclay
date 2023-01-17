@@ -224,7 +224,7 @@ class MetadataAPI:
             alias = Alias(object_md.alias_name, object_md.dataset_name, object_md.id)
             self.kv_manager.set_new(alias)
 
-        self.kv_manager.set_new(object_md)
+        self.kv_manager.set(object_md)
 
     @tracer.start_as_current_span("start_as_current_span")
     def get_object_md_by_id(self, object_id: UUID, session_id=None, check_session=False):

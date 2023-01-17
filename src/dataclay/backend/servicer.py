@@ -132,6 +132,38 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             traceback.print_exc()
             return Empty()
 
+    def MoveObject(self, request, context):
+
+        try:
+            self.backend.move_object(
+                UUID(request.session_id),
+                UUID(request.object_id),
+                UUID(request.backend_id),
+                request.recursive,
+            )
+            return Empty()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+
+    def SendObject(self, request, context):
+
+        try:
+            self.backend.move_object(
+                UUID(request.session_id),
+                UUID(request.object_id),
+                UUID(request.backend_id),
+                request.recursive,
+            )
+            return Empty()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+
     ###########
     # END NEW #
     ###########
@@ -261,25 +293,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
         except Exception as ex:
             traceback.print_exc()
             return dataservice_messages_pb2.NewReplicaResponse(excInfo=self.get_exception_info(ex))
-
-    def moveObjects(self, request, context):
-
-        try:
-            result = self.backend.move_objects(
-                UUID(request.sessionID),
-                UUID(request.objectID),
-                UUID(request.destLocID),
-                request.recursive,
-            )
-            mov_obj_list = []
-
-            for oid in result:
-                mov_obj_list.append(Utils.get_msg_id(oid))
-
-            return dataservice_messages_pb2.MoveObjectsResponse(movedObjects=mov_obj_list)
-
-        except Exception as ex:
-            return dataservice_messages_pb2.MoveObjectsResponse(excInfo=self.get_exception_info(ex))
 
     def removeObjects(self, request, context):
 

@@ -19,7 +19,7 @@ from dataclay.conf import settings
 from dataclay.exceptions import *
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.runtime import UUIDLock, set_runtime
-from dataclay.utils.pickle import RecursiveLocalUnpickler
+from dataclay.utils.pickle import RecursiveLocalUnpickler, RecursiveLocalPickler
 
 if TYPE_CHECKING:
 
@@ -269,12 +269,44 @@ class BackendAPI:
     # Move
     ######
 
-    def move_object(self, session_id, object_id, backend_id):
+    def move_object(self, session_id, object_id, backend_id, recursive):
         # TODO: Check the session has persmissio for object_id
         self.set_local_session(session_id)
 
         # TODO: set recursive lock
         instance = self.runtime.get_object_by_id(object_id)
+
+        with UUIDLock(object_id):
+            # NOTE: The object should be loaded to get the _dc_properties
+            # TODO: Maybe send directly the pickled file if not loaded?
+
+            # Option 1
+            # self.runtime.heap_manager.unload_object(object_id)
+            # path = f"{settings.STORAGE_PATH}/{object_id}"
+            # with open(path, "rb") as file:
+            #     serialized_properties = file.read()
+
+            # Option 2
+            self.runtime.load_object_from_db(instance)
+
+            f = io.BytesIO()
+            serialized_local_dicts = []
+            visited_objects = {instance._dc_id: instance}
+
+            RecursiveLocalPickler(f, visited_objects, serialized_local_dicts).dump(
+                instance._dc_dict
+            )
+            serialized_local_dicts.append(f.getvalue())
+            backend_client = self.runtime.get_backend_client(backend_id)
+            backend_client.make_persistent(session_id, serialized_local_dicts)
+
+            self.runtime.heap_manager.unload_object(object_id)
+
+            for dc_object in visited_objects.values():
+                dc_object.clean_dc_properties()
+                dc_object._dc_is_local = False
+                dc_object._dc_is_loaded = False
+                dc_object._dc_backend_id = backend_id
 
     def move_objects(self, session_id, object_id, dest_backend_id, recursive):
         """This operation removes the objects with IDs provided

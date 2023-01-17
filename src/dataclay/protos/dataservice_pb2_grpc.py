@@ -79,11 +79,6 @@ class DataServiceStub(object):
                 request_serializer=protos_dot_dataservice__messages__pb2.NewReplicaRequest.SerializeToString,
                 response_deserializer=protos_dot_dataservice__messages__pb2.NewReplicaResponse.FromString,
                 )
-        self.moveObjects = channel.unary_unary(
-                '/protos.dataservice.DataService/moveObjects',
-                request_serializer=protos_dot_dataservice__messages__pb2.MoveObjectsRequest.SerializeToString,
-                response_deserializer=protos_dot_dataservice__messages__pb2.MoveObjectsResponse.FromString,
-                )
         self.removeObjects = channel.unary_unary(
                 '/protos.dataservice.DataService/removeObjects',
                 request_serializer=protos_dot_dataservice__messages__pb2.RemoveObjectsRequest.SerializeToString,
@@ -269,6 +264,16 @@ class DataServiceStub(object):
                 request_serializer=protos_dot_dataservice__pb2.UpdateObjectRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.MoveObject = channel.unary_unary(
+                '/protos.dataservice.DataService/MoveObject',
+                request_serializer=protos_dot_dataservice__pb2.MoveObjectRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.SendObject = channel.unary_unary(
+                '/protos.dataservice.DataService/SendObject',
+                request_serializer=protos_dot_dataservice__pb2.SendObjectRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
 
 
 class DataServiceServicer(object):
@@ -344,12 +349,6 @@ class DataServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def newReplica(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def moveObjects(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -582,6 +581,18 @@ class DataServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def MoveObject(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SendObject(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DataServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -644,11 +655,6 @@ def add_DataServiceServicer_to_server(servicer, server):
                     servicer.newReplica,
                     request_deserializer=protos_dot_dataservice__messages__pb2.NewReplicaRequest.FromString,
                     response_serializer=protos_dot_dataservice__messages__pb2.NewReplicaResponse.SerializeToString,
-            ),
-            'moveObjects': grpc.unary_unary_rpc_method_handler(
-                    servicer.moveObjects,
-                    request_deserializer=protos_dot_dataservice__messages__pb2.MoveObjectsRequest.FromString,
-                    response_serializer=protos_dot_dataservice__messages__pb2.MoveObjectsResponse.SerializeToString,
             ),
             'removeObjects': grpc.unary_unary_rpc_method_handler(
                     servicer.removeObjects,
@@ -833,6 +839,16 @@ def add_DataServiceServicer_to_server(servicer, server):
             'UpdateObject': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateObject,
                     request_deserializer=protos_dot_dataservice__pb2.UpdateObjectRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'MoveObject': grpc.unary_unary_rpc_method_handler(
+                    servicer.MoveObject,
+                    request_deserializer=protos_dot_dataservice__pb2.MoveObjectRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'SendObject': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendObject,
+                    request_deserializer=protos_dot_dataservice__pb2.SendObjectRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
@@ -1047,23 +1063,6 @@ class DataService(object):
         return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/newReplica',
             protos_dot_dataservice__messages__pb2.NewReplicaRequest.SerializeToString,
             protos_dot_dataservice__messages__pb2.NewReplicaResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def moveObjects(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/moveObjects',
-            protos_dot_dataservice__messages__pb2.MoveObjectsRequest.SerializeToString,
-            protos_dot_dataservice__messages__pb2.MoveObjectsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -1692,6 +1691,40 @@ class DataService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/UpdateObject',
             protos_dot_dataservice__pb2.UpdateObjectRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def MoveObject(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/MoveObject',
+            protos_dot_dataservice__pb2.MoveObjectRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SendObject(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/SendObject',
+            protos_dot_dataservice__pb2.SendObjectRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

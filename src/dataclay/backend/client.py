@@ -160,6 +160,30 @@ class BackendClient:
         )
         self.stub.UpdateObject(request)
 
+    @grpc_error_handler
+    def move_object(self, session_id: UUID, object_id: UUID, backend_id: UUID, recursive):
+
+        request = dataservice_pb2.MoveObjectRequest(
+            session_id=str(session_id),
+            object_id=str(object_id),
+            backend_id=str(backend_id),
+            recursive=recursive,
+        )
+
+        self.stub.MoveObject(request)
+
+    @grpc_error_handler
+    def send_object(self, session_id: UUID, object_id: UUID, serialized_properties):
+
+        request = dataservice_pb2.MoveObjectRequest(
+            session_id=str(session_id),
+            object_id=str(object_id),
+            backend_id=str(backend_id),
+            recursive=recursive,
+        )
+
+        self.stub.MoveObject(request)
+
     ###########
     # END NEW #
     ###########
@@ -397,31 +421,6 @@ class BackendClient:
         result = set()
 
         for oid in response.replicatedObjects:
-            result.add(UUID(oid))
-
-        return result
-
-    def ds_move_objects(self, session_id, object_id, dest_st_location, recursive):
-
-        request = dataservice_messages_pb2.MoveObjectsRequest(
-            sessionID=str(session_id),
-            objectID=str(object_id),
-            destLocID=str(dest_st_location),
-            recursive=recursive,
-        )
-
-        try:
-            response = self.stub.moveObjects(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            raise e
-
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        result = set()
-
-        for oid in response.movedObjects:
             result.add(UUID(oid))
 
         return result
