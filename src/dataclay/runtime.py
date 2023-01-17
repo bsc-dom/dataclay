@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib
 import logging
+import pickle
 import uuid
 from abc import ABC, abstractmethod
 from builtins import Exception
@@ -11,8 +12,6 @@ from threading import Condition
 from typing import TYPE_CHECKING
 from uuid import UUID
 from weakref import WeakValueDictionary
-import pickle
-
 
 from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
@@ -20,12 +19,12 @@ from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 
 if TYPE_CHECKING:
 
+    from dataclay.backend.runtime import BackendRuntime
+    from dataclay.client.runtime import ClientRuntime
     from dataclay.dataclay_object import DataClayObject
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
     from dataclay.metadata.kvdata import ObjectMetadata
-    from dataclay.backend.runtime import BackendRuntime
-    from dataclay.client.runtime import ClientRuntime
 
 
 logger = logging.getLogger(__name__)

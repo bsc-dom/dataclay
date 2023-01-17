@@ -277,7 +277,6 @@ class DataClayObject:
             k: v for k, v in vars(self).items() if not k.startswith(DC_PROPERTY_PREFIX)
         }
 
-
     ###########################
     # Object Oriented Methods #
     ###########################
@@ -330,7 +329,6 @@ class DataClayObject:
         backends.add(self._dc_backend_id)
         backends.update(self._dc_replica_backend_ids)
         return backends
-
 
     ########################
     # Object Store Methods #
