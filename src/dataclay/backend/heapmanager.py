@@ -95,13 +95,14 @@ class HeapManager(threading.Thread):
         instance = self.loaded_objects[object_id]
 
         # NOTE: If the another thread is executing any activemethod,
-        # the instance won't be stored, and will be kept in memory
+        # the instance won't be unloaded, and will be kept in memory
         if instance._xdc_active_counter.acquire(timeout=0):
             try:
                 with UUIDLock(object_id):
 
                     logger.warning(f"Storing and unloading object {object_id}")
                     assert instance._dc_is_loaded
+                    instance._dc_is_loaded = False
 
                     # NOTE: We do not serialize internal attributes, since these are
                     # obtained from etcd, or are stateless
@@ -111,7 +112,6 @@ class HeapManager(threading.Thread):
                     # TODO: update etcd metadata (since is loaded has changed)
                     # and store object in file system
                     instance.clean_dc_properties()
-                    instance._dc_is_loaded = False
 
                     del self.loaded_objects[object_id]
             finally:

@@ -8,7 +8,7 @@ import uuid
 from abc import ABC, abstractmethod
 from builtins import Exception
 from contextlib import AbstractContextManager
-from threading import Condition
+from threading import Condition, Lock, RLock
 from typing import TYPE_CHECKING
 from uuid import UUID
 from weakref import WeakValueDictionary
@@ -43,6 +43,40 @@ def set_runtime(new_runtime):
 
 
 class UUIDLock(AbstractContextManager):
+    """This class is used as a global lock for UUIDs
+
+    Use it always with context manager:
+        with UUIDLock(id):
+            ...
+    """
+
+    object_locks: dict[UUID, RLock] = dict()
+    class_lock = Lock()
+
+    def __init__(self, object_id):
+        self.object_id = object_id
+
+    def __enter__(self):
+        try:
+            self.object_locks[self.object_id].acquire()
+        except KeyError:
+            with self.class_lock:
+                try:
+                    self.object_locks[self.object_id].acquire()
+                except KeyError:
+                    self.object_locks[self.object_id] = RLock()
+                    self.object_locks[self.object_id].acquire()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        try:
+            self.object_locks[self.object_id].release()
+        except KeyError:
+            pass
+
+
+# NOTE this lock is faster and don't require cleanup,
+# however, it doesn't allow recursive locking in same thread
+class UUIDLock_old(AbstractContextManager):
     """This class is used as a global lock for UUIDs
 
     Use it always with context manager:

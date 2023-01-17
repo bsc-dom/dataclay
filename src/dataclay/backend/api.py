@@ -164,14 +164,19 @@ class BackendAPI:
         Returns:
             the generated non-persistent objects
         """
+        # TODO: Implement recursive option
         # TODO: Check the session has persmissio for object_id
         self.set_local_session(session_id)
 
         instance = self.runtime.get_object_by_id(object_id)
-        # NOTE: The object should be loaded to get the _dc_properties
-        self.runtime.load_object_from_db(instance)
 
-        serialized_properties = pickle.dumps(instance._dc_properties)
+        # Lock to avoid unloading after the object is loaded
+        with UUIDLock(object_id):
+            # NOTE: The object should be loaded to get the _dc_properties
+            # TODO: Maybe send directly the pickled file if not loaded?
+            self.runtime.load_object_from_db(instance)
+            serialized_properties = pickle.dumps(instance._dc_properties)
+
         return serialized_properties
 
     def update_object(self, session_id, object_id, serialized_properties):
@@ -188,11 +193,11 @@ class BackendAPI:
         self.set_local_session(session_id)
 
         instance = self.runtime.get_object_by_id(object_id)
-        # NOTE: The object should be loaded to get the _dc_properties
-        self.runtime.load_object_from_db(instance)
-
         object_properties = pickle.loads(serialized_properties)
-        vars(instance).update(object_properties)
+
+        with UUIDLock(object_id):
+            self.runtime.load_object_from_db(instance)
+            vars(instance).update(object_properties)
 
     ##################
     ##################
@@ -264,6 +269,13 @@ class BackendAPI:
     # Move
     ######
 
+    def move_object(self, session_id, object_id, backend_id):
+        # TODO: Check the session has persmissio for object_id
+        self.set_local_session(session_id)
+
+        # TODO: set recursive lock
+        instance = self.runtime.get_object_by_id(object_id)
+
     def move_objects(self, session_id, object_id, dest_backend_id, recursive):
         """This operation removes the objects with IDs provided
 
@@ -278,7 +290,7 @@ class BackendAPI:
         Returns:
             Set of moved objects.
         """
-        raise Exception("To refactor")
+        # raise Exception("To refactor")
         update_metadata_of = set()
 
         try:
@@ -292,7 +304,7 @@ class BackendAPI:
 
             # TODO: Object being used by session (any oid in the method header) G.C.
 
-            serialized_objs = self.get_objects(session_id, object_ids, set(), True, None, 0)
+            # serialized_objs = self.get_objects(session_id, object_ids, set(), True, None, 0)
             objects_to_remove = set()
             objects_to_move = list()
 
