@@ -199,6 +199,45 @@ class BackendAPI:
             self.runtime.load_object_from_db(instance)
             vars(instance).update(object_properties)
 
+    def move_object(self, session_id, object_id, backend_id, recursive):
+        # TODO: Check the session has persmissio for object_id
+        self.set_local_session(session_id)
+
+        # TODO: check that the object is local to us
+        instance = self.runtime.get_object_by_id(object_id)
+
+        with UUIDLock(object_id):
+            # NOTE: The object should be loaded to get the _dc_properties
+            # TODO: Maybe send directly the pickled file if not loaded?
+
+            # Option 1
+            # self.runtime.heap_manager.unload_object(object_id)
+            # path = f"{settings.STORAGE_PATH}/{object_id}"
+            # with open(path, "rb") as file:
+            #     serialized_properties = file.read()
+
+            # Option 2
+            self.runtime.load_object_from_db(instance)
+
+            f = io.BytesIO()
+            serialized_local_dicts = []
+            visited_objects = {instance._dc_id: instance}
+
+            RecursiveLocalPickler(f, visited_objects, serialized_local_dicts).dump(
+                instance._dc_dict
+            )
+            serialized_local_dicts.append(f.getvalue())
+            backend_client = self.runtime.get_backend_client(backend_id)
+            backend_client.make_persistent(session_id, serialized_local_dicts)
+
+            self.runtime.heap_manager.unload_object(object_id)
+
+            for dc_object in visited_objects.values():
+                dc_object.clean_dc_properties()
+                dc_object._dc_is_local = False
+                dc_object._dc_is_loaded = False
+                dc_object._dc_backend_id = backend_id
+
     ##################
     ##################
     # Helper methods #
@@ -268,160 +307,6 @@ class BackendAPI:
     ######
     # Move
     ######
-
-    def move_object(self, session_id, object_id, backend_id, recursive):
-        # TODO: Check the session has persmissio for object_id
-        self.set_local_session(session_id)
-
-        # TODO: set recursive lock
-        instance = self.runtime.get_object_by_id(object_id)
-
-        with UUIDLock(object_id):
-            # NOTE: The object should be loaded to get the _dc_properties
-            # TODO: Maybe send directly the pickled file if not loaded?
-
-            # Option 1
-            # self.runtime.heap_manager.unload_object(object_id)
-            # path = f"{settings.STORAGE_PATH}/{object_id}"
-            # with open(path, "rb") as file:
-            #     serialized_properties = file.read()
-
-            # Option 2
-            self.runtime.load_object_from_db(instance)
-
-            f = io.BytesIO()
-            serialized_local_dicts = []
-            visited_objects = {instance._dc_id: instance}
-
-            RecursiveLocalPickler(f, visited_objects, serialized_local_dicts).dump(
-                instance._dc_dict
-            )
-            serialized_local_dicts.append(f.getvalue())
-            backend_client = self.runtime.get_backend_client(backend_id)
-            backend_client.make_persistent(session_id, serialized_local_dicts)
-
-            self.runtime.heap_manager.unload_object(object_id)
-
-            for dc_object in visited_objects.values():
-                dc_object.clean_dc_properties()
-                dc_object._dc_is_local = False
-                dc_object._dc_is_loaded = False
-                dc_object._dc_backend_id = backend_id
-
-    def move_objects(self, session_id, object_id, dest_backend_id, recursive):
-        """This operation removes the objects with IDs provided
-
-         This function is recursive, it is going to other DSs if needed.
-
-        Args:
-            session_id: ID of session.
-            object_id: ID of the object to move.
-            dest_backend_id: ID of the backend where to move.
-            recursive: Indicates if all sub-objects (in this location or others) must be moved as well.
-
-        Returns:
-            Set of moved objects.
-        """
-        # raise Exception("To refactor")
-        update_metadata_of = set()
-
-        try:
-            logger.debug(
-                "[==MoveObjects==] Moving object %s to storage location: %s",
-                object_id,
-                dest_backend_id,
-            )
-            object_ids = set()
-            object_ids.add(object_id)
-
-            # TODO: Object being used by session (any oid in the method header) G.C.
-
-            # serialized_objs = self.get_objects(session_id, object_ids, set(), True, None, 0)
-            objects_to_remove = set()
-            objects_to_move = list()
-
-            for obj_found in serialized_objs:
-                logger.debug("[==MoveObjects==] Looking for metadata of %s", obj_found[0])
-                object_md = self.get_object_metadata(obj_found[0])
-                obj_location = object_md.backend_id
-
-                if obj_location == dest_backend_id:
-                    logger.debug(
-                        "[==MoveObjects==] Ignoring move of object %s since it is already where it should be."
-                        " ObjLoc = %s and DestLoc = %s",
-                        obj_found[0],
-                        obj_location,
-                        dest_backend_id,
-                    )
-
-                    # object already in dest
-                    pass
-                else:
-                    if settings.storage_id == dest_backend_id:
-                        # THE DESTINATION IS HERE
-                        if obj_location != settings.storage_id:
-                            logger.debug(
-                                "[==MoveObjects==] Moving object  %s since dest.location is different to src.location and object is not in dest.location."
-                                " ObjLoc = %s and DestLoc = %s",
-                                obj_found[0],
-                                obj_location,
-                                dest_backend_id,
-                            )
-                            objects_to_move.append(obj_found)
-                            objects_to_remove.add(obj_found[0])
-                            update_metadata_of.add(obj_found[0])
-                        else:
-                            logger.debug(
-                                "[==MoveObjects==] Ignoring move of object %s since it is already where it should be"
-                                " ObjLoc = %s and DestLoc = %s",
-                                obj_found[0],
-                                obj_location,
-                                dest_backend_id,
-                            )
-                    else:
-                        logger.debug(
-                            "[==MoveObjects==] Moving object %s since dest.location is different to src.location and object is not in dest.location "
-                            " ObjLoc = %s and DestLoc = %s",
-                            obj_found[0],
-                            obj_location,
-                            dest_backend_id,
-                        )
-                        # THE DESTINATION IS ANOTHER NODE: move.
-                        objects_to_move.append(obj_found)
-                        objects_to_remove.add(obj_found[0])
-                        update_metadata_of.add(obj_found[0])
-
-            logger.debug("[==MoveObjects==] Finally moving OBJECTS: %s", objects_to_remove)
-
-            try:
-                sl_client = self.runtime.backend_clients[dest_backend_id]
-            except KeyError:
-                st_loc = self.runtime.ee_infos[dest_backend_id]
-                logger.debug(
-                    "Not found in cache ExecutionEnvironment {%s}! Starting it at %s:%d",
-                    dest_backend_id,
-                    st_loc.hostname,
-                    st_loc.port,
-                )
-                sl_client = BackendClient(st_loc.hostname, st_loc.port)
-                self.runtime.backend_clients[dest_backend_id] = sl_client
-
-            sl_client.ds_store_objects(session_id, objects_to_move, True, None)
-
-            # TODO: lock any execution in remove before storing objects in remote dataservice so anyone can modify it.
-            # Remove after store in order to avoid wrong executions during the movement :)
-            # Remove all objects in all source locations different to dest. location
-            # TODO: Check that remove is not necessary (G.C. Should do it?)
-            # self.runtime.backend_clients["@STORAGE"].ds_remove_objects(session_id, object_ids, recursive, True, dest_backend_id)
-
-            for oid in objects_to_remove:
-                self.runtime.remove_metadata_from_cache(oid)
-            logger.debug("[==MoveObjects==] Move finalized ")
-
-        except Exception as e:
-            logger.error("[==MoveObjects==] Exception %s", e.args)
-
-        return update_metadata_of
 
     ##########
     # Replicas
