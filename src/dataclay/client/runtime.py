@@ -92,6 +92,15 @@ class ClientRuntime(DataClayRuntime):
 
         return instance._dc_backend_id
 
+    def move_object(self, instance, backend_id):
+        assert instance._dc_is_registered
+
+        object_id = instance._dc_id
+        backend_client = self.get_backend_client(instance._dc_backend_id)
+
+        backend_client.move_object(self.session.id, object_id, backend_id, True)
+        instance._dc_backend_id = backend_id
+
     #########
     # Alias #
     #########

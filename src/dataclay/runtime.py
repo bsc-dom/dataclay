@@ -59,6 +59,9 @@ class UUIDLock(AbstractContextManager):
     def __enter__(self):
         try:
             self.object_locks[self.object_id].acquire()
+            # NOTE: This assert checks that cleanup thread don't remove
+            # lock while trying to acquire.
+            assert self.object_id in self.object_locks
         except KeyError:
             with self.class_lock:
                 try:
