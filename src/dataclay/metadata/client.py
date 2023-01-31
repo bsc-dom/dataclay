@@ -101,7 +101,6 @@ class MetadataClient:
     # Object Metadata #
     ###################
 
-    # TODO: Check if used
     def register_object(self, object_md: ObjectMetadata, session_id: UUID):
         request = metadata_service_pb2.RegisterObjectRequest(
             session_id=str(session_id), object_md=object_md.get_proto()
@@ -123,6 +122,20 @@ class MetadataClient:
         )
         object_md_proto = self.stub.GetObjectMDByAlias(request)
         return ObjectMetadata.from_proto(object_md_proto)
+
+    #########
+    # Alias #
+    #########
+
+    @grpc_error_handler
+    def new_alias(self, alias_name: str, dataset_name: str, object_id: UUID):
+        request = metadata_service_pb2.NewAliasRequest(
+            session_id=str(self.session.id),
+            alias_name=alias_name,
+            dataset_name=dataset_name,
+            object_id=str(object_id),
+        )
+        self.stub.NewAlias(request)
 
     @grpc_error_handler
     def delete_alias(self, alias_name: str, dataset_name: str, session_id: UUID):

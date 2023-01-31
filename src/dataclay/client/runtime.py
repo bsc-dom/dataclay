@@ -45,14 +45,15 @@ class ClientRuntime(DataClayRuntime):
         Returns:
             ID of the backend in which the object was persisted.
         """
+        logger.debug(f"Starting make persistent for object {instance._dc_id}")
 
         if instance._dc_is_registered:
             raise RuntimeError("Instance is already persistent")
 
-        logger.debug(f"Starting make persistent for object {instance._dc_id}")
-
-        instance._dc_alias = alias
         instance._dc_dataset_name = self.session.dataset_name
+        if alias:
+            self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_id)
+            # instance._dc_alias = alias
 
         if backend_id is None:
             self.update_backend_clients()

@@ -139,6 +139,26 @@ class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
             context.abort(grpc.StatusCode.INTERNAL, str(e))
         return object_md.get_proto()
 
+    #########
+    # Alias #
+    #########
+
+    def NewAlias(self, request, context):
+        try:
+            self.metadata_service.new_alias(
+                request.alias_name,
+                request.dataset_name,
+                UUID(request.object_id),
+                UUID(request.session_id),
+                check_session=True,
+            )
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+        return Empty()
+
     def DeleteAlias(self, request, context):
         try:
             self.metadata_service.delete_alias(

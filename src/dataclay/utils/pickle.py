@@ -22,11 +22,12 @@ class RecursiveLocalPickler(pickle.Pickler):
 
     def persistent_id(self, obj):
         if isinstance(obj, DataClayObject):
-            if obj._dc_is_local and not obj._dc_is_registered:
+            if obj._dc_is_local:
 
                 if obj._dc_id not in self.visited_objects:
                     self.visited_objects[obj._dc_id] = obj
                     f = io.BytesIO()
+                    # TODO: If not loaded (in backend), we must load it to serialize parameters
                     RecursiveLocalPickler(f, self.visited_objects, self.serialized).dump(
                         obj._dc_dict
                     )

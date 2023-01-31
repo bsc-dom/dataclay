@@ -19,7 +19,7 @@ from dataclay.conf import settings
 from dataclay.exceptions import *
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.runtime import UUIDLock, set_runtime
-from dataclay.utils.pickle import RecursiveLocalUnpickler, RecursiveLocalPickler
+from dataclay.utils.pickle import RecursiveLocalPickler, RecursiveLocalUnpickler
 
 if TYPE_CHECKING:
 
@@ -230,6 +230,7 @@ class BackendAPI:
             backend_client = self.runtime.get_backend_client(backend_id)
             backend_client.make_persistent(session_id, serialized_local_dicts)
 
+            # TODO: Unload all objects that has been sent in recursive
             self.runtime.heap_manager.unload_object(object_id)
 
             for dc_object in visited_objects.values():

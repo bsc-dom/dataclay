@@ -220,10 +220,6 @@ class MetadataAPI:
         # dataset will always be the session's default dataset.
         # object_md.dataset_name = session.dataset_name
 
-        if object_md.alias_name:
-            alias = Alias(object_md.alias_name, object_md.dataset_name, object_md.id)
-            self.kv_manager.set_new(alias)
-
         self.kv_manager.set(object_md)
 
     @tracer.start_as_current_span("start_as_current_span")
@@ -258,6 +254,17 @@ class MetadataAPI:
     #########
     # Alias #
     #########
+
+    def new_alias(
+        self,
+        alias_name: str,
+        dataset_name: str,
+        object_id: UUID,
+        session_id: UUID,
+        check_session=False,
+    ):
+        alias = Alias(alias_name, dataset_name, object_id)
+        self.kv_manager.set_new(alias)
 
     @tracer.start_as_current_span("delete_alias")
     def delete_alias(

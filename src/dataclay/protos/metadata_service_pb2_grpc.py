@@ -71,6 +71,11 @@ class MetadataServiceStub(object):
                 request_serializer=protos_dot_metadata__service__pb2.DeleteAliasRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.NewAlias = channel.unary_unary(
+                '/protos.metadata_service.MetadataService/NewAlias',
+                request_serializer=protos_dot_metadata__service__pb2.NewAliasRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
 
 
 class MetadataServiceServicer(object):
@@ -143,6 +148,13 @@ class MetadataServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def DeleteAlias(self, request, context):
+        """Alias
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def NewAlias(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -204,6 +216,11 @@ def add_MetadataServiceServicer_to_server(servicer, server):
             'DeleteAlias': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteAlias,
                     request_deserializer=protos_dot_metadata__service__pb2.DeleteAliasRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'NewAlias': grpc.unary_unary_rpc_method_handler(
+                    servicer.NewAlias,
+                    request_deserializer=protos_dot_metadata__service__pb2.NewAliasRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
@@ -399,6 +416,23 @@ class MetadataService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/DeleteAlias',
             protos_dot_metadata__service__pb2.DeleteAliasRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def NewAlias(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/NewAlias',
+            protos_dot_metadata__service__pb2.NewAliasRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

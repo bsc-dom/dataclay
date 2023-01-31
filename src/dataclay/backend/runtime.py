@@ -77,7 +77,7 @@ class BackendRuntime(DataClayRuntime):
             vars(instance).update(object_properties)
             self.heap_manager.retain_in_heap(instance)
 
-    def make_persistent(self, instance: DataClayObject, alias, backend_id, recursive=None):
+    def make_persistent(self, instance: DataClayObject, alias, backend_id, recursive):
         """This method creates a new Persistent Object using the provided stub instance and,
         if indicated, all its associated objects also Logic module API used for communication
 
@@ -92,7 +92,7 @@ class BackendRuntime(DataClayRuntime):
         Returns:
             ID of the backend in which te object was persisted.
         """
-        del recursive
+
         logger.debug(f"Starting make_persistent for object {instance._dc_id}")
 
         # It should always have a master location, since all objects intantiated
@@ -103,8 +103,10 @@ class BackendRuntime(DataClayRuntime):
             # If backend is different than the current backend, move object
             return
 
-        instance._dc_alias = alias
         instance._dc_dataset_name = self.session.dataset_name
+        if alias:
+            self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_id)
+            # instance._dc_alias = alias
 
         # If backend_id is none, we register the object in the current backend (usual path)
         if backend_id is None:
