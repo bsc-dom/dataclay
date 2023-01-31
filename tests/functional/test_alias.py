@@ -7,7 +7,6 @@ from dataclay.exceptions import *
 def test_get_by_alias(start_client):
     person = Person("Marc", 24)
     person.make_persistent(alias="test_get_by_alias")
-    # assert person.get_alias() == "test_get_by_alias"
     assert person == Person.get_by_alias("test_get_by_alias")
     Person.delete_alias("test_get_by_alias")
 
@@ -15,13 +14,11 @@ def test_get_by_alias(start_client):
 def test_delete_alias(start_client):
     person = Person("Marc", 24)
     person.make_persistent("test_delete_alias")
-    # assert person.get_alias() == "test_delete_alias"
 
     Person.delete_alias("test_delete_alias")
     with pytest.raises(DataClayException) as excinfo:
         Person.get_by_alias("test_delete_alias")
     assert "does not exist" in str(excinfo.value)
-    # assert person.get_alias() == None
 
 
 def test_same_alias(start_client):

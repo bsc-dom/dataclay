@@ -308,18 +308,6 @@ class DataClayObject:
     def delete_alias(cls, alias, dataset_name=None):
         get_runtime().delete_alias_in_dataclay(alias, dataset_name=dataset_name)
 
-    def get_alias(self):
-        """
-        The alias has to be always consulted from the owner backend or etcd.
-        The alias may be removed without the client knowing it.
-        Since this method is slow, we use a getter instead of @property
-        """
-        # TODO: Refactor somehow so it works in backend and client
-        if not self._dc_is_loaded:
-            get_runtime().update_object_metadata(self)
-
-        return self._dc_alias
-
     def get_all_backends(self):
         """Return all the backends of this object."""
         if not self._dc_is_loaded:
