@@ -132,34 +132,9 @@ class ClientAPI:
     def __exit__(self, *args):
         self.stop()
 
-    def get_all_backends(self):
-        self.runtime.update_backend_clients()
-        return self.runtime.backend_clients.keys()
-
-    def get_all_backends_clients(self):
+    def get_backends(self):
         self.runtime.update_backend_clients()
         return self.runtime.backend_clients
-
-
-###############
-# Backends info
-###############
-
-
-# def get_backends():
-#     """Return all the dataClay backend present in the system."""
-#     result = get_runtime().get_execution_environments_names()
-#     logger.debug("Got %i python backend/s", len(result))
-#     return result
-
-
-# def get_backend_id(hostname, port):
-#     """Return dataClay backend present in the system with name provided."""
-#     host_ee_infos = get_runtime().get_all_execution_environments_at_host(hostname)
-#     for backend in host_ee_infos.values():
-#         if backend.port == port:
-#             return backend.id
-#     return None
 
 
 ##########
@@ -174,23 +149,6 @@ def register_dataclay(id, hostname, port):
         port: external dataClay port
     """
     return get_runtime().register_external_dataclay(id, hostname, port)
-
-
-# def get_dataclay_id():
-#     """Get dataClay ID"""
-#     return get_runtime().dataclay_id
-
-
-def import_models_from_external_dataclay(namespace, ext_dataclay_id) -> None:
-    """Import models in namespace specified from an external dataClay
-    :param namespace: external dataClay namespace to get
-    :param ext_dataclay_id: external dataClay ID
-    :return: None
-    :type namespace: string
-    :type ext_dataclay_id: UUID
-    :rtype: None
-    """
-    return get_runtime().import_models_from_external_dataclay(namespace, ext_dataclay_id)
 
 
 def unfederate(ext_dataclay_id=None):

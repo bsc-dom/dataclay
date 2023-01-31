@@ -4,14 +4,14 @@ from model.family import Family, Person
 from dataclay.exceptions import *
 
 
-def test_get_by_alias(start_client):
+def test_get_by_alias(client):
     person = Person("Marc", 24)
     person.make_persistent(alias="test_get_by_alias")
     assert person == Person.get_by_alias("test_get_by_alias")
     Person.delete_alias("test_get_by_alias")
 
 
-def test_delete_alias(start_client):
+def test_delete_alias(client):
     person = Person("Marc", 24)
     person.make_persistent("test_delete_alias")
 
@@ -21,7 +21,7 @@ def test_delete_alias(start_client):
     assert "does not exist" in str(excinfo.value)
 
 
-def test_same_alias(start_client):
+def test_same_alias(client):
     person_1 = Person("Marc", 24)
     person_2 = Person("Alice", 21)
     with pytest.raises(DataClayException) as excinfo:
@@ -30,5 +30,5 @@ def test_same_alias(start_client):
     assert "already exist" in str(excinfo.value)
 
 
-def test_change_alias(start_client):
+def test_change_alias(client):
     pass

@@ -60,8 +60,8 @@ class Family(DataClayObject):
     members: list[Person | Dog]
 
     @activemethod
-    def __init__(self):
-        self.members = list()
+    def __init__(self, *args):
+        self.members = list(args)
 
     @activemethod
     def add(self, new_member: Person):

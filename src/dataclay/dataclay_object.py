@@ -168,7 +168,6 @@ class DataClayObject:
     """
 
     _dc_id: UUID
-    _dc_alias: str
     _dc_dataset_name: str
     _dc_class: type
     _dc_class_name: str
@@ -207,7 +206,6 @@ class DataClayObject:
     def set_default_fields(self):
         # Metadata fields
         self._dc_id = uuid.uuid4()
-        self._dc_alias = None
         self._dc_dataset_name = None
         self._dc_class_name = self.__class__.__module__ + "." + self.__class__.__name__
         self._dc_backend_id = None
@@ -250,7 +248,7 @@ class DataClayObject:
     def metadata(self):
         return ObjectMetadata(
             self._dc_id,
-            self._dc_alias,
+            None,  # self._dc_alias,
             self._dc_dataset_name,
             self._dc_class_name,
             self._dc_backend_id,
@@ -262,7 +260,6 @@ class DataClayObject:
     @metadata.setter
     def metadata(self, object_md):
         self._dc_id = object_md.id
-        self._dc_alias = object_md.alias_name
         self._dc_dataset_name = object_md.dataset_name
         self._dc_backend_id = object_md.backend_id
         self._dc_replica_backend_ids = object_md.replica_backend_ids

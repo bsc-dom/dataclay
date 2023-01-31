@@ -2,7 +2,7 @@ import pytest
 from model.family import Dog, Family, Person
 
 
-def test_make_persistent_basic(start_client):
+def test_make_persistent_basic(client):
     """Test a simple make_persistent call"""
     person = Person("Marc", 24)
     assert person.is_registered == False
@@ -16,7 +16,7 @@ def test_make_persistent_basic(start_client):
     assert person.age == 55
 
 
-def test_make_persistent_recursive(start_client):
+def test_make_persistent_recursive(client):
     """
     By default, make_persistent is called recursively to all
     dataclay object attributes
@@ -36,7 +36,7 @@ def test_make_persistent_recursive(start_client):
     assert dog == person.dog
 
 
-def test_make_persistent_cycle(start_client):
+def test_make_persistent_cycle(client):
     """
     A call to make_persistent should work even when there
     is a cycle relation between dataclay objects
@@ -51,3 +51,18 @@ def test_make_persistent_cycle(start_client):
     assert person_2.is_registered == True
     assert person_1 == person_2.spouse
     assert person_2 == person_1.spouse
+
+
+def test_make_persistent_backend_id(client):
+    """
+    Specify the backend to store the object
+    """
+    backend_ids = list(client.get_backends())
+
+    person_1 = Person("Marc", 24)
+    person_1.make_persistent(backend_id=backend_ids[0])
+    person_2 = Person("Alice", 21)
+    person_2.make_persistent(backend_id=backend_ids[1])
+
+    assert person_1._dc_backend_id == backend_ids[0]
+    assert person_2._dc_backend_id == backend_ids[1]

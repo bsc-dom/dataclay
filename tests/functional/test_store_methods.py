@@ -2,7 +2,7 @@ import pytest
 from model.family import Dog, Family, Person
 
 
-def test_dc_put(start_client):
+def test_dc_put(client):
     person = Person("Marc", 24)
     person.dc_put("test_dc_put")
     assert person.is_registered == True
@@ -10,7 +10,7 @@ def test_dc_put(start_client):
     assert person.age == 24
 
 
-def test_dc_clone(start_client):
+def test_dc_clone(client):
     person = Person("Marc", 24)
     person.dc_put("test_dc_clone")
     copy = person.dc_clone()
@@ -18,7 +18,7 @@ def test_dc_clone(start_client):
     assert copy.age == person.age
 
 
-def test_dc_clone_by_alias(start_client):
+def test_dc_clone_by_alias(client):
     person = Person("Marc", 24)
     person.dc_put("test_dc_clone_by_alias")
     clone = Person.dc_clone_by_alias("test_dc_clone_by_alias")
@@ -26,7 +26,7 @@ def test_dc_clone_by_alias(start_client):
     assert clone.age == person.age
 
 
-def test_dc_update(start_client):
+def test_dc_update(client):
     person = Person("Marc", 24)
     person.dc_put("test_dc_update")
     new_person = Person("Alice", 32)
@@ -35,7 +35,7 @@ def test_dc_update(start_client):
     assert person.age == new_person.age
 
 
-def test_dc_update_by_alias(start_client):
+def test_dc_update_by_alias(client):
     person = Person("Marc", 24)
     person.dc_put("test_dc_update_by_alias")
     new_person = Person("Alice", 32)

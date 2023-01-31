@@ -2,7 +2,7 @@ import pytest
 from model.family import Dog, Family, Person
 
 
-def test_activemethod_argument_make_persistent(start_client):
+def test_activemethod_argument_make_persistent(client):
     """
     A dataclay object is made persistent when passed as an argument
     to an activemethod of a persistent object
@@ -17,7 +17,7 @@ def test_activemethod_argument_make_persistent(start_client):
     assert person == family.members[0]
 
 
-def test_activemethod_persistent_argument(start_client):
+def test_activemethod_persistent_argument(client):
     """
     Persistent objects can be sent as activemethod arguments
     """
@@ -29,7 +29,7 @@ def test_activemethod_persistent_argument(start_client):
     assert person == family.members[0]
 
 
-def test_activemethod_defined_properties(start_client):
+def test_activemethod_defined_properties(client):
     """
     Object properties defined in class annotations are sychronized between the client and backend
     """
@@ -41,7 +41,7 @@ def test_activemethod_defined_properties(start_client):
     assert person.age == 25
 
 
-def test_activemethod_non_defined_properties(start_client):
+def test_activemethod_non_defined_properties(client):
     """
     Object properties not defined in class annotations are not synchronized between the client and backend
     """
@@ -54,7 +54,7 @@ def test_activemethod_non_defined_properties(start_client):
     assert dog.get_dog_age() == 7 * 7
 
 
-def test_activemethod_inner_make_persistent(start_client):
+def test_activemethod_inner_make_persistent(client):
     """
     Objects crated inside an activemethod should be made persistent
     """

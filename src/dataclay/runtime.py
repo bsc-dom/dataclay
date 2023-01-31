@@ -487,20 +487,6 @@ class DataClayRuntime(ABC):
     def federate_all_objects(self, dest_dataclay_id):
         raise NotImplementedError()
 
-    def import_models_from_external_dataclay(self, namespace, ext_dataclay_id) -> None:
-        """Import models in namespace specified from an external dataClay
-        :param namespace: external dataClay namespace to get
-        :param ext_dataclay_id: external dataClay ID
-        :return: None
-        :type namespace: string
-        :type ext_dataclay_id: UUID
-        :rtype: None
-        """
-        logger.debug(
-            f"[==Import_models_from_external_dataclay==] Registering namespace {namespace} from {ext_dataclay_id}"
-        )
-        self.backend_clients["@LM"].import_models_from_external_dataclay(namespace, ext_dataclay_id)
-
     def register_external_dataclay(self, id, hostname, port):
         """Register external dataClay for federation
         Args:
