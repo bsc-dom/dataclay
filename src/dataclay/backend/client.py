@@ -131,10 +131,8 @@ class BackendClient:
             kwargs=kwargs,
         )
 
-        # TODO: Make it possible for the client to try..except, any possible exception from
-        # the method execution.
         response = self.stub.CallActiveMethod(request)
-        return response.value
+        return response.value, response.is_exception
 
     #################
     # Store Methods #

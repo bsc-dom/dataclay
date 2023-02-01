@@ -17,7 +17,6 @@ from dataclay.backend.client import BackendClient
 from dataclay.backend.runtime import BackendRuntime
 from dataclay.conf import settings
 from dataclay.exceptions import *
-from dataclay.exceptions.exceptions import DataClayException
 from dataclay.runtime import UUIDLock, set_runtime
 from dataclay.utils.pickle import RecursiveLocalPickler, RecursiveLocalUnpickler
 
@@ -129,27 +128,26 @@ class BackendAPI:
 
     def call_active_method(self, session_id, object_id, method_name, args, kwargs):
         self.set_local_session(session_id)
-
-        # TODO: Decide what happend when the object is not local to the current backend.
-        # It means that the client has a bad backend_id.
-        # Option 1: This backend get the correct metadata from etcd and make a new call_active_method
-        #           to the correct backend. Returns the result and the correct backend_id so the client
-        #           can update it.
-        # Option 2: We just return the correct backend_id as an error message. The client should then
-        #           repeat the call_active_method to the correct backend.
-
-        # instance = self.get_local_instance(object_id, True)
         instance = self.runtime.get_object_by_id(object_id)
+
+        # NOTE: When the object is not local, a custom exception is sent
+        # for the client to update the backend_id, and call_active_method again
+        if not instance._dc_is_local:
+            logger.warning(
+                f"Object {object_id} with wrong backend_id. Update to {instance._dc_backend_id}"
+            )
+            return pickle.dumps(ObjectWithWrongBackendId(instance._dc_backend_id)), False
+
         args = pickle.loads(args)
         kwargs = pickle.loads(kwargs)
 
         try:
-            response = getattr(instance, method_name)(*args, **kwargs)
+            value = getattr(instance, method_name)(*args, **kwargs)
+            if value is not None:
+                value = pickle.dumps(value)
+            return value, False
         except Exception as e:
-            response = e
-
-        if response is not None:
-            return pickle.dumps(response)
+            return pickle.dumps(e), True
 
     #################
     # Store Methods #

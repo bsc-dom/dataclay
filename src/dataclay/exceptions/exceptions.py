@@ -13,6 +13,7 @@ class DataClayException(Exception):
 # NEW EXCEPTIONS #
 ##################
 
+
 ##############
 # KV Generic #
 ##############
@@ -154,24 +155,32 @@ class ObjectAlreadyExistError(ObjectError):
         return f"Object {self.object_id} already exist!"
 
 
-#########################
-# Execution Environment #
-#########################
+class ObjectWithWrongBackendId(ObjectError):
+    def __init__(self, backend_id):
+        self.backend_id = backend_id
+
+    def __str__(self):
+        return f"Object with wrong backend_id"
 
 
-class ExecutionEnvironmentError(DataClayException):
+###########
+# Backend #
+###########
+
+
+class BackendError(DataClayException):
     def __init__(self, ee_id):
         self.ee_id = ee_id
 
 
-class ExecutionEnvironmentDoesNotExistError(ExecutionEnvironmentError):
+class BackendDoesNotExistError(BackendError):
     def __str__(self):
-        return f"ExecutionEnvironment {self.ee_id} does not exist!"
+        return f"Backend {self.ee_id} does not exist!"
 
 
-class ExecutionEnvironmentAlreadyExistError(ExecutionEnvironmentError):
+class BackendAlreadyExistError(BackendError):
     def __str__(self):
-        return f"ExecutionEnvironment {self.ee_id} already exist!"
+        return f"Backend {self.ee_id} already exist!"
 
 
 ############
@@ -211,26 +220,6 @@ class DataclayIdDoesNotExistError(DataclayIdError):
 class DataclayIdAlreadyExistError(DataclayIdError):
     def __str__(self):
         return f"Dataclay ID already exist!"
-
-
-###################
-# StorageLocation #
-###################
-
-
-class StorageLocationError(DataClayException):
-    def __init__(self, sl_name):
-        self.sl_name = sl_name
-
-
-class StorageLocationDoesNotExistError(StorageLocationError):
-    def __str__(self):
-        return f"StorageLocation {self.sl_name} does not exist!"
-
-
-class StorageLocationAlreadyExistError(StorageLocationError):
-    def __str__(self):
-        return f"Dataclay {self.sl_name} already exist!"
 
 
 # TODO: Check if old excepions are used

@@ -252,7 +252,7 @@ class DataServiceStub(object):
         self.CallActiveMethod = channel.unary_unary(
                 '/protos.dataservice.DataService/CallActiveMethod',
                 request_serializer=protos_dot_dataservice__pb2.CallActiveMethodRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BytesValue.FromString,
+                response_deserializer=protos_dot_dataservice__pb2.CallActiveMethodResponse.FromString,
                 )
         self.GetCopyOfObject = channel.unary_unary(
                 '/protos.dataservice.DataService/GetCopyOfObject',
@@ -829,7 +829,7 @@ def add_DataServiceServicer_to_server(servicer, server):
             'CallActiveMethod': grpc.unary_unary_rpc_method_handler(
                     servicer.CallActiveMethod,
                     request_deserializer=protos_dot_dataservice__pb2.CallActiveMethodRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_wrappers__pb2.BytesValue.SerializeToString,
+                    response_serializer=protos_dot_dataservice__pb2.CallActiveMethodResponse.SerializeToString,
             ),
             'GetCopyOfObject': grpc.unary_unary_rpc_method_handler(
                     servicer.GetCopyOfObject,
@@ -1657,7 +1657,7 @@ class DataService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/CallActiveMethod',
             protos_dot_dataservice__pb2.CallActiveMethodRequest.SerializeToString,
-            google_dot_protobuf_dot_wrappers__pb2.BytesValue.FromString,
+            protos_dot_dataservice__pb2.CallActiveMethodResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

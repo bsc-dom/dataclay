@@ -30,3 +30,19 @@ def test_move_reference(client):
 
     person.move(backend_ids[1])
     assert person == family.members[0]
+
+
+def test_wrong_backend_id(client):
+    """When a dc object in client has a wrong backend_id (if it was moved),
+    it should be updated after first wrong call."""
+    backend_ids = list(client.get_backends())
+
+    person = Person("Marc", 24)
+    person.make_persistent(backend_id=backend_ids[0])
+    assert person._dc_backend_id == backend_ids[0]
+
+    # We set a wrong backend_id
+    person._dc_backend_id = backend_ids[1]
+    assert person._dc_backend_id == backend_ids[1]
+    assert person.name == "Marc"
+    assert person._dc_backend_id == backend_ids[0]

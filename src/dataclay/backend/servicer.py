@@ -18,6 +18,7 @@ from dataclay.exceptions.exceptions import DataClayException
 from dataclay.protos import (
     common_messages_pb2,
     dataservice_messages_pb2,
+    dataservice_pb2,
     dataservice_pb2_grpc,
 )
 from dataclay.runtime import get_runtime
@@ -90,19 +91,19 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
 
     def CallActiveMethod(self, request, context):
         try:
-            returned_value = self.backend.call_active_method(
+            value, is_exception = self.backend.call_active_method(
                 UUID(request.session_id),
                 UUID(request.object_id),
                 request.method_name,
                 request.args,
                 request.kwargs,
             )
-            return BytesValue(value=returned_value)
+            return dataservice_pb2.CallActiveMethodResponse(value=value, is_exception=is_exception)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return BytesValue()
+            return dataservice_pb2.CallActiveMethodResponse()
 
     #################
     # Store Methods #

@@ -4,7 +4,6 @@ from __future__ import annotations
 import importlib
 import logging
 import pickle
-import uuid
 from abc import ABC, abstractmethod
 from builtins import Exception
 from contextlib import AbstractContextManager
@@ -15,6 +14,7 @@ from weakref import WeakValueDictionary
 
 from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
+from dataclay.exceptions import *
 from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 
 if TYPE_CHECKING:
@@ -204,8 +204,6 @@ class DataClayRuntime(ABC):
     ##################
 
     def call_active_method(self, instance, method_name, args: tuple, kwargs: dict):
-        import pickle
-
         serialized_args = pickle.dumps(args)
         serialized_kwargs = pickle.dumps(kwargs)
         # TODO: Add serialized volatile objects to
@@ -213,14 +211,29 @@ class DataClayRuntime(ABC):
         # May be necessary a custom pickle.Pickler
         # TODO: Check if race conditions can happend (chek old call_execute_to_ds)
 
-        backend_client = self.get_backend_client(instance._dc_backend_id)
+        # NOTE: Loop to update the backend_id when we have the wrong one, and call again
+        # the active method
+        while True:
+            backend_client = self.get_backend_client(instance._dc_backend_id)
 
-        serialized_response = backend_client.call_active_method(
-            self.session.id, instance._dc_id, method_name, serialized_args, serialized_kwargs
-        )
-        if serialized_response:
-            response = pickle.loads(serialized_response)
-            return response
+            serialized_response, is_exception = backend_client.call_active_method(
+                self.session.id, instance._dc_id, method_name, serialized_args, serialized_kwargs
+            )
+
+            if serialized_response:
+                response = pickle.loads(serialized_response)
+
+                if isinstance(response, ObjectWithWrongBackendId):
+                    instance._dc_backend_id = response.backend_id
+                    continue
+
+                if is_exception:
+                    raise response
+
+                return response
+
+            else:
+                return None
 
     #########
     # Alias #
