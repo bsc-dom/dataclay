@@ -1,6 +1,0 @@
-[submodule "javaclay"]
-	path = javaclay
-	url = https://github.com/bsc-dom/javaclay
-[submodule "pyclay"]
-	path = pyclay
-	url = https://github.com/bsc-dom/pyclay
