@@ -1,0 +1,48 @@
+- name: Setup
+  hosts: metadata
+  gather_facts: false
+  vars_files:
+    - ./external_vars.yml
+  environment: "{{ module_paths | combine(dataclay_envs) }}"
+  tasks:
+    - name: Create a directory if it does not exist
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - "{{ dataclay_job_path }}"
+        - "{{ dataclay_log_path }}"
+        - "{{ dataclay_storage_path }}"
+
+- name: Deploy Redis and MDS
+  hosts: metadata
+  gather_facts: false
+  vars_files:
+    - ./external_vars.yml
+  environment: "{{ module_paths | combine(dataclay_envs) }}"
+  tasks:
+    - name: Start Redis
+      shell: nohup redis-server --protected-mode no > {{ dataclay_log_path }}/redis.out &
+      args:
+        chdir: "{{ dataclay_job_path }}"
+
+    - name: Start MDS
+      shell: nohup python -m dataclay.metadata &> {{ dataclay_log_path }}/mds.out &
+      args:
+        chdir: "{{ dataclay_job_path }}"
+      ignore_errors: True
+
+- name: Deploy Backends
+  hosts: backends
+  gather_facts: false
+  vars:
+    num: "{{ groups['backends'].index(inventory_hostname) }}"
+  vars_files:
+    - ./external_vars.yml
+  environment: "{{ module_paths | combine(dataclay_envs) }}"
+  tasks:
+    - name: Start Backend
+      shell: nohup python -u -m dataclay.backend &> {{ dataclay_log_path }}/backend{{ num }}.out &
+      args:
+        chdir: "{{ dataclay_job_path }}"
+      ignore_errors: True

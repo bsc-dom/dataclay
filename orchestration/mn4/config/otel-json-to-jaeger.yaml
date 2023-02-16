@@ -1,0 +1,18 @@
+receivers:
+  otlpjsonfile:
+    include:
+      - "./otel-traces.json"
+    start_at: beginning
+exporters:
+  jaeger:
+    endpoint: 127.0.0.1:14250
+    tls:
+      insecure: true
+processors:
+  batch:
+service:
+  pipelines:
+    traces:
+      receivers: [otlpjsonfile]
+      exporters: [jaeger]
+      processors: [batch]

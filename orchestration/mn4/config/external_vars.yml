@@ -1,0 +1,26 @@
+module_paths:
+  PATH: "{{ lookup('env', 'PATH') }}"
+  PYTHONPATH: "{{ lookup('env', 'PYTHONPATH') }}:{{ lookup('env', 'PWD') }}"
+  PYTHONHOME: "{{ lookup('env', 'PYTHONHOME') }}"
+  LD_LIBRARY_PATH: "{{ lookup('env', 'LD_LIBRARY_PATH') }}"
+
+dataclay_envs:
+  DATACLAY_PASSWORD: "{{ lookup('env', 'DATACLAY_PASSWORD') | default('s3cret', true) }}"
+  DATACLAY_USERNAME: "{{ lookup('env', 'DATACLAY_USERNAME') | default('testuser', true) }}"
+  DATACLAY_DATASET: "{{ lookup('env', 'DATACLAY_DATASET') | default('testuser', true) }}"
+
+  DATACLAY_METADATA_PORT: "{{ lookup('env', 'DATACLAY_METADATA_PORT') | default(16587, true) }}"
+  DATACLAY_BACKEND_PORT: "{{ lookup('env', 'DATACLAY_BACKEND_PORT') | default(6868, true) }}"
+  KV_PORT: "{{ lookup('env', 'KV_PORT') | default(6379, true) }}"
+
+  KV_HOST: "{{ lookup('env', 'KV_HOST') }}"
+  DATACLAY_METADATA_HOSTNAME: "{{ lookup('env', 'DATACLAY_METADATA_HOSTNAME') }}"
+  DATACLAY_LOGLEVEL: "{{ lookup('env', 'DATACLAY_LOGLEVEL') }}"
+
+  STORAGE_PATH: "{{ dataclay_storage_path }}"
+
+ansible_python_interpreter: "{{ ansible_playbook_python }}" # Uses the venv python. Maybe not optimized for HPC (get which python otherwise)
+
+dataclay_job_path: "{{ lookup('env', 'HOME') }}/.dataclay/{{ lookup('env', 'SLURM_JOB_ID') }}"
+dataclay_log_path: "{{ dataclay_job_path }}/logs"
+dataclay_storage_path: "{{ dataclay_job_path }}/storage"
