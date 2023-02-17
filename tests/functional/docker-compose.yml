@@ -23,11 +23,11 @@ services:
     ports:
       - 16587:16587
     environment:
-      - KV_HOST=redis
-      - KV_PORT=6379
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_KV_PORT=6379
       - DATACLAY_ID
       - DATACLAY_PASSWORD
-      - DATACLAY_USER
+      - DATACLAY_USERNAME
       - DATACLAY_METADATA_PORT=16587
     command: python -m dataclay.metadata
     volumes:
@@ -40,8 +40,8 @@ services:
     ports:
       - 6867:6867
     environment:
-      - KV_HOST=redis
-      - KV_PORT=6379
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_KV_PORT=6379
       - DATACLAY_BACKEND_ID
       - DATACLAY_BACKEND_NAME
       - DATACLAY_BACKEND_PORT=6867
@@ -59,8 +59,8 @@ services:
     ports:
       - 6868:6868
     environment:
-      - KV_HOST=redis
-      - KV_PORT=6379
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_KV_PORT=6379
       - DATACLAY_BACKEND_ID
       - DATACLAY_BACKEND_NAME
       - DATACLAY_BACKEND_PORT=6868
@@ -78,8 +78,8 @@ services:
     ports:
       - 6869:6869
     environment:
-      - KV_HOST=redis
-      - KV_PORT=6379
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_KV_PORT=6379
       - DATACLAY_BACKEND_ID
       - DATACLAY_BACKEND_NAME
       - DATACLAY_BACKEND_PORT=6869

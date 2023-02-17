@@ -24,7 +24,7 @@ class MetadataClient:
         self.address = f"{hostname}:{port}"
         self.channel = grpc.insecure_channel(self.address)
         self.stub = metadata_service_pb2_grpc.MetadataServiceStub(self.channel)
-        atexit.register(self.close)
+        # atexit.register(self.close)
 
     def is_ready(self, timeout=None):
         try:

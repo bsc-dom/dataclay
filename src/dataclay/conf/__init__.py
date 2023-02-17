@@ -76,7 +76,6 @@ class Settings:
     #########
 
     # Indicates storage path for persistent data
-    STORAGE_PATH = os.getenv("STORAGE_PATH", default="/dataclay/storage/")
 
     # ETCD_PATH ¿?
 
@@ -112,8 +111,10 @@ class Settings:
         # self.ETCD_HOSTNAME = os.environ["ETCD_HOSTNAME"]
         # self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
 
-        self.KV_HOST = os.environ["KV_HOST"]
-        self.KV_PORT = int(os.getenv("KV_PORT", "6379"))
+        self.DATACLAY_KV_HOST = os.environ["DATACLAY_KV_HOST"]
+        self.DATACLAY_KV_PORT = int(os.getenv("DATACLAY_KV_PORT", "6379"))
+
+        self.STORAGE_PATH = os.getenv("STORAGE_PATH", default="/dataclay/storage/")
 
     # TODO: Rename to client_proeprties?
     def load_client_properties(
@@ -139,13 +140,13 @@ class Settings:
         # self.ETCD_HOSTNAME = os.environ["ETCD_HOSTNAME"]
         # self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
 
-        self.KV_HOST = os.environ["KV_HOST"]
-        self.KV_PORT = int(os.getenv("KV_PORT", "6379"))
+        self.DATACLAY_KV_HOST = os.environ["DATACLAY_KV_HOST"]
+        self.DATACLAY_KV_PORT = int(os.getenv("DATACLAY_KV_PORT", "6379"))
 
         self.DATACLAY_ID = os.getenv("DATACLAY_ID", uuid.uuid4())
         self.DATACLAY_PASSWORD = os.environ["DATACLAY_PASSWORD"]
-        self.DATACLAY_USER = os.getenv("DATACLAY_USER", "dataclay")
-        self.DATACLAY_DATASET = os.getenv("DATACLAY_DATASET", self.DATACLAY_USER)
+        self.DATACLAY_USERNAME = os.getenv("DATACLAY_USERNAME", "dataclay")
+        self.DATACLAY_DATASET = os.getenv("DATACLAY_DATASET", self.DATACLAY_USERNAME)
 
 
 settings = Settings()

@@ -19,7 +19,7 @@ def serve():
 
     stop_event = threading.Event()
 
-    metadata_service = MetadataAPI(settings.KV_HOST, settings.KV_PORT)
+    metadata_service = MetadataAPI(settings.DATACLAY_KV_HOST, settings.DATACLAY_KV_PORT)
     if not metadata_service.is_ready(timeout=10):
         logger.error("KV store is not ready. Aborting!")
         raise
@@ -36,7 +36,7 @@ def serve():
         settings.DATACLAY_ID = metadata_service.get_dataclay("this").id
     else:
         metadata_service.new_superuser(
-            settings.DATACLAY_USER, settings.DATACLAY_PASSWORD, settings.DATACLAY_DATASET
+            settings.DATACLAY_USERNAME, settings.DATACLAY_PASSWORD, settings.DATACLAY_DATASET
         )
 
     logger.info("Metadata service has been registered")

@@ -33,8 +33,8 @@ def serve():
     backend = BackendAPI(
         settings.DATACLAY_BACKEND_NAME,
         settings.DATACLAY_BACKEND_PORT,
-        settings.KV_HOST,
-        settings.KV_PORT,
+        settings.DATACLAY_KV_HOST,
+        settings.DATACLAY_KV_PORT,
     )
 
     if not backend.is_ready(timeout=10):
