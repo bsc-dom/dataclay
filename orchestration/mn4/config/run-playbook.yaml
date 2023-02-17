@@ -11,4 +11,3 @@
       shell: "{{ script }} > {{ dataclay_log_path }}/client{{ num }}.out"
       args:
         chdir: "{{ lookup('env', 'PWD') }}"
-      # ignore_errors: True

@@ -1,6 +1,7 @@
 - name: Deploy Metadata Service
   hosts: metadata
   gather_facts: false
+  any_errors_fatal: true
   vars_files:
     - ./external_vars.yml
   environment: "{{ common_envs | combine(metadata_properties) }}"
@@ -23,7 +24,6 @@
       shell: nohup python -m dataclay.metadata &> {{ dataclay_log_path }}/mds.out &
       args:
         chdir: "{{ dataclay_job_path }}"
-      ignore_errors: True
 
 - name: Deploy Backends
   hosts: backends
@@ -38,4 +38,3 @@
       shell: nohup python -u -m dataclay.backend &> {{ dataclay_log_path }}/backend{{ num }}.out &
       args:
         chdir: "{{ dataclay_job_path }}"
-      ignore_errors: True
