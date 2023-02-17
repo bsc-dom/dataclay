@@ -1,11 +1,11 @@
-- name: Setup
+- name: Deploy Metadata Service
   hosts: metadata
   gather_facts: false
   vars_files:
     - ./external_vars.yml
-  environment: "{{ module_paths | combine(dataclay_envs) }}"
+  environment: "{{ common_envs | combine(metadata_properties) }}"
   tasks:
-    - name: Create a directory if it does not exist
+    - name: Create job directories
       file:
         path: "{{ item }}"
         state: directory
@@ -14,19 +14,12 @@
         - "{{ dataclay_log_path }}"
         - "{{ dataclay_storage_path }}"
 
-- name: Deploy Redis and MDS
-  hosts: metadata
-  gather_facts: false
-  vars_files:
-    - ./external_vars.yml
-  environment: "{{ module_paths | combine(dataclay_envs) }}"
-  tasks:
-    - name: Start Redis
+    - name: Start redis-server
       shell: nohup redis-server --protected-mode no > {{ dataclay_log_path }}/redis.out &
       args:
         chdir: "{{ dataclay_job_path }}"
 
-    - name: Start MDS
+    - name: Start Metadata Service
       shell: nohup python -m dataclay.metadata &> {{ dataclay_log_path }}/mds.out &
       args:
         chdir: "{{ dataclay_job_path }}"
@@ -39,7 +32,7 @@
     num: "{{ groups['backends'].index(inventory_hostname) }}"
   vars_files:
     - ./external_vars.yml
-  environment: "{{ module_paths | combine(dataclay_envs) }}"
+  environment: "{{ common_envs | combine(backend_properties) }}"
   tasks:
     - name: Start Backend
       shell: nohup python -u -m dataclay.backend &> {{ dataclay_log_path }}/backend{{ num }}.out &

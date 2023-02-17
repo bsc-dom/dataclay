@@ -1,0 +1,14 @@
+- name: Run client script in all nodes
+  hosts: all
+  gather_facts: false
+  vars:
+    num: "{{ groups['all'].index(inventory_hostname) }}"
+  vars_files:
+    - ./external_vars.yml
+  environment: "{{ common_envs | combine(client_properties) }}"
+  tasks:
+    - name: Run script
+      shell: "{{ script }} > {{ dataclay_log_path }}/client{{ num }}.out"
+      args:
+        chdir: "{{ lookup('env', 'PWD') }}"
+      # ignore_errors: True

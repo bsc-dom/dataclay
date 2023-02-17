@@ -29,6 +29,9 @@ rsync -av --delete-after --copy-links --filter={":- .gitignore",": /.rsync-filte
 # lua
 scp modulefile.lua $MN1_HOST:$MN_LUA_PATH
 
+# Copy examples
+rsync -av --delete --copy-links ../../examples $MN1_HOST:~/
+
 # Comment the next line if not wanting to create the virtual environments.
 # It is necessary a VPN connection in order to use MN0 login (the only login with internet)
 # ssh $MN0_HOST "cd $MN_DATACLAY_PATH && bash -s" -- < utils/install_pyclay.sh 3.10.2

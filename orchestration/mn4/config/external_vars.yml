@@ -1,23 +1,31 @@
-module_paths:
+common_envs:
   PATH: "{{ lookup('env', 'PATH') }}"
   PYTHONPATH: "{{ lookup('env', 'PYTHONPATH') }}:{{ lookup('env', 'PWD') }}"
   PYTHONHOME: "{{ lookup('env', 'PYTHONHOME') }}"
   LD_LIBRARY_PATH: "{{ lookup('env', 'LD_LIBRARY_PATH') }}"
-
-dataclay_envs:
-  DATACLAY_PASSWORD: "{{ lookup('env', 'DATACLAY_PASSWORD') | default('s3cret', true) }}"
-  DATACLAY_USERNAME: "{{ lookup('env', 'DATACLAY_USERNAME') | default('testuser', true) }}"
-  DATACLAY_DATASET: "{{ lookup('env', 'DATACLAY_DATASET') | default('testuser', true) }}"
-
-  DATACLAY_METADATA_PORT: "{{ lookup('env', 'DATACLAY_METADATA_PORT') | default(16587, true) }}"
-  DATACLAY_BACKEND_PORT: "{{ lookup('env', 'DATACLAY_BACKEND_PORT') | default(6868, true) }}"
-  KV_PORT: "{{ lookup('env', 'KV_PORT') | default(6379, true) }}"
-
-  KV_HOST: "{{ lookup('env', 'KV_HOST') }}"
-  DATACLAY_METADATA_HOSTNAME: "{{ lookup('env', 'DATACLAY_METADATA_HOSTNAME') }}"
   DATACLAY_LOGLEVEL: "{{ lookup('env', 'DATACLAY_LOGLEVEL') }}"
 
+backend_properties:
+  DATACLAY_BACKEND_PORT: "{{ lookup('env', 'DATACLAY_BACKEND_PORT') | default(6868, true) }}"
+  DATACLAY_KV_HOST: "{{ lookup('env', 'DATACLAY_KV_HOST') }}"
+  DATACLAY_KV_PORT: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
   STORAGE_PATH: "{{ dataclay_storage_path }}"
+
+metadata_properties:
+  DATACLAY_METADATA_HOSTNAME: "{{ lookup('env', 'DATACLAY_METADATA_HOSTNAME') }}"
+  DATACLAY_METADATA_PORT: "{{ lookup('env', 'DATACLAY_METADATA_PORT') | default(16587, true) }}"
+  DATACLAY_KV_HOST: "{{ lookup('env', 'DATACLAY_KV_HOST') }}"
+  DATACLAY_KV_PORT: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
+  DATACLAY_USERNAME: "{{ lookup('env', 'DATACLAY_USERNAME') | default('testuser', true) }}"
+  DATACLAY_PASSWORD: "{{ lookup('env', 'DATACLAY_PASSWORD') | default('s3cret', true) }}"
+  DATACLAY_DATASET: "{{ lookup('env', 'DATACLAY_DATASET') | default('testuser', true) }}"
+
+client_properties:
+  DATACLAY_METADATA_HOSTNAME: "{{ lookup('env', 'DATACLAY_METADATA_HOSTNAME') }}"
+  DATACLAY_METADATA_PORT: "{{ lookup('env', 'DATACLAY_METADATA_PORT') | default(16587, true) }}"
+  DC_USERNAME: "{{ lookup('env', 'DC_USERNAME') }}"
+  DC_PASSWORD: "{{ lookup('env', 'DC_PASSWORD') }}"
+  DC_DATASET: "{{ lookup('env', 'DC_DATASET') }}"
 
 ansible_python_interpreter: "{{ ansible_playbook_python }}" # Uses the venv python. Maybe not optimized for HPC (get which python otherwise)
 

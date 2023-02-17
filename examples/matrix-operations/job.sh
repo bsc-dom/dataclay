@@ -24,7 +24,7 @@ printf "%s\n" ${hostnames[@]:1} >> $hosts_file
 
 # Set dataclay configuration
 export DATACLAY_METADATA_HOSTNAME=${hostnames[0]} # DO NOT EDIT!
-export KV_HOST=${hostnames[0]} # DO NOT EDIT!
+export DATACLAY_KV_HOST=${hostnames[0]} # DO NOT EDIT!
 export DATACLAY_LOGLEVEL=DEBUG
 
 # Set tracing configuration
@@ -45,12 +45,17 @@ export DC_PASSWORD=s3cret
 export DC_DATASET=testuser
 
 # Deploy dataclay
-dataclay-deploy -i $hosts_file
+ansible-playbook $DATACLAY_HOME/config/deploy-playbook.yaml -i $hosts_file
 
 # Run script
 python3 matrix-generator.py --matrices 5 --size 100 --path ./data/
-python3 script.py 10 0 --processes 1 --path $PWD/data/
-sleep 10
+# python3 script.py 10 0 --processes 1 --path $PWD/data/
+
+ansible-playbook $DATACLAY_HOME/config/run-playbook.yaml \
+-i $hosts_file -f ${#hostnames[@]} \
+-e "script='python3 script.py 10 0 --processes 1 --path $PWD/data/'"
+
+sleep 5
 
 # Shutdown
 cp job-$SLURM_JOB_ID.out $HOME/.dataclay/$SLURM_JOB_ID
