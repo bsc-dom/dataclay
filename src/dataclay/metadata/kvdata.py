@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from uuid import UUID
 
-from passlib.hash import bcrypt
+import bcrypt
 
 from dataclay.exceptions import *
 from dataclay.protos import common_messages_pb2
@@ -209,12 +209,12 @@ class Account(KeyValue):
 
     @classmethod
     def new(cls, username, password, role="NORMAL", datasets=None):
-        hashed_password = bcrypt.hash(password)
+        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         datasets = datasets or []
         return cls(username, hashed_password, role, datasets)
 
     def verify(self, password, role=None):
-        if not bcrypt.verify(password, self.hashed_password):
+        if not bcrypt.checkpw(password.encode(), self.hashed_password.encode()):
             return False
         if role is not None and self.role != role:
             return False
