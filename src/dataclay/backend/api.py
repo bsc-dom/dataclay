@@ -10,8 +10,6 @@ import traceback
 import uuid
 from typing import TYPE_CHECKING
 
-from opentelemetry import trace
-
 from dataclay import utils
 from dataclay.backend.client import BackendClient
 from dataclay.backend.runtime import BackendRuntime
@@ -19,9 +17,9 @@ from dataclay.conf import settings
 from dataclay.exceptions import *
 from dataclay.runtime import UUIDLock, set_runtime
 from dataclay.utils.pickle import RecursiveLocalPickler, RecursiveLocalUnpickler
+from dataclay.utils.tracing import trace
 
 if TYPE_CHECKING:
-
     from dataclay.dataclay_object import DataClayObject
 
 
@@ -32,7 +30,6 @@ logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 class BackendAPI:
     def __init__(self, name, port, kv_host, kv_port):
-
         # NOTE: the port is (atm) exclusively for unique identification of an EE
         # (given that the name is shared between all EE that share a SL, which happens in HPC deployments)
         self.name = name
@@ -50,7 +47,6 @@ class BackendAPI:
         ref = time.time()
         now = ref
         if self.runtime.metadata_service.is_ready(timeout):
-
             # Check that dataclay_id is defined. If it is not defined, it could break things
             while timeout is None or (now - ref) < timeout:
                 try:
@@ -509,7 +505,6 @@ class BackendAPI:
                     pass
                 instance.set_origin_location(None)
                 try:
-
                     if instance._dc_alias is not None and instance._dc_alias != "":
                         logger.debug(f"Removing alias {instance._dc_alias}")
                         self.self.runtime.delete_alias(instance)
@@ -735,9 +730,7 @@ class BackendAPI:
 
         # Now Call
         for backend_id, objects_to_get in objects_per_backend.items():
-
             if dest_replica_backend_id is None or dest_replica_backend_id != backend_id:
-
                 logger.debug(
                     "[==GetObjectsInOtherBackend==] Get from other location, objects: %s",
                     objects_to_get,
@@ -947,7 +940,6 @@ class BackendAPI:
         # Prepare to unify calls (only one call for DS)
         objects_per_backend = dict()
         for curr_obj_with_ids in objects_in_other_backends:
-
             object_id = curr_obj_with_ids[0]
             object_md = self.get_object_metadata(object_id)
             location = object_md.backend_id
@@ -961,7 +953,6 @@ class BackendAPI:
             objects_in_backend.append(curr_obj_with_ids)
         # Now Call
         for backend_id, objects_to_update in objects_per_backend.items():
-
             backend = self.runtime.get_execution_environment_info(backend_id)
 
             try:

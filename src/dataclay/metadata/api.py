@@ -2,8 +2,6 @@ import logging
 import uuid
 from uuid import UUID
 
-from opentelemetry import trace
-
 from dataclay.exceptions.exceptions import *
 from dataclay.metadata.kvdata import (
     Account,
@@ -15,6 +13,7 @@ from dataclay.metadata.kvdata import (
     Session,
 )
 from dataclay.metadata.redismanager import RedisManager
+from dataclay.utils.tracing import trace
 
 FEDERATOR_ACCOUNT_USERNAME = "Federator"
 EXTERNAL_OBJECTS_DATASET_NAME = "ExternalObjects"
@@ -27,7 +26,6 @@ logger = logging.getLogger(__name__)
 
 class MetadataAPI:
     def __init__(self, kv_host, kv_port):
-
         self.kv_manager = RedisManager(kv_host, kv_port)
 
         logger.info("Initialized MetadataService")
@@ -114,6 +112,7 @@ class MetadataAPI:
 
         logger.info(f"Created new account for {username} with dataset {dataset.name}")
 
+    @tracer.start_as_current_span("new_account")
     def new_account(self, username: str, password: str):
         """Registers a new account
 
@@ -123,15 +122,13 @@ class MetadataAPI:
             username : Accounts username
             password : Accounts password
         """
-        with tracer.start_as_current_span("new_account", attributes={"username": username}):
+        # TODO: Ask for admin credentials for creating the account.
 
-            # TODO: Ask for admin credentials for creating the account.
+        # Creates new account and put it to etcd
+        account = Account.new(username, password)
+        self.kv_manager.set_new(account)
 
-            # Creates new account and put it to etcd
-            account = Account.new(username, password)
-            self.kv_manager.set_new(account)
-
-            logger.info(f"Created new account for {username}")
+        logger.info(f"Created new account for {username}")
 
     ###########
     # Dataset #
@@ -157,7 +154,6 @@ class MetadataAPI:
 
         # Lock to update account.datasets without race condition
         with self.kv_manager.lock(Account.path + username):
-
             # Validates account credentials
             account = self.kv_manager.get_kv(Account, username)
             if not account.verify(password):
@@ -222,7 +218,7 @@ class MetadataAPI:
 
         self.kv_manager.set(object_md)
 
-    @tracer.start_as_current_span("start_as_current_span")
+    @tracer.start_as_current_span("get_object_md_by_id")
     def get_object_md_by_id(self, object_id: UUID, session_id=None, check_session=False):
         if check_session:
             session = self.kv_manager.get_kv(Session, session_id)
@@ -270,7 +266,6 @@ class MetadataAPI:
     def delete_alias(
         self, alias_name: str, dataset_name: str, session_id: UUID, check_session=False
     ):
-
         # NOTE: If the session is not checked, we supose the dataset_name is correct
         #       since only the EE is able to set check_session to False
         if check_session:

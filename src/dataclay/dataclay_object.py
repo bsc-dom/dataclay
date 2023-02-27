@@ -18,12 +18,11 @@ from collections import ChainMap
 from inspect import get_annotations
 from uuid import UUID
 
-from opentelemetry import trace
-
 from dataclay.exceptions import *
 from dataclay.metadata.kvdata import ObjectMetadata
 from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.runtime import get_runtime
+from dataclay.utils.tracing import trace
 
 DC_PROPERTY_PREFIX = "_dc_property_"
 
@@ -97,7 +96,6 @@ def activemethod(func):
 
 
 class DataClayProperty:
-
     __slots__ = "property_name", "dc_property_name"
 
     def __init__(self, property_name):
@@ -268,17 +266,11 @@ class DataClayObject:
     # Object Oriented Methods #
     ###########################
 
+    @tracer.start_as_current_span("make_persistent")
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
-
-        with tracer.start_as_current_span(
-            "make_persistent",
-            attributes={"alias": str(alias), "backend_id": str(backend_id), "recursive": recursive},
-        ):
-            if alias == "":
-                raise AttributeError("Alias cannot be empty")
-            get_runtime().make_persistent(
-                self, alias=alias, backend_id=backend_id, recursive=recursive
-            )
+        if alias == "":
+            raise AttributeError("Alias cannot be empty")
+        get_runtime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
     @classmethod
     def get_by_id(cls, object_id: UUID):
@@ -356,7 +348,6 @@ class DataClayObject:
         If the object is NOT persistent, then this method returns None.
         """
         if self._dc_is_registered:
-
             return "%s:%s:%s" % (
                 self._dc_id,
                 self._dc_backend_id,
@@ -501,7 +492,6 @@ class DataClayObject:
         return self.get_by_id, (self._dc_id,)
 
     def __repr__(self):
-
         if self._dc_is_registered:
             return "<%s instance with ObjectID=%s>" % (
                 self._dc_class_name,

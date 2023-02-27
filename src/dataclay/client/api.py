@@ -10,13 +10,12 @@ __all__ = ["init", "finish", "DataClayObject"]
 import logging
 import logging.config
 
-from opentelemetry import trace
-
 from dataclay.client.runtime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
 from dataclay.client.runtime import ClientRuntime
 from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.runtime import get_runtime, set_runtime
+from dataclay.utils.tracing import trace
 
 # This will be populated during initialization
 LOCAL = _UNDEFINED_LOCAL
