@@ -29,13 +29,15 @@ class PyDataclay(PythonPackage):
     These two main features accelerate both the development of applications and their execution."""
 
     homepage = "https://dataclay.bsc.es/"
-    pypi = "dataClay/dataClay-3.0.0a2.tar.gz"
+    pypi = "dataClay/dataClay-3.0.0a3.tar.gz"
+    # pypi = "dataClay/dataClay-3.0.0a2.tar.gz"
     # pypi = "dataClay/dataClay-3.0.0a1.tar.gz"
 
     # FIXME: Add a list of GitHub accounts to
     # notify when the package is updated.
     # maintainers("github_user1", "github_user2")
 
+    version("3.0.0a3", sha256="ff50c7464717df16b961c9600eac1ff6c3ad5c11da38384e4d0d7b76649a0045")
     version("3.0.0a2", sha256="e653c1d8efa5b2afc4f7af2bafa6eab90e2208c65c5c3441504a642ecc0d86d6")
     version("3.0.0a1", sha256="3b563d9c0ec86b10f129257485aaf4cf0977440c76b05a6dc3493a8508717ed1")
 
@@ -50,4 +52,3 @@ class PyDataclay(PythonPackage):
     depends_on("py-protobuf", type=("build", "run"))
     depends_on("py-redis", type=("build", "run"))
     depends_on("py-bcrypt", type=("build", "run"))
-    depends_on("py-opentelemetry-api", type=("build", "run"))
