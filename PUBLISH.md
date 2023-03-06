@@ -123,10 +123,3 @@ sudo apt install qemu-user-static
 - Merge branch to `main` with a pull request.
 
 
-## Spack
-
-```
-spack create https://files.pythonhosted.org/packages/15/15/2c139260ead91e9b728faf99ab327dfa717a0ef1668fa9e1c10d8f8bfd35/dataClay-3.0.0a1.tar.gz
-```
-
-If this error appears `C++ compiler supports templates for STL... configure: error: no` , remove from `~/.spack/linux/compilers.yaml` the compiler that don't have `cxx` field
