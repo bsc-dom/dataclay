@@ -4,7 +4,7 @@ import time
 from multiprocessing import Lock
 from threading import Thread
 
-from model.matrix import Matrix
+from dataclay.contrib.modeltest.matrix import Matrix
 
 import dataclay
 
