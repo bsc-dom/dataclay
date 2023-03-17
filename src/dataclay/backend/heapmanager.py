@@ -37,7 +37,6 @@ class HeapManager(threading.Thread):
         # n any deserialization from DB or parameter, objects deserialized first are referrers to
         # objects deserialized later. Second ones cannot be GC if first ones are not cleaned.
         # During GC,we should know that somehow. It's a hint but improves GC a lot.
-        # Also, remember list must be thread-safe:
         self.loaded_objects: dict[UUID, DataClayObject] = dict()
 
         # Locks for run_task and flush_all

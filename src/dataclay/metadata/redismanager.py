@@ -67,6 +67,7 @@ class RedisManager:
         return kv_class.from_json(value)
 
     def getprefix(self, kv_class: KeyValue, prefix):
+        """Get a dict for all kv with prefix"""
         result = dict()
         for key in self.r_client.scan_iter(prefix + "*"):
             value = self.r_client.get(key)

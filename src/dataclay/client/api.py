@@ -101,7 +101,7 @@ class ClientAPI:
         self.runtime.session = self.session
         self.runtime.metadata_service.session = self.session
 
-        # Cache the execution environment infos
+        # Cache the backends clients
         self.runtime.update_backend_clients()
 
         # Cache the dataclay_id, to avoid later request
