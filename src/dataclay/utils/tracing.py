@@ -2,6 +2,7 @@ class Dummy1:
     def get_tracer(self, name):
         return Dummy2()
 
+
 class Dummy2:
     def start_as_current_span(self, *args, **kwargs):
         def decorator(func):
@@ -11,6 +12,7 @@ class Dummy2:
             return wrapper
 
         return decorator
+
 
 try:
     from opentelemetry import trace

@@ -1,5 +1,6 @@
 import pytest
-from model.family import Dog, Family, Person
+
+from dataclay.contrib.modeltest.family import Dog, Family, Person
 
 
 def test_make_persistent_basic(client):

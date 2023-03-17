@@ -49,7 +49,7 @@ services:
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro
-      - ./model:/workdir/model:ro
+      # - ./model:/workdir/model:ro
 
 
   backend_2:
@@ -68,7 +68,7 @@ services:
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro
-      - ./model:/workdir/model:ro
+      # - ./model:/workdir/model:ro
 
 
   backend_3:
@@ -87,4 +87,4 @@ services:
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro
-      - ./model:/workdir/model:ro
+      # - ./model:/workdir/model:ro

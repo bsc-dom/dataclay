@@ -1,6 +1,6 @@
 import pytest
-from model.family import Family, Person
 
+from dataclay.contrib.modeltest.family import Family, Person
 from dataclay.exceptions import *
 
 
