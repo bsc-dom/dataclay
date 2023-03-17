@@ -204,6 +204,10 @@ class MetadataAPI:
     # Dataclay Object #
     ###################
 
+    def get_all_objects(self):
+        result = self.kv_manager.getprefix(ObjectMetadata, "/object/")
+        return result
+
     @tracer.start_as_current_span("register_object")
     def register_object(self, object_md: ObjectMetadata, session_id: UUID = None):
         # NOTE: If only EE can register objects, no need to check session
