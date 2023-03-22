@@ -61,7 +61,7 @@ python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-u
 **Release images:**
 
 ``` bash
-VERSION=3.0.0-alpha.1
+VERSION={{ version form setup.cfg }}
 
 # Python 3.10 bullseye
 docker buildx build --platform linux/amd64,linux/arm64 \
@@ -94,21 +94,11 @@ To use buildx for different architectures you may need to install `QEMU` binarie
 sudo apt install qemu-user-static
 ```
 
-## Pre Release
+## Release Steps
 
-- Create a new branch from `main` called **release-{release_version}**.
-- Remove **dev** from setup.cfg version.
-- Autoformat with black `black -l 100 .` and isort `isort -l 100 .`
-- Merge branch to `main` with a pull request.
-- Create a tag to the merge commit with `git tag -a {VERSION} -m "Release {VERSION}"`
+- Apply formatting and tests running `tox`
+- Create a version tag with `git tag -a {VERSION} -m "Release {VERSION}"`
 - Publish tag with `git push origin {VERSION}`
 - Follow instructions to publish the release to PyPI and Docker Hub.
-
-## Post Release
-
-- Create a new branch from `main` called **prepare-{new_version}-dev**
-- setup.cfg: Update version to **{new_version}-dev**
-- PUBLISH.md: Update docker build instructions with the new version
-- Merge branch to `main` with a pull request.
-
+- setup.cfg: Update version
 
