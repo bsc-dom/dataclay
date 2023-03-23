@@ -1,23 +1,13 @@
 version: '3.9'
 services:
 
-  # etcd:
-  #   image: "bitnami/etcd:latest"
-  #   environment:
-  #     - ALLOW_NONE_AUTHENTICATION=yes
-  #     - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
-  #   ports:
-  #     - 2379:2379
-  #     - 2380:2380
-
   redis:
     image: redis:latest
     ports:
       - 6379:6379
 
-
   metadata-service:
-    image: "bscdataclay/pyclay:dev"
+    image: "ghcr.io/bsc-dom/pyclay:dev"
     depends_on:
       - redis
     ports:
@@ -34,7 +24,7 @@ services:
       - ../../:/pyclay:ro
 
   backend_1:
-    image: "bscdataclay/pyclay:dev"
+    image: "ghcr.io/bsc-dom/pyclay:dev"
     depends_on:
       - redis
     ports:
@@ -49,11 +39,9 @@ services:
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro
-      # - ./model:/workdir/model:ro
-
 
   backend_2:
-    image: "bscdataclay/pyclay:dev"
+    image: "ghcr.io/bsc-dom/pyclay:dev"
     depends_on:
       - redis
     ports:
@@ -68,11 +56,9 @@ services:
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro
-      # - ./model:/workdir/model:ro
-
 
   backend_3:
-    image: "bscdataclay/pyclay:dev"
+    image: "ghcr.io/bsc-dom/pyclay:dev"
     depends_on:
       - redis
     ports:
@@ -87,4 +73,3 @@ services:
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro
-      # - ./model:/workdir/model:ro

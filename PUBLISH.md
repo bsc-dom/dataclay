@@ -48,7 +48,7 @@ python3 -m twine upload dist/*
 
 ### Installing *development* package from TestPyPI
 
-```
+```bash
 python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ dataClay
 ```
 
@@ -57,6 +57,17 @@ python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-u
 
 
 ## Instructions for building and publishing Docker images
+
+First, set up your personal access token and log in to GitHub Packages (ghcr.io)
+```bash
+export CR_PAT=YOUR_TOKEN
+echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
+```
+
+Or just log in if the token is already stored:
+```bash
+docker login ghcr.io
+```
 
 **Release images:**
 ``` bash
@@ -86,6 +97,6 @@ sudo apt install qemu-user-static
 - Apply formatting and tests running `tox`
 - Create a version tag with `git tag -a {VERSION} -m "Release {VERSION}"`
 - Publish tag with `git push origin {VERSION}`
-- Follow instructions to publish the release to PyPI and Docker Hub.
-- setup.cfg: Update version
+- Follow the instructions to publish the release to PyPI and Docker Hub.
+- Update version from setup.cfg
 
