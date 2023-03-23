@@ -15,15 +15,16 @@ class RecursiveLocalPickler(pickle.Pickler):
         file,
         visited_objects: dict[UUID, DataClayObject],
         serialized: list[bytes],
+        recursive: bool = True,
     ):
         super().__init__(file)
         self.visited_objects = visited_objects
         self.serialized = serialized
+        self.recursive = recursive
 
     def persistent_id(self, obj):
         if isinstance(obj, DataClayObject):
-            if obj._dc_is_local:
-
+            if obj._dc_is_local and self.recursive:
                 if obj._dc_id not in self.visited_objects:
                     self.visited_objects[obj._dc_id] = obj
                     f = io.BytesIO()

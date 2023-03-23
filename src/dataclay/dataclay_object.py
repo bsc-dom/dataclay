@@ -297,8 +297,8 @@ class DataClayObject:
         backends.update(self._dc_replica_backend_ids)
         return backends
 
-    def move(self, backend_id: UUID):
-        get_runtime().move_object(self, backend_id)
+    def move(self, backend_id: UUID, recursive: bool = False):
+        get_runtime().move_object(self, backend_id, recursive)
 
     ########################
     # Object Store Methods #

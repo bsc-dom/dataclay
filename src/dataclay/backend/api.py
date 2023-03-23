@@ -217,7 +217,7 @@ class BackendAPI:
             serialized_local_dicts = []
             visited_objects = {instance._dc_id: instance}
 
-            RecursiveLocalPickler(f, visited_objects, serialized_local_dicts).dump(
+            RecursiveLocalPickler(f, visited_objects, serialized_local_dicts, recursive).dump(
                 instance._dc_dict
             )
             serialized_local_dicts.append(f.getvalue())
