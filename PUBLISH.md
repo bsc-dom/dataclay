@@ -59,33 +59,20 @@ python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-u
 ## Instructions for building and publishing Docker images
 
 **Release images:**
-
 ``` bash
 VERSION={{ version form setup.cfg }}
 
 # Python 3.10 bullseye
 docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/pyclay:$VERSION-py3.10-bullseye \
--t bscdataclay/pyclay:$VERSION \
--t bscdataclay/pyclay:latest \
+-t ghcr.io/bsc-dom/pyclay:$VERSION-py3.10-bullseye \
+-t ghcr.io/bsc-dom/pyclay:$VERSION \
+-t ghcr.io/bsc-dom/pyclay:latest \
 --build-arg PYTHON_VERSION=3.10-bullseye --push .
 ```
 
-<!-- NOT SUPPORTED```bash
-# Python 3.10 alpine
-docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/pyclay:$VERSION-py3.10-alpine \
---build-arg PYTHON_VERSION=3.10-alpine --push .
-
-# Python 3.10 slim
-docker buildx build --platform linux/amd64,linux/arm64 \
--t bscdataclay/pyclay:$VERSION-py3.10-slim \
---build-arg PYTHON_VERSION=3.10-slim --push .
-``` -->
-
 **Internal dev testing**
 ```bash
-docker build -t bscdataclay/pyclay:dev -f Dockerfile.dev \
+docker build -t ghcr.io/bsc-dom/pyclay:dev -f Dockerfile.dev \
 --build-arg PYTHON_VERSION=3.10-bullseye .
 ```
 To use buildx for different architectures you may need to install `QEMU` binaries. You can install them with:
