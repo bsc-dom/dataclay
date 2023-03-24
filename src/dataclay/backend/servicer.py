@@ -149,6 +149,16 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             traceback.print_exc()
             return Empty()
 
+    def FlushAll(self, request, context):
+        try:
+            self.backend.flush_all()
+            return Empty()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+
     def SendObject(self, request, context):
 
         try:

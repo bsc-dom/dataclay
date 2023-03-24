@@ -48,6 +48,24 @@ def test_not_recursive_move(client):
     assert person._dc_backend_id == backend_ids[0]
 
 
+def test_move_unload_object(client):
+    """Local non-loaded objects should be moved correctly.
+    First loaded, and then moved with all properties"""
+    backends = client.get_backends()
+    backend_ids = list(backends)
+
+    person = Person("Marc", 24)
+    family = Family(person)
+    family.make_persistent(backend_id=backend_ids[0])
+
+    # call to flush_all to unload all objects
+    backends[backend_ids[0]].flush_all()
+    family.move(backend_ids[1], recursive=True)
+
+    assert person.name == "Marc"  # forcing update of backend_id
+    assert person._dc_backend_id == backend_ids[1]
+
+
 def test_move_reference(client):
     """When moving object to new backend, if that backend already
     has the object as remote object, make it local.

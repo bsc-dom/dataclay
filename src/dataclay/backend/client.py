@@ -5,6 +5,7 @@ import traceback
 from uuid import UUID
 
 import grpc
+from google.protobuf.empty_pb2 import Empty
 from grpc._cython.cygrpc import ChannelArgKey
 
 from dataclay.conf import settings
@@ -169,6 +170,10 @@ class BackendClient:
         )
 
         self.stub.MoveObject(request)
+
+    @grpc_error_handler
+    def flush_all(self):
+        self.stub.FlushAll(Empty())
 
     @grpc_error_handler
     def send_object(self, session_id: UUID, object_id: UUID, serialized_properties):
