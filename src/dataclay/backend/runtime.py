@@ -339,6 +339,9 @@ class BackendRuntime(DataClayRuntime):
     ############
 
     def stop(self):
+        # Remove backend entry from metadata
+        self.metadata_service.delete_backend(settings.DATACLAY_BACKEND_ID)
+
         # Stop HeapManager
         logger.debug("Stopping GC. Sending shutdown event.")
         self.heap_manager.shutdown()

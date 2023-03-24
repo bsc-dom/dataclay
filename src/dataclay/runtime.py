@@ -277,7 +277,7 @@ class DataClayRuntime(ABC):
                     continue
 
             backend_client = BackendClient(info.hostname, info.port)
-            if backend_client.is_ready():
+            if backend_client.is_ready(settings.TIMEOUT_CHANNEL_READY):
                 new_backend_clients[id] = backend_client
             else:
                 del backend_infos[id]

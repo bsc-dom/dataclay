@@ -174,11 +174,6 @@ class DataServiceStub(object):
                 request_serializer=protos_dot_common__messages__pb2.EmptyMessage.SerializeToString,
                 response_deserializer=protos_dot_common__messages__pb2.ExceptionInfo.FromString,
                 )
-        self.shutDown = channel.unary_unary(
-                '/protos.dataservice.DataService/shutDown',
-                request_serializer=protos_dot_common__messages__pb2.EmptyMessage.SerializeToString,
-                response_deserializer=protos_dot_common__messages__pb2.ExceptionInfo.FromString,
-                )
         self.disconnectFromOthers = channel.unary_unary(
                 '/protos.dataservice.DataService/disconnectFromOthers',
                 request_serializer=protos_dot_common__messages__pb2.EmptyMessage.SerializeToString,
@@ -276,6 +271,11 @@ class DataServiceStub(object):
                 )
         self.FlushAll = channel.unary_unary(
                 '/protos.dataservice.DataService/FlushAll',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.Shutdown = channel.unary_unary(
+                '/protos.dataservice.DataService/Shutdown',
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
@@ -475,12 +475,6 @@ class DataServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def shutDown(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
     def disconnectFromOthers(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -599,6 +593,12 @@ class DataServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def FlushAll(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Shutdown(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -762,11 +762,6 @@ def add_DataServiceServicer_to_server(servicer, server):
                     request_deserializer=protos_dot_common__messages__pb2.EmptyMessage.FromString,
                     response_serializer=protos_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
             ),
-            'shutDown': grpc.unary_unary_rpc_method_handler(
-                    servicer.shutDown,
-                    request_deserializer=protos_dot_common__messages__pb2.EmptyMessage.FromString,
-                    response_serializer=protos_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
-            ),
             'disconnectFromOthers': grpc.unary_unary_rpc_method_handler(
                     servicer.disconnectFromOthers,
                     request_deserializer=protos_dot_common__messages__pb2.EmptyMessage.FromString,
@@ -864,6 +859,11 @@ def add_DataServiceServicer_to_server(servicer, server):
             ),
             'FlushAll': grpc.unary_unary_rpc_method_handler(
                     servicer.FlushAll,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'Shutdown': grpc.unary_unary_rpc_method_handler(
+                    servicer.Shutdown,
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
@@ -1406,23 +1406,6 @@ class DataService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def shutDown(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/shutDown',
-            protos_dot_common__messages__pb2.EmptyMessage.SerializeToString,
-            protos_dot_common__messages__pb2.ExceptionInfo.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
     def disconnectFromOthers(request,
             target,
             options=(),
@@ -1757,6 +1740,23 @@ class DataService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/FlushAll',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Shutdown(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/Shutdown',
             google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,

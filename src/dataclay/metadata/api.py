@@ -200,6 +200,11 @@ class MetadataAPI:
         self.kv_manager.set_new(backend)
         logger.info(f"Registered new backend with id={id}, hostname={hostname}, port={port}")
 
+    @tracer.start_as_current_span("register_backend")
+    def delete_backend(self, id: UUID):
+        """Register backend"""
+        self.kv_manager.delete_kv(Backend.path + str(id))
+
     ###################
     # Dataclay Object #
     ###################

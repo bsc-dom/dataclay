@@ -66,6 +66,10 @@ class RedisManager:
 
         return kv_class.from_json(value)
 
+    def delete_kv(self, *names):
+        """Delete one or more keys"""
+        self.r_client.delete(*names)
+
     def getprefix(self, kv_class: KeyValue, prefix):
         """Get a dict for all kv with prefix"""
         result = dict()

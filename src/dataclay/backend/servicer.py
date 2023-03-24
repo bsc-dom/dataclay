@@ -45,13 +45,15 @@ def serve():
         futures.ThreadPoolExecutor(max_workers=settings.THREAD_POOL_WORKERS),
         options=[("grpc.max_send_message_length", -1), ("grpc.max_receive_message_length", -1)],
     )
-    dataservice_pb2_grpc.add_DataServiceServicer_to_server(BackendServicer(backend), server)
+    dataservice_pb2_grpc.add_DataServiceServicer_to_server(
+        BackendServicer(backend, stop_event), server
+    )
 
     address = f"{settings.DATACLAY_BACKEND_LISTEN_ADDRESS}:{settings.DATACLAY_BACKEND_PORT}"
     server.add_insecure_port(address)
     server.start()
 
-    # Autoregister of ExecutionEnvironment to MetadataService
+    # Autoregister of backend to MetadataService
     backend.runtime.metadata_service.register_backend(
         settings.DATACLAY_BACKEND_ID,
         settings.DATACLAY_BACKEND_HOSTNAME,
@@ -71,13 +73,10 @@ def serve():
 
 
 class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
-
-    interceptor = None
-
-    def __init__(self, backend: BackendAPI, interceptor=None):
+    def __init__(self, backend: BackendAPI, stop_event: threading.Event):
         """Execution environment being managed"""
         self.backend = backend
-        BackendServicer.interceptor = interceptor
+        self.stop_event = stop_event
 
     def MakePersistent(self, request, context):
         try:
@@ -134,7 +133,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             return Empty()
 
     def MoveObject(self, request, context):
-
         try:
             self.backend.move_object(
                 UUID(request.session_id),
@@ -159,21 +157,30 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def SendObject(self, request, context):
-
+    def Shutdown(self, request, context):
         try:
-            self.backend.move_object(
-                UUID(request.session_id),
-                UUID(request.object_id),
-                UUID(request.backend_id),
-                request.recursive,
-            )
+            self.stop_event.set()
             return Empty()
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
             return Empty()
+
+    # def SendObject(self, request, context):
+    #     try:
+    #         self.backend.move_object(
+    #             UUID(request.session_id),
+    #             UUID(request.object_id),
+    #             UUID(request.backend_id),
+    #             request.recursive,
+    #         )
+    #         return Empty()
+    #     except Exception as e:
+    #         context.set_details(str(e))
+    #         context.set_code(grpc.StatusCode.INTERNAL)
+    #         traceback.print_exc()
+    #         return Empty()
 
     ###########
     # END NEW #
