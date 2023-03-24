@@ -28,7 +28,8 @@ class RecursiveLocalPickler(pickle.Pickler):
                 if obj._dc_id not in self.visited_objects:
                     self.visited_objects[obj._dc_id] = obj
                     f = io.BytesIO()
-                    # TODO: If not loaded (in backend), we must load it to serialize parameters
+                    if not obj._dc_is_loaded:
+                        get_runtime().load_object_from_db(obj)
                     RecursiveLocalPickler(f, self.visited_objects, self.serialized).dump(
                         obj._dc_dict
                     )

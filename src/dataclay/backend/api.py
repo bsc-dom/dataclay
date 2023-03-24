@@ -224,10 +224,10 @@ class BackendAPI:
             backend_client = self.runtime.get_backend_client(backend_id)
             backend_client.make_persistent(session_id, serialized_local_dicts)
 
-            # TODO: Unload all objects that has been sent in recursive
-            self.runtime.heap_manager.unload_object(object_id)
+            # TODO: Remove pickle file to reduce space
 
             for dc_object in visited_objects.values():
+                self.runtime.heap_manager.release_from_heap(dc_object)
                 dc_object.clean_dc_properties()
                 dc_object._dc_is_local = False
                 dc_object._dc_is_loaded = False
@@ -1004,6 +1004,9 @@ class BackendAPI:
     def stop(self):
         self.runtime.stop()
         # TODO: delete the EE entry in ETCD using MetadataService, or use Lease
+
+    def flush_all(self):
+        self.runtime.heap_manager.flush_all()
 
     #########
     # Tracing
