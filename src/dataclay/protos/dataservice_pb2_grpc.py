@@ -99,11 +99,6 @@ class DataServiceStub(object):
                 request_serializer=protos_dot_dataservice__messages__pb2.ExecuteImplementationRequest.SerializeToString,
                 response_deserializer=protos_dot_dataservice__messages__pb2.ExecuteImplementationResponse.FromString,
                 )
-        self.makePersistent = channel.unary_unary(
-                '/protos.dataservice.DataService/makePersistent',
-                request_serializer=protos_dot_dataservice__messages__pb2.OldMakePersistentRequest.SerializeToString,
-                response_deserializer=protos_dot_common__messages__pb2.ExceptionInfo.FromString,
-                )
         self.federate = channel.unary_unary(
                 '/protos.dataservice.DataService/federate',
                 request_serializer=protos_dot_dataservice__messages__pb2.FederateRequest.SerializeToString,
@@ -378,12 +373,6 @@ class DataServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def executeImplementation(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def makePersistent(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -686,11 +675,6 @@ def add_DataServiceServicer_to_server(servicer, server):
                     servicer.executeImplementation,
                     request_deserializer=protos_dot_dataservice__messages__pb2.ExecuteImplementationRequest.FromString,
                     response_serializer=protos_dot_dataservice__messages__pb2.ExecuteImplementationResponse.SerializeToString,
-            ),
-            'makePersistent': grpc.unary_unary_rpc_method_handler(
-                    servicer.makePersistent,
-                    request_deserializer=protos_dot_dataservice__messages__pb2.OldMakePersistentRequest.FromString,
-                    response_serializer=protos_dot_common__messages__pb2.ExceptionInfo.SerializeToString,
             ),
             'federate': grpc.unary_unary_rpc_method_handler(
                     servicer.federate,
@@ -1147,23 +1131,6 @@ class DataService(object):
         return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/executeImplementation',
             protos_dot_dataservice__messages__pb2.ExecuteImplementationRequest.SerializeToString,
             protos_dot_dataservice__messages__pb2.ExecuteImplementationResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def makePersistent(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/makePersistent',
-            protos_dot_dataservice__messages__pb2.OldMakePersistentRequest.SerializeToString,
-            protos_dot_common__messages__pb2.ExceptionInfo.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

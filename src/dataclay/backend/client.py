@@ -116,10 +116,8 @@ class BackendClient:
         self.stub = None
 
     @grpc_error_handler
-    def make_persistent(self, session_id: UUID, pickled_obj: list[bytes]):
-        request = dataservice_pb2.MakePersistentRequest(
-            session_id=str(session_id), pickled_obj=pickled_obj
-        )
+    def make_persistent(self, pickled_obj: list[bytes]):
+        request = dataservice_pb2.MakePersistentRequest(pickled_obj=pickled_obj)
         self.stub.MakePersistent(request)
 
     @grpc_error_handler
@@ -160,10 +158,9 @@ class BackendClient:
         self.stub.UpdateObject(request)
 
     @grpc_error_handler
-    def move_object(self, session_id: UUID, object_id: UUID, backend_id: UUID, recursive):
+    def move_object(self, object_id: UUID, backend_id: UUID, recursive):
 
         request = dataservice_pb2.MoveObjectRequest(
-            session_id=str(session_id),
             object_id=str(object_id),
             backend_id=str(backend_id),
             recursive=recursive,

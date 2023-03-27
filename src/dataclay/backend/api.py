@@ -91,8 +91,7 @@ class BackendAPI:
         self.update_hints_to_current_ee(objects_data_to_store)
         self.store_in_memory(objects_data_to_store)
 
-    def make_persistent(self, session_id: uuid.UUID, serialized_dicts: list[bytes]):
-        self.set_local_session(session_id)
+    def make_persistent(self, serialized_dicts: list[bytes]):
 
         unserialized_objects = dict()
         for serial_dict in serialized_dicts:
@@ -193,10 +192,7 @@ class BackendAPI:
             self.runtime.load_object_from_db(instance)
             vars(instance).update(object_properties)
 
-    def move_object(self, session_id, object_id, backend_id, recursive):
-        # TODO: Check the session has persmissio for object_id
-        self.set_local_session(session_id)
-
+    def move_object(self, object_id, backend_id, recursive):
         # TODO: check that the object is local to us
         instance = self.runtime.get_object_by_id(object_id)
 
@@ -222,7 +218,7 @@ class BackendAPI:
             )
             serialized_local_dicts.append(f.getvalue())
             backend_client = self.runtime.get_backend_client(backend_id)
-            backend_client.make_persistent(session_id, serialized_local_dicts)
+            backend_client.make_persistent(serialized_local_dicts)
 
             # TODO: Remove pickle file to reduce space
 
@@ -1001,12 +997,43 @@ class BackendAPI:
     # Shutdown
     ##########
 
-    def stop(self):
+    def shutdown(self):
+        self.move_all_objects()
         self.runtime.stop()
-        # TODO: delete the EE entry in ETCD using MetadataService, or use Lease
 
     def flush_all(self):
         self.runtime.heap_manager.flush_all()
+
+    def move_all_objects(self):
+        dc_objects = self.runtime.metadata_service.get_all_objects()
+        self.runtime.update_backend_clients()
+        backends = self.runtime.backend_clients
+
+        num_objects = len(dc_objects)
+        mean = -(num_objects // -(len(backends) - 1))
+
+        backends_objects = {backend_id: [] for backend_id in backends.keys()}
+        for object_md in dc_objects.values():
+            backends_objects[object_md.backend_id].append(object_md.id)
+
+        backends_diff = dict()
+        for backend_id, objects in backends_objects.items():
+            diff = len(objects) - mean
+            backends_diff[backend_id] = diff
+
+        # for backend_id, object_ids in backends_objects.items():
+        #     if backends_diff[backend_id] <= 0:
+        #         continue
+
+        object_ids = backends_objects[self.backend_id]
+
+        for new_backend_id in backends_objects.keys():
+            if new_backend_id == self.backend_id or backends_diff[new_backend_id] >= 0:
+                continue
+            while backends_diff[new_backend_id] < 0:
+                object_id = object_ids.pop()
+                self.move_object(object_id, new_backend_id, None)
+                backends_diff[new_backend_id] += 1
 
     #########
     # Tracing

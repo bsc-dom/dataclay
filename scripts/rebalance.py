@@ -37,7 +37,7 @@ for backend_id, object_ids in backends_objects.items():
         while backends_diff[backend_id] > 0 and backends_diff[new_backend_id] < 0:
             object_id = object_ids.pop()
             backend_client = backends[backend_id]
-            backend_client.move_object(client.session.id, object_id, new_backend_id, None)
+            backend_client.move_object(object_id, new_backend_id, None)
             backends_diff[backend_id] -= 1
             backends_diff[new_backend_id] += 1
 

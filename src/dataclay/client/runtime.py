@@ -81,7 +81,7 @@ class ClientRuntime(DataClayRuntime):
 
         RecursiveLocalPickler(f, visited_objects, serialized_local_dicts).dump(instance._dc_dict)
         serialized_local_dicts.append(f.getvalue())
-        backend_client.make_persistent(self.session.id, serialized_local_dicts)
+        backend_client.make_persistent(serialized_local_dicts)
 
         for dc_object in visited_objects.values():
             dc_object.clean_dc_properties()
@@ -98,7 +98,7 @@ class ClientRuntime(DataClayRuntime):
         object_id = instance._dc_id
         backend_client = self.get_backend_client(instance._dc_backend_id)
 
-        backend_client.move_object(self.session.id, object_id, backend_id, recursive)
+        backend_client.move_object(object_id, backend_id, recursive)
         instance._dc_backend_id = backend_id
 
     #########

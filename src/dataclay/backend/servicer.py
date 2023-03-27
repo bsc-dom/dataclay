@@ -68,7 +68,8 @@ def serve():
     # Wait until stop_event is set. Then, gracefully stop dataclay backend.
     stop_event.wait()
 
-    backend.stop()
+    # TODO: Check if the order can be changed to avoid new calls when shutting down
+    backend.shutdown()
     server.stop(5)
 
 
@@ -80,7 +81,7 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
 
     def MakePersistent(self, request, context):
         try:
-            self.backend.make_persistent(UUID(request.session_id), list(request.pickled_obj))
+            self.backend.make_persistent(list(request.pickled_obj))
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -135,7 +136,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
     def MoveObject(self, request, context):
         try:
             self.backend.move_object(
-                UUID(request.session_id),
                 UUID(request.object_id),
                 UUID(request.backend_id),
                 request.recursive,
