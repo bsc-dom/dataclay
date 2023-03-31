@@ -9,7 +9,7 @@
 
 DATACLAY_VERSION=DevelMarc
 BSC_USER=bsc25877
-PYCLAY_PATH=~/dev/bsc-dom/pyclay
+PYCLAY_PATH=./dataclay
 
 ##############
 

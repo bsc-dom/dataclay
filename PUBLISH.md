@@ -75,15 +75,15 @@ VERSION={{ version form setup.cfg }}
 
 # Python 3.10 bullseye
 docker buildx build --platform linux/amd64,linux/arm64 \
--t ghcr.io/bsc-dom/pyclay:$VERSION-py3.10-bullseye \
--t ghcr.io/bsc-dom/pyclay:$VERSION \
--t ghcr.io/bsc-dom/pyclay:latest \
+-t ghcr.io/bsc-dom/dataclay:$VERSION-py3.10-bullseye \
+-t ghcr.io/bsc-dom/dataclay:$VERSION \
+-t ghcr.io/bsc-dom/dataclay:latest \
 --build-arg PYTHON_VERSION=3.10-bullseye --push .
 ```
 
 **Internal dev testing**
 ```bash
-docker build -t ghcr.io/bsc-dom/pyclay:dev -f Dockerfile.dev \
+docker build -t ghcr.io/bsc-dom/dataclay:dev -f Dockerfile.dev \
 --build-arg PYTHON_VERSION=3.10-bullseye .
 ```
 To use buildx for different architectures you may need to install `QEMU` binaries. You can install them with:

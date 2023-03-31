@@ -7,7 +7,7 @@ services:
       - 6379:6379
 
   metadata-service:
-    image: "ghcr.io/bsc-dom/pyclay:dev"
+    image: "ghcr.io/bsc-dom/dataclay:dev"
     depends_on:
       - redis
     ports:
@@ -24,7 +24,7 @@ services:
       - ../../:/pyclay:ro
 
   backend_1:
-    image: "ghcr.io/bsc-dom/pyclay:dev"
+    image: "ghcr.io/bsc-dom/dataclay:dev"
     depends_on:
       - redis
     ports:
@@ -41,7 +41,7 @@ services:
       - ../../:/pyclay:ro
 
   backend_2:
-    image: "ghcr.io/bsc-dom/pyclay:dev"
+    image: "ghcr.io/bsc-dom/dataclay:dev"
     depends_on:
       - redis
     ports:
@@ -58,7 +58,7 @@ services:
       - ../../:/pyclay:ro
 
   backend_3:
-    image: "ghcr.io/bsc-dom/pyclay:dev"
+    image: "ghcr.io/bsc-dom/dataclay:dev"
     depends_on:
       - redis
     ports:

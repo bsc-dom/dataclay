@@ -1,8 +1,8 @@
-[![Tests](https://github.com/bsc-dom/pyclay/actions/workflows/tests.yml/badge.svg)](https://github.com/bsc-dom/pyclay/actions/workflows/tests.yml)
+[![Tests](https://github.com/bsc-dom/dataclay/actions/workflows/tests.yml/badge.svg)](https://github.com/bsc-dom/dataclay/actions/workflows/tests.yml)
 [![Documentation Status](https://readthedocs.org/projects/pyclay/badge/?version=latest)](https://pyclay.readthedocs.io/en/latest/?badge=latest)
 ![PyPI - Status](https://img.shields.io/pypi/status/dataclay)
 ![PyPI - Format](https://img.shields.io/pypi/format/dataclay)
-[![License](https://img.shields.io/github/license/bsc-dom/pyclay)](https://github.com/bsc-dom/pyclay/blob/main/LICENSE.txt)
+[![License](https://img.shields.io/github/license/bsc-dom/dataclay)](https://github.com/bsc-dom/dataclay/blob/main/LICENSE.txt)
 [![PyPI version](https://badge.fury.io/py/dataClay.png)](https://badge.fury.io/py/dataClay)
 [![Pypi Downloads](https://pepy.tech/badge/dataclay)](https://pepy.tech/project/dataclay)
 
