@@ -1,5 +1,6 @@
-import numpy as np
 import argparse
+
+import numpy as np
 
 # Using argparse, read the number of matrices ,the size of the matrices and the path to the folder
 parser = argparse.ArgumentParser(description="Matrix Generator")

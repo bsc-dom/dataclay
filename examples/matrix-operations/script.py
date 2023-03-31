@@ -4,9 +4,8 @@ import time
 from multiprocessing import Lock
 from threading import Thread
 
-from dataclay.contrib.modeltest.matrix import Matrix
-
 import dataclay
+from dataclay.contrib.modeltest.matrix import Matrix
 
 print_lock = Lock()
 
