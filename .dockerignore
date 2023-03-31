@@ -1,0 +1,15 @@
+# In .dockerignore
+# Exclude everything:
+#
+*
+
+# Now un-exclude:
+#
+!src
+!setup.py
+!setup.cfg
+!pyproject.toml
+!README.md
+!MANIFEST.in
+!requirements.txt
+.dockerignore

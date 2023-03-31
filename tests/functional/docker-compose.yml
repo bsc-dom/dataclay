@@ -1,0 +1,75 @@
+version: '3.9'
+services:
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+
+  metadata-service:
+    image: "ghcr.io/bsc-dom/pyclay:dev"
+    depends_on:
+      - redis
+    ports:
+      - 16587:16587
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_KV_PORT=6379
+      - DATACLAY_ID
+      - DATACLAY_PASSWORD
+      - DATACLAY_USERNAME
+      - DATACLAY_METADATA_PORT=16587
+    command: python -m dataclay.metadata
+    volumes:
+      - ../../:/pyclay:ro
+
+  backend_1:
+    image: "ghcr.io/bsc-dom/pyclay:dev"
+    depends_on:
+      - redis
+    ports:
+      - 6867:6867
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_KV_PORT=6379
+      - DATACLAY_BACKEND_ID
+      - DATACLAY_BACKEND_NAME
+      - DATACLAY_BACKEND_PORT=6867
+      - DEBUG=true
+    command: python -m dataclay.backend
+    volumes:
+      - ../../:/pyclay:ro
+
+  backend_2:
+    image: "ghcr.io/bsc-dom/pyclay:dev"
+    depends_on:
+      - redis
+    ports:
+      - 6868:6868
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_KV_PORT=6379
+      - DATACLAY_BACKEND_ID
+      - DATACLAY_BACKEND_NAME
+      - DATACLAY_BACKEND_PORT=6868
+      - DEBUG=true
+    command: python -m dataclay.backend
+    volumes:
+      - ../../:/pyclay:ro
+
+  backend_3:
+    image: "ghcr.io/bsc-dom/pyclay:dev"
+    depends_on:
+      - redis
+    ports:
+      - 6869:6869
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_KV_PORT=6379
+      - DATACLAY_BACKEND_ID
+      - DATACLAY_BACKEND_NAME
+      - DATACLAY_BACKEND_PORT=6869
+      - DEBUG=true
+    command: python -m dataclay.backend
+    volumes:
+      - ../../:/pyclay:ro
