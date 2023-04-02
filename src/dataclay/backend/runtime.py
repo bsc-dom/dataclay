@@ -16,11 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 class BackendRuntime(DataClayRuntime):
-
     is_backend = True
 
     def __init__(self, kv_host, kv_port):
-
         # Initialize parent
         metadata_service = MetadataAPI(kv_host, kv_port)
         super().__init__(metadata_service)
@@ -52,6 +50,12 @@ class BackendRuntime(DataClayRuntime):
     @session.setter
     def session(self, value):
         self.thread_local_data.session = value
+
+    def set_session_by_id(self, session_id):
+        session = self.metadata_service.get_session(session_id)
+        self.session = session
+
+    # Heap
 
     def add_to_heap(self, instance: DataClayObject):
         self.inmemory_objects[instance._dc_id] = instance
@@ -116,9 +120,7 @@ class BackendRuntime(DataClayRuntime):
 
         return instance._dc_backend_id
 
-    #########
-    # Alias #
-    #########
+    # Alias
 
     def delete_alias(self, instance):
         alias = instance._dc_alias
@@ -126,9 +128,23 @@ class BackendRuntime(DataClayRuntime):
             self.delete_alias_in_dataclay(alias, instance._dc_dataset_name)
             instance._dc_alias = None
 
-    #####################
-    # Garbage collector #
-    #####################
+    # Shutdown
+
+    def stop(self):
+        # Remove backend entry from metadata
+        self.metadata_service.delete_backend(settings.DATACLAY_BACKEND_ID)
+
+        # Stop HeapManager
+        logger.debug("Stopping GC. Sending shutdown event.")
+        self.heap_manager.shutdown()
+        logger.debug("Waiting for GC.")
+        self.heap_manager.join()
+        logger.debug("GC stopped.")
+
+        self.close_backend_clients()
+        self.heap_manager.flush_all()
+
+    # Garbage collector
 
     def add_session_reference(self, object_id):
         """
@@ -185,14 +201,6 @@ class BackendRuntime(DataClayRuntime):
                 if len(sessions_of_obj) == 0:
                     del self.references_hold_by_sessions[object_id]
 
-    def close_session_in_ee(self, session_id):
-        """Close session in EE. Subtract session references for GC."""
-
-        logger.debug(f"[==DGC==] Closing session {session_id}")
-
-        """ Closing session means set expiration date to now """
-        self.session_expires_dates[session_id] = datetime.datetime.now()
-
     def get_retained_references(self):
         """
         @summary Get retained refs by this EE
@@ -220,7 +228,6 @@ class BackendRuntime(DataClayRuntime):
             sessions_of_obj = self.references_hold_by_sessions.get(oid)
             """ create a copy of the list to avoid modification issues while iterating and concurrence problems """
             for cur_session in list(sessions_of_obj):
-
                 """check session expired"""
                 session_expired = False
                 expired_date = self.session_expires_dates.get(cur_session)
@@ -279,9 +286,7 @@ class BackendRuntime(DataClayRuntime):
 
         return retained_refs
 
-    ############
-    # Replicas #
-    ############
+    # Replicas
 
     def synchronize(self, instance, operation_name, params):
         raise Exception("To refactor")
@@ -302,9 +307,7 @@ class BackendRuntime(DataClayRuntime):
             session_id, object_id, implementation_id, serialized_params
         )
 
-    ###############
-    # Federations #
-    ###############
+    # Federations
 
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
         raise Exception("To refactor")
@@ -333,21 +336,3 @@ class BackendRuntime(DataClayRuntime):
         self.execution_environment.unfederate(
             session_id, object_id, external_execution_environment_id, recursive
         )
-
-    ############
-    # Shutdown #
-    ############
-
-    def stop(self):
-        # Remove backend entry from metadata
-        self.metadata_service.delete_backend(settings.DATACLAY_BACKEND_ID)
-
-        # Stop HeapManager
-        logger.debug("Stopping GC. Sending shutdown event.")
-        self.heap_manager.shutdown()
-        logger.debug("Waiting for GC.")
-        self.heap_manager.join()
-        logger.debug("GC stopped.")
-
-        self.close_backend_clients()
-        self.heap_manager.flush_all()

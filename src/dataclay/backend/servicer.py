@@ -120,9 +120,7 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
 
     def UpdateObject(self, request, context):
         try:
-            self.backend.update_object(
-                UUID(request.session_id), UUID(request.object_id), request.serialized_properties
-            )
+            self.backend.update_object(UUID(request.object_id), request.serialized_properties)
             return Empty()
         except Exception as e:
             context.set_details(str(e))

@@ -306,7 +306,7 @@ class DataClayRuntime(ABC):
         backend_client = self.get_backend_client(backend_id)
 
         serialized_properties = pickle.dumps(new_instance._dc_properties)
-        backend_client.update_object(self.session.id, instance._dc_id, serialized_properties)
+        backend_client.update_object(instance._dc_id, serialized_properties)
 
     #####################
     # Garbage collector #

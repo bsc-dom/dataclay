@@ -71,11 +71,7 @@ class BackendAPI:
             except KeyError:
                 return False
 
-    ##############
-    ##############
-    # gRPC - API #
-    ##############
-    ##############
+    # Object Methods
 
     def make_persistent(self, serialized_dicts: list[bytes]):
         unserialized_objects = dict()
@@ -107,8 +103,8 @@ class BackendAPI:
             proxy_object._dc_is_registered = True
 
     def call_active_method(self, session_id, object_id, method_name, args, kwargs):
-        # NOTE: Session (dataset) is needed for make_persistents insdie dc_methods.
-        self.set_local_session(session_id)
+        # NOTE: Session (dataset) is needed for make_persistents inside dc_methods.
+        self.runtime.set_session_by_id(session_id)
         instance = self.runtime.get_object_by_id(object_id)
 
         # NOTE: When the object is not local, a custom exception is sent
@@ -130,9 +126,7 @@ class BackendAPI:
         except Exception as e:
             return pickle.dumps(e), True
 
-    #################
-    # Store Methods #
-    #################
+    # Store Methods
 
     def get_copy_of_object(self, object_id, recursive):
         """Returns a non-persistent copy of the object with ID provided
@@ -154,19 +148,8 @@ class BackendAPI:
 
         return serialized_properties
 
-    def update_object(self, session_id, object_id, serialized_properties):
-        # raise ("update_object need to be refactored")
-        """Updates an object with ID provided with contents from another object
-
-        Args:
-            session_id: ID of session
-            object_id: ID of the object to be updated
-            serialized_properties: Serialized dc_properties
-        """
-
-        # TODO: Check the session has persmissio for object_id
-        self.set_local_session(session_id)
-
+    def update_object(self, object_id, serialized_properties):
+        """Updates an object with ID provided with contents from another object"""
         instance = self.runtime.get_object_by_id(object_id)
         object_properties = pickle.loads(serialized_properties)
 
@@ -211,50 +194,55 @@ class BackendAPI:
                 dc_object._dc_is_loaded = False
                 dc_object._dc_backend_id = backend_id
 
-    ##################
-    ##################
-    # Helper methods #
-    ##################
-    ##################
+    # Alias
 
-    # Session
+    def delete_alias(self, session_id, object_id):
+        raise Exception("To refactor.")
+        self.set_local_session(session_id)
+        instance = self.get_local_instance(object_id, True)
+        self.runtime.delete_alias(instance)
 
-    # TODO: Move it to the runtime
-    def set_local_session(self, session_id: uuid.UUID):
-        """Check and set the session to thread_local_data.
+    # Shutdown
 
-        Args:
-            session_id: The session's UUID.
-        """
-        session = self.runtime.metadata_service.get_session(session_id)
-        self.runtime.session = session
+    def shutdown(self):
+        self.move_all_objects()
+        self.runtime.stop()
 
-    # Metadata
+    def flush_all(self):
+        self.runtime.heap_manager.flush_all()
 
-    # TODO: Move it to the runtime
-    def get_object_metadata(self, object_id):
-        """Get the MetaDataInfo for a certain object.
+    def move_all_objects(self):
+        dc_objects = self.runtime.metadata_service.get_all_objects()
+        self.runtime.update_backend_clients()
+        backends = self.runtime.backend_clients
 
-        If we have it available in the cache, return it. Otherwise, call the
-        MetadataService for it.
+        num_objects = len(dc_objects)
+        mean = -(num_objects // -(len(backends) - 1))
 
-        Args:
-            object_id: The ID of the persistent object
+        backends_objects = {backend_id: [] for backend_id in backends.keys()}
+        for object_md in dc_objects.values():
+            backends_objects[object_md.backend_id].append(object_md.id)
 
-        Returns:
-            The MetaData for the given object.
-        """
+        backends_diff = dict()
+        for backend_id, objects in backends_objects.items():
+            diff = len(objects) - mean
+            backends_diff[backend_id] = diff
 
-        logger.info(f"Getting MetaData for object {object_id}")
+        # for backend_id, object_ids in backends_objects.items():
+        #     if backends_diff[backend_id] <= 0:
+        #         continue
 
-        try:
-            return self.runtime.inmemory_objects[object_id].metadata
-        except KeyError:
-            return self.runtime.metadata_service.get_object_md_by_id(object_id)
+        object_ids = backends_objects[self.backend_id]
 
-    ##########
+        for new_backend_id in backends_objects.keys():
+            if new_backend_id == self.backend_id or backends_diff[new_backend_id] >= 0:
+                continue
+            while backends_diff[new_backend_id] < 0:
+                object_id = object_ids.pop()
+                self.move_object(object_id, new_backend_id, None)
+                backends_diff[new_backend_id] += 1
+
     # Replicas
-    ##########
 
     def new_replica(self, session_id, object_id, dest_backend_id, recursive):
         """Creates a new replica of the object with ID provided in the backend specified.
@@ -325,9 +313,7 @@ class BackendAPI:
                     )
         logger.debug(f"----> Finished synchronization of {object_id}")
 
-    ############
     # Federation
-    ############
 
     def federate(self, session_id, object_id, external_execution_env_id, recursive):
         """Federate object with id provided to external execution env id specified
@@ -475,9 +461,7 @@ class BackendAPI:
             raise e
         logger.debug("<--- Finished notification of unfederation")
 
-    ###############
     # Update Object
-    ###############
 
     def get_objects(
         self,
@@ -835,7 +819,6 @@ class BackendAPI:
             session_id: ID of session needed.
             object_ids_and_bytes: Map of objects to update.
         """
-        self.set_local_session()
 
         try:
             objects_in_other_backends = list()
@@ -927,70 +910,13 @@ class BackendAPI:
     def get_retained_references(self):
         return self.runtime.get_retained_references()
 
-    def close_session_in_ee(self, session_id):
-        self.runtime.close_session_in_ee(session_id)
-
     def detach_object_from_session(self, object_id, session_id):
         logger.debug(f"--> Detaching object {object_id} from session {session_id}")
         self.set_local_session(session_id)
         self.runtime.detach_object_from_session(object_id, None)
         logger.debug(f"<-- Detached object {object_id} from session {session_id}")
 
-    #######
-    # Alias
-    #######
-
-    def delete_alias(self, session_id, object_id):
-        raise Exception("To refactor.")
-        self.set_local_session(session_id)
-        instance = self.get_local_instance(object_id, True)
-        self.runtime.delete_alias(instance)
-
-    ##########
-    # Shutdown
-    ##########
-
-    def shutdown(self):
-        self.move_all_objects()
-        self.runtime.stop()
-
-    def flush_all(self):
-        self.runtime.heap_manager.flush_all()
-
-    def move_all_objects(self):
-        dc_objects = self.runtime.metadata_service.get_all_objects()
-        self.runtime.update_backend_clients()
-        backends = self.runtime.backend_clients
-
-        num_objects = len(dc_objects)
-        mean = -(num_objects // -(len(backends) - 1))
-
-        backends_objects = {backend_id: [] for backend_id in backends.keys()}
-        for object_md in dc_objects.values():
-            backends_objects[object_md.backend_id].append(object_md.id)
-
-        backends_diff = dict()
-        for backend_id, objects in backends_objects.items():
-            diff = len(objects) - mean
-            backends_diff[backend_id] = diff
-
-        # for backend_id, object_ids in backends_objects.items():
-        #     if backends_diff[backend_id] <= 0:
-        #         continue
-
-        object_ids = backends_objects[self.backend_id]
-
-        for new_backend_id in backends_objects.keys():
-            if new_backend_id == self.backend_id or backends_diff[new_backend_id] >= 0:
-                continue
-            while backends_diff[new_backend_id] < 0:
-                object_id = object_ids.pop()
-                self.move_object(object_id, new_backend_id, None)
-                backends_diff[new_backend_id] += 1
-
-    #########
     # Tracing
-    #########
 
     def activate_tracing(self, task_id):
         if not extrae_tracing_is_enabled():
@@ -1004,7 +930,3 @@ class BackendAPI:
     def get_traces(self):
         logger.debug("Merging...")
         return get_traces()
-
-    ################## EXTRAE IGNORED FUNCTIONS ###########################
-    deactivate_tracing.do_not_trace = True
-    activate_tracing.do_not_trace = True

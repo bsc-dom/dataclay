@@ -148,9 +148,8 @@ class BackendClient:
         return response.value
 
     @grpc_error_handler
-    def update_object(self, session_id: UUID, object_id: UUID, serialized_properties):
+    def update_object(self, object_id: UUID, serialized_properties):
         request = dataservice_pb2.UpdateObjectRequest(
-            session_id=str(session_id),
             object_id=str(object_id),
             serialized_properties=serialized_properties,
         )
