@@ -138,9 +138,8 @@ class BackendClient:
     #################
 
     @grpc_error_handler
-    def get_copy_of_object(self, session_id: UUID, object_id: UUID, recursive):
+    def get_copy_of_object(self, object_id: UUID, recursive):
         request = dataservice_pb2.GetCopyOfObjectRequest(
-            session_id=str(session_id),
             object_id=str(object_id),
             recursive=recursive,
         )
@@ -159,7 +158,6 @@ class BackendClient:
 
     @grpc_error_handler
     def move_object(self, object_id: UUID, backend_id: UUID, recursive):
-
         request = dataservice_pb2.MoveObjectRequest(
             object_id=str(object_id),
             backend_id=str(backend_id),
@@ -178,7 +176,6 @@ class BackendClient:
 
     @grpc_error_handler
     def send_object(self, session_id: UUID, object_id: UUID, serialized_properties):
-
         request = dataservice_pb2.MoveObjectRequest(
             session_id=str(session_id),
             object_id=str(object_id),
@@ -193,7 +190,6 @@ class BackendClient:
     ###########
 
     def ds_store_objects(self, session_id, objects, moving, ids_with_alias):
-
         raise ("To Refactor")
         obj_list = []
         id_with_alias_list = []
@@ -232,7 +228,6 @@ class BackendClient:
         dest_backend_id,
         update_replica_locs,
     ):
-
         raise ("To refactor")
         object_ids_list = []
         for oid in object_ids:
@@ -296,7 +291,6 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def ds_upsert_objects(self, session_id, object_bytes):
-
         raise ("To refactor")
         obj_byt_list = []
         for entry in object_bytes:
@@ -332,7 +326,6 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def unfederate(self, session_id, object_id, external_execution_env_id, recursive):
-
         request = dataservice_messages_pb2.UnfederateRequest(
             sessionID=str(session_id),
             objectID=str(object_id),
@@ -405,7 +398,6 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def new_replica(self, session_id, object_id, dest_backend_id, recursive):
-
         request = dataservice_messages_pb2.NewReplicaRequest(
             sessionID=str(session_id),
             objectID=str(object_id),
@@ -430,7 +422,6 @@ class BackendClient:
         return result
 
     def ds_remove_objects(self, session_id, object_ids, recursive, moving, new_hint):
-
         obj_ids_list = []
         for oid in object_ids:
             obj_ids_list.append(str(oid))
@@ -460,7 +451,6 @@ class BackendClient:
         return result
 
     def ds_migrate_objects_to_backends(self, back_ends):
-
         raise ("To refactor")
 
         back_ends_dict = dict()

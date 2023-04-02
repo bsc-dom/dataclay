@@ -77,22 +77,7 @@ class BackendAPI:
     ##############
     ##############
 
-    def store_objects(self, session_id, objects_data_to_store, moving, ids_with_alias):
-        """Store objects in DB
-
-        Args:
-            session_id: ID of session storing objects
-            objects_data_to_store: Objects Data to store
-            moving: Indicates if store is done during a move
-            ids_with_alias: IDs with alias
-        """
-        self.set_local_session(session_id)
-
-        self.update_hints_to_current_ee(objects_data_to_store)
-        self.store_in_memory(objects_data_to_store)
-
     def make_persistent(self, serialized_dicts: list[bytes]):
-
         unserialized_objects = dict()
         for serial_dict in serialized_dicts:
             object_dict = RecursiveLocalUnpickler(
@@ -122,6 +107,7 @@ class BackendAPI:
             proxy_object._dc_is_registered = True
 
     def call_active_method(self, session_id, object_id, method_name, args, kwargs):
+        # NOTE: Session (dataset) is needed for make_persistents insdie dc_methods.
         self.set_local_session(session_id)
         instance = self.runtime.get_object_by_id(object_id)
 
@@ -148,19 +134,15 @@ class BackendAPI:
     # Store Methods #
     #################
 
-    def get_copy_of_object(self, session_id, object_id, recursive):
+    def get_copy_of_object(self, object_id, recursive):
         """Returns a non-persistent copy of the object with ID provided
 
         Args:
-            session_id: ID of session
             object_id: ID of the object
         Returns:
             the generated non-persistent objects
         """
         # TODO: Implement recursive option
-        # TODO: Check the session has persmissio for object_id
-        self.set_local_session(session_id)
-
         instance = self.runtime.get_object_by_id(object_id)
 
         # Lock to avoid unloading after the object is loaded
@@ -269,35 +251,6 @@ class BackendAPI:
             return self.runtime.inmemory_objects[object_id].metadata
         except KeyError:
             return self.runtime.metadata_service.get_object_md_by_id(object_id)
-
-    def store_in_memory(self, objects_to_store):
-        """This function will deserialize objects into dataClay memory heap using the same design as for
-        volatile parameters. Eventually, dataClay GC will collect them, and then they will be
-        registered in LogicModule if needed (if objects were created with alias, they must
-        have metadata already).
-
-        Args:
-            session_id: ID of session of make persistent call
-            objects_to_store: objects to store.
-        """
-
-        # No need to provide params specs or param order since objects are not language types
-        vol_objs = dict()
-        i = 0
-        for object_to_store in objects_to_store:
-            vol_objs[i] = object_to_store
-            i = i + 1
-        return DeserializationLibUtilsSingleton.deserialize_params(
-            SerializedParametersOrReturn(num_params=i, vol_objs=vol_objs),
-            None,
-            None,
-            None,
-            self.runtime,
-        )
-
-    ######
-    # Move
-    ######
 
     ##########
     # Replicas

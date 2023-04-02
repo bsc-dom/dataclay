@@ -18,7 +18,6 @@ from dataclay.exceptions import *
 from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 
 if TYPE_CHECKING:
-
     from dataclay.backend.runtime import BackendRuntime
     from dataclay.client.runtime import ClientRuntime
     from dataclay.dataclay_object import DataClayObject
@@ -106,7 +105,6 @@ class UUIDLock_old(AbstractContextManager):
 
 class DataClayRuntime(ABC):
     def __init__(self, metadata_service: MetadataAPI | MetadataClient):
-
         self.backend_clients: dict[UUID, BackendClient] = dict()
         self._dataclay_id = None
         self.metadata_service = metadata_service
@@ -158,7 +156,6 @@ class DataClayRuntime(ABC):
                 try:
                     return self.inmemory_objects[object_id]
                 except KeyError:
-
                     # NOTE: When the object is not in the inmemory_objects,
                     # we get the object metadata from etcd, and create a new proxy
                     # object from it.
@@ -240,7 +237,6 @@ class DataClayRuntime(ABC):
     #########
 
     def delete_alias_in_dataclay(self, alias, dataset_name):
-
         if dataset_name is None:
             dataset_name = self.session.dataset_name
 
@@ -293,9 +289,7 @@ class DataClayRuntime(ABC):
         backend_id = instance._dc_backend_id
         backend_client = self.get_backend_client(backend_id)
 
-        serialized_properties = backend_client.get_copy_of_object(
-            self.session.id, instance._dc_id, recursive
-        )
+        serialized_properties = backend_client.get_copy_of_object(instance._dc_id, recursive)
         object_properties = pickle.loads(serialized_properties)
 
         proxy_object = instance._dc_class.new_proxy_object()

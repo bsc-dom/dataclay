@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 
 
 def serve():
-
     stop_event = threading.Event()
 
     backend = BackendAPI(
@@ -111,9 +110,7 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
 
     def GetCopyOfObject(self, request, context):
         try:
-            result = self.backend.get_copy_of_object(
-                UUID(request.session_id), UUID(request.object_id), request.recursive
-            )
+            result = self.backend.get_copy_of_object(UUID(request.object_id), request.recursive)
             return BytesValue(value=result)
         except Exception as e:
             context.set_details(str(e))
@@ -186,27 +183,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
     # END NEW #
     ###########
 
-    def storeObjects(self, request, context):
-
-        raise ("To refactor")
-        try:
-            objects_list = []
-            for vol_param in request.objects:
-                param = Utils.get_obj_with_data_param_or_return(vol_param)
-                objects_list.append(param)
-
-            ids_with_alias_set = set()
-            session_id = UUID(request.sessionID)
-            if request.idsWithAlias is not None and len(request.idsWithAlias) > 0:
-                for ids_with_alias in request.idsWithAlias:
-                    ids_with_alias_set.add(UUID(ids_with_alias))
-
-            self.backend.store_objects(session_id, objects_list, request.moving, ids_with_alias_set)
-            return common_messages_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            return self.get_exception_info(ex)
-
     def synchronize(self, request, context):
         raise ("To refactor")
         try:
@@ -268,7 +244,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             return dataservice_messages_pb2.NewVersionResponse(excInfo=self.get_exception_info(ex))
 
     def consolidateVersion(self, request, context):
-
         try:
             self.backend.consolidate_version(UUID(request.sessionID), UUID(request.versionObjectID))
 
@@ -278,7 +253,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             return self.get_exception_info(ex)
 
     def upsertObjects(self, request, context):
-
         try:
             session_id = UUID(request.sessionID)
 
@@ -313,7 +287,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             return dataservice_messages_pb2.NewReplicaResponse(excInfo=self.get_exception_info(ex))
 
     def removeObjects(self, request, context):
-
         try:
             object_ids = set()
 
@@ -349,7 +322,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
 
     def updateRefs(self, request, context):
         try:
-
             """deserialize into dictionary of object id - integer"""
             ref_counting = dict()
             for serialized_oid, counter in request.refsToUpdate.items():
@@ -364,7 +336,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
 
     def getRetainedReferences(self, request, context):
         try:
-
             result = self.backend.get_retained_references()
             retained_refs = []
 
@@ -402,7 +373,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             return self.get_exception_info(ex)
 
     def migrateObjectsToBackends(self, request, context):
-
         try:
             backends = dict()
 
@@ -511,7 +481,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
 
     def activateTracing(self, request, context):
         try:
-
             self.backend.activate_tracing(request.taskid)
             return common_messages_pb2.ExceptionInfo()
 
