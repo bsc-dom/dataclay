@@ -306,12 +306,12 @@ class DataClayObject:
 
     @classmethod
     def dc_clone_by_alias(cls, alias, recursive=False):
-        o = cls.get_by_alias(alias)
-        return o.dc_clone(recursive)
+        instance = cls.get_by_alias(alias)
+        return get_runtime().get_object_copy(instance, recursive)
 
     def dc_clone(self, recursive=False):
         """Returns a non-persistent object as a copy of the current object"""
-        return get_runtime().get_copy_of_object(self, recursive)
+        return get_runtime().get_object_copy(self, recursive)
 
     @classmethod
     def dc_update_by_alias(cls, alias, from_object):
@@ -319,10 +319,7 @@ class DataClayObject:
         return o.dc_update(from_object)
 
     def dc_update(self, from_object):
-        """
-        @postcondition: Updates all fields of this object with the values of the specified object
-        @param from_object: instance from which values must be retrieved to set fields of current object
-        """
+        """Updates all fields of this object with the values of the specified object"""
         if from_object is None:
             return
         else:
@@ -333,8 +330,19 @@ class DataClayObject:
             raise AttributeError("Alias cannot be null or empty")
         get_runtime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
-    # TODO: Rename it to get_id ??
-    def getID(self):
+    # Versioning
+
+    def new_version(self, backend_id=None, recursive=False):
+        object_copy = get_runtime().get_object_copy(self, recursive)
+        object_copy._dc_original = self
+        get_runtime().make_persistent(object_copy, None, backend_id, recursive)
+        return object_copy
+
+    def consolidate_version(self):
+        """Consolidate: copy contents of current version object to original object"""
+        get_runtime().update_object(self._dc_original, self)
+
+    def get_id(self):
         """Return the string representation of the persistent object for COMPSs.
 
         dataClay specific implementation: The objects are internally represented
@@ -364,21 +372,6 @@ class DataClayObject:
         return get_runtime().new_replica(
             self._dc_id, self._dc_backend_id, backend_id, None, recursive
         )
-
-    def new_version(self, backend_id=None, recursive=True):
-        return get_runtime().new_version(
-            self._dc_id,
-            self._dc_backend_id,
-            self._dc_class_name,
-            self._dc_dataset_name,
-            backend_id,
-            None,
-            recursive,
-        )
-
-    def consolidate_version(self):
-        """Consolidate: copy contents of current version object to original object"""
-        return get_runtime().consolidate_version(self._dc_id, self._dc_backend_id)
 
     def set_all(self, from_object):
         raise ("set_all need to be refactored")

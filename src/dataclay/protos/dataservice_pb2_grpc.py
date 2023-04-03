@@ -244,9 +244,9 @@ class DataServiceStub(object):
                 request_serializer=protos_dot_dataservice__pb2.CallActiveMethodRequest.SerializeToString,
                 response_deserializer=protos_dot_dataservice__pb2.CallActiveMethodResponse.FromString,
                 )
-        self.GetCopyOfObject = channel.unary_unary(
-                '/protos.dataservice.DataService/GetCopyOfObject',
-                request_serializer=protos_dot_dataservice__pb2.GetCopyOfObjectRequest.SerializeToString,
+        self.GetObjectProperties = channel.unary_unary(
+                '/protos.dataservice.DataService/GetObjectProperties',
+                request_serializer=protos_dot_dataservice__pb2.GetObjectPropertiesRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BytesValue.FromString,
                 )
         self.UpdateObject = channel.unary_unary(
@@ -562,7 +562,7 @@ class DataServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetCopyOfObject(self, request, context):
+    def GetObjectProperties(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -832,9 +832,9 @@ def add_DataServiceServicer_to_server(servicer, server):
                     request_deserializer=protos_dot_dataservice__pb2.CallActiveMethodRequest.FromString,
                     response_serializer=protos_dot_dataservice__pb2.CallActiveMethodResponse.SerializeToString,
             ),
-            'GetCopyOfObject': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetCopyOfObject,
-                    request_deserializer=protos_dot_dataservice__pb2.GetCopyOfObjectRequest.FromString,
+            'GetObjectProperties': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetObjectProperties,
+                    request_deserializer=protos_dot_dataservice__pb2.GetObjectPropertiesRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.BytesValue.SerializeToString,
             ),
             'UpdateObject': grpc.unary_unary_rpc_method_handler(
@@ -1644,7 +1644,7 @@ class DataService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetCopyOfObject(request,
+    def GetObjectProperties(request,
             target,
             options=(),
             channel_credentials=None,
@@ -1654,8 +1654,8 @@ class DataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/GetCopyOfObject',
-            protos_dot_dataservice__pb2.GetCopyOfObjectRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/GetObjectProperties',
+            protos_dot_dataservice__pb2.GetObjectPropertiesRequest.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.BytesValue.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

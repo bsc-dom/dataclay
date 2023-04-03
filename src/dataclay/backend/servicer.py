@@ -108,9 +108,9 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
     # Store Methods #
     #################
 
-    def GetCopyOfObject(self, request, context):
+    def GetObjectProperties(self, request, context):
         try:
-            result = self.backend.get_copy_of_object(UUID(request.object_id), request.recursive)
+            result = self.backend.get_object_properties(UUID(request.object_id), request.recursive)
             return BytesValue(value=result)
         except Exception as e:
             context.set_details(str(e))
@@ -219,47 +219,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
         except Exception as ex:
             traceback.print_exc()
             return dataservice_messages_pb2.GetObjectsResponse(excInfo=self.get_exception_info(ex))
-
-    def newVersion(self, request, context):
-        raise ("To refactor")
-        try:
-            version_object_id = self.backend.new_version(
-                UUID(request.sessionID),
-                UUID(request.objectID),
-                UUID(request.destBackendID),
-            )
-
-            return dataservice_messages_pb2.NewVersionResponse(
-                objectID=Utils.get_msg_id(version_object_id)
-            )
-
-        except Exception as ex:
-            traceback.print_exc()
-            return dataservice_messages_pb2.NewVersionResponse(excInfo=self.get_exception_info(ex))
-
-    def consolidateVersion(self, request, context):
-        try:
-            self.backend.consolidate_version(UUID(request.sessionID), UUID(request.versionObjectID))
-
-            return common_messages_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            return self.get_exception_info(ex)
-
-    def upsertObjects(self, request, context):
-        try:
-            session_id = UUID(request.sessionID)
-
-            objects = []
-            for entry in request.bytesUpdate:
-                objects.append(Utils.get_obj_with_data_param_or_return(entry))
-
-            self.backend.upsert_objects(session_id, objects)
-
-            return common_messages_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            return self.get_exception_info(ex)
 
     def newReplica(self, request, context):
         raise ("To refactor")

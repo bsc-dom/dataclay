@@ -126,9 +126,7 @@ class DataClayRuntime(ABC):
     def is_backend(self):
         pass
 
-    ##
     # Common runtime API
-    ##
 
     @abstractmethod
     def make_persistent(self, instance, alias, backend_id, recursive):
@@ -280,12 +278,11 @@ class DataClayRuntime(ABC):
     # Store Methods #
     #################
 
-    # NOTE: Maybe it should be only in client runtime ¿?
-    def get_copy_of_object(self, instance, recursive):
+    def get_object_copy(self, instance, recursive):
         backend_id = instance._dc_backend_id
         backend_client = self.get_backend_client(backend_id)
 
-        serialized_properties = backend_client.get_copy_of_object(instance._dc_id, recursive)
+        serialized_properties = backend_client.get_object_properties(instance._dc_id, recursive)
         object_properties = pickle.loads(serialized_properties)
 
         proxy_object = instance._dc_class.new_proxy_object()
@@ -425,34 +422,6 @@ class DataClayRuntime(ABC):
                 # NOTE: at client side there cannot be two replicas of same oid
                 instance.set_origin_location(hint)
         return dest_backend.id
-
-    # NOTE: Used for compss
-    def new_version(
-        self, object_id, hint, class_id, dataset_name, backend_id, backend_hostname, recursive
-    ):
-        # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
-        logger.debug(f"Starting new version of {object_id}")
-        ee_client, dest_backend = self.prepare_for_new_replica_version_consolidate(
-            object_id, hint, backend_id, backend_hostname, False
-        )
-        version_id = ee_client.new_version(self.session.id, object_id, dest_backend.id)
-        logger.debug(f"Finished new version of {object_id}, created version {version_id}")
-        return version_id, dest_backend.id
-
-    def consolidate_version(self, object_id, hint):
-        raise Exception("To refactor")
-        # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
-        logger.debug(f"Starting consolidate version of {object_id}")
-
-        # NOTE: ¿Can it happen?
-        if hint is None:
-            instance = self.inmemory_objects[object_id]
-            self.update_object_metadata(instance)
-            hint = self.get_hint(object_id)
-
-        ee_client = self.get_backend_client(hint)
-        ee_client.consolidate_version(self.session.id, object_id)
-        logger.debug(f"Finished consolidate version of {object_id}")
 
     ##############
     # Federation #

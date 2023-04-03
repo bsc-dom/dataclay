@@ -138,13 +138,13 @@ class BackendClient:
     #################
 
     @grpc_error_handler
-    def get_copy_of_object(self, object_id: UUID, recursive):
-        request = dataservice_pb2.GetCopyOfObjectRequest(
+    def get_object_properties(self, object_id: UUID, recursive):
+        request = dataservice_pb2.GetObjectPropertiesRequest(
             object_id=str(object_id),
             recursive=recursive,
         )
 
-        response = self.stub.GetCopyOfObject(request)
+        response = self.stub.GetObjectProperties(request)
         return response.value
 
     @grpc_error_handler
