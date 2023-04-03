@@ -162,20 +162,16 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    # def SendObject(self, request, context):
-    #     try:
-    #         self.backend.move_object(
-    #             UUID(request.session_id),
-    #             UUID(request.object_id),
-    #             UUID(request.backend_id),
-    #             request.recursive,
-    #         )
-    #         return Empty()
-    #     except Exception as e:
-    #         context.set_details(str(e))
-    #         context.set_code(grpc.StatusCode.INTERNAL)
-    #         traceback.print_exc()
-    #         return Empty()
+    def Drain(self, request, context):
+        try:
+            self.backend.move_all_objects()
+            self.stop_event.set()
+            return Empty()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
 
     ###########
     # END NEW #

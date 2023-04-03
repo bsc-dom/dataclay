@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 class ClientRuntime(DataClayRuntime):
-
     session = None
     is_backend = False
 

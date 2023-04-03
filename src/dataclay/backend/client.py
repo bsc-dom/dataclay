@@ -174,6 +174,10 @@ class BackendClient:
         self.stub.Shutdown(Empty())
 
     @grpc_error_handler
+    def drain(self):
+        self.stub.Drain(Empty())
+
+    @grpc_error_handler
     def send_object(self, session_id: UUID, object_id: UUID, serialized_properties):
         request = dataservice_pb2.MoveObjectRequest(
             session_id=str(session_id),

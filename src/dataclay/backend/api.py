@@ -205,7 +205,6 @@ class BackendAPI:
     # Shutdown
 
     def shutdown(self):
-        self.move_all_objects()
         self.runtime.stop()
 
     def flush_all(self):
@@ -215,6 +214,9 @@ class BackendAPI:
         dc_objects = self.runtime.metadata_service.get_all_objects()
         self.runtime.update_backend_clients()
         backends = self.runtime.backend_clients
+
+        if len(backends) <= 1:
+            raise DataClayException("No other backend to drain to. Abort!")
 
         num_objects = len(dc_objects)
         mean = -(num_objects // -(len(backends) - 1))
