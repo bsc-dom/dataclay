@@ -358,14 +358,6 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
         except Exception as ex:
             return self.get_exception_info(ex)
 
-    def deleteAlias(self, request, context):
-        try:
-            self.backend.delete_alias(UUID(request.sessionID), UUID(request.objectID))
-            return common_messages_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            return self.get_exception_info(ex)
-
     def migrateObjectsToBackends(self, request, context):
         try:
             backends = dict()

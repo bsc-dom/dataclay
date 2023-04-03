@@ -236,15 +236,11 @@ class DataClayRuntime(ABC):
     # Alias #
     #########
 
-    def delete_alias_in_dataclay(self, alias, dataset_name):
+    def delete_alias(self, alias, dataset_name):
         if dataset_name is None:
             dataset_name = self.session.dataset_name
 
         self.metadata_service.delete_alias(alias, dataset_name, self.session.id)
-
-    @abstractmethod
-    def delete_alias(self, dc_obj):
-        pass
 
     def update_object_metadata(self, instance: DataClayObject):
         object_md = self.metadata_service.get_object_md_by_id(instance._dc_id)

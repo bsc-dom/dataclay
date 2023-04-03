@@ -120,14 +120,6 @@ class BackendRuntime(DataClayRuntime):
 
         return instance._dc_backend_id
 
-    # Alias
-
-    def delete_alias(self, instance):
-        alias = instance._dc_alias
-        if alias is not None:
-            self.delete_alias_in_dataclay(alias, instance._dc_dataset_name)
-            instance._dc_alias = None
-
     # Shutdown
 
     def stop(self):

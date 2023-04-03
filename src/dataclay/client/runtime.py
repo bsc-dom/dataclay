@@ -100,19 +100,6 @@ class ClientRuntime(DataClayRuntime):
         backend_client.move_object(object_id, backend_id, recursive)
         instance._dc_backend_id = backend_id
 
-    #########
-    # Alias #
-    #########
-
-    # NOTE: This function may be removed.
-    # When an alias is removed without having the instance, the persistent object
-    # has to know it if we consult its alias, therefore, in all cases, the alias
-    # will have to be updated from the single source of truth i.e. the etcd metadata
-    def delete_alias(self, instance):
-        backend_client = self.get_backend_client(instance._dc_backend_id)
-        backend_client.delete_alias(self.session.id, instance._dc_id)
-        instance._dc_alias = None
-
     ############
     # Replicas #
     ############

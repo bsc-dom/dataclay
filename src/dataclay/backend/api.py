@@ -194,14 +194,6 @@ class BackendAPI:
                 dc_object._dc_is_loaded = False
                 dc_object._dc_backend_id = backend_id
 
-    # Alias
-
-    def delete_alias(self, session_id, object_id):
-        raise Exception("To refactor.")
-        self.set_local_session(session_id)
-        instance = self.get_local_instance(object_id, True)
-        self.runtime.delete_alias(instance)
-
     # Shutdown
 
     def shutdown(self):

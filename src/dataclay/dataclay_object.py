@@ -285,7 +285,7 @@ class DataClayObject:
 
     @classmethod
     def delete_alias(cls, alias, dataset_name=None):
-        get_runtime().delete_alias_in_dataclay(alias, dataset_name=dataset_name)
+        get_runtime().delete_alias(alias, dataset_name=dataset_name)
 
     def get_all_backends(self):
         """Return all the backends of this object."""
