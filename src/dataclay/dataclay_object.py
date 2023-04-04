@@ -334,7 +334,14 @@ class DataClayObject:
 
     def new_version(self, backend_id=None, recursive=False):
         object_copy = get_runtime().get_object_copy(self, recursive)
-        object_copy._dc_original = self
+
+        try:
+            # If making a version of a version.
+            # This works because _dc_original only exists in versions
+            object_copy._dc_original = self._dc_original
+        except AttributeError:
+            object_copy._dc_original = self
+
         get_runtime().make_persistent(object_copy, None, backend_id, recursive)
         return object_copy
 
