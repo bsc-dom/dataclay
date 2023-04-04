@@ -83,7 +83,7 @@ class ClientRuntime(DataClayRuntime):
         backend_client.make_persistent(serialized_local_dicts)
 
         for dc_object in visited_objects.values():
-            dc_object.clean_dc_properties()
+            dc_object._clean_dc_properties()
             dc_object._dc_is_registered = True
             dc_object._dc_is_local = False
             dc_object._dc_is_loaded = False

@@ -17,10 +17,24 @@ release = "3.0.0"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx.ext.viewcode",
+    # "sphinx.ext.linkcode",
+    "sphinx.ext.napoleon",
 ]
 
 templates_path = ["_templates"]
 exclude_patterns = []
+
+
+# def linkcode_resolve(domain, info):
+#     if domain != "py":
+#         return None
+#     if not info["module"]:
+#         return None
+#     module = info["module"].replace(".", "/")
+#     fullname = info["fullname"].replace(".", "/")
+#     # return "https://somesite/sourcerepo/%s.py" % filename
+#     return f"https://github.com/bsc-dom/dataclay/blob/main/src/{module}.py"
 
 
 # -- Options for HTML output -------------------------------------------------

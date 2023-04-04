@@ -49,7 +49,6 @@ class ClientAPI:
     def __init__(
         self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
     ):
-
         self.is_initialized = False
 
         self.host = host
@@ -69,7 +68,6 @@ class ClientAPI:
         #     else:
         #         logger.warning(f"Backend with name '{settings.LOCAL_BACKEND}' not found, ignoring")
 
-    @tracer.start_as_current_span("start")
     def start(self):
         """Initialization made on the client-side, with .env settings
 
@@ -110,7 +108,6 @@ class ClientAPI:
         logger.debug(f"Started session {self.session.id}")
         self.is_initialized = True
 
-    @tracer.start_as_current_span("stop")
     def stop(self):
         if not self.is_initialized:
             logger.warning("Already finished. Ignoring")

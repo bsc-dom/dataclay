@@ -189,7 +189,7 @@ class BackendAPI:
 
             for dc_object in visited_objects.values():
                 self.runtime.heap_manager.release_from_heap(dc_object)
-                dc_object.clean_dc_properties()
+                dc_object._clean_dc_properties()
                 dc_object._dc_is_local = False
                 dc_object._dc_is_loaded = False
                 dc_object._dc_backend_id = backend_id
@@ -598,14 +598,14 @@ class BackendAPI:
             )
 
             if dest_replica_backend_id is not None and update_replica_locs == 1:
-                current_obj.add_replica_location(dest_replica_backend_id)
+                current_obj._add_replica_location(dest_replica_backend_id)
                 current_obj._dc_is_dirty = True
                 obj_with_data.metadata.origin_location = self.backend_id
             elif update_replica_locs == 2:
                 if dest_replica_backend_id is not None:
-                    current_obj.remove_replica_location(dest_replica_backend_id)
+                    current_obj._remove_replica_location(dest_replica_backend_id)
                 else:
-                    current_obj.clear_replica_locations()
+                    current_obj._clear_replica_locations()
                 current_obj._dc_is_dirty = True
 
         return obj_with_data

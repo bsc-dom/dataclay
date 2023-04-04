@@ -1,11 +1,3 @@
-.. dataClay documentation master file, created by
-   sphinx-quickstart on Tue Apr  4 14:22:04 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-dataClay's documentation!
-=========================
-
 .. image:: _static/dataclay-full.png
     :width: 400px
     :align: center
@@ -18,7 +10,12 @@ Contents
    :caption: Getting Started
 
 .. toctree::
+   :hidden:
    :caption: API
+
+   api/dataclay_object_api
+   api/client_api
+   api/backend_api
 
 .. toctree::
    :caption: Developers

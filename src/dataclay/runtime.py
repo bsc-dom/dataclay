@@ -421,7 +421,7 @@ class DataClayRuntime(ABC):
         for replicated_object_id in replicated_object_ids:
             # NOTE: If it fails, use object_id instead of replicated_object_id
             instance = self.inmemory_objects[replicated_object_id]
-            instance.add_replica_location(dest_backend.id)
+            instance._add_replica_location(dest_backend.id)
             if instance.get_origin_location() is None:
                 # NOTE: at client side there cannot be two replicas of same oid
                 instance.set_origin_location(hint)

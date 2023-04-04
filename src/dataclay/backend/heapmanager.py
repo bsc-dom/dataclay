@@ -110,7 +110,7 @@ class HeapManager(threading.Thread):
 
                     # TODO: update etcd metadata (since is loaded has changed)
                     # and store object in file system
-                    instance.clean_dc_properties()
+                    instance._clean_dc_properties()
 
                     del self.loaded_objects[object_id]
             finally:

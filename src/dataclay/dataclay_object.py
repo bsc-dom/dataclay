@@ -176,7 +176,7 @@ class DataClayObject:
     def __new__(cls, *args, **kwargs):
         logger.debug(f"Creating new {cls.__name__} instance with args={args}, kwargs={kwargs}")
         obj = super().__new__(cls)
-        obj.set_default_fields()
+        obj._set_default_fields()
         get_runtime().add_to_heap(obj)
 
         if get_runtime().is_backend:
@@ -187,11 +187,11 @@ class DataClayObject:
     @classmethod
     def new_proxy_object(cls, **kwargs):
         obj = super().__new__(cls)
-        obj.set_default_fields()
+        obj._set_default_fields()
         obj.__dict__.update(kwargs)
         return obj
 
-    def set_default_fields(self):
+    def _set_default_fields(self):
         # Metadata fields
         self._dc_id = uuid.uuid4()
         self._dc_dataset_name = None
@@ -253,7 +253,7 @@ class DataClayObject:
         self._dc_replica_backend_ids = object_md.replica_backend_ids
         self._dc_is_read_only = object_md.is_read_only
 
-    def clean_dc_properties(self):
+    def _clean_dc_properties(self):
         """
         Used to free up space when the client or backend lose ownership of the objects;
         or the object is being stored and unloaded
@@ -266,7 +266,6 @@ class DataClayObject:
     # Object Oriented Methods #
     ###########################
 
-    @tracer.start_as_current_span("make_persistent")
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
         if alias == "":
             raise AttributeError("Alias cannot be empty")
@@ -287,7 +286,7 @@ class DataClayObject:
     def delete_alias(cls, alias, dataset_name=None):
         get_runtime().delete_alias(alias, dataset_name=dataset_name)
 
-    def get_all_backends(self):
+    def get_backends(self):
         """Return all the backends of this object."""
         if not self._dc_is_loaded:
             get_runtime().update_object_metadata(self)
@@ -380,64 +379,22 @@ class DataClayObject:
             self._dc_id, self._dc_backend_id, backend_id, None, recursive
         )
 
-    def set_all(self, from_object):
-        raise ("set_all need to be refactored")
-        properties = sorted(
-            self.get_class_extradata().properties.values(), key=attrgetter("position")
-        )
-
-        logger.debug("Set all properties from object %s", from_object._dc_id)
-
-        for p in properties:
-            value = getattr(from_object, p.name)
-            setattr(self, p.name, value)
-
     #################################
     # Extradata getters and setters #
     #################################
 
-    # DEPRECATED
-    def get_original_object_id(self):
-        # return self.__dclay_instance_extradata.original_object_id
-        return self._dc_id
-
-    # DEPRECATED
-    def set_original_object_id(self, new_original_object_id):
-        # self.__dclay_instance_extradata.original_object_id = new_original_object_id
-        pass
-
-    # DEPRECATED
-    def get_root_location(self):
-        # return self.__dclay_instance_extradata.root_location
-        return self._dc_backend_id
-
-    # DEPRECATED
-    def set_root_location(self, new_root_location):
-        # self.__dclay_instance_extradata.root_location = new_root_location
-        pass
-
-    # DEPRECATED
-    def get_origin_location(self):
-        # return self.__dclay_instance_extradata.origin_location
-        return self._dc_backend_id
-
-    # DEPRECATED
-    def set_origin_location(self, new_origin_location):
-        # self.__dclay_instance_extradata.origin_location = new_origin_location
-        pass
-
-    def add_replica_location(self, new_replica_location):
+    def _add_replica_location(self, new_replica_location):
         replica_locations = self._dc_replica_backend_ids
         if replica_locations is None:
             replica_locations = list()
             self._dc_replica_backend_ids = replica_locations
         replica_locations.append(new_replica_location)
 
-    def remove_replica_location(self, old_replica_location):
+    def _remove_replica_location(self, old_replica_location):
         replica_locations = self._dc_replica_backend_ids
         replica_locations.remove(old_replica_location)
 
-    def clear_replica_locations(self):
+    def _clear_replica_locations(self):
         replica_locations = self._dc_replica_backend_ids
         if replica_locations is not None:
             replica_locations.clear()
