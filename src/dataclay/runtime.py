@@ -291,14 +291,18 @@ class DataClayRuntime(ABC):
 
         return proxy_object
 
-    # NOTE: Maybe it should be only in client runtime ¿?
-    # If can also be executed in active_method, then if the object is local,
+    # TODO: If can also be executed in active_method, then if the object is local,
     # don't call the gRPC client
     def update_object(self, instance, new_instance):
-        backend_id = instance._dc_backend_id
-        backend_client = self.get_backend_client(backend_id)
+        if new_instance._dc_is_local:
+            serialized_properties = pickle.dumps(new_instance._dc_properties)
+        else:
+            new_backend_client = self.get_backend_client(new_instance._dc_backend_id)
+            serialized_properties = new_backend_client.get_object_properties(
+                new_instance._dc_id, False
+            )
 
-        serialized_properties = pickle.dumps(new_instance._dc_properties)
+        backend_client = self.get_backend_client(instance._dc_backend_id)
         backend_client.update_object(instance._dc_id, serialized_properties)
 
     #####################
