@@ -7,7 +7,10 @@ Contents
 ========
 
 .. toctree::
+   :hidden:
    :caption: Getting Started
+
+   getting_started/main_concepts
 
 .. toctree::
    :hidden:
@@ -18,7 +21,10 @@ Contents
    api/backend_api
 
 .. toctree::
+   :hidden:
    :caption: Developers
+
+   developers/compile_redis
 
 Indices and tables
 ==================
