@@ -267,27 +267,75 @@ class DataClayObject:
     ###########################
 
     def make_persistent(self, alias=None, backend_id=None, recursive=True):
+        """Makes the object persistent.
+
+        Args:
+            alias: Alias of the object. If None, the object will not have an alias.
+            backend_id: ID of the backend where the object will be stored. If None, the object
+                will be stored in a random backend.
+            recursive: If True, all objects referenced by the current one will be made persistent
+                as well (in case they were not already persistent) in a recursive manner.
+
+        Raises:
+            AttributeError: If the alias is an empty string.
+            RuntimeError: If the object is already persistent.
+            KeyError: If the backend_id is not registered in the system.
+        """
         if alias == "":
             raise AttributeError("Alias cannot be empty")
         get_runtime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
 
     @classmethod
     def get_by_id(cls, object_id: UUID):
+        """Returns the object with the given id.
+
+        Args:
+            object_id: ID of the object.
+
+        Returns:
+            The object with the given id.
+
+        Raises:
+            DoesNotExistError: If the object does not exist.
+        """
         return get_runtime().get_object_by_id(object_id)
 
     @classmethod
     def get_by_alias(cls, alias, dataset_name=None):
-        # NOTE: "safe" was removed. The object_id cannot be obtained from alias string.
-        # NOTE: The alias is unique for each dataset. dataset_name is added. If none,
-        #       the default_dataset is used.
+        """Returns the object with the given alias.
+
+        Args:
+            alias: Alias of the object.
+            dataset_name: Name of the dataset where the alias is stored. If None, the session's dataset is used.
+
+        Returns:
+            The object with the given alias.
+
+        Raises:
+            DoesNotExistError: If the alias does not exist.
+            DatasetIsNotAccessibleError: If the dataset is not accessible.
+        """
         return get_runtime().get_object_by_alias(alias, dataset_name)
 
     @classmethod
     def delete_alias(cls, alias, dataset_name=None):
+        """Removes the alias linked to an object.
+
+        If this object is not referenced starting from a root object and no active session is
+        accessing it, the garbage collector will remove it from the system.
+
+        Args:
+            alias: Alias to be removed.
+            dataset_name: Name of the dataset where the alias is stored. If None, the session's dataset is used.
+
+        Raises:
+            DoesNotExistError: If the alias does not exist.
+            DatasetIsNotAccessibleError: If the dataset is not accessible.
+        """
         get_runtime().delete_alias(alias, dataset_name=dataset_name)
 
     def get_backends(self):
-        """Return all the backends of this object."""
+        """Returns the set of backends where the object is stored"""
         if not self._dc_is_loaded:
             get_runtime().update_object_metadata(self)
 
@@ -297,6 +345,16 @@ class DataClayObject:
         return backends
 
     def move(self, backend_id: UUID, recursive: bool = False):
+        """Moves the object to the specified backend.
+
+        Args:
+            backend_id: ID of the backend where the object will be moved.
+            recursive: If True, all objects referenced by this object registered in the
+                same backend will also be moved.
+
+        Raises:
+            KeyError: If the backend_id is not registered in the system.
+        """
         get_runtime().move_object(self, backend_id, recursive)
 
     ########################
@@ -305,26 +363,86 @@ class DataClayObject:
 
     @classmethod
     def dc_clone_by_alias(cls, alias, recursive=False):
+        """Returns a non-persistent object as a copy of the object with the alias specified.
+
+        Fields referencing to other objects are kept as remote references to objects stored
+        in dataClay, unless the recursive parameter is set to True.
+
+        Args:
+            alias: alias of the object to be retrieved.
+            recursive:
+                When this is set to True, the default behavior is altered so not only current
+                object but all of its references are also retrieved locally.
+
+        Returns:
+            A new instance initialized with the field values of the object with the alias specified.
+
+        Raises:
+            DoesNotExistError: If the alias does not exist.
+        """
         instance = cls.get_by_alias(alias)
         return get_runtime().get_object_copy(instance, recursive)
 
     def dc_clone(self, recursive=False):
-        """Returns a non-persistent object as a copy of the current object"""
+        """Returns a non-persistent object as a copy of the current object.
+
+        Args:
+            recursive: When this is set to True, the default behavior is altered so not only current
+                object but all of its references are also retrieved locally.
+
+        Returns:
+            A new object instance initialized with the field values of the current object.
+        """
         return get_runtime().get_object_copy(self, recursive)
 
     @classmethod
     def dc_update_by_alias(cls, alias, from_object):
+        """Updates the object identified by specified alias with contents of from_object.
+
+        Args:
+            alias: alias of the object to be updated.
+            from_object: object with the new values to be updated.
+
+        Raises:
+            DoesNotExistError: If the alias does not exist.
+            TypeError: If the objects are not of the same type.
+        """
+        if cls != type(from_object):
+            raise TypeError("Objects must be of the same type")
+
         o = cls.get_by_alias(alias)
         return o.dc_update(from_object)
 
     def dc_update(self, from_object):
-        """Updates all fields of this object with the values of the specified object"""
-        if from_object is None:
-            return
-        else:
-            get_runtime().update_object(self, from_object)
+        """Updates current object with contents of from_object.
+
+        Args:
+            from_object: object with the new values to update current object.
+
+        Raises:
+            TypeError: If the objects are not of the same type.
+        """
+        if type(self) != type(from_object):
+            raise TypeError("Objects must be of the same type")
+
+        get_runtime().update_object(self, from_object)
 
     def dc_put(self, alias, backend_id=None, recursive=True):
+        """Makes the object persistent in the specified backend.
+
+        Args:
+            alias: a string that will identify the object in addition to its OID.
+                Aliases are unique for dataset.
+            backend_id: the backend where the object will be stored. If this parameter is not
+                specified, a random backend will be chosen.
+            recursive: If True, all objects referenced by the current object are also made
+                persistent (in case they were not already persistent) in a recursive manner.
+
+        Raises:
+            AttributeError: if alias is null or empty.
+            DataClayException: if the alias is not unique.
+            RuntimeError: if the object is already persistent.
+        """
         if not alias:
             raise AttributeError("Alias cannot be null or empty")
         get_runtime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
@@ -332,6 +450,19 @@ class DataClayObject:
     # Versioning
 
     def new_version(self, backend_id=None, recursive=False):
+        """Create a new version of the current object.
+
+        Args:
+            backend_id: the backend where the object will be stored. If this parameter is not
+                specified, a random backend will be chosen.
+
+        Returns:
+            A new object instance initialized with the field values of the current object.
+
+        Raises:
+            RuntimeError: if the object is not persistent.
+            KeyError: If the backend_id is not registered in the system.
+        """
         object_copy = get_runtime().get_object_copy(self, recursive)
 
         try:
@@ -345,7 +476,7 @@ class DataClayObject:
         return object_copy
 
     def consolidate_version(self):
-        """Consolidate: copy contents of current version object to original object"""
+        """Consolidate the current version of the object with the original one."""
         get_runtime().update_object(self._dc_original, self)
 
     def get_id(self):
