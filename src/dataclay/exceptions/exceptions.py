@@ -145,6 +145,16 @@ class ObjectError(DataClayException):
         self.object_id = object_id
 
 
+class ObjectAlreadyRegisteredError(ObjectError):
+    def __str__(self):
+        return f"Object {self.object_id} is already registered!"
+
+
+class ObjectNotRegisteredError(ObjectError):
+    def __str__(self):
+        return f"Object {self.object_id} is not registered!"
+
+
 class ObjectDoesNotExistError(ObjectError):
     def __str__(self):
         return f"Object {self.object_id} does not exist!"

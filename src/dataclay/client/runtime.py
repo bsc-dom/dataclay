@@ -6,6 +6,7 @@ import random
 import traceback
 
 from dataclay.dataclay_object import DataClayObject
+from dataclay.exceptions import *
 from dataclay.metadata.client import MetadataClient
 from dataclay.runtime import DataClayRuntime
 from dataclay.utils.pickle import RecursiveLocalPickler
@@ -46,7 +47,7 @@ class ClientRuntime(DataClayRuntime):
         logger.debug(f"Starting make persistent for object {instance._dc_id}")
 
         if instance._dc_is_registered:
-            raise RuntimeError("Instance is already persistent")
+            raise ObjectAlreadyRegisteredError(instance._dc_id)
 
         instance._dc_dataset_name = self.session.dataset_name
         if alias:

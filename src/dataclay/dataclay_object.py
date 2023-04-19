@@ -279,7 +279,7 @@ class DataClayObject:
         Raises:
             AttributeError: If the alias is an empty string.
             RuntimeError: If the object is already persistent.
-            KeyError: If the backend_id is not registered in the system.
+            KeyError: If the backend_id is not registered in dataClay.
         """
         if alias == "":
             raise AttributeError("Alias cannot be empty")
@@ -353,8 +353,13 @@ class DataClayObject:
                 same backend will also be moved.
 
         Raises:
-            KeyError: If the backend_id is not registered in the system.
+            KeyError: If the backend_id is not registered in dataClay.
+            ObjectNotRegisteredError: If the object is not registered in dataClay.
         """
+
+        if not self._dc_is_registered:
+            raise ObjectNotRegisteredError(self._dc_id)
+
         get_runtime().move_object(self, backend_id, recursive)
 
     ########################
@@ -392,7 +397,13 @@ class DataClayObject:
 
         Returns:
             A new object instance initialized with the field values of the current object.
+
+        Raises:
+            ObjectNotRegisteredError: If the object is not registered.
         """
+        if not self._dc_is_registered:
+            raise ObjectNotRegisteredError(self._dc_id)
+
         return get_runtime().get_object_copy(self, recursive)
 
     @classmethod
@@ -440,8 +451,9 @@ class DataClayObject:
 
         Raises:
             AttributeError: if alias is null or empty.
-            DataClayException: if the alias is not unique.
-            RuntimeError: if the object is already persistent.
+            AlreadyExistError: If the alias already exists.
+            KeyError: If the backend_id is not registered in dataClay.
+            ObjectAlreadyRegisteredError: If the object is already registered in dataClay.
         """
         if not alias:
             raise AttributeError("Alias cannot be null or empty")
@@ -460,9 +472,13 @@ class DataClayObject:
             A new object instance initialized with the field values of the current object.
 
         Raises:
-            RuntimeError: if the object is not persistent.
-            KeyError: If the backend_id is not registered in the system.
+            ObjectNotRegisteredError: If the object is not registered in dataClay.
+            KeyError: If the backend_id is not registered in dataClay.
         """
+
+        if not self._dc_is_registered:
+            raise ObjectNotRegisteredError(self._dc_id)
+
         object_copy = get_runtime().get_object_copy(self, recursive)
 
         try:
