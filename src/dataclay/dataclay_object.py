@@ -71,7 +71,7 @@ class ReadWriteLock:
 
 
 def activemethod(func):
-    """Decorator for DataClayObject active methods"""
+    """Decorator for DataClayObject active methods."""
 
     @functools.wraps(func)
     def wrapper_activemethod(self: DataClayObject, *args, **kwargs):
@@ -209,17 +209,17 @@ class DataClayObject:
 
     @property
     def dataclay_id(self):
-        """Do not use in internal code. Use _dc_id instead."""
+        """ID of the object in the dataClay system."""
         return self._dc_id
 
     @property
     def dataset(self):
-        """Do not use in internal code. Use _dc_dataset_name instead."""
+        """Name of the dataset where the object is stored."""
         return self._dc_dataset_name
 
     @property
     def is_registered(self):
-        """_dc_is_registered"""
+        """Whether the object is registered in the dataClay system or not."""
         return self._dc_is_registered
 
     @property

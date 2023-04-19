@@ -1,5 +1,5 @@
 [![Tests](https://github.com/bsc-dom/dataclay/actions/workflows/tests.yml/badge.svg)](https://github.com/bsc-dom/dataclay/actions/workflows/tests.yml)
-[![Documentation Status](https://readthedocs.org/projects/pyclay/badge/?version=latest)](https://pyclay.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/dataclay/badge/?version=latest)](https://dataclay.readthedocs.io/en/latest/?badge=latest)
 ![PyPI - Status](https://img.shields.io/pypi/status/dataclay)
 ![PyPI - Format](https://img.shields.io/pypi/format/dataclay)
 [![License](https://img.shields.io/github/license/bsc-dom/dataclay)](https://github.com/bsc-dom/dataclay/blob/main/LICENSE.txt)
@@ -20,7 +20,7 @@ This package is available from PyPI, so just `pip` it:
 
 ## Documentation
 
-- Official documentation available at [read the docs](https://pyclay.readthedocs.io/en/latest/)
+- Official documentation available at [read the docs](https://dataclay.readthedocs.io/en/latest/)
 
 ## Other resources
 
