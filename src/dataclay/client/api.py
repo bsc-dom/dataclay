@@ -9,13 +9,21 @@ __all__ = ["init", "finish", "DataClayObject"]
 
 import logging
 import logging.config
+from typing import TYPE_CHECKING
+from uuid import UUID
 
+from dataclay.backend.client import BackendClient
 from dataclay.client.runtime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
 from dataclay.client.runtime import ClientRuntime
 from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.runtime import get_runtime, set_runtime
 from dataclay.utils.tracing import trace
+
+if TYPE_CHECKING:
+    from uuid import UUID
+
+    from dataclay.backend.client import BackendClient
 
 # This will be populated during initialization
 LOCAL = _UNDEFINED_LOCAL
@@ -46,6 +54,17 @@ def finish():
 
 
 class ClientAPI:
+    """Client API for dataClay.
+
+    Usually you create client instance and call start() method to initialize it.
+
+        from dataclay import client
+        client = dataclay.client(host="127.0.0.1", username="testuser", password="s3cret", dataset="testuser")
+
+
+
+    """
+
     def __init__(
         self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
     ):
@@ -69,7 +88,7 @@ class ClientAPI:
         #         logger.warning(f"Backend with name '{settings.LOCAL_BACKEND}' not found, ignoring")
 
     def start(self):
-        """Initialization made on the client-side, with .env settings
+        """Initialize the client API.
 
         Note that after a successful call to this method, subsequent calls will be
         a no-operation.
@@ -109,6 +128,8 @@ class ClientAPI:
         self.is_initialized = True
 
     def stop(self):
+        """Finish the client API."""
+
         if not self.is_initialized:
             logger.warning("Already finished. Ignoring")
             return
@@ -128,7 +149,8 @@ class ClientAPI:
     def __exit__(self, *args):
         self.stop()
 
-    def get_backends(self):
+    def get_backends(self) -> dict[UUID:BackendClient]:
+        """Return a dictionary of backends clients."""
         self.runtime.update_backend_clients()
         return self.runtime.backend_clients
 

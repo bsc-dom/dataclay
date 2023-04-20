@@ -10,6 +10,7 @@ Contents
    :hidden:
    :caption: Getting Started
 
+   quickstart
    getting_started/main_concepts
 
 .. toctree::

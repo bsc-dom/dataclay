@@ -593,6 +593,8 @@ class DataClayObject:
             logger.debug("Pickling of object is causing a make_persistent")
             self.make_persistent()
 
+        # TODO: If its a version, use the original object id.
+
         return self.get_by_id, (self._dc_id,)
 
     def __repr__(self):

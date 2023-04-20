@@ -64,7 +64,7 @@ class Family(DataClayObject):
         self.members = list(args)
 
     @activemethod
-    def add(self, new_member: Person):
+    def add(self, new_member: Person | Dog):
         self.members.append(new_member)
 
     @activemethod
