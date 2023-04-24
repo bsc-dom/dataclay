@@ -305,6 +305,18 @@ class DataClayRuntime(ABC):
         backend_client = self.get_backend_client(instance._dc_backend_id)
         backend_client.update_object(instance._dc_id, serialized_properties)
 
+    def proxify_object(self, instance, new_object_id):
+        backend_client = self.get_backend_client(instance._dc_backend_id)
+        backend_client.proxify_object(instance._dc_id, new_object_id)
+        instance._dc_id = new_object_id
+
+    def change_object_id(self, instance, new_object_id):
+        backend_client = self.get_backend_client(instance._dc_backend_id)
+        backend_client.change_object_id(instance._dc_id, new_object_id)
+        instance._dc_id = new_object_id
+
+        # Remove the object
+
     #####################
     # Garbage collector #
     #####################

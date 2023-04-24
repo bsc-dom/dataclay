@@ -128,6 +128,26 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             traceback.print_exc()
             return Empty()
 
+    def ProxifyObject(self, request, context):
+        try:
+            self.backend.proxify_object(UUID(request.object_id), UUID(request.new_object_id))
+            return Empty()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+
+    def ChangeObjectId(self, request, context):
+        try:
+            self.backend.change_object_id(UUID(request.object_id), UUID(request.new_object_id))
+            return Empty()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+
     def MoveObject(self, request, context):
         try:
             self.backend.move_object(

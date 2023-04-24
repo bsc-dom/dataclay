@@ -86,11 +86,10 @@ class HeapManager(threading.Thread):
         logger.debug("Releasing object with id %s from retained map. ", dc_obj._dc_id)
         try:
             del self.loaded_objects[dc_obj._dc_id]
-        except Exception as e:
-            logger.debug("Releasing object with id %s ", dc_obj._dc_id)
+        except KeyError as e:
+            logger.debug("Object with id %s is not loaded.", dc_obj._dc_id)
 
     def unload_object(self, object_id):
-
         instance = self.loaded_objects[object_id]
 
         # NOTE: If the another thread is executing any activemethod,
@@ -98,7 +97,6 @@ class HeapManager(threading.Thread):
         if instance._xdc_active_counter.acquire(timeout=0):
             try:
                 with UUIDLock(object_id):
-
                     logger.warning(f"Storing and unloading object {object_id}")
                     assert instance._dc_is_loaded
                     instance._dc_is_loaded = False
@@ -128,15 +126,14 @@ class HeapManager(threading.Thread):
             TRUE if memory is under pressure. FALSE otherwise.
         """
 
-        return True
+        # return True
         return psutil.virtual_memory().percent > (settings.MEMMGMT_PRESSURE_FRACTION * 100)
 
     def is_memory_at_ease(self):
-        return False
+        # return False
         return psutil.virtual_memory().percent < (settings.MEMMGMT_EASE_FRACTION * 100)
 
     def run_task(self):
-
         if self.flush_all_lock.locked():
             logger.debug("Already flushing all objects")
             return
@@ -148,7 +145,6 @@ class HeapManager(threading.Thread):
                 logger.debug(f"Num loaded objects before: {len(loaded_objects_keys)}")
 
                 while loaded_objects_keys:
-
                     object_id = loaded_objects_keys.pop()
                     self.unload_object(object_id)
 
@@ -174,7 +170,6 @@ class HeapManager(threading.Thread):
         """
 
         if self.flush_all_lock.acquire(blocking=False):
-
             try:
                 logger.debug(
                     f"Starting to flush all loaded objects. Num ({len(self.loaded_objects)})"

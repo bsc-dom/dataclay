@@ -264,6 +264,16 @@ class DataServiceStub(object):
                 request_serializer=protos_dot_dataservice__pb2.SendObjectRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.ProxifyObject = channel.unary_unary(
+                '/protos.dataservice.DataService/ProxifyObject',
+                request_serializer=protos_dot_dataservice__pb2.ProxifyObjectRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.ChangeObjectId = channel.unary_unary(
+                '/protos.dataservice.DataService/ChangeObjectId',
+                request_serializer=protos_dot_dataservice__pb2.ChangeObjectIdRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
         self.FlushAll = channel.unary_unary(
                 '/protos.dataservice.DataService/FlushAll',
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
@@ -586,6 +596,18 @@ class DataServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ProxifyObject(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ChangeObjectId(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def FlushAll(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -850,6 +872,16 @@ def add_DataServiceServicer_to_server(servicer, server):
             'SendObject': grpc.unary_unary_rpc_method_handler(
                     servicer.SendObject,
                     request_deserializer=protos_dot_dataservice__pb2.SendObjectRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'ProxifyObject': grpc.unary_unary_rpc_method_handler(
+                    servicer.ProxifyObject,
+                    request_deserializer=protos_dot_dataservice__pb2.ProxifyObjectRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'ChangeObjectId': grpc.unary_unary_rpc_method_handler(
+                    servicer.ChangeObjectId,
+                    request_deserializer=protos_dot_dataservice__pb2.ChangeObjectIdRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'FlushAll': grpc.unary_unary_rpc_method_handler(
@@ -1707,6 +1739,40 @@ class DataService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/SendObject',
             protos_dot_dataservice__pb2.SendObjectRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ProxifyObject(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/ProxifyObject',
+            protos_dot_dataservice__pb2.ProxifyObjectRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ChangeObjectId(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/ChangeObjectId',
+            protos_dot_dataservice__pb2.ChangeObjectIdRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

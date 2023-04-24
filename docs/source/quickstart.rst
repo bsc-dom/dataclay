@@ -4,7 +4,7 @@ Quickstart
 A Minimal Application
 ---------------------
 
-**Thiexample is available in the `examples/quickstart` folder.**
+**This example is available in the `examples/quickstart` folder.**
 
 A minimal dataClay application looks something like this:
 

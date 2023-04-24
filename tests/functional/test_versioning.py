@@ -29,3 +29,72 @@ def test_version_of_version(client):
 
     person_v2.consolidate_version()
     assert person.name == "Carol"
+
+
+def test_version_references(client):
+    person = Person("Marc", 24)
+    family = Family(person)
+    person.make_persistent()
+
+    person_v1 = person.new_version()
+    person_v1.name = "Alice"
+    assert person.name == "Marc"
+
+    family_2 = Family(person_v1)
+
+    person_v2 = person_v1.new_version()
+    person_v2.name = "Carol"
+    assert person_v1.name == "Alice"
+
+    person_v2.consolidate_version()
+
+    assert person.name == "Carol"
+    assert family.members[0].name == "Carol"
+    assert family_2.members[0].name == "Carol"
+
+
+def test_version_references_2(client):
+    person = Person("Marc", 24)
+    family = Family(person)
+    family.make_persistent()
+
+    person_v1 = person.new_version()
+    person_v1.name = "Alice"
+    assert person.name == "Marc"
+
+    family_2 = Family()
+    family_2.make_persistent()
+    family_2.add(person_v1)
+
+    person_v2 = person_v1.new_version()
+    person_v2.name = "Carol"
+    assert person_v1.name == "Alice"
+
+    person_v2.consolidate_version()
+
+    assert person.name == "Carol"
+    assert family.members[0].name == "Carol"
+    assert family_2.members[0].name == "Carol"
+
+
+def test_version_references_3(client):
+    person = Person("Marc", 24)
+    family = Family(person)
+    family.make_persistent()
+
+    person_v1 = person.new_version()
+    person_v1.name = "Alice"
+    assert person.name == "Marc"
+
+    family_2 = Family(person_v1)
+    family_2.make_persistent()
+
+    person_v2 = person_v1.new_version()
+    person_v2.name = "Carol"
+    assert person_v1.name == "Alice"
+
+    person_v2.consolidate_version()
+
+    assert person.name == "Carol"
+    assert family.members[0].name == "Carol"
+    assert family_2.members[0].name == "Carol"

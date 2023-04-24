@@ -113,6 +113,14 @@ class BackendAPI:
             logger.warning(
                 f"Object {object_id} with wrong backend_id. Update to {instance._dc_backend_id}"
             )
+            # NOTE: We check to the metadata because when consolidating an object
+            # it might be that the proxy is pointing to the wrong backend_id which is
+            # the same current backend, creating a infinite loop. This could be solve also
+            # by passing the backend_id of the new object to the proxy, but this can create
+            # problems with race conditions (e.g. a move before the consolidation). Therefore,
+            # we check to the metadata which is more reliable.
+            object_md = self.runtime.metadata_service.get_object_md_by_id(object_id)
+            instance._dc_backend_id = object_md.backend_id
             return pickle.dumps(ObjectWithWrongBackendId(instance._dc_backend_id)), False
 
         args = pickle.loads(args)
@@ -156,6 +164,42 @@ class BackendAPI:
         with UUIDLock(object_id):
             self.runtime.load_object_from_db(instance)
             vars(instance).update(object_properties)
+
+    def proxify_object(self, object_id, new_object_id):
+        instance = self.runtime.get_object_by_id(object_id)
+
+        with UUIDLock(object_id):
+            self.runtime.load_object_from_db(instance)
+            instance._clean_dc_properties()
+            instance._dc_is_loaded = False
+            instance._dc_is_local = False
+            self.runtime.heap_manager.release_from_heap(instance)
+
+            # NOTE: There is no need to delete, and it may be good
+            # in case that an object was serialized to disk before a
+            # consolidation. However, it will be deleted also since
+            # inmemory_objects is a weakref dict.
+            # del self.runtime.inmemory_objects[object_id]
+            self.runtime.metadata_service.delete_object(object_id)
+            instance._dc_id = new_object_id
+
+    def change_object_id(self, object_id, new_object_id):
+        instance = self.runtime.get_object_by_id(object_id)
+
+        with UUIDLock(object_id):
+            self.runtime.load_object_from_db(instance)
+
+            # We need to update the loaded_objects with the new object_id key
+            self.runtime.heap_manager.release_from_heap(instance)
+
+            instance._dc_id = new_object_id
+            self.runtime.heap_manager.retain_in_heap(instance)
+
+            # Also update the inmemory_objects with the new object_id key
+            self.runtime.inmemory_objects[new_object_id] = self.runtime.inmemory_objects[object_id]
+            del self.runtime.inmemory_objects[object_id]
+
+            self.runtime.metadata_service.change_object_id(object_id, new_object_id)
 
     def move_object(self, object_id, backend_id, recursive):
         # TODO: check that the object is local to us

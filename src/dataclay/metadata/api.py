@@ -189,20 +189,17 @@ class MetadataAPI:
 
     @tracer.start_as_current_span("get_all_backends")
     def get_all_backends(self, from_backend=False) -> dict:
-        """Get all backends"""
         result = self.kv_manager.getprefix(Backend, "/backend/")
         return {UUID(k): v for k, v in result.items()}
 
     @tracer.start_as_current_span("register_backend")
     def register_backend(self, id: UUID, hostname: str, port: int, dataclay_id: UUID):
-        """Register backend"""
         backend = Backend(id, hostname, port, dataclay_id)
         self.kv_manager.set_new(backend)
         logger.info(f"Registered new backend with id={id}, hostname={hostname}, port={port}")
 
     @tracer.start_as_current_span("register_backend")
     def delete_backend(self, id: UUID):
-        """Register backend"""
         self.kv_manager.delete_kv(Backend.path + str(id))
 
     ###################
@@ -226,6 +223,14 @@ class MetadataAPI:
         # object_md.dataset_name = session.dataset_name
 
         self.kv_manager.set(object_md)
+
+    def change_object_id(self, old_id: UUID, new_id: UUID):
+        object_md = self.kv_manager.getdel_kv(ObjectMetadata, old_id)
+        object_md.id = new_id
+        self.kv_manager.set(object_md)
+
+    def delete_object(self, id: UUID):
+        self.kv_manager.delete_kv(ObjectMetadata.path + str(id))
 
     @tracer.start_as_current_span("get_object_md_by_id")
     def get_object_md_by_id(self, object_id: UUID, session_id=None, check_session=False):

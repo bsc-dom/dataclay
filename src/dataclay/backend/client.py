@@ -156,6 +156,22 @@ class BackendClient:
         self.stub.UpdateObject(request)
 
     @grpc_error_handler
+    def proxify_object(self, object_id: UUID, new_object_id: UUID):
+        request = dataservice_pb2.ProxifyObjectRequest(
+            object_id=str(object_id),
+            new_object_id=str(new_object_id),
+        )
+        self.stub.ProxifyObject(request)
+
+    @grpc_error_handler
+    def change_object_id(self, object_id: UUID, new_object_id: UUID):
+        request = dataservice_pb2.ChangeObjectIdRequest(
+            object_id=str(object_id),
+            new_object_id=str(new_object_id),
+        )
+        self.stub.ChangeObjectId(request)
+
+    @grpc_error_handler
     def move_object(self, object_id: UUID, backend_id: UUID, recursive):
         request = dataservice_pb2.MoveObjectRequest(
             object_id=str(object_id),

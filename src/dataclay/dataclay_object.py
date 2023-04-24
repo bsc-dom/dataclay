@@ -481,19 +481,30 @@ class DataClayObject:
 
         object_copy = get_runtime().get_object_copy(self, recursive)
 
+        # NOTE: This will keep a reference to the original version, and all the previous versions
         try:
             # If making a version of a version.
             # This works because _dc_original only exists in versions
             object_copy._dc_original = self._dc_original
+            # We append here, because the self is a version since it has _dc_original
+            object_copy._dc_versions = self._dc_versions + [self]
         except AttributeError:
             object_copy._dc_original = self
+            object_copy._dc_versions = []
 
         get_runtime().make_persistent(object_copy, None, backend_id, recursive)
         return object_copy
 
     def consolidate_version(self):
         """Consolidate the current version of the object with the original one."""
-        get_runtime().update_object(self._dc_original, self)
+
+        original_object_id = self._dc_original._dc_id
+        get_runtime().proxify_object(self._dc_original, original_object_id)
+
+        for version in self._dc_versions:
+            get_runtime().proxify_object(version, original_object_id)
+
+        get_runtime().change_object_id(self, original_object_id)
 
     def get_id(self):
         """Return the string representation of the persistent object for COMPSs.
