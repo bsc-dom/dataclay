@@ -1,14 +1,16 @@
-Quickstart
-==========
+Hello Family
+============
 
-A Minimal Application
----------------------
+HelloFamily is a simple application that registers a list of people info into a persistent collection
+identified by an alias. Every time this application is executed, it first tries to load the collection by
+its alias, and if it does not exist the application creates it. Once the collection has been retrieved,
+or created, the given new person info is added to the collection and the whole set of people is
+displayed.
 
-**This example is available in the `examples/quickstart` folder.**
+.. note::
+    This example is available in `GitHub <https://github.com/bsc-dom/dataclay/tree/main/examples/hello-family>`_.
 
-A minimal dataClay application looks something like this:
-
-First we have to define the classes that we want to use in the application. This classes mest be available for the client and the backend. For a simple use case, save the classes to a file `family.py` inside a folder called `model`, and then create a volume in the `docker-compose.yml` file to mount the folder inside the container.
+Class definition:
 
 .. code-block:: python
 
@@ -45,7 +47,7 @@ First we have to define the classes that we want to use in the application. This
 
 Then we can deploy dataclay using docker-compose. Create a file docker-compose.yml and use the following docker-compose file using `docker-compose up`:
 
-.. code-block:: yml
+.. code-block:: yaml
 
     version: '3.9'
     services:

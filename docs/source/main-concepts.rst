@@ -5,7 +5,18 @@ Main Concepts
 What is dataClay
 ----------------
 
-dataClay [MARTI2017129, MartiFraiz2017] is a distributed object store that enables programmers to handle object persistence using the same model they use in their object-oriented applications, thus avoiding time consuming transformation between persistent and non persistent models. In other words, dataClay enables applications to store objects in the same format they have in memory. This can be done either using the standard GET/PUT/UPDATE methods of standard object stores, or by just calling the makePersistent method on an object that will enable applications to access it, in the same way, regardless of whether it is loaded in memory or persisted in disk (you just follow the object reference). In addition, dataClay simplifies and optimizes the idea of moving computation close to data (see Section 1.3) by enabling the execution of methods in the same node where a given object is located. dataClay also optimizes the idea of sharing data and models (set of classes) between different users by means of storing the class (including method definition) together with the object.
+dataClay [MARTI2017129, MartiFraiz2017] is a distributed object store that enables programmers 
+to handle object persistence using the same model they use in their object-oriented applications, 
+thus avoiding time consuming transformation between persistent and non persistent models. 
+In other words, dataClay enables applications to store objects in the same format they have in memory. 
+This can be done either using the standard GET/PUT/UPDATE methods of standard object stores, 
+or by just calling the makePersistent method on an object that will enable applications to access it, 
+in the same way, regardless of whether it is loaded in memory or persisted in disk 
+(you just follow the object reference). In addition, dataClay simplifies and optimizes the idea of moving 
+computation close to data (see Section 1.3) by enabling the execution of methods in the same node 
+where a given object is located. dataClay also optimizes the idea of sharing data and models 
+(set of classes) between different users by means of storing the class (including method definition) 
+together with the object.
 
 
 Basic terminology

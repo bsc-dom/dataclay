@@ -40,7 +40,7 @@ def read_matrix(id, matrices, path):
 def multithread_main(num_matrices, num_sums, path):
 
     # This should become before using registered classes
-    client = dataclay.client()
+    client = dataclay.Client()
     client.start()
 
     times = [time.time()]

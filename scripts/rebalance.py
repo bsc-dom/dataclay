@@ -1,7 +1,7 @@
 import dataclay
 from dataclay.metadata.api import MetadataAPI
 
-client = dataclay.client(
+client = dataclay.Client(
     host="127.0.0.1", username="testuser", password="s3cret", dataset="testuser"
 )
 client.start()

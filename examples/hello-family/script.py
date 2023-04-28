@@ -1,8 +1,8 @@
 from model.family import Family, Person
 
-from dataclay import client
+from dataclay import Client
 
-client = client(host="127.0.0.1", username="testuser", password="s3cret", dataset="testuser")
+client = Client(host="127.0.0.1", username="testuser", password="s3cret", dataset="testuser")
 client.start()
 
 try:

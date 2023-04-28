@@ -32,19 +32,8 @@ tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 
-def client(host=None, port=None, username=None, password=None, dataset=None, local_backend=None):
-    return ClientAPI(
-        host=host,
-        port=port,
-        username=username,
-        password=password,
-        dataset=dataset,
-        local_backend=local_backend,
-    )
-
-
 def init():
-    client_api = ClientAPI()
+    client_api = Client()
     client_api.start()
     return client_api
 
@@ -53,7 +42,7 @@ def finish():
     pass
 
 
-class ClientAPI:
+class Client:
     """Client API for dataClay.
 
     Usually you create client instance and call start() method to initialize it.
