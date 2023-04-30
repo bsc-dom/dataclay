@@ -1,7 +1,9 @@
 Contributing
 ============
 
-dataClay is a community-maintained project and we happily accept contributions.
+dataClay is a `BSC <https://www.bsc.es/research-and-development/software-and-apps/software-list/dataclay>`_
+project under the `BSD License <https://github.com/bsc-dom/dataclay/blob/main/LICENSE.txt>`_
+and we happily accept contributions.
 
 If you wish to add a new feature or fix a bug:
 
@@ -28,19 +30,18 @@ In order to setup the development environment you need
 
   $ python -m pip install --user --upgrade tox
 
-Also you need to have `docker engine <https://docs.docker.com/engine/install/ubuntu/>`_ installed 
+You wll also need to have `docker engine <https://docs.docker.com/engine/install/ubuntu/>`_ installed 
 for `tox`_ to use `pytest-docker <https://pypi.org/project/pytest-docker/>`_.
 
-Install dataClay with editable mode and dev extra require::
+Install dataClay in editable mode with the ``dev`` extra requirement::
 
    $ pip install -e .[dev]
 
 Running the tests
 -----------------
 
-We use some external dependencies, multiple interpreters and code coverage
-analysis while running test suite. Our ``tox.ini`` handles much of this for
-you::
+When running the test suite, we use external dependencies, multiple interpreters, and code coverage analysis. 
+Our `tox.ini <https://github.com/bsc-dom/dataclay/blob/main/tox.ini>`_ file handles much of this for you::
 
   $ tox -e py310
   
