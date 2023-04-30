@@ -3,6 +3,11 @@ User Guide
 
 .. currentmodule:: dataclay
 
+.. note::
+    You can follow this guide executing side-by-side all the commands with the 
+    :doc:`examples/quickstart` example.
+
+
 Installation
 ------------
 
@@ -22,34 +27,8 @@ to access and process it.
 
 A minimal dataClay class looks something like this:
 
-.. code-block:: python
-
-  from dataclay import DataClayObject, activemethod
-
-    class Company(DataClayObject):
-        name: str
-        employees: list[Employee]
-
-        @activemethod
-        def __init__(self, name, *employees):
-            self.name = name
-            self.employees = list(employees)
-
-    class Employee(DataClayObject):
-        name: str
-        salary: float
-
-        @activemethod
-        def __init__(self, name, salary):
-            self.name = name
-            self.salary = salary
-
-        @activemethod
-        def get_payroll(self, hours_worked):
-            overtime = 0
-            if hours_worked > 40:
-                overtime = hours_worked - 40
-            return self.salary * (overtime * (self.salary / 40))
+.. literalinclude:: /../../examples/quickstart/model/company.py
+   :language: python
 
 All dataClay classes must inherit from :class:`DataClayObject`. 
 
@@ -111,8 +90,26 @@ potentially reducing the local memory footprint::
     employee.salary = 2000.0 # Remote call
     print(employee.name, employee.salary) # Two remote calls
 
-By default, all objects referenced by the current one will also be made persistent
-(in case they were not already persistent) in a recursive manner::
+
+Assign backend
+^^^^^^^^^^^^^^
+
+Every dataClay object is owned by a backend. When calling :meth:`make_persistent() <DataClayObject.make_persistent>`
+we can specify the backend where the object will be registered. If no backend is specified, the object will be
+registered in a random backend.
+
+We can get a list of backend ids with :meth:`get_backends() <Client.get_backends>`
+and register a dataClay object to one of the backends::
+
+    backend_ids = list(client.get_backends())
+    employee = Employee("John", 1000.0)
+    employee.make_persistent(backend_id=backend_ids[0])
+
+Recursive
+^^^^^^^^^
+
+By default, :meth:`make_persistent() <DataClayObject.make_persistent>` will register the current object
+and all the dataClay objects referenced by it in a recursive manner::
 
     employee = Employee("John", 1000.0)
     company = Company("ABC", employee)
@@ -131,7 +128,10 @@ to :meth:`make_persistent() <DataClayObject.make_persistent>`::
     assert company.is_registered
     assert not employee.is_registered
 
-When you add a reference of a dataClay object to a persistent object, 
+Automatic persistence
+^^^^^^^^^^^^^^^^^^^^^
+
+When you add a new reference of a dataClay object to a persistent object, 
 this will be automatically registered::
 
     company = Company("ABC")
@@ -157,7 +157,7 @@ However, if you mutate a persistent attribute, the change will not be reflected 
     assert not employee.is_registered
     assert employee not in company.employees
 
-This happens because when accessing ``company.employees`` this creates a local copy of the list.
+This happens because when accessing ``company.employees`` it creates a local copy of the list.
 The ``append`` only updates this local copy. To update the list in dataClay, we have to assign
 the new list to the attribute. This will also register the employee::
 
@@ -167,6 +167,7 @@ the new list to the attribute. This will also register the employee::
     employee = Employee("John", 1000.0)
     employees = company.employees
     employees.append(employee)
+    # This will register the employee in dataClay
     company.employees = employees
 
     assert employee.is_registered 
