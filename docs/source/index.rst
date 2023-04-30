@@ -27,21 +27,21 @@ dataClay
 
 
 dataClay is a distributed data store that enables applications to store and access objects
-in the same format they have in memory, and executes object methods within the data store. 
+in the same format as they have in memory and executes object methods within the data store. 
 These two main features accelerate both the development of applications and their execution.
 
 
-Installing
-----------
+Installation
+------------
 
-dataclay can be installed with `pip <https://pip.pypa.io>`_
+To install dataClay, you can use `pip <https://pip.pypa.io>`_:
 
 .. code-block:: console
 
    $ pip install dataclay
 
 
-Alternatively, you can grab the latest source code from `GitHub <https://github.com/bsc-dom/dataclay>`_:
+Alternatively, you can obtain the latest source code from `GitHub <https://github.com/bsc-dom/dataclay>`_:
 
 .. code-block:: console
 
@@ -52,24 +52,24 @@ Alternatively, you can grab the latest source code from `GitHub <https://github.
 Usage
 -----
 
-The :doc:`user-guide` is the place to go to learn how to use the library and
-accomplish common tasks. The more in-depth :doc:`advanced-usage` guide is the place to go for lower-level tweaking.
+The :doc:`user-guide` is the primary resource for learning how to use the library and
+accomplish common tasks. For lower-level tweaking, refer to the :doc:`advanced-usage` guide.
 
 The :doc:`reference/index` documentation provides API-level documentation.
 
 Deployment
 ----------
 
-The :doc:`deployment` guide provides information on how to deploy dataClay in different scenarios.
+The :doc:`deployment` guide offers information on how to deploy dataClay in different scenarios.
 
 License
 -------
 
-dataClay is made available under the BSD License. For more details, see `LICENSE.txt <https://github.com/bsc-dom/dataclay/blob/main/LICENSE.txt>`_.
+dataClay is licensed under the BSD License. For more information, refer to the `LICENSE.txt <https://github.com/bsc-dom/dataclay/blob/main/LICENSE.txt>`_.
 
 Contributing
 ------------
 
-We happily welcome contributions, please see :doc:`contributing` for details.
+We welcome contributions to dataClay. Please see the :doc:`contributing` for more details.
 
 
