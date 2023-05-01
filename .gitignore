@@ -1,5 +1,6 @@
 virtualenv*
 build/
+_build/
 deploy/
 dist/
 dataClay.egg-info/

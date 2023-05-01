@@ -27,7 +27,7 @@ to access and process it.
 
 A minimal dataClay class looks something like this:
 
-.. literalinclude:: /../../examples/quickstart/model/company.py
+.. literalinclude:: /../examples/quickstart/model/company.py
    :language: python
 
 All dataClay classes must inherit from :class:`DataClayObject`. 
