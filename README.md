@@ -6,14 +6,14 @@
 </h1>
 
 <p align="center">
-  [![Tests](https://github.com/bsc-dom/dataclay/actions/workflows/tests.yml/badge.svg)](https://github.com/bsc-dom/dataclay/actions/workflows/tests.yml)
-  [![Documentation Status](https://readthedocs.org/projects/dataclay/badge/?version=latest)](https://dataclay.readthedocs.io/en/latest/?badge=latest)
-  ![PyPI - Status](https://img.shields.io/pypi/status/dataclay)
-  ![PyPI - Format](https://img.shields.io/pypi/format/dataclay)
-  [![License](https://img.shields.io/github/license/bsc-dom/dataclay)](https://github.com/bsc-dom/dataclay/blob/main/LICENSE.txt)
-  [![PyPI version](https://badge.fury.io/py/dataClay.png)](https://badge.fury.io/py/dataClay)
-  [![Pypi Downloads](https://pepy.tech/badge/dataclay)](https://pepy.tech/project/dataclay)
-  [![Test Pypi](https://img.shields.io/badge/testpypi-2.8.dev-green)](https://test.pypi.org/project/dataClay/)
+  <a href="https://github.com/bsc-dom/dataclay/actions/workflows/tests.yml"><img alt="Tests" src="https://github.com/bsc-dom/dataclay/actions/workflows/tests.yml/badge.svg" /></a>
+  <a href="https://dataclay.readthedocs.io/en/latest/?badge=latest"><img alt="Documentation Status" src="https://readthedocs.org/projects/dataclay/badge/?version=latest" /></a>
+  <a href="https://pypi.org/project/dataClay/"><img alt="PyPI - Status" src="https://img.shields.io/pypi/status/dataclay" /></a>
+  <a href="https://pypi.org/project/dataClay/"><img alt="PyPI - Format" src="https://img.shields.io/pypi/format/dataclay" /></a>
+  <a href="https://github.com/bsc-dom/dataclay/blob/main/LICENSE.txt"><img alt="License" src="https://img.shields.io/github/license/bsc-dom/dataclay" /></a>
+  <a href="https://badge.fury.io/py/dataClay"><img alt="PyPI version" src="https://badge.fury.io/py/dataClay.png" /></a>
+  <a href="https://pepy.tech/project/dataclay"><img alt="Pypi Downloads" src="https://pepy.tech/badge/dataclay" /></a>
+  <a href="https://test.pypi.org/project/dataClay/"><img alt="Test Pypi" src="https://img.shields.io/badge/testpypi-2.8.dev-green" /></a>
 </p>
 
 dataClay is a distributed data store that enables applications to store and access objects in the same format they have in memory, and executes object methods within the data store. These two main features accelerate both the development of applications and their execution.
