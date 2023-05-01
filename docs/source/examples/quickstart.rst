@@ -1,8 +1,8 @@
 Quickstart
 ==========
 
-`This example <https://github.com/bsc-dom/dataclay/tree/main/examples/quickstart>`_ allows to deploy 
-a minimal dataClay instance tu run all commands from the :doc:`../user-guide` side-by-side.
+`This example <https://github.com/bsc-dom/dataclay/tree/main/examples/quickstart>`_ allows to quickly deploy dataClay
+and run all commands from the :doc:`../user-guide`.
 
 Prerequisits
 ------------

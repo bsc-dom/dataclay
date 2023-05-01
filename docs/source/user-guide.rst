@@ -4,14 +4,14 @@ User Guide
 .. currentmodule:: dataclay
 
 .. note::
-    You can follow this guide executing side-by-side all the commands with the 
+    You can also follow this guide by running side-by-side all the commands with the 
     :doc:`examples/quickstart` example.
 
 
 Installation
 ------------
 
-dataClay can be installed with `pip <https://pip.pypa.io>`_
+dataClay can be installed with `pip <https://pip.pypa.io>`_:
 
 .. code-block:: console
 

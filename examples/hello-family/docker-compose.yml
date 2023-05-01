@@ -18,6 +18,7 @@ services:
       - DATACLAY_ID
       - DATACLAY_PASSWORD=s3cret
       - DATACLAY_USERNAME=testuser
+      - DATACLAY_DATASET=testdata
       - DATACLAY_METADATA_PORT=16587
       command: python -m dataclay.metadata
 

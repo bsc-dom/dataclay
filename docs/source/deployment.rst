@@ -1,52 +1,29 @@
 Deployment
 ==========
 
-The easiest way to deploy dataClay is using the provided docker image. 
-You can deploy a minimal dataClay instance with:
+The easiest way to deploy dataClay is using the provided 
+`docker image <https://github.com/bsc-dom/dataclay/pkgs/container/dataclay>`_. 
+You can deploy a minimal dataClay instance with the following docker-compose:
 
-.. code-block:: yaml
+.. literalinclude:: /../../examples/quickstart/docker-compose.yml
+   :language: yaml
 
-    version: '3.9'
-    services:
+.. note::
+    All dataClay classes must be saved in the ``model`` folder to allow access by the backend.
+    In more complex deployments, the classes will be packaged in the docker image, or installed  after the deployment
+    using ``pip``, or something similar.
 
-    redis:
-        image: redis:latest
-        ports:
-        - 6379:6379
+Account Managment
+-----------------
 
-    metadata-service:
-        image: "ghcr.io/bsc-dom/dataclay:edge"
-        depends_on:
-        - redis
-        ports:
-        - 16587:16587
-        environment:
-        - DATACLAY_KV_HOST=redis
-        - DATACLAY_KV_PORT=6379
-        - DATACLAY_ID
-        - DATACLAY_PASSWORD=s3cret
-        - DATACLAY_USERNAME=testuser
-        - DATACLAY_METADATA_PORT=16587
-        command: python -m dataclay.metadata
+First export the following environment variables with the corresponding value::
 
-    backend:
-        image: "ghcr.io/bsc-dom/dataclay:edge"
-        depends_on:
-        - redis
-        ports:
-        - 6867:6867
-        environment:
-        - DATACLAY_KV_HOST=redis
-        - DATACLAY_KV_PORT=6379
-        - DATACLAY_BACKEND_ID
-        - DATACLAY_BACKEND_NAME
-        - DATACLAY_BACKEND_PORT=6867
-        - DEBUG=true
-        command: python -m dataclay.backend
-        volumes:
-         - ./model:/workdir/model:ro
+    export DATACLAY_METADATA_HOSTNAME=127.0.0.1
 
+To create a new account::
 
-It is important to save the dataClay classes in a folder called ``model`` to make it accessible by the backend.
-In more complex deployments, the classes will be packaged in the docker image, or installed  after the deployment
-using ``pip``, or other tools.
+    python3 -m dataclay.metadata.cli new_account john s3cret
+
+To create a new dataset::
+
+    python3 -m dataclay.metadata.cli new_dataset john s3cret mydataset
