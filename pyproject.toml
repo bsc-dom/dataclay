@@ -14,7 +14,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python",
-    "Framework :: dataClay",
     "Topic :: Database :: Database Engines/Servers",
     "Topic :: System :: Distributed Computing",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
