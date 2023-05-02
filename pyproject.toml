@@ -24,12 +24,12 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "grpcio",
-    "numpy",
-    "psutil",
-    "protobuf",
-    "redis",
-    "bcrypt",
+    "grpcio>=1.54.0",
+    "numpy>=1.24.3",
+    "psutil>=5.9.5",
+    "protobuf>=4.22.3",
+    "redis>=4.5.4",
+    "bcrypt>=4.0.1",
 ]
 dynamic = ["version"]
 
