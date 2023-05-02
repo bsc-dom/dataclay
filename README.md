@@ -6,7 +6,7 @@
 </h1>
 
 <p align="center">
-  <a href="https://github.com/bsc-dom/dataclay/actions/workflows/tests.yml"><img alt="Tests" src="https://github.com/bsc-dom/dataclay/actions/workflows/tests.yml/badge.svg" /></a>
+  <!-- <a href="https://github.com/bsc-dom/dataclay/actions/workflows/tests.yml"><img alt="Tests" src="https://github.com/bsc-dom/dataclay/actions/workflows/tests.yml/badge.svg" /></a> -->
   <a href="https://dataclay.readthedocs.io/en/latest/?badge=latest"><img alt="Documentation Status" src="https://readthedocs.org/projects/dataclay/badge/?version=latest" /></a>
   <a href="https://pypi.org/project/dataClay/"><img alt="PyPI - Status" src="https://img.shields.io/pypi/status/dataclay" /></a>
   <a href="https://pypi.org/project/dataClay/"><img alt="PyPI - Format" src="https://img.shields.io/pypi/format/dataclay" /></a>

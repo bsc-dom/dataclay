@@ -101,7 +101,6 @@ class Configuration(object):
 
     @classmethod
     def read_from_file(cls, flags_path):
-
         # Check if environment variable is set
         abs_flags_path = os.path.abspath(flags_path)
         print("--- Using global.properties at %s" % abs_flags_path)
@@ -128,4 +127,4 @@ if "DATACLAYGLOBALCONFIG" in os.environ:
 else:
     flags_path = "./cfgfiles/global.properties"
 
-Configuration.read_from_file(flags_path)
+# Configuration.read_from_file(flags_path)
