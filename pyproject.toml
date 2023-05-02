@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dataClay"
+name = "dataclay"
 description = "Python distributed data store that enables remotely access and method execution."
 readme = "README.md"
 license = {text = "BSD-3-Clause"}

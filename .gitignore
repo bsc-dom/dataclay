@@ -3,7 +3,7 @@ build/
 _build/
 deploy/
 dist/
-dataClay.egg-info/
+dataclay.egg-info/
 *.pyc
 MANIFEST
 .cache/
