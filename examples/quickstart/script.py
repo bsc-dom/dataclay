@@ -1,4 +1,4 @@
-from model.company import Employee, Company
+from model.company import Company, Employee
 
 from dataclay import Client
 

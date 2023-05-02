@@ -1,5 +1,6 @@
 from dataclay import DataClayObject, activemethod
 
+
 class Employee(DataClayObject):
     name: str
     salary: float
@@ -15,7 +16,8 @@ class Employee(DataClayObject):
         if hours_worked > 40:
             overtime = hours_worked - 40
         return self.salary * (overtime * (self.salary / 40))
-    
+
+
 class Company(DataClayObject):
     name: str
     employees: list[Employee]

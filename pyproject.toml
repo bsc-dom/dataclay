@@ -2,6 +2,61 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "dataClay"
+description = "Python distributed data store that enables remotely access and method execution."
+readme = "README.md"
+license = {text = "BSD-3-Clause"}
+maintainers = [{name = "BSC-DOM", email = "support-dataclay@bsc.es"}]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Framework :: dataClay",
+    "Topic :: Database :: Database Engines/Servers",
+    "Topic :: System :: Distributed Computing",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3 :: Only",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "grpcio",
+    "numpy",
+    "psutil",
+    "protobuf",
+    "redis",
+    "bcrypt",
+]
+dynamic = ["version"]
+
+[project.urls]
+"Documentation" = "https://dataclay.bsc.es/"
+"Code" = "https://github.com/bsc-dom/dataclay"
+"Issue tracker" = "https://github.com/bsc-dom/dataclay/issues"
+
+[project.optional-dependencies]
+dev = [
+    "tox",
+    "pytest",
+    "pytest-docker",
+    "grpcio-tools",
+    "black",
+    "isort",
+]
+mn4 = ["ansible"]
+docs = ["furo", "sphinx-copybutton"]
+opentelemetry = ["opentelemetry-api"]
+
+[project.scripts]
+dataclay = "dataclay.metadata.cli:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "dataclay.__version__"}
+
 [tool.isort]
 profile = "black"
 extend_skip = "src/dataclay/protos"
