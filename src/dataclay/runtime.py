@@ -129,7 +129,7 @@ class DataClayRuntime(ABC):
     # Common runtime API
 
     @abstractmethod
-    def make_persistent(self, instance, alias, backend_id, recursive):
+    def make_persistent(self, instance, alias, backend_id):
         pass
 
     @abstractmethod

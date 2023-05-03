@@ -8,16 +8,16 @@ and we happily accept contributions.
 If you wish to add a new feature or fix a bug:
 
 #. `Check for open issues <https://github.com/bsc-dom/dataclay/issues>`_ or open
-   a fresh issue to start a discussion around a feature idea or a bug. There is
-   a *Contributor Friendly* tag for issues that should be ideal for people who
-   are not very familiar with the codebase yet.
+   a new issue to start a discussion around a feature idea or a bug. Issues labeled
+   as *Contributor Friendly* are ideal for individuals who are not yet familiar with
+   the codebase.
 #. Fork the `dataclay repository on Github <https://github.com/bsc-dom/dataclay>`_
    to start making your changes.
 #. Write a test which shows that the bug was fixed or that the feature works
    as expected.
-#. Format your changes with black using command `$ tox -e format` and lint your
-   changes using command `tox -e lint`.
-#. Send a pull request and bug the maintainer until it gets merged and published.
+#. Format your changes with `Black <https://black.readthedocs.io/en/stable/>`_ using the
+   command `tox -e format` and lint your changes using the command `tox -e lint`.
+#. Send a pull request and follow up with the maintainer until it gets merged and published.
 
 .. #. Add a `changelog entry
 ..    <https://github.com/urllib3/urllib3/blob/main/changelog/README.rst>`__.
@@ -25,8 +25,7 @@ If you wish to add a new feature or fix a bug:
 Setting up your development environment
 ---------------------------------------
 
-In order to setup the development environment you need
-`tox`_ installed in your machine:
+To set up your development environment, you will need `tox`_ installed on your machine:
 
 .. code-block:: console
 

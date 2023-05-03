@@ -30,7 +30,7 @@ class ClientRuntime(DataClayRuntime):
     def add_to_heap(self, instance: DataClayObject):
         self.inmemory_objects[instance._dc_id] = instance
 
-    def make_persistent(self, instance: DataClayObject, alias, backend_id, recursive):
+    def make_persistent(self, instance: DataClayObject, alias, backend_id):
         """This method creates a new Persistent Object using the provided stub
         instance and, if indicated, all its associated objects also Logic module API used for communication
         This function is called from a stub/execution class
@@ -38,7 +38,6 @@ class ClientRuntime(DataClayRuntime):
         Args:
             instance: Instance to make persistent
             backend_id: Indicates which is the destination backend
-            recursive: Indicates if make persistent is recursive
             alias: Alias for the object
 
         Returns:

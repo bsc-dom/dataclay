@@ -266,15 +266,13 @@ class DataClayObject:
     # Object Oriented Methods #
     ###########################
 
-    def make_persistent(self, alias=None, backend_id=None, recursive=True):
+    def make_persistent(self, alias=None, backend_id=None):
         """Makes the object persistent.
 
         Args:
             alias: Alias of the object. If None, the object will not have an alias.
             backend_id: ID of the backend where the object will be stored. If None, the object
                 will be stored in a random backend.
-            recursive: If True, all objects referenced by the current one will be made persistent
-                as well (in case they were not already persistent) in a recursive manner.
 
         Raises:
             AttributeError: If the alias is an empty string.
@@ -283,7 +281,7 @@ class DataClayObject:
         """
         if alias == "":
             raise AttributeError("Alias cannot be empty")
-        get_runtime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
+        get_runtime().make_persistent(self, alias=alias, backend_id=backend_id)
 
     @classmethod
     def get_by_id(cls, object_id: UUID):
@@ -438,7 +436,7 @@ class DataClayObject:
 
         get_runtime().update_object(self, from_object)
 
-    def dc_put(self, alias, backend_id=None, recursive=True):
+    def dc_put(self, alias, backend_id=None):
         """Makes the object persistent in the specified backend.
 
         Args:
@@ -446,8 +444,6 @@ class DataClayObject:
                 Aliases are unique for dataset.
             backend_id: the backend where the object will be stored. If this parameter is not
                 specified, a random backend will be chosen.
-            recursive: If True, all objects referenced by the current object are also made
-                persistent (in case they were not already persistent) in a recursive manner.
 
         Raises:
             AttributeError: if alias is null or empty.
@@ -457,7 +453,7 @@ class DataClayObject:
         """
         if not alias:
             raise AttributeError("Alias cannot be null or empty")
-        get_runtime().make_persistent(self, alias=alias, backend_id=backend_id, recursive=recursive)
+        get_runtime().make_persistent(self, alias=alias, backend_id=backend_id)
 
     # Versioning
 
@@ -492,7 +488,7 @@ class DataClayObject:
             object_copy._dc_original = self
             object_copy._dc_versions = []
 
-        get_runtime().make_persistent(object_copy, None, backend_id, recursive)
+        get_runtime().make_persistent(object_copy, None, backend_id)
         return object_copy
 
     def consolidate_version(self):

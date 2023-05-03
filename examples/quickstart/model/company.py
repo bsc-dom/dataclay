@@ -15,7 +15,7 @@ class Employee(DataClayObject):
         overtime = 0
         if hours_worked > 40:
             overtime = hours_worked - 40
-        return self.salary * (overtime * (self.salary / 40))
+        return self.salary + (overtime * (self.salary / 40))
 
 
 class Company(DataClayObject):

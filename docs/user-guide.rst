@@ -15,36 +15,34 @@ dataClay can be installed with `pip <https://pip.pypa.io>`_:
 
 .. code-block:: console
 
-  $ python -m pip install dataclay
+  $ python3 -m pip install dataclay
 
 
 Defining Classes
 ----------------
 
-The model provider is responsible of the design and implementation of class models. 
-The data structure, the methods and the relationships that the applications can use
-to access and process it.
+The model provider is responsible for designing and implementing class models: the data structure,
+the methods, and the relationships that applications can use to access and process data.
 
-A minimal dataClay class looks something like this:
+A minimal dataClay class is defined like this:
 
 .. literalinclude:: /../examples/quickstart/model/company.py
    :language: python
 
 All dataClay classes must inherit from :class:`DataClayObject`. 
 
-It is required to `annotate <https://docs.python.org/3/howto/annotations.html>`_ the fields that will be persisted in dataClay. 
-The rest of the fields will be ignored and will only be accessible by the local instance.
+It is required to `annotate <https://docs.python.org/3/howto/annotations.html>`_ the fields that
+are intended to be persisted in dataClay. The remaining fields will be ignored and will only be 
+accessible by the local instance.
 
-We decorate the methods with :func:`@activemethod <activemethod>` to indicate that they will be executed in dataClay 
-(if the object is persistent). The rest of the methods will always be executed locally.
-
+The methods should be decorated with :func:`@activemethod <activemethod>` to specify that they will be
+executed in dataClay if the object is persistent. The rest of the methods will always be executed locally.
 
 Connect Client
 --------------
 
-To connect to a dataClay we have to create an instance of :class:`Client` and provide the
-host, username, password and dataset to connect to. You can provide it as arguments or
-as environment variables:
+To connect to a dataClay, create a :class:`Client` instance and provide the host, username,
+password and dataset to connect to. You can provide it as arguments or as environment variables:
 
 - ``DATACLAY_METADATA_HOSTNAME``: Hostname of the dataClay instance.
 - ``DATACLAY_METADATA_PORT``: Port of the dataClay instance.
@@ -60,7 +58,7 @@ as environment variables:
     host="127.0.0.1", port="16587", username="testuser", password="s3cret", dataset="testdata"
   )
 
-We can start the connection by calling :meth:`start() <Client.start>`
+You can start the connection by calling :meth:`start() <Client.start>`
 and stop it with :meth:`stop() <Client.stop>`::
 
     client.start()
@@ -75,19 +73,19 @@ You can also use the client as a context manager::
 Make Persistent
 ---------------
 
-We can call :meth:`make_persistent() <DataClayObject.make_persistent>` on a dataClay object to make it persistent::
+To make a dataClay object persistent, call its :meth:`make_persistent() <DataClayObject.make_persistent>` method:: 
 
     employee = Employee("John", 1000.0)
     employee.make_persistent()
 
 Then all methods decorated with :func:`@activemethod <activemethod>` will be executed in dataClay::
 
-    payroll = employee.get_payroll(50)
+    payroll = employee.get_payroll(50) # One remote call
 
 And all annotated attributes will be accessed and updated in dataClay,
 potentially reducing the local memory footprint::
 
-    employee.salary = 2000.0 # Remote call
+    employee.salary = 2000.0 # One remote call
     print(employee.name, employee.salary) # Two remote calls
 
 
@@ -98,7 +96,7 @@ Every dataClay object is owned by a backend. When calling :meth:`make_persistent
 we can specify the backend where the object will be registered. If no backend is specified, the object will be
 registered in a random backend.
 
-We can get a list of backend ids with :meth:`get_backends() <Client.get_backends>`
+You can get a list of backend IDs with :meth:`get_backends() <Client.get_backends>`
 and register a dataClay object to one of the backends::
 
     backend_ids = list(client.get_backends())
@@ -108,31 +106,32 @@ and register a dataClay object to one of the backends::
 Recursive
 ^^^^^^^^^
 
-By default, :meth:`make_persistent() <DataClayObject.make_persistent>` will register the current object
+By default, :meth:`make_persistent() <DataClayObject.make_persistent>` registers the current object
 and all the dataClay objects referenced by it in a recursive manner::
 
     employee = Employee("John", 1000.0)
     company = Company("ABC", employee)
 
     # company and employee are registered
-    company.make_persistent(recursive=True)
+    company.make_persistent()
     assert employee.is_registered
 
-This behavior can be disabled by passing ``recursive=False`` 
-to :meth:`make_persistent() <DataClayObject.make_persistent>`::
+..
+    This behavior can be disabled by passing ``recursive=False`` 
+    to :meth:`make_persistent() <DataClayObject.make_persistent>`::
 
-    employee = Employee("John", 1000.0)
-    company = Company("ABC", employee)
+        employee = Employee("John", 1000.0)
+        company = Company("ABC", employee)
 
-    company.make_persistent(recursive=False)
-    assert company.is_registered
-    assert not employee.is_registered
+        company.make_persistent(recursive=False)
+        assert company.is_registered
+        assert not employee.is_registered
 
 Automatic persistence
 ^^^^^^^^^^^^^^^^^^^^^
 
 When you add a new reference of a dataClay object to a persistent object, 
-this will be automatically registered::
+it is automatically registered::
 
     company = Company("ABC")
     company.make_persistent()
@@ -157,9 +156,9 @@ However, if you mutate a persistent attribute, the change will not be reflected 
     assert not employee.is_registered
     assert employee not in company.employees
 
-This happens because when accessing ``company.employees`` it creates a local copy of the list.
-The ``append`` only updates this local copy. To update the list in dataClay, we have to assign
-the new list to the attribute. This will also register the employee::
+This happens because when accessing ``company.employees``, it creates a local copy of the list.
+The ``append()`` only updates this local copy. To update the list in dataClay, we have to assign
+the new list to the attribute. For example, this will also register the employee::
 
     company = Company("ABC")
     company.make_persistent()
@@ -180,10 +179,10 @@ the new list to the attribute. This will also register the employee::
 Alias
 -----
 
-Objects with alias are objects that have been explicitly named (much in the same way we
-give names to files). Not all dataClay objects need to have an alias (a name). If an object has
-an alias, we can access it by using its name. On the other hand, objects without an alias can
-only be accessed by a reference from another object.
+Objects with an alias are objects that have been explicitly named (similar to naming files).
+Not all dataClay objects should have an alias. If an object has an alias, we can access it 
+by using its name. On the other hand, objects without an alias can only be accessed by a reference 
+from another object.
 
 .. warning::
     The alias must be unique within the dataset. If we try to create an object
