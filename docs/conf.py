@@ -6,10 +6,12 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import dataclay
+
 project = "dataClay"
 copyright = "2023, BSC Distributed Object Management"
 author = "BSC Distributed Object Management"
-release = "3.0.0"
+release = dataclay.__version__
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
