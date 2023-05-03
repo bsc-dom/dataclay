@@ -1,7 +1,7 @@
 
 <h1 align="center">
 
-![urllib3](https://github.com/bsc-dom/dataclay/blob/main/docs/_static/dataclay-full.png)
+![dataClay](https://github.com/bsc-dom/dataclay/blob/main/docs/_static/dataclay-full.png)
 
 </h1>
 

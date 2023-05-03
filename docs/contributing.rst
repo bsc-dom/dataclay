@@ -20,7 +20,7 @@ If you wish to add a new feature or fix a bug:
 #. Send a pull request and follow up with the maintainer until it gets merged and published.
 
 .. #. Add a `changelog entry
-..    <https://github.com/urllib3/urllib3/blob/main/changelog/README.rst>`__.
+..    <https://github.com/bsc-dom/dataclay/blob/main/changelog/README.rst>`__.
 
 Setting up your development environment
 ---------------------------------------
