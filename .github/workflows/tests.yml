@@ -21,6 +21,5 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install tox tox-gh-actions
-          docker build -t ghcr.io/bsc-dom/dataclay:dev -f Dockerfile.dev --build-arg PYTHON_VERSION=${{ matrix.python-version }}-bullseye .
       - name: Test with tox
         run: tox
