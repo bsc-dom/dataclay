@@ -39,7 +39,7 @@
         --build-arg PYTHON_VERSION=3.10-bullseye --push .
         ```
 
-6. Publish the release to PyPI:
+6. Publish the release distribution to PyPI:
 
     ```bash
     # Create and source new virtual environment
