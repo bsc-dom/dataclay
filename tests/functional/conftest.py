@@ -32,7 +32,7 @@ def deploy_dataclay(docker_ip, docker_services):
 @pytest.fixture(scope="session")
 def client(deploy_dataclay):
     client = dataclay.Client(
-        host="127.0.0.1", username="testuser", password="s3cret", dataset="testuser"
+        host="127.0.0.1", username="testuser", password="s3cret", dataset="testdata"
     )
     client.start()
     yield client

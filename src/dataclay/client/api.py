@@ -55,7 +55,14 @@ class Client:
     """
 
     def __init__(
-        self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
+        self,
+        host=None,
+        port=None,
+        username=None,
+        password=None,
+        dataset=None,
+        local_backend=None,
+        tracing=False,
     ):
         self.is_initialized = False
 
@@ -65,6 +72,7 @@ class Client:
         self.password = password
         self.dataset = dataset
         self.local_backend = local_backend
+        self.tracing = tracing
 
         # Set LOCAL_BACKEND
         # if settings.LOCAL_BACKEND:
@@ -91,7 +99,13 @@ class Client:
 
         self.old_settings_dict = settings.__dict__.copy()
         settings.load_client_properties(
-            self.host, self.port, self.username, self.password, self.dataset, self.local_backend
+            self.host,
+            self.port,
+            self.username,
+            self.password,
+            self.dataset,
+            self.local_backend,
+            self.tracing,
         )
 
         self.old_runtime = get_runtime()

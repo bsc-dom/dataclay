@@ -34,7 +34,6 @@ services:
       - DATACLAY_BACKEND_ID
       - DATACLAY_BACKEND_NAME
       - DATACLAY_BACKEND_PORT=6867
-      - DEBUG=true
     command: python -m dataclay.backend
     volumes:
       - ./model:/workdir/model:ro

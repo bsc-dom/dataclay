@@ -14,7 +14,6 @@ from google.protobuf.wrappers_pb2 import BytesValue
 
 from dataclay.backend.api import BackendAPI
 from dataclay.conf import settings
-from dataclay.exceptions.exceptions import DataClayException
 from dataclay.protos import (
     common_messages_pb2,
     dataservice_messages_pb2,

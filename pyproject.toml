@@ -48,7 +48,13 @@ dev = [
 ]
 mn4 = ["ansible"]
 docs = ["furo", "sphinx-copybutton"]
-opentelemetry = ["opentelemetry-api"]
+tracing = [
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp-proto-grpc",
+    "opentelemetry-instrumentation-grpc",
+    "opentelemetry-instrumentation-redis",
+]
 
 [project.scripts]
 dataclay = "dataclay.metadata.cli:main"

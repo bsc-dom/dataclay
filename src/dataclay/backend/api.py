@@ -73,6 +73,7 @@ class BackendAPI:
 
     # Object Methods
 
+    @tracer.start_as_current_span("make_persistent")
     def make_persistent(self, serialized_dicts: list[bytes]):
         unserialized_objects = dict()
         for serial_dict in serialized_dicts:
@@ -102,6 +103,7 @@ class BackendAPI:
             self.runtime.metadata_service.register_object(proxy_object.metadata)
             proxy_object._dc_is_registered = True
 
+    @tracer.start_as_current_span("call_active_method")
     def call_active_method(self, session_id, object_id, method_name, args, kwargs):
         # NOTE: Session (dataset) is needed for make_persistents inside dc_methods.
         self.runtime.set_session_by_id(session_id)
@@ -136,6 +138,7 @@ class BackendAPI:
 
     # Store Methods
 
+    @tracer.start_as_current_span("get_object_properties")
     def get_object_properties(self, object_id, recursive):
         """Returns a non-persistent copy of the object with ID provided
 
@@ -156,6 +159,7 @@ class BackendAPI:
 
         return serialized_properties
 
+    @tracer.start_as_current_span("update_object")
     def update_object(self, object_id, serialized_properties):
         """Updates an object with ID provided with contents from another object"""
         instance = self.runtime.get_object_by_id(object_id)
@@ -165,6 +169,7 @@ class BackendAPI:
             self.runtime.load_object_from_db(instance)
             vars(instance).update(object_properties)
 
+    @tracer.start_as_current_span("proxify_object")
     def proxify_object(self, object_id, new_object_id):
         instance = self.runtime.get_object_by_id(object_id)
 
@@ -183,6 +188,7 @@ class BackendAPI:
             self.runtime.metadata_service.delete_object(object_id)
             instance._dc_id = new_object_id
 
+    @tracer.start_as_current_span("change_object_id")
     def change_object_id(self, object_id, new_object_id):
         instance = self.runtime.get_object_by_id(object_id)
 
@@ -201,6 +207,7 @@ class BackendAPI:
 
             self.runtime.metadata_service.change_object_id(object_id, new_object_id)
 
+    @tracer.start_as_current_span("move_object")
     def move_object(self, object_id, backend_id, recursive):
         # TODO: check that the object is local to us
         instance = self.runtime.get_object_by_id(object_id)
@@ -240,12 +247,15 @@ class BackendAPI:
 
     # Shutdown
 
+    @tracer.start_as_current_span("shutdown")
     def shutdown(self):
         self.runtime.stop()
 
+    @tracer.start_as_current_span("flush_all")
     def flush_all(self):
         self.runtime.heap_manager.flush_all()
 
+    @tracer.start_as_current_span("move_all_objects")
     def move_all_objects(self):
         dc_objects = self.runtime.metadata_service.get_all_objects()
         self.runtime.update_backend_clients()

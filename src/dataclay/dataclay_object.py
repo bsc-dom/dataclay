@@ -266,6 +266,7 @@ class DataClayObject:
     # Object Oriented Methods #
     ###########################
 
+    @tracer.start_as_current_span("make_persistent")
     def make_persistent(self, alias=None, backend_id=None):
         """Makes the object persistent.
 

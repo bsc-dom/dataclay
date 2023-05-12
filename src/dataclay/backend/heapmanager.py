@@ -55,13 +55,13 @@ class HeapManager(threading.Thread):
         # gc_check_time_interval_seconds = settings.MEMMGMT_CHECK_TIME_INTERVAL / 1000.0
         gc_check_time_interval_seconds = 10
         while True:
-            logger.debug("HEAP MANAGER THREAD is awake...")
+            # logger.debug("HEAP MANAGER THREAD is awake...")
             if self._finished.is_set():
                 break
             self.run_task()
 
             # sleep for interval or until shutdown
-            logger.debug("HEAP MANAGER THREAD is going to sleep...")
+            # logger.debug("HEAP MANAGER THREAD is going to sleep...")
             self._finished.wait(gc_check_time_interval_seconds)
 
         logger.debug("HEAP MANAGER THREAD Finished.")

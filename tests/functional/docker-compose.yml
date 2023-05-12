@@ -18,9 +18,9 @@ services:
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
-      - DATACLAY_ID
-      - DATACLAY_PASSWORD
-      - DATACLAY_USERNAME
+      - DATACLAY_PASSWORD=s3cret
+      - DATACLAY_USERNAME=testuser
+      - DATACLAY_DATASET=testdata
       - DATACLAY_METADATA_PORT=16587
     command: python -m dataclay.metadata
     volumes:
@@ -35,10 +35,7 @@ services:
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
-      - DATACLAY_BACKEND_ID
-      - DATACLAY_BACKEND_NAME
       - DATACLAY_BACKEND_PORT=6867
-      - DEBUG=true
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro
@@ -52,10 +49,7 @@ services:
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
-      - DATACLAY_BACKEND_ID
-      - DATACLAY_BACKEND_NAME
       - DATACLAY_BACKEND_PORT=6868
-      - DEBUG=true
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro
@@ -69,10 +63,7 @@ services:
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
-      - DATACLAY_BACKEND_ID
-      - DATACLAY_BACKEND_NAME
       - DATACLAY_BACKEND_PORT=6869
-      - DEBUG=true
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro

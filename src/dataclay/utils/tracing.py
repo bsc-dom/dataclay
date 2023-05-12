@@ -33,3 +33,39 @@ class LoggerEvent:
             getattr(self.logger, name)(msg, *args, **kwargs)
 
         return wrapper
+
+
+def set_tracer_provider(service_name, agent_hostname, agent_port, exporter="otlp"):
+
+    from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+    resource = Resource(attributes={SERVICE_NAME: service_name})
+    trace.set_tracer_provider(TracerProvider(resource=resource))
+
+    if exporter == "otlp":
+        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
+            OTLPSpanExporter,
+        )
+
+        otlp_exporter = OTLPSpanExporter(endpoint=f"{agent_hostname}:{agent_port}", insecure=True)
+        processor = BatchSpanProcessor(otlp_exporter)
+
+    elif exporter == "console":
+        from opentelemetry.sdk.trace.export import ConsoleSpanExporter
+
+        processor = BatchSpanProcessor(ConsoleSpanExporter())
+
+    trace.get_tracer_provider().add_span_processor(processor)
+
+    if service_name == "client":
+        from opentelemetry.instrumentation.grpc import GrpcInstrumentorClient
+
+        GrpcInstrumentorClient().instrument()
+    else:
+        from opentelemetry.instrumentation.grpc import GrpcInstrumentorServer
+        from opentelemetry.instrumentation.redis import RedisInstrumentor
+
+        GrpcInstrumentorServer().instrument()
+        RedisInstrumentor().instrument()
