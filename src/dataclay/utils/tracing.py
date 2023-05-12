@@ -1,3 +1,6 @@
+import functools
+
+
 class Dummy1:
     def get_tracer(self, name):
         return Dummy2()
@@ -6,6 +9,7 @@ class Dummy1:
 class Dummy2:
     def start_as_current_span(self, *args, **kwargs):
         def decorator(func):
+            @functools.wraps(func)
             def wrapper(*args, **kwargs):
                 return func(*args, **kwargs)
 
@@ -36,7 +40,6 @@ class LoggerEvent:
 
 
 def set_tracer_provider(service_name, agent_hostname, agent_port, exporter="otlp"):
-
     from opentelemetry.sdk.resources import SERVICE_NAME, Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor

@@ -85,6 +85,7 @@ class Settings:
     ###########
 
     DATACLAY_TRACING = os.getenv("DATACLAY_TRACING", default="false").lower() == "true"
+    _tracing_loaded = False
 
     # Destination path for traces
     # TRACES_DEST_PATH = os.getcwd()
@@ -120,24 +121,11 @@ class Settings:
         self.STORAGE_PATH = os.getenv("STORAGE_PATH", default="/dataclay/storage/")
 
         self.DATACLAY_SERVICE_NAME = os.getenv("DATACLAY_SERVICE_NAME", "backend")
-        if self.DATACLAY_TRACING:
-            self.DATACLAY_TRACING_EXPORTER = os.getenv("DATACLAY_TRACING_EXPORTER", "otlp")
-            self.DATACLAY_AGENT_HOSTNAME = os.getenv("DATACLAY_AGENT_HOSTNAME", "localhost")
-            self.DATACLAY_AGENT_PORT = int(os.getenv("DATACLAY_AGENT_PORT", "4317"))
-            dataclay.utils.tracing.set_tracer_provider(
-                self.DATACLAY_SERVICE_NAME, self.DATACLAY_AGENT_HOSTNAME, self.DATACLAY_AGENT_PORT
-            )
+        self.load_tracing_properties()
 
     # TODO: Rename to client_proeprties?
     def load_client_properties(
-        self,
-        host=None,
-        port=None,
-        username=None,
-        password=None,
-        dataset=None,
-        local_backend=None,
-        tracing=None,
+        self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
     ):
         self.DATACLAY_METADATA_HOSTNAME = host or os.environ["DATACLAY_METADATA_HOSTNAME"]
         self.DATACLAY_METADATA_PORT = port or int(os.getenv("DATACLAY_METADATA_PORT", "16587"))
@@ -146,20 +134,6 @@ class Settings:
         self.DC_PASSWORD = password or os.environ["DC_PASSWORD"]
         self.DC_DATASET = dataset or os.environ["DC_DATASET"]
         self.LOCAL_BACKEND = local_backend or os.getenv("LOCAL_BACKEND")
-        self.DATACLAY_TRACING = (
-            tracing or os.getenv("DATACLAY_TRACING", default="false").lower() == "true"
-        )
-
-        self.DATACLAY_SERVICE_NAME = os.getenv("DATACLAY_SERVICE_NAME", "client")
-        if self.DATACLAY_TRACING:
-            self.DATACLAY_TRACING_EXPORTER = os.getenv("DATACLAY_TRACING_EXPORTER", "otlp")
-            self.DATACLAY_AGENT_HOSTNAME = os.getenv("DATACLAY_AGENT_HOSTNAME", "localhost")
-            self.DATACLAY_AGENT_PORT = int(os.getenv("DATACLAY_AGENT_PORT", "4317"))
-            # TODO: Check what happens when this is called twice
-            # It can happend when working with two clients in the same python process
-            dataclay.utils.tracing.set_tracer_provider(
-                self.DATACLAY_SERVICE_NAME, self.DATACLAY_AGENT_HOSTNAME, self.DATACLAY_AGENT_PORT
-            )
 
     def load_metadata_properties(self):
         self.THREAD_POOL_WORKERS = os.getenv("THREAD_POOL_WORKERS", default=None)
@@ -182,13 +156,27 @@ class Settings:
         self.DATACLAY_DATASET = os.getenv("DATACLAY_DATASET", self.DATACLAY_USERNAME)
 
         self.DATACLAY_SERVICE_NAME = os.getenv("DATACLAY_SERVICE_NAME", "metadata")
+        self.load_tracing_properties()
+
+    def load_tracing_properties(self, service_name=None):
+        if self._tracing_loaded:
+            logger.warning(
+                "Attempting to reload tracing properties while already instrumented. Ignoring!"
+            )
+            return
+
+        if service_name is None:
+            service_name = self.DATACLAY_SERVICE_NAME
+
         if self.DATACLAY_TRACING:
             self.DATACLAY_TRACING_EXPORTER = os.getenv("DATACLAY_TRACING_EXPORTER", "otlp")
             self.DATACLAY_AGENT_HOSTNAME = os.getenv("DATACLAY_AGENT_HOSTNAME", "localhost")
             self.DATACLAY_AGENT_PORT = int(os.getenv("DATACLAY_AGENT_PORT", "4317"))
             dataclay.utils.tracing.set_tracer_provider(
-                self.DATACLAY_SERVICE_NAME, self.DATACLAY_AGENT_HOSTNAME, self.DATACLAY_AGENT_PORT
+                service_name, self.DATACLAY_AGENT_HOSTNAME, self.DATACLAY_AGENT_PORT
             )
+
+        self._tracing_loaded = True
 
 
 settings = Settings()

@@ -285,6 +285,7 @@ class DataClayObject:
         get_runtime().make_persistent(self, alias=alias, backend_id=backend_id)
 
     @classmethod
+    @tracer.start_as_current_span("get_by_id")
     def get_by_id(cls, object_id: UUID):
         """Returns the object with the given id.
 
@@ -300,6 +301,7 @@ class DataClayObject:
         return get_runtime().get_object_by_id(object_id)
 
     @classmethod
+    @tracer.start_as_current_span("get_by_alias")
     def get_by_alias(cls, alias, dataset_name=None):
         """Returns the object with the given alias.
 
@@ -317,6 +319,7 @@ class DataClayObject:
         return get_runtime().get_object_by_alias(alias, dataset_name)
 
     @classmethod
+    @tracer.start_as_current_span("delete_alias")
     def delete_alias(cls, alias, dataset_name=None):
         """Removes the alias linked to an object.
 
@@ -333,6 +336,7 @@ class DataClayObject:
         """
         get_runtime().delete_alias(alias, dataset_name=dataset_name)
 
+    @tracer.start_as_current_span("get_backends")
     def get_backends(self):
         """Returns the set of backends where the object is stored"""
         if not self._dc_is_loaded:
@@ -343,6 +347,7 @@ class DataClayObject:
         backends.update(self._dc_replica_backend_ids)
         return backends
 
+    @tracer.start_as_current_span("move")
     def move(self, backend_id: UUID, recursive: bool = False):
         """Moves the object to the specified backend.
 
@@ -366,6 +371,7 @@ class DataClayObject:
     ########################
 
     @classmethod
+    @tracer.start_as_current_span("dc_clone_by_alias")
     def dc_clone_by_alias(cls, alias, recursive=False):
         """Returns a non-persistent object as a copy of the object with the alias specified.
 
@@ -387,6 +393,7 @@ class DataClayObject:
         instance = cls.get_by_alias(alias)
         return get_runtime().get_object_copy(instance, recursive)
 
+    @tracer.start_as_current_span("dc_clone")
     def dc_clone(self, recursive=False):
         """Returns a non-persistent object as a copy of the current object.
 
@@ -406,6 +413,7 @@ class DataClayObject:
         return get_runtime().get_object_copy(self, recursive)
 
     @classmethod
+    @tracer.start_as_current_span("dc_update_by_alias")
     def dc_update_by_alias(cls, alias, from_object):
         """Updates the object identified by specified alias with contents of from_object.
 
@@ -423,6 +431,7 @@ class DataClayObject:
         o = cls.get_by_alias(alias)
         return o.dc_update(from_object)
 
+    @tracer.start_as_current_span("dc_update")
     def dc_update(self, from_object):
         """Updates current object with contents of from_object.
 
@@ -437,6 +446,7 @@ class DataClayObject:
 
         get_runtime().update_object(self, from_object)
 
+    @tracer.start_as_current_span("dc_put")
     def dc_put(self, alias, backend_id=None):
         """Makes the object persistent in the specified backend.
 
@@ -458,6 +468,7 @@ class DataClayObject:
 
     # Versioning
 
+    @tracer.start_as_current_span("new_version")
     def new_version(self, backend_id=None, recursive=False):
         """Create a new version of the current object.
 
@@ -492,6 +503,7 @@ class DataClayObject:
         get_runtime().make_persistent(object_copy, None, backend_id)
         return object_copy
 
+    @tracer.start_as_current_span("consolidate_version")
     def consolidate_version(self):
         """Consolidate the current version of the object with the original one."""
 
@@ -503,6 +515,7 @@ class DataClayObject:
 
         get_runtime().change_object_id(self, original_object_id)
 
+    @tracer.start_as_current_span("get_id")
     def get_id(self):
         """Return the string representation of the persistent object for COMPSs.
 

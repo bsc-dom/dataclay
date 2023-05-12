@@ -97,6 +97,7 @@ class MetadataAPI:
     # Account #
     ###########
 
+    @tracer.start_as_current_span("new_superuser")
     def new_superuser(self, username: str, password: str, dataset_name: str):
         # Creates new account and put it to etcd
         account = Account.new(username, password, role="ADMIN")
@@ -198,7 +199,7 @@ class MetadataAPI:
         self.kv_manager.set_new(backend)
         logger.info(f"Registered new backend with id={id}, hostname={hostname}, port={port}")
 
-    @tracer.start_as_current_span("register_backend")
+    @tracer.start_as_current_span("delete_backend")
     def delete_backend(self, id: UUID):
         self.kv_manager.delete_kv(Backend.path + str(id))
 
@@ -206,6 +207,7 @@ class MetadataAPI:
     # Dataclay Object #
     ###################
 
+    @tracer.start_as_current_span("get_all_objects")
     def get_all_objects(self):
         result = self.kv_manager.getprefix(ObjectMetadata, "/object/")
         return result
@@ -224,11 +226,13 @@ class MetadataAPI:
 
         self.kv_manager.set(object_md)
 
+    @tracer.start_as_current_span("change_object_id")
     def change_object_id(self, old_id: UUID, new_id: UUID):
         object_md = self.kv_manager.getdel_kv(ObjectMetadata, old_id)
         object_md.id = new_id
         self.kv_manager.set(object_md)
 
+    @tracer.start_as_current_span("delete_object")
     def delete_object(self, id: UUID):
         self.kv_manager.delete_kv(ObjectMetadata.path + str(id))
 
@@ -265,6 +269,7 @@ class MetadataAPI:
     # Alias #
     #########
 
+    @tracer.start_as_current_span("new_alias")
     def new_alias(
         self,
         alias_name: str,

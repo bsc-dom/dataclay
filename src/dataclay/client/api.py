@@ -55,14 +55,7 @@ class Client:
     """
 
     def __init__(
-        self,
-        host=None,
-        port=None,
-        username=None,
-        password=None,
-        dataset=None,
-        local_backend=None,
-        tracing=False,
+        self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
     ):
         self.is_initialized = False
 
@@ -72,7 +65,8 @@ class Client:
         self.password = password
         self.dataset = dataset
         self.local_backend = local_backend
-        self.tracing = tracing
+
+        settings.load_tracing_properties(service_name="client")
 
         # Set LOCAL_BACKEND
         # if settings.LOCAL_BACKEND:
@@ -84,6 +78,7 @@ class Client:
         #     else:
         #         logger.warning(f"Backend with name '{settings.LOCAL_BACKEND}' not found, ignoring")
 
+    @tracer.start_as_current_span("start")
     def start(self):
         """Initialize the client API.
 
@@ -105,7 +100,6 @@ class Client:
             self.password,
             self.dataset,
             self.local_backend,
-            self.tracing,
         )
 
         self.old_runtime = get_runtime()
@@ -130,6 +124,7 @@ class Client:
         logger.debug(f"Started session {self.session.id}")
         self.is_initialized = True
 
+    @tracer.start_as_current_span("stop")
     def stop(self):
         """Finish the client API."""
 
@@ -152,6 +147,7 @@ class Client:
     def __exit__(self, *args):
         self.stop()
 
+    @tracer.start_as_current_span("get_backends")
     def get_backends(self) -> dict[UUID:BackendClient]:
         """Return a dictionary of backends clients."""
         self.runtime.update_backend_clients()
