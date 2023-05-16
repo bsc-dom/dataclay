@@ -63,7 +63,7 @@ services:
     command: [ "-config.file=/etc/tempo.yaml" ]
     volumes:
       - ./config/tempo.yaml:/etc/tempo.yaml
-      - ./tempo-data:/tmp/tempo
+      # - ./tempo-data:/tmp/tempo # To save the traces locally
     ports:
       - "14268"  # jaeger ingest
       - "3200"   # tempo
@@ -86,6 +86,7 @@ services:
     image: grafana/grafana:9.4.3
     volumes:
       - ./config/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      # - ./data/grafana:/var/lib/grafana
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin

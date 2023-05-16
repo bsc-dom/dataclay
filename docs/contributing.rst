@@ -38,7 +38,7 @@ Install dataClay in editable mode with the ``dev`` extra requirement:
 
 .. code-block:: console
 
-   $ pip install -e .[dev, tracing]
+   $ pip install -e .[dev,tracing]
 
 Running the tests
 -----------------

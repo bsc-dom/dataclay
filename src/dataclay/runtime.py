@@ -16,6 +16,7 @@ from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
 from dataclay.exceptions import *
 from dataclay.protos.common_messages_pb2 import LANG_PYTHON
+from dataclay.utils.tracing import trace
 
 if TYPE_CHECKING:
     from dataclay.backend.runtime import BackendRuntime
@@ -25,7 +26,7 @@ if TYPE_CHECKING:
     from dataclay.metadata.client import MetadataClient
     from dataclay.metadata.kvdata import ObjectMetadata
 
-
+tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 
@@ -199,36 +200,46 @@ class DataClayRuntime(ABC):
     ##################
 
     def call_active_method(self, instance, method_name, args: tuple, kwargs: dict):
-        serialized_args = pickle.dumps(args)
-        serialized_kwargs = pickle.dumps(kwargs)
-        # TODO: Add serialized volatile objects to
-        # self.volatile_parameters_being_send to avoid race conditon.
-        # May be necessary a custom pickle.Pickler
-        # TODO: Check if race conditions can happend (chek old call_execute_to_ds)
+        with tracer.start_as_current_span("call_active_method") as span:
+            span.set_attribute("class", str(instance._dc_class_name))
+            span.set_attribute("method", str(method_name))
+            span.set_attribute("args", str(args))
+            span.set_attribute("kwargs", str(kwargs))
 
-        # NOTE: Loop to update the backend_id when we have the wrong one, and call again
-        # the active method
-        while True:
-            backend_client = self.get_backend_client(instance._dc_backend_id)
+            serialized_args = pickle.dumps(args)
+            serialized_kwargs = pickle.dumps(kwargs)
+            # TODO: Add serialized volatile objects to
+            # self.volatile_parameters_being_send to avoid race conditon.
+            # May be necessary a custom pickle.Pickler
+            # TODO: Check if race conditions can happend (chek old call_execute_to_ds)
 
-            serialized_response, is_exception = backend_client.call_active_method(
-                self.session.id, instance._dc_id, method_name, serialized_args, serialized_kwargs
-            )
+            # NOTE: Loop to update the backend_id when we have the wrong one, and call again
+            # the active method
+            while True:
+                backend_client = self.get_backend_client(instance._dc_backend_id)
 
-            if serialized_response:
-                response = pickle.loads(serialized_response)
+                serialized_response, is_exception = backend_client.call_active_method(
+                    self.session.id,
+                    instance._dc_id,
+                    method_name,
+                    serialized_args,
+                    serialized_kwargs,
+                )
 
-                if isinstance(response, ObjectWithWrongBackendId):
-                    instance._dc_backend_id = response.backend_id
-                    continue
+                if serialized_response:
+                    response = pickle.loads(serialized_response)
 
-                if is_exception:
-                    raise response
+                    if isinstance(response, ObjectWithWrongBackendId):
+                        instance._dc_backend_id = response.backend_id
+                        continue
 
-                return response
+                    if is_exception:
+                        raise response
 
-            else:
-                return None
+                    return response
+
+                else:
+                    return None
 
     #########
     # Alias #
