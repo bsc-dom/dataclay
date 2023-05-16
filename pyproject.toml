@@ -29,6 +29,7 @@ dependencies = [
     "protobuf>=4.22.3",
     "redis>=4.5.4",
     "bcrypt>=4.0.1",
+    "opentelemetry-api>=1.17.0",
 ]
 dynamic = ["version"]
 
@@ -49,7 +50,6 @@ dev = [
 mn4 = ["ansible"]
 docs = ["furo", "sphinx-copybutton"]
 tracing = [
-    "opentelemetry-api",
     "opentelemetry-sdk",
     "opentelemetry-exporter-otlp-proto-grpc",
     "opentelemetry-instrumentation-grpc",
