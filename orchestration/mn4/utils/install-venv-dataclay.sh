@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 set -e
 
@@ -9,9 +9,8 @@ rm -rf $VENV_PATH
 module load "python/$PYTHON_VERSION"
 python -m venv $VENV_PATH
 source $VENV_PATH/bin/activate
-python -m pip install -e ./pyclay/[mn4]
+python -m pip install -e ./dataclay/[mn4]
 deactivate
 
 SITE_PATH=$(find ~+/$VENV_PATH -name site-packages)
-printf "import site\nsite.addsitedir('$SITE_PATH')\n" > $SITE_PATH/sitecustomize.py
-
+printf "import site\nsite.addsitedir('$SITE_PATH')\n" >$SITE_PATH/sitecustomize.py

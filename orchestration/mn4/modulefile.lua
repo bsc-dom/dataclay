@@ -1,7 +1,7 @@
 --------------
 -- Information
 --------------
-whatis("Version: DevelMarc[2.7.dev]")
+whatis("Version: DevelMarc")
 whatis("Keywords: Storage, dataClay, data distribution")
 whatis("Description: dataClay active objects across the network")
 
