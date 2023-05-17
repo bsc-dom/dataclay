@@ -4,27 +4,18 @@
 #SBATCH --error=job-%A.out
 #SBATCH --nodes=3
 #SBATCH --time=00:05:00
-#SBATCH --exclusive 
+#SBATCH --exclusive
 #SBATCH --qos=debug
 #############################
 
 # Load dataclay
 module load DATACLAY/DevelMarc
 
-# Get node hostnames with network suffix
-network_suffix="-ib0"
-hostnames=($(scontrol show hostname $SLURM_JOB_NODELIST | sed "s/$/$network_suffix/"))
-
-# Create hosts file
+# Save hosts inventory
 hosts_file=hosts-$SLURM_JOB_ID
-echo "[metadata]" > $hosts_file
-echo ${hostnames[0]} >> $hosts_file
-echo "[backends]" >> $hosts_file 
-printf "%s\n" ${hostnames[@]:1} >> $hosts_file
+. dc-hosts-1 >"$hosts_file"
 
 # Set dataclay configuration
-export DATACLAY_METADATA_HOSTNAME=${hostnames[0]} # DO NOT EDIT!
-export DATACLAY_KV_HOST=${hostnames[0]} # DO NOT EDIT!
 export DATACLAY_LOGLEVEL=DEBUG
 
 # Set tracing configuration
@@ -37,23 +28,23 @@ export OTEL_SERVICE_NAME=client
 # Set admin credentials
 export DATACLAY_USERNAME=testuser
 export DATACLAY_PASSWORD=s3cret
-export DATACLAY_DATASET=testuser
+export DATACLAY_DATASET=testdata
 
 # Set client credentials
 export DC_USERNAME=testuser
 export DC_PASSWORD=s3cret
-export DC_DATASET=testuser
+export DC_DATASET=testdata
 
 # Deploy dataclay
 ansible-playbook $DATACLAY_HOME/config/deploy-playbook.yaml -i $hosts_file
 
 # Run script
 python3 matrix-generator.py --matrices 5 --size 100 --path ./data/
-# python3 script.py 10 0 --processes 1 --path $PWD/data/
+# python3 client.py 10 0 --processes 1 --path $PWD/data/
 
 ansible-playbook $DATACLAY_HOME/config/run-playbook.yaml \
--i $hosts_file -f ${#hostnames[@]} \
--e "script='python3 script.py 10 0 --processes 1 --path $PWD/data/'"
+	-i $hosts_file -f ${#hostnames[@]} \
+	-e "script='python3 client.py 10 0 --processes 1 --path $PWD/data/'"
 
 sleep 5
 

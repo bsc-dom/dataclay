@@ -25,3 +25,9 @@
 - .readthedocs.yml
 - .appveyor
 - .github
+- /examples/
+- /orchestration/
+- /scripts/
+- CHANGES.rst
+- compile-protos.sh
+- Dockerfile*
