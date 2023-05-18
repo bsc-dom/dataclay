@@ -6,11 +6,13 @@ import grpc
 
 from dataclay.metadata.client import MetadataClient
 
-logging.basicConfig(level=logging.DEBUG)
+DATACLAY_LOGLEVEL = os.getenv("DATACLAY_LOGLEVEL", default="WARNING").upper()
+logging.basicConfig(level=DATACLAY_LOGLEVEL)
 logger = logging.getLogger(__name__)
 
 # TODO: Use configparse to read connection details from config file
-DATACLAY_METADATA_HOSTNAME = os.environ["DATACLAY_METADATA_HOSTNAME"]
+DATACLAY_METADATA_HOSTNAME = os.getenv("DATACLAY_METADATA_HOSTNAME") or os.environ["DC_HOST"]
+
 DATACLAY_METADATA_PORT = int(os.getenv("DATACLAY_METADATA_PORT", "16587"))
 
 

@@ -22,6 +22,7 @@ services:
       - DATACLAY_USERNAME=testuser
       - DATACLAY_DATASET=testdata
       - DATACLAY_METADATA_PORT=16587
+      - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.metadata
     volumes:
       - ../../:/pyclay:ro
@@ -36,6 +37,7 @@ services:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
       - DATACLAY_BACKEND_PORT=6867
+      - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro
@@ -50,6 +52,7 @@ services:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
       - DATACLAY_BACKEND_PORT=6868
+      - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro
@@ -64,6 +67,7 @@ services:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
       - DATACLAY_BACKEND_PORT=6869
+      - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro

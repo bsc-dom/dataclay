@@ -10,7 +10,7 @@ from dataclay.exceptions import *
 from dataclay.metadata.client import MetadataClient
 from dataclay.runtime import DataClayRuntime
 from dataclay.utils.pickle import RecursiveLocalPickler
-from dataclay.utils.tracing import trace
+from dataclay.utils.telemetry import trace
 
 UNDEFINED_LOCAL = object()
 

@@ -21,7 +21,7 @@
         chdir: "{{ dataclay_job_path }}"
 
     - name: Start Metadata Service
-      shell: nohup python -m dataclay.metadata &> {{ dataclay_log_path }}/mds.out &
+      shell: nohup python -u -m dataclay.metadata &> {{ dataclay_log_path }}/metadata.out &
       args:
         chdir: "{{ dataclay_job_path }}"
 

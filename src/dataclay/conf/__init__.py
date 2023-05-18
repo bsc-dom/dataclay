@@ -4,9 +4,7 @@ import socket
 import uuid
 from datetime import datetime
 
-import dataclay.utils.tracing
-
-logger = logging.getLogger(__name__)
+import dataclay.utils.telemetry
 
 
 class Settings:
@@ -80,12 +78,15 @@ class Settings:
 
     # ETCD_PATH ¿?
 
-    ###########
-    # Tracing #
-    ###########
+    #############
+    # Telemetry #
+    #############
 
     DATACLAY_TRACING = os.getenv("DATACLAY_TRACING", default="false").lower() == "true"
     _tracing_loaded = False
+
+    DATACLAY_LOGLEVEL = os.getenv("DATACLAY_LOGLEVEL", default="WARNING").upper()
+    logging.basicConfig(level=DATACLAY_LOGLEVEL)
 
     # Destination path for traces
     # TRACES_DEST_PATH = os.getcwd()
@@ -127,8 +128,12 @@ class Settings:
     def load_client_properties(
         self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
     ):
-        self.DATACLAY_METADATA_HOSTNAME = host or os.environ["DATACLAY_METADATA_HOSTNAME"]
-        self.DATACLAY_METADATA_PORT = port or int(os.getenv("DATACLAY_METADATA_PORT", "16587"))
+        self.DATACLAY_METADATA_HOSTNAME = (
+            host or os.getenv("DATACLAY_METADATA_HOSTNAME") or os.environ["DC_HOST"]
+        )
+        self.DATACLAY_METADATA_PORT = int(
+            port or os.getenv("DATACLAY_METADATA_PORT") or os.getenv("DC_PORT", "16587")
+        )
 
         self.DC_USERNAME = username or os.environ["DC_USERNAME"]
         self.DC_PASSWORD = password or os.environ["DC_PASSWORD"]
@@ -172,7 +177,7 @@ class Settings:
             self.DATACLAY_TRACING_EXPORTER = os.getenv("DATACLAY_TRACING_EXPORTER", "otlp")
             self.DATACLAY_AGENT_HOSTNAME = os.getenv("DATACLAY_AGENT_HOSTNAME", "localhost")
             self.DATACLAY_AGENT_PORT = int(os.getenv("DATACLAY_AGENT_PORT", "4317"))
-            dataclay.utils.tracing.set_tracer_provider(
+            dataclay.utils.telemetry.set_tracer_provider(
                 service_name, self.DATACLAY_AGENT_HOSTNAME, self.DATACLAY_AGENT_PORT
             )
 

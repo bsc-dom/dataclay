@@ -36,17 +36,19 @@ export DC_PASSWORD=s3cret
 export DC_DATASET=testdata
 
 # Deploy dataclay
-ansible-playbook $DATACLAY_HOME/config/deploy-playbook.yaml -i $hosts_file
+ansible-playbook "$DATACLAY_HOME/config/deploy-playbook.yaml" -i "$hosts_file"
 
 # Run script
 python3 matrix-generator.py --matrices 5 --size 100 --path ./data/
 # python3 client.py 10 0 --processes 1 --path $PWD/data/
 
-ansible-playbook $DATACLAY_HOME/config/run-playbook.yaml \
-	-i $hosts_file -f ${#hostnames[@]} \
+# Testing multiple clients
+# set --forks to the number of clients
+ansible-playbook "$DATACLAY_HOME/config/run-playbook.yaml" \
+	-i "$hosts_file" -f 3 \
 	-e "script='python3 client.py 10 0 --processes 1 --path $PWD/data/'"
 
 sleep 5
 
 # Shutdown
-cp job-$SLURM_JOB_ID.out $HOME/.dataclay/$SLURM_JOB_ID
+cp "job-$SLURM_JOB_ID.out" "$HOME/.dataclay/$SLURM_JOB_ID"

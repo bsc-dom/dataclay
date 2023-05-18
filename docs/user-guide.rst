@@ -44,8 +44,8 @@ Connect Client
 To connect to a dataClay, create a :class:`Client` instance and provide the host, username,
 password and dataset to connect to. You can provide it as arguments or as environment variables:
 
-- ``DATACLAY_METADATA_HOSTNAME``: Hostname of the dataClay instance.
-- ``DATACLAY_METADATA_PORT``: Port of the dataClay instance.
+- ``DC_HOST``: Hostname of the dataClay instance.
+- ``DC_PORT``: Port of the dataClay instance.
 - ``DC_USERNAME``: Username to connect to dataClay.
 - ``DC_PASSWORD``: Password to connect to dataClay.
 - ``DC_DATASET``: Dataset to connect to.

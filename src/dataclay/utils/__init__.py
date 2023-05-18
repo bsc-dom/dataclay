@@ -1,1 +1,1 @@
-from dataclay.utils.tracing import LoggerEvent
+from dataclay.utils.telemetry import LoggerEvent

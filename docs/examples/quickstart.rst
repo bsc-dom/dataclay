@@ -31,7 +31,7 @@ The folder should contain the following files:
     ├── model
     │   └── company.py
     ├── docker-compose.yml
-    └── script.py
+    └── client.py
 
 * Deploy dataClay with ``docker compose``::
    
@@ -40,17 +40,17 @@ The folder should contain the following files:
 Execution
 ---------
 
-* Run the `script.py`_ in a python interactive shell::
+* Run the `client.py`_ in a python interactive shell::
    
-   python3 -i script.py
+   python3 -i client.py
 
-The `script.py`_ will only import the `Employee`_ and `Company`_ classes,
+The `client.py`_ will only import the `Employee`_ and `Company`_ classes,
 and start a new client session that should connect to the dataClay instance
 that was deployed with ``docker compose``.
 
-.. literalinclude:: /../examples/quickstart/script.py
+.. literalinclude:: /../examples/quickstart/client.py
    :language: python
-   :caption: script.py
+   :caption: client.py
 
 
 Now we can start executing the :doc:`../user-guide` commands:
@@ -60,7 +60,7 @@ Now we can start executing the :doc:`../user-guide` commands:
     >>> employee = Employee("John", 1000.0)
     >>> employee.make_persistent()
 
-.. _script.py: https://github.com/bsc-dom/dataclay/tree/main/examples/quickstart/script.py
+.. _client.py: https://github.com/bsc-dom/dataclay/tree/main/examples/quickstart/client.py
 .. _Employee: https://github.com/bsc-dom/dataclay/tree/main/examples/quickstart/model/company.py
 .. _Company: https://github.com/bsc-dom/dataclay/tree/main/examples/quickstart/model/company.py
 

@@ -2,7 +2,8 @@ from model.family import Family, Person
 
 from dataclay import Client
 
-client = Client()
+# DC_HOST should be pass as environment variable
+client = Client(username="testuser", password="s3cret", dataset="testdata")
 client.start()
 
 try:

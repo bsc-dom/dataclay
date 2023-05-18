@@ -18,7 +18,7 @@ from dataclay.client.runtime import ClientRuntime
 from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.runtime import get_runtime, set_runtime
-from dataclay.utils.tracing import trace
+from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
     from uuid import UUID

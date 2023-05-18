@@ -22,7 +22,7 @@ from dataclay.exceptions import *
 from dataclay.metadata.kvdata import ObjectMetadata
 from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.runtime import get_runtime
-from dataclay.utils.tracing import trace
+from dataclay.utils.telemetry import trace
 
 DC_PROPERTY_PREFIX = "_dc_property_"
 

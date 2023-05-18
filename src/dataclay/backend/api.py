@@ -17,13 +17,11 @@ from dataclay.conf import settings
 from dataclay.exceptions import *
 from dataclay.runtime import UUIDLock, set_runtime
 from dataclay.utils.pickle import RecursiveLocalPickler, RecursiveLocalUnpickler
-from dataclay.utils.tracing import trace
+from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
     from dataclay.dataclay_object import DataClayObject
 
-
-logging.basicConfig(level=logging.DEBUG)
 tracer = trace.get_tracer(__name__)
 logger = utils.LoggerEvent(logging.getLogger(__name__))
 

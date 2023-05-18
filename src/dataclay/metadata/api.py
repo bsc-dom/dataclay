@@ -13,7 +13,7 @@ from dataclay.metadata.kvdata import (
     Session,
 )
 from dataclay.metadata.redismanager import RedisManager
-from dataclay.utils.tracing import trace
+from dataclay.utils.telemetry import trace
 
 FEDERATOR_ACCOUNT_USERNAME = "Federator"
 EXTERNAL_OBJECTS_DATASET_NAME = "ExternalObjects"

@@ -34,7 +34,7 @@ add two more backend services to the previous ``docker-compose``:
         - DATACLAY_BACKEND_ID
         - DATACLAY_BACKEND_NAME
         - DATACLAY_BACKEND_PORT=6868
-        - DEBUG=true
+        - DATACLAY_LOGLEVEL=DEBUG
       command: python -m dataclay.backend
       volumes:
         - ./model:/workdir/model:ro
@@ -51,7 +51,7 @@ add two more backend services to the previous ``docker-compose``:
         - DATACLAY_BACKEND_ID
         - DATACLAY_BACKEND_NAME
         - DATACLAY_BACKEND_PORT=6869
-        - DEBUG=true
+        - DATACLAY_LOGLEVEL=DEBUG
       command: python -m dataclay.backend
       volumes:
         - ./model:/workdir/model:ro
@@ -63,7 +63,7 @@ Account Managment
 
 First export the following environment variables with the corresponding value::
 
-    export DATACLAY_METADATA_HOSTNAME=127.0.0.1
+    export DC_HOST=127.0.0.1
 
 To create a new account::
 
