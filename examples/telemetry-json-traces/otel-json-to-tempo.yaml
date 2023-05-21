@@ -1,0 +1,18 @@
+receivers:
+  otlpjsonfile:
+    include:
+      - "./traces/otel-traces.json"
+    start_at: beginning
+exporters:
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+processors:
+  batch:
+service:
+  pipelines:
+    traces:
+      receivers: [otlpjsonfile]
+      exporters: [otlp]
+      processors: [batch]
