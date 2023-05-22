@@ -9,7 +9,7 @@ rm -rf $VENV_PATH
 module load "python/$PYTHON_VERSION"
 python -m venv $VENV_PATH
 source $VENV_PATH/bin/activate
-python -m pip install -e ./dataclay/[mn4]
+python -m pip install -e ./dataclay/[mn4,telemetry]
 deactivate
 
 SITE_PATH=$(find ~+/$VENV_PATH -name site-packages)

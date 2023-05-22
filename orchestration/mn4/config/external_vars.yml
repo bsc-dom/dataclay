@@ -3,7 +3,11 @@ common_envs:
   PYTHONPATH: "{{ lookup('env', 'PYTHONPATH') }}:{{ lookup('env', 'PWD') }}"
   PYTHONHOME: "{{ lookup('env', 'PYTHONHOME') }}"
   LD_LIBRARY_PATH: "{{ lookup('env', 'LD_LIBRARY_PATH') }}"
+  DATACLAY_HOME: "{{ lookup('env', 'DATACLAY_HOME') }}"
   DATACLAY_LOGLEVEL: "{{ lookup('env', 'DATACLAY_LOGLEVEL') }}"
+  DATACLAY_TRACING: "{{ lookup('env', 'DATACLAY_TRACING') | default('false', true) }}"
+  DATACLAY_TRACING_HOST: "{{ lookup('env', 'DATACLAY_TRACING_HOST') }}"
+  DATACLAY_JOB_PATH: "{{ dataclay_job_path }}" # Used in otel-json-exporter.yaml
 
 backend_properties:
   DATACLAY_BACKEND_PORT: "{{ lookup('env', 'DATACLAY_BACKEND_PORT') | default(6868, true) }}"

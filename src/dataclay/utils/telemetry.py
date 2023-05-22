@@ -1,4 +1,7 @@
 import functools
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Dummy1:
@@ -39,7 +42,8 @@ class LoggerEvent:
         return wrapper
 
 
-def set_tracer_provider(service_name, agent_hostname, agent_port, exporter="otlp"):
+def set_tracer_provider(service_name, hostname, port, exporter="otlp"):
+    logger.info(f"Setting tracer {exporter} for service {service_name} to {hostname}:{port}")
     from opentelemetry.sdk.resources import SERVICE_NAME, Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -52,7 +56,7 @@ def set_tracer_provider(service_name, agent_hostname, agent_port, exporter="otlp
             OTLPSpanExporter,
         )
 
-        otlp_exporter = OTLPSpanExporter(endpoint=f"{agent_hostname}:{agent_port}", insecure=True)
+        otlp_exporter = OTLPSpanExporter(endpoint=f"{hostname}:{port}", insecure=True)
         processor = BatchSpanProcessor(otlp_exporter)
 
     elif exporter == "console":

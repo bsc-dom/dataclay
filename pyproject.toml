@@ -49,7 +49,7 @@ dev = [
 ]
 mn4 = ["ansible"]
 docs = ["furo", "sphinx-copybutton"]
-tracing = [
+telemetry = [
     "opentelemetry-sdk",
     "opentelemetry-exporter-otlp-proto-grpc",
     "opentelemetry-instrumentation-grpc",

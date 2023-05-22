@@ -19,11 +19,13 @@ hosts_file=hosts-$SLURM_JOB_ID
 export DATACLAY_LOGLEVEL=DEBUG
 
 # Set tracing configuration
-export DATACLAY_TRACING=false
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://${hostnames[0]}:4317 # DO NOT EDIT!
-export OTEL_TRACES_SAMPLER=traceidratio
-export OTEL_TRACES_SAMPLER_ARG=0.1
-export OTEL_SERVICE_NAME=client
+export DATACLAY_TRACING=true
+export DATACLAY_TRACING_HOST=$DATACLAY_METADATA_HOSTNAME
+
+# export OTEL_EXPORTER_OTLP_ENDPOINT=http://${hostnames[0]}:4317 # DO NOT EDIT!
+# export OTEL_TRACES_SAMPLER=traceidratio
+# export OTEL_TRACES_SAMPLER_ARG=0.1
+# export OTEL_SERVICE_NAME=client
 
 # Set admin credentials
 export DATACLAY_USERNAME=testuser

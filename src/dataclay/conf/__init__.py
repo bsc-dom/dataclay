@@ -175,10 +175,10 @@ class Settings:
 
         if self.DATACLAY_TRACING:
             self.DATACLAY_TRACING_EXPORTER = os.getenv("DATACLAY_TRACING_EXPORTER", "otlp")
-            self.DATACLAY_AGENT_HOSTNAME = os.getenv("DATACLAY_AGENT_HOSTNAME", "localhost")
-            self.DATACLAY_AGENT_PORT = int(os.getenv("DATACLAY_AGENT_PORT", "4317"))
+            self.DATACLAY_TRACING_HOST = os.getenv("DATACLAY_TRACING_HOST", "localhost")
+            self.DATACLAY_TRACING_PORT = int(os.getenv("DATACLAY_TRACING_PORT", "4317"))
             dataclay.utils.telemetry.set_tracer_provider(
-                service_name, self.DATACLAY_AGENT_HOSTNAME, self.DATACLAY_AGENT_PORT
+                service_name, self.DATACLAY_TRACING_HOST, self.DATACLAY_TRACING_PORT
             )
 
         self._tracing_loaded = True

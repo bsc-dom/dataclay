@@ -15,13 +15,19 @@
         - "{{ dataclay_log_path }}"
         - "{{ dataclay_storage_path }}"
 
+    - name: Start OTEL Collector
+      shell: nohup otelcol --config {{ common_envs.DATACLAY_HOME }}/config/otel-json-exporter.yaml > {{ dataclay_log_path }}/otel.out 2>&1 &
+      args:
+        chdir: "{{ dataclay_job_path }}"
+      when: common_envs.DATACLAY_TRACING|bool
+
     - name: Start redis-server
-      shell: nohup redis-server --protected-mode no > {{ dataclay_log_path }}/redis.out &
+      shell: nohup redis-server --protected-mode no > {{ dataclay_log_path }}/redis.out 2>&1 &
       args:
         chdir: "{{ dataclay_job_path }}"
 
     - name: Start Metadata Service
-      shell: nohup python -u -m dataclay.metadata &> {{ dataclay_log_path }}/metadata.out &
+      shell: nohup python -u -m dataclay.metadata > {{ dataclay_log_path }}/metadata.out 2>&1 &
       args:
         chdir: "{{ dataclay_job_path }}"
 
@@ -35,6 +41,6 @@
   environment: "{{ common_envs | combine(backend_properties) }}"
   tasks:
     - name: Start Backend
-      shell: nohup python -u -m dataclay.backend &> {{ dataclay_log_path }}/backend{{ num }}.out &
+      shell: nohup python -u -m dataclay.backend > {{ dataclay_log_path }}/backend{{ num }}.out 2>&1 &
       args:
         chdir: "{{ dataclay_job_path }}"

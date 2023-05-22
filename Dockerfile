@@ -6,7 +6,7 @@ ARG PYTHON_VERSION=3.10-bullseye
 FROM python:$PYTHON_VERSION
 COPY . /pyclay
 RUN python -m pip install --upgrade pip \
-    && python -m pip install /pyclay[tracing]
+    && python -m pip install /pyclay[telemetry]
 
 # prepare dataclay storage dir
 RUN mkdir -p /dataclay/storage; \

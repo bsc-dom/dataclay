@@ -27,7 +27,7 @@ services:
       - DATACLAY_TRACING=true
       - DATACLAY_TRACING_EXPORTER=otlp
       - DATACLAY_SERVICE_NAME=metadata
-      - DATACLAY_AGENT_HOSTNAME=otel-collector
+      - DATACLAY_TRACING_HOST=otel-collector
     command: python -m dataclay.metadata
     volumes:
       - ../../:/pyclay:ro
@@ -47,7 +47,7 @@ services:
       - DATACLAY_TRACING=true
       - DATACLAY_TRACING_EXPORTER=otlp
       - DATACLAY_SERVICE_NAME=backend
-      - DATACLAY_AGENT_HOSTNAME=otel-collector
+      - DATACLAY_TRACING_HOST=otel-collector
     command: python -m dataclay.backend
     volumes:
       - ../../:/pyclay:ro
