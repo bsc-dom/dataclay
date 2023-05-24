@@ -216,7 +216,7 @@ class BackendAPI:
 
             # Option 1
             # self.runtime.heap_manager.unload_object(object_id)
-            # path = f"{settings.STORAGE_PATH}/{object_id}"
+            # path = f"{settings.DATACLAY_STORAGE_PATH}/{object_id}"
             # with open(path, "rb") as file:
             #     serialized_properties = file.read()
 

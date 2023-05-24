@@ -11,7 +11,7 @@ logging.basicConfig(level=DATACLAY_LOGLEVEL)
 logger = logging.getLogger(__name__)
 
 # TODO: Use configparse to read connection details from config file
-DATACLAY_METADATA_HOSTNAME = os.getenv("DATACLAY_METADATA_HOSTNAME") or os.environ["DC_HOST"]
+DATACLAY_METADATA_HOST = os.getenv("DATACLAY_METADATA_HOST") or os.environ["DC_HOST"]
 
 DATACLAY_METADATA_PORT = int(os.getenv("DATACLAY_METADATA_PORT", "16587"))
 
@@ -19,7 +19,7 @@ DATACLAY_METADATA_PORT = int(os.getenv("DATACLAY_METADATA_PORT", "16587"))
 def new_account(args):
     logger.info(f'Creating "{args.username}" account')
     try:
-        mds_client = MetadataClient(DATACLAY_METADATA_HOSTNAME, DATACLAY_METADATA_PORT)
+        mds_client = MetadataClient(DATACLAY_METADATA_HOST, DATACLAY_METADATA_PORT)
         mds_client.new_account(args.username, args.password)
     except grpc.RpcError as e:
         logger.error(e.details())
@@ -31,7 +31,7 @@ def new_account(args):
 def new_session(args):
     logger.info(f"Creating new session")
     try:
-        mds_client = MetadataClient(DATACLAY_METADATA_HOSTNAME, DATACLAY_METADATA_PORT)
+        mds_client = MetadataClient(DATACLAY_METADATA_HOST, DATACLAY_METADATA_PORT)
         response = mds_client.new_session(
             args.username, args.password, args.datasets.split(":"), args.default_dataset
         )
@@ -45,7 +45,7 @@ def new_session(args):
 def new_dataset(args):
     logger.info(f"Creating new dataset")
     try:
-        mds_client = MetadataClient(DATACLAY_METADATA_HOSTNAME, DATACLAY_METADATA_PORT)
+        mds_client = MetadataClient(DATACLAY_METADATA_HOST, DATACLAY_METADATA_PORT)
         mds_client.new_dataset(args.username, args.password, args.dataset)
     except grpc.RpcError as e:
         logger.error(e.details())

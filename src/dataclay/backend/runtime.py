@@ -70,7 +70,7 @@ class BackendRuntime(DataClayRuntime):
                 return
 
             try:
-                path = f"{settings.STORAGE_PATH}/{instance._dc_id}"
+                path = f"{settings.DATACLAY_STORAGE_PATH}/{instance._dc_id}"
                 object_properties = pickle.load(open(path, "rb"))
             except Exception as e:
                 raise DataClayException("Object not found in storage") from e

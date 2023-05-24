@@ -104,7 +104,7 @@ class Client:
 
         self.old_runtime = get_runtime()
         self.runtime = ClientRuntime(
-            settings.DATACLAY_METADATA_HOSTNAME, settings.DATACLAY_METADATA_PORT
+            settings.DATACLAY_METADATA_HOST, settings.DATACLAY_METADATA_PORT
         )
         set_runtime(self.runtime)
 

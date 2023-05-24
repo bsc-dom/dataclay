@@ -36,7 +36,7 @@ def serve():
     try:
         metadata_service.new_dataclay(
             settings.DATACLAY_ID,
-            settings.DATACLAY_METADATA_HOSTNAME,
+            settings.DATACLAY_METADATA_HOST,
             settings.DATACLAY_METADATA_PORT,
             is_this=True,
         )
@@ -54,7 +54,7 @@ def serve():
         MetadataServicer(metadata_service), server
     )
 
-    address = f"{settings.DATACLAY_METADATA_LISTEN_ADDRESS}:{settings.DATACLAY_METADATA_PORT}"
+    address = f"{settings.DATACLAY_LISTEN_ADDRESS}:{settings.DATACLAY_METADATA_PORT}"
     server.add_insecure_port(address)
     server.start()
 

@@ -103,7 +103,7 @@ class HeapManager(threading.Thread):
 
                     # NOTE: We do not serialize internal attributes, since these are
                     # obtained from etcd, or are stateless
-                    path = f"{settings.STORAGE_PATH}/{object_id}"
+                    path = f"{settings.DATACLAY_STORAGE_PATH}/{object_id}"
                     pickle.dump(instance._dc_properties, open(path, "wb"))
 
                     # TODO: update etcd metadata (since is loaded has changed)

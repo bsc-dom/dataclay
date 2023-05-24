@@ -31,12 +31,9 @@ services:
     image: "ghcr.io/bsc-dom/dataclay:dev"
     depends_on:
       - redis
-    ports:
-      - 6867:6867
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
-      - DATACLAY_BACKEND_PORT=6867
       - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
@@ -46,12 +43,9 @@ services:
     image: "ghcr.io/bsc-dom/dataclay:dev"
     depends_on:
       - redis
-    ports:
-      - 6868:6868
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
-      - DATACLAY_BACKEND_PORT=6868
       - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
@@ -61,12 +55,9 @@ services:
     image: "ghcr.io/bsc-dom/dataclay:dev"
     depends_on:
       - redis
-    ports:
-      - 6869:6869
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
-      - DATACLAY_BACKEND_PORT=6869
       - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:

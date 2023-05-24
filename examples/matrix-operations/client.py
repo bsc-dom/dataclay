@@ -38,7 +38,6 @@ def read_matrix(id, matrices, path):
 
 
 def multithread_main(num_matrices, num_sums, path):
-
     # This should become before using registered classes
     client = dataclay.Client()
     client.start()
@@ -69,7 +68,6 @@ def multithread_main(num_matrices, num_sums, path):
 
 
 if __name__ == "__main__":
-
     # Parsing input parameters
     parser = argparse.ArgumentParser(description="Matrix Operations")
     parser.add_argument("num_matrices", type=int, help="Number of matrices to be read")

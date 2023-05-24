@@ -9,5 +9,5 @@ echo "${hostnames[0]}"
 echo "[backends]"
 printf "%s\n" "${hostnames[@]:1}"
 
-export DATACLAY_METADATA_HOSTNAME=${hostnames[0]}
+export DATACLAY_METADATA_HOST=${hostnames[0]}
 export DATACLAY_KV_HOST=${hostnames[0]}

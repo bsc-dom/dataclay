@@ -61,7 +61,7 @@ class Configuration(object):
     GRPC_CHECK_ALIVE_TIMEOUT = int(os.getenv("GRPC_CHECK_ALIVE_TIMEOUT", default=60))
 
     # Indicates storage path for persistent data
-    STORAGE_PATH = os.getenv("STORAGE_PATH", default="/dataclay/storage/")
+    DATACLAY_STORAGE_PATH = os.getenv("DATACLAY_STORAGE_PATH", default="/dataclay/storage/")
 
     # Indicates path for meta data
     STORAGE_METADATA_PATH = os.getenv("STORAGE_METADATA_PATH", default="/dataclay/metadata/")

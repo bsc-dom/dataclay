@@ -107,19 +107,19 @@ class Settings:
         self.DATACLAY_BACKEND_ID = os.getenv("DATACLAY_BACKEND_ID", uuid.uuid4())
         self.DATACLAY_BACKEND_NAME = os.getenv("DATACLAY_BACKEND_NAME")
 
-        self.DATACLAY_BACKEND_LISTEN_ADDRESS = "0.0.0.0"
+        self.DATACLAY_LISTEN_ADDRESS = "0.0.0.0"
         self.DATACLAY_BACKEND_PORT = int(os.getenv("DATACLAY_BACKEND_PORT", "6867"))
-        self.DATACLAY_BACKEND_HOSTNAME = os.getenv(
-            "DATACLAY_BACKEND_HOSTNAME", socket.gethostbyname(socket.gethostname())
+        self.DATACLAY_BACKEND_HOST = os.getenv(
+            "DATACLAY_BACKEND_HOST", socket.gethostbyname(socket.gethostname())
         )
 
-        # self.ETCD_HOSTNAME = os.environ["ETCD_HOSTNAME"]
+        # self.ETCD_HOST = os.environ["ETCD_HOST"]
         # self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
 
         self.DATACLAY_KV_HOST = os.environ["DATACLAY_KV_HOST"]
         self.DATACLAY_KV_PORT = int(os.getenv("DATACLAY_KV_PORT", "6379"))
 
-        self.STORAGE_PATH = os.getenv("STORAGE_PATH", default="/dataclay/storage/")
+        self.DATACLAY_STORAGE_PATH = os.getenv("DATACLAY_STORAGE_PATH", default="/dataclay/storage/")
 
         self.DATACLAY_SERVICE_NAME = os.getenv("DATACLAY_SERVICE_NAME", "backend")
         self.load_tracing_properties()
@@ -128,8 +128,8 @@ class Settings:
     def load_client_properties(
         self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
     ):
-        self.DATACLAY_METADATA_HOSTNAME = (
-            host or os.getenv("DATACLAY_METADATA_HOSTNAME") or os.environ["DC_HOST"]
+        self.DATACLAY_METADATA_HOST = (
+            host or os.getenv("DATACLAY_METADATA_HOST") or os.environ["DC_HOST"]
         )
         self.DATACLAY_METADATA_PORT = int(
             port or os.getenv("DATACLAY_METADATA_PORT") or os.getenv("DC_PORT", "16587")
@@ -143,31 +143,31 @@ class Settings:
     def load_metadata_properties(self):
         self.THREAD_POOL_WORKERS = os.getenv("THREAD_POOL_WORKERS", default=None)
 
-        self.DATACLAY_METADATA_LISTEN_ADDRESS = "0.0.0.0"
+        self.DATACLAY_LISTEN_ADDRESS = "0.0.0.0"
         self.DATACLAY_METADATA_PORT = int(os.getenv("DATACLAY_METADATA_PORT", "16587"))
-        self.DATACLAY_METADATA_HOSTNAME = os.getenv(
-            "DATACLAY_METADATA_HOSTNAME", socket.gethostbyname(socket.gethostname())
+        self.DATACLAY_METADATA_HOST = os.getenv(
+            "DATACLAY_METADATA_HOST", socket.gethostbyname(socket.gethostname())
         )
 
-        # self.ETCD_HOSTNAME = os.environ["ETCD_HOSTNAME"]
+        # self.ETCD_HOST = os.environ["ETCD_HOST"]
         # self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
 
         self.DATACLAY_KV_HOST = os.environ["DATACLAY_KV_HOST"]
         self.DATACLAY_KV_PORT = int(os.getenv("DATACLAY_KV_PORT", "6379"))
 
         self.DATACLAY_ID = os.getenv("DATACLAY_ID", uuid.uuid4())
-        self.DATACLAY_PASSWORD = os.environ["DATACLAY_PASSWORD"]
-        self.DATACLAY_USERNAME = os.getenv("DATACLAY_USERNAME", "dataclay")
-        self.DATACLAY_DATASET = os.getenv("DATACLAY_DATASET", self.DATACLAY_USERNAME)
+        self.DATACLAY_PASSWORD = os.getenv("DATACLAY_PASSWORD", "admin")
+        self.DATACLAY_USERNAME = os.getenv("DATACLAY_USERNAME", "admin")
+        self.DATACLAY_DATASET = os.getenv("DATACLAY_DATASET", "admin")
 
         self.DATACLAY_SERVICE_NAME = os.getenv("DATACLAY_SERVICE_NAME", "metadata")
         self.load_tracing_properties()
 
     def load_tracing_properties(self, service_name=None):
         if self._tracing_loaded:
-            logger.warning(
-                "Attempting to reload tracing properties while already instrumented. Ignoring!"
-            )
+            # logger.warning(
+            #     "Attempting to reload tracing properties while already instrumented. Ignoring!"
+            # )
             return
 
         if service_name is None:

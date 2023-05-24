@@ -80,7 +80,7 @@ def start_backend(c, env, num):
     service_folder = f"{env['DATACLAY_JOB_PATH']}/{service_name}"
     os.makedirs(service_folder)
 
-    env["STORAGE_PATH"] = service_folder + "/storage"  # do we need?
+    env["DATACLAY_STORAGE_PATH"] = service_folder + "/storage"  # do we need?
 
     prefix = ""
     if env["DATACLAY_TRACING"]:

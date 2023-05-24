@@ -47,14 +47,14 @@ def serve():
         BackendServicer(backend, stop_event), server
     )
 
-    address = f"{settings.DATACLAY_BACKEND_LISTEN_ADDRESS}:{settings.DATACLAY_BACKEND_PORT}"
+    address = f"{settings.DATACLAY_LISTEN_ADDRESS}:{settings.DATACLAY_BACKEND_PORT}"
     server.add_insecure_port(address)
     server.start()
 
     # Autoregister of backend to MetadataService
     backend.runtime.metadata_service.register_backend(
         settings.DATACLAY_BACKEND_ID,
-        settings.DATACLAY_BACKEND_HOSTNAME,
+        settings.DATACLAY_BACKEND_HOST,
         settings.DATACLAY_BACKEND_PORT,
         settings.DATACLAY_ID,
     )

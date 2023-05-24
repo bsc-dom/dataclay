@@ -13,10 +13,10 @@ backend_properties:
   DATACLAY_BACKEND_PORT: "{{ lookup('env', 'DATACLAY_BACKEND_PORT') | default(6868, true) }}"
   DATACLAY_KV_HOST: "{{ lookup('env', 'DATACLAY_KV_HOST') }}"
   DATACLAY_KV_PORT: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
-  STORAGE_PATH: "{{ dataclay_storage_path }}"
+  DATACLAY_STORAGE_PATH: "{{ dataclay_storage_path }}"
 
 metadata_properties:
-  DATACLAY_METADATA_HOSTNAME: "{{ lookup('env', 'DATACLAY_METADATA_HOSTNAME') }}"
+  DATACLAY_METADATA_HOST: "{{ lookup('env', 'DATACLAY_METADATA_HOST') }}"
   DATACLAY_METADATA_PORT: "{{ lookup('env', 'DATACLAY_METADATA_PORT') | default(16587, true) }}"
   DATACLAY_KV_HOST: "{{ lookup('env', 'DATACLAY_KV_HOST') }}"
   DATACLAY_KV_PORT: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
@@ -25,7 +25,7 @@ metadata_properties:
   DATACLAY_DATASET: "{{ lookup('env', 'DATACLAY_DATASET') | default('testdata', true) }}"
 
 client_properties:
-  DATACLAY_METADATA_HOSTNAME: "{{ lookup('env', 'DATACLAY_METADATA_HOSTNAME') }}"
+  DATACLAY_METADATA_HOST: "{{ lookup('env', 'DATACLAY_METADATA_HOST') }}"
   DATACLAY_METADATA_PORT: "{{ lookup('env', 'DATACLAY_METADATA_PORT') | default(16587, true) }}"
   DC_USERNAME: "{{ lookup('env', 'DC_USERNAME') }}"
   DC_PASSWORD: "{{ lookup('env', 'DC_PASSWORD') }}"
