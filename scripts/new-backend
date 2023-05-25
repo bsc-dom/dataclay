@@ -1,0 +1,13 @@
+#!/bin/bash
+
+export DATACLAY_BACKEND_PORT=6870 # Use a unique port, since running in localhost
+# export DATACLAY_BACKEND_HOST=192.168.64.1 # set if running docker bridge network
+# export DATACLAY_BACKEND_ID
+# export DATACLAY_BACKEND_NAME
+
+export DATACLAY_KV_HOST=127.0.0.1
+export DATACLAY_KV_PORT=6379
+export DATACLAY_STORAGE_PATH=./dataclay/storage
+export DATACLAY_LOGLEVEL=debug
+
+python -m dataclay.backend

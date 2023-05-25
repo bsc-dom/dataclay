@@ -119,7 +119,9 @@ class Settings:
         self.DATACLAY_KV_HOST = os.environ["DATACLAY_KV_HOST"]
         self.DATACLAY_KV_PORT = int(os.getenv("DATACLAY_KV_PORT", "6379"))
 
-        self.DATACLAY_STORAGE_PATH = os.getenv("DATACLAY_STORAGE_PATH", default="/dataclay/storage/")
+        self.DATACLAY_STORAGE_PATH = os.getenv(
+            "DATACLAY_STORAGE_PATH", default="/dataclay/storage/"
+        )
 
         self.DATACLAY_SERVICE_NAME = os.getenv("DATACLAY_SERVICE_NAME", "backend")
         self.load_tracing_properties()

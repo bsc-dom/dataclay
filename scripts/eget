@@ -1,0 +1,3 @@
+#!/bin/bash
+
+etcdctl get /$1 --prefix

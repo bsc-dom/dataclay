@@ -66,6 +66,11 @@ class MetadataServiceStub(object):
                 request_serializer=protos_dot_metadata__service__pb2.GetObjectMDByAliasRequest.SerializeToString,
                 response_deserializer=protos_dot_common__messages__pb2.ObjectMetadata.FromString,
                 )
+        self.GetAllObjects = channel.unary_unary(
+                '/protos.metadata_service.MetadataService/GetAllObjects',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=protos_dot_metadata__service__pb2.GetAllObjectsResponse.FromString,
+                )
         self.DeleteAlias = channel.unary_unary(
                 '/protos.metadata_service.MetadataService/DeleteAlias',
                 request_serializer=protos_dot_metadata__service__pb2.DeleteAliasRequest.SerializeToString,
@@ -147,6 +152,12 @@ class MetadataServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetAllObjects(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def DeleteAlias(self, request, context):
         """Alias
         """
@@ -212,6 +223,11 @@ def add_MetadataServiceServicer_to_server(servicer, server):
                     servicer.GetObjectMDByAlias,
                     request_deserializer=protos_dot_metadata__service__pb2.GetObjectMDByAliasRequest.FromString,
                     response_serializer=protos_dot_common__messages__pb2.ObjectMetadata.SerializeToString,
+            ),
+            'GetAllObjects': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAllObjects,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=protos_dot_metadata__service__pb2.GetAllObjectsResponse.SerializeToString,
             ),
             'DeleteAlias': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteAlias,
@@ -400,6 +416,23 @@ class MetadataService(object):
         return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetObjectMDByAlias',
             protos_dot_metadata__service__pb2.GetObjectMDByAliasRequest.SerializeToString,
             protos_dot_common__messages__pb2.ObjectMetadata.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetAllObjects(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetAllObjects',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            protos_dot_metadata__service__pb2.GetAllObjectsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

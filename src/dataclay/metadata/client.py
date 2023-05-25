@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 class MetadataClient:
-
     session: Session
 
     def __init__(self, hostname, port):
@@ -101,6 +100,16 @@ class MetadataClient:
     # Object Metadata #
     ###################
 
+    @grpc_error_handler
+    def get_all_objects(self) -> dict:
+        response = self.stub.GetAllObjects(Empty())
+
+        result = dict()
+        for id, proto in response.objects.items():
+            result[UUID(id)] = ObjectMetadata.from_proto(proto)
+        return result
+
+    @grpc_error_handler
     def register_object(self, object_md: ObjectMetadata, session_id: UUID):
         request = metadata_service_pb2.RegisterObjectRequest(
             session_id=str(session_id), object_md=object_md.get_proto()

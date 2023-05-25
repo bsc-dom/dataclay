@@ -57,7 +57,7 @@ telemetry = [
 ]
 
 [project.scripts]
-dataclay = "dataclay.metadata.cli:main"
+dataclayctl = "dataclay.control.ctl:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "dataclay.__version__"}

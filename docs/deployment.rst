@@ -146,8 +146,8 @@ First export the following environment variables with the corresponding value::
 
 To create a new account::
 
-    dataclay new_account john s3cret
+    dataclayctl new_account john s3cret
 
 To create a new dataset::
 
-    dataclay new_dataset john s3cret mydataset
+    dataclayctl new_dataset john s3cret mydataset

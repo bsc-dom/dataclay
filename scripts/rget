@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Use redis-cli (deb) or redis.cli (snap)
+
+for key in $(redis-cli keys $1\*); do
+	printf "\033[0;31m$key\033[0m\n"
+	redis-cli GET $key | jq -c
+done

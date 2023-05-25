@@ -210,7 +210,7 @@ class MetadataAPI:
     @tracer.start_as_current_span("get_all_objects")
     def get_all_objects(self):
         result = self.kv_manager.getprefix(ObjectMetadata, "/object/")
-        return result
+        return {UUID(k): v for k, v in result.items()}
 
     @tracer.start_as_current_span("register_object")
     def register_object(self, object_md: ObjectMetadata, session_id: UUID = None):

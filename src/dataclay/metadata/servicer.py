@@ -146,6 +146,19 @@ class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
     # Object Metadata #
     ###################
 
+    def GetAllObjects(self, request, context):
+        try:
+            object_mds = self.metadata_service.get_all_objects()
+            response = dict()
+            for id, object_md in object_mds.items():
+                response[str(id)] = object_md.get_proto()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return metadata_service_pb2.GetAllObjectsResponse()
+        return metadata_service_pb2.GetAllObjectsResponse(objects=response)
+
     # TODO: Remove it. Only EE should be able to call it.
     def RegisterObject(self, request, context):
         try:
