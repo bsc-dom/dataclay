@@ -42,7 +42,7 @@ class LoggerEvent:
         return wrapper
 
 
-def set_tracer_provider(service_name, hostname, port, exporter="otlp"):
+def set_tracing(service_name, hostname, port, exporter="otlp"):
     logger.info(f"Setting tracer {exporter} for service {service_name} to {hostname}:{port}")
     from opentelemetry.sdk.resources import SERVICE_NAME, Resource
     from opentelemetry.sdk.trace import TracerProvider

@@ -110,16 +110,16 @@ class Settings:
         self.DATACLAY_BACKEND_NAME = os.getenv("DATACLAY_BACKEND_NAME")
 
         self.DATACLAY_LISTEN_ADDRESS = "0.0.0.0"
-        self.DATACLAY_BACKEND_PORT = int(os.getenv("DATACLAY_BACKEND_PORT", "6867"))
+        self.DATACLAY_BACKEND_PORT = int(os.getenv("DATACLAY_BACKEND_PORT", 6867))
         self.DATACLAY_BACKEND_HOST = os.getenv(
             "DATACLAY_BACKEND_HOST", socket.gethostbyname(socket.gethostname())
         )
 
         # self.ETCD_HOST = os.environ["ETCD_HOST"]
-        # self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
+        # self.ETCD_PORT = int(os.getenv("ETCD_PORT", 2379))
 
         self.DATACLAY_KV_HOST = os.environ["DATACLAY_KV_HOST"]
-        self.DATACLAY_KV_PORT = int(os.getenv("DATACLAY_KV_PORT", "6379"))
+        self.DATACLAY_KV_PORT = int(os.getenv("DATACLAY_KV_PORT", 6379))
 
         self.DATACLAY_STORAGE_PATH = os.getenv(
             "DATACLAY_STORAGE_PATH", default="/dataclay/storage/"
@@ -136,7 +136,7 @@ class Settings:
             host or os.getenv("DATACLAY_METADATA_HOST") or os.environ["DC_HOST"]
         )
         self.DATACLAY_METADATA_PORT = int(
-            port or os.getenv("DATACLAY_METADATA_PORT") or os.getenv("DC_PORT", "16587")
+            port or os.getenv("DATACLAY_METADATA_PORT") or os.getenv("DC_PORT", 16587)
         )
 
         self.DC_USERNAME = username or os.environ["DC_USERNAME"]
@@ -148,16 +148,16 @@ class Settings:
         self.THREAD_POOL_WORKERS = os.getenv("THREAD_POOL_WORKERS", default=None)
 
         self.DATACLAY_LISTEN_ADDRESS = "0.0.0.0"
-        self.DATACLAY_METADATA_PORT = int(os.getenv("DATACLAY_METADATA_PORT", "16587"))
+        self.DATACLAY_METADATA_PORT = int(os.getenv("DATACLAY_METADATA_PORT", 16587))
         self.DATACLAY_METADATA_HOST = os.getenv(
             "DATACLAY_METADATA_HOST", socket.gethostbyname(socket.gethostname())
         )
 
         # self.ETCD_HOST = os.environ["ETCD_HOST"]
-        # self.ETCD_PORT = int(os.getenv("ETCD_PORT", "2379"))
+        # self.ETCD_PORT = int(os.getenv("ETCD_PORT", 2379))
 
         self.DATACLAY_KV_HOST = os.environ["DATACLAY_KV_HOST"]
-        self.DATACLAY_KV_PORT = int(os.getenv("DATACLAY_KV_PORT", "6379"))
+        self.DATACLAY_KV_PORT = int(os.getenv("DATACLAY_KV_PORT", 6379))
 
         self.DATACLAY_ID = os.getenv("DATACLAY_ID", uuid.uuid4())
         self.DATACLAY_PASSWORD = os.getenv("DATACLAY_PASSWORD", "admin")
@@ -178,17 +178,32 @@ class Settings:
             service_name = self.DATACLAY_SERVICE_NAME
 
         if self.DATACLAY_TRACING:
-            self.DATACLAY_TRACING_EXPORTER = os.getenv("DATACLAY_TRACING_EXPORTER", "otlp")
+            self.DATACLAY_TRACING_EXPORTER = os.getenv("DATACLAY_TRACING_EXPORTER", "otlp").lower()
             self.DATACLAY_TRACING_HOST = os.getenv("DATACLAY_TRACING_HOST", "localhost")
-            self.DATACLAY_TRACING_PORT = int(os.getenv("DATACLAY_TRACING_PORT", "4317"))
-            dataclay.utils.telemetry.set_tracer_provider(
-                service_name, self.DATACLAY_TRACING_HOST, self.DATACLAY_TRACING_PORT
+            self.DATACLAY_TRACING_PORT = int(os.getenv("DATACLAY_TRACING_PORT", 4317))
+            dataclay.utils.telemetry.set_tracing(
+                service_name,
+                self.DATACLAY_TRACING_HOST,
+                self.DATACLAY_TRACING_PORT,
+                self.DATACLAY_TRACING_EXPORTER,
             )
 
         self._tracing_loaded = True
 
         if self.DATACLAY_METRICS:
-            dataclay.utils.metrics.set_prometheus()
+            self.DATACLAY_METRICS_EXPORTER = os.getenv("DATACLAY_METRICS_EXPORTER", "http").lower()
+            self.DATACLAY_METRICS_HOST = os.getenv("DATACLAY_METRICS_HOST", "localhost")
+            self.DATACLAY_METRICS_PORT = int(
+                os.getenv("DATACLAY_METRICS_PORT", 8000)
+            )  # 9091 for pushgateway
+            self.DATACLAY_METRICS_PUSH_INTERVAL = int(
+                os.getenv("DATACLAY_METRICS_PUSH_INTERVAL", 10)
+            )
+            dataclay.utils.metrics.set_metrics(
+                self.DATACLAY_METRICS_HOST,
+                self.DATACLAY_METRICS_PORT,
+                self.DATACLAY_METRICS_EXPORTER,
+            )
 
 
 settings = Settings()
