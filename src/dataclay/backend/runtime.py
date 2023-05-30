@@ -11,6 +11,7 @@ from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.metadata.api import MetadataAPI
 from dataclay.runtime import DataClayRuntime, UUIDLock
+from dataclay.utils import metrics
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +73,7 @@ class BackendRuntime(DataClayRuntime):
             try:
                 path = f"{settings.DATACLAY_STORAGE_PATH}/{instance._dc_id}"
                 object_properties = pickle.load(open(path, "rb"))
+                metrics.dataclay_stored_objects.dec()
             except Exception as e:
                 raise DataClayException("Object not found in storage") from e
 

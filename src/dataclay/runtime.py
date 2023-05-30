@@ -16,6 +16,7 @@ from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
 from dataclay.exceptions import *
 from dataclay.protos.common_messages_pb2 import LANG_PYTHON
+from dataclay.utils import metrics
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -112,6 +113,7 @@ class DataClayRuntime(ABC):
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
         self.inmemory_objects = WeakValueDictionary()
+        metrics.dataclay_inmemory_objects.set_function(lambda: len(self.inmemory_objects))
 
     ##############
     # Properties #
@@ -141,6 +143,8 @@ class DataClayRuntime(ABC):
     # Get Object #
     ##############
 
+    # TODO: Check if is taking the metrics from KeyError, if not put inside
+    @metrics.dataclay_inmemory_misses_total.count_exceptions(KeyError)
     def get_object_by_id(self, object_id: UUID, object_md: ObjectMetadata = None) -> DataClayObject:
         """Get dataclay object from inmemory_objects. If not present, get object metadata
         and create new proxy object.
@@ -149,11 +153,15 @@ class DataClayRuntime(ABC):
 
         # Check if object is in heap
         try:
-            return self.inmemory_objects[object_id]
+            dc_object = self.inmemory_objects[object_id]
+            metrics.dataclay_inmemory_hits_total.inc()
+            return dc_object
         except KeyError:
             with UUIDLock(object_id):
                 try:
-                    return self.inmemory_objects[object_id]
+                    dc_object = self.inmemory_objects[object_id]
+                    metrics.dataclay_inmemory_hits_total.inc()
+                    return dc_object
                 except KeyError:
                     # NOTE: When the object is not in the inmemory_objects,
                     # we get the object metadata from etcd, and create a new proxy

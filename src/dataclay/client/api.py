@@ -66,6 +66,7 @@ class Client:
         self.dataset = dataset
         self.local_backend = local_backend
 
+        # Set tracer here to allow tracing "start" and "stop" methods
         settings.load_tracing_properties(service_name="client")
 
         # Set LOCAL_BACKEND

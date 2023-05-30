@@ -115,6 +115,10 @@ This is a list of all environment variables that can be used to configure dataCl
      - The log level
      - metadata, backend, client
      - warning
+   * - DATACLAY_METRICS
+     - Enable metrics
+     - metadata, backend, client
+     - false
    * - DATACLAY_TRACING
      - Enable tracing
      - metadata, backend, client

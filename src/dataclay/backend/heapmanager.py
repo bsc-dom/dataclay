@@ -8,6 +8,7 @@ import psutil
 
 from dataclay.conf import settings
 from dataclay.runtime import UUIDLock
+from dataclay.utils import metrics
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -38,6 +39,7 @@ class HeapManager(threading.Thread):
         # objects deserialized later. Second ones cannot be GC if first ones are not cleaned.
         # During GC,we should know that somehow. It's a hint but improves GC a lot.
         self.loaded_objects: dict[UUID, DataClayObject] = dict()
+        metrics.dataclay_loaded_objects.set_function(lambda: len(self.loaded_objects))
 
         # Locks for run_task and flush_all
         self.run_task_lock = threading.Lock()
@@ -105,6 +107,7 @@ class HeapManager(threading.Thread):
                     # obtained from etcd, or are stateless
                     path = f"{settings.DATACLAY_STORAGE_PATH}/{object_id}"
                     pickle.dump(instance._dc_properties, open(path, "wb"))
+                    metrics.dataclay_stored_objects.inc()
 
                     # TODO: update etcd metadata (since is loaded has changed)
                     # and store object in file system

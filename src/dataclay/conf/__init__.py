@@ -4,6 +4,7 @@ import socket
 import uuid
 from datetime import datetime
 
+import dataclay.utils.metrics
 import dataclay.utils.telemetry
 
 
@@ -83,6 +84,7 @@ class Settings:
     #############
 
     DATACLAY_TRACING = os.getenv("DATACLAY_TRACING", default="false").lower() == "true"
+    DATACLAY_METRICS = os.getenv("DATACLAY_METRICS", default="false").lower() == "true"
     _tracing_loaded = False
 
     DATACLAY_LOGLEVEL = os.getenv("DATACLAY_LOGLEVEL", default="WARNING").upper()
@@ -184,6 +186,9 @@ class Settings:
             )
 
         self._tracing_loaded = True
+
+        if self.DATACLAY_METRICS:
+            dataclay.utils.metrics.set_prometheus()
 
 
 settings = Settings()

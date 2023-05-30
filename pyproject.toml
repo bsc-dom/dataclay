@@ -30,6 +30,7 @@ dependencies = [
     "redis>=4.5.4",
     "bcrypt>=4.0.1",
     "opentelemetry-api>=1.17.0",
+    "prometheus-client>=0.17.0",
 ]
 dynamic = ["version"]
 
