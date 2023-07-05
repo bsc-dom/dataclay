@@ -16,7 +16,6 @@ requires some specific methods from here. But this may change in the future.
 import os.path
 
 from dataclay.conf import settings
-from dataclay.runtime import get_runtime, settings
 from dataclay.util.YamlParser import dataclay_yaml_load
 
 # from lru import LRU

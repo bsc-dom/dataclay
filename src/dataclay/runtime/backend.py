@@ -10,7 +10,7 @@ from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.metadata.api import MetadataAPI
-from dataclay.runtime import DataClayRuntime, UUIDLock
+from dataclay.runtime.runtime import DataClayRuntime, UUIDLock
 from dataclay.utils import metrics
 
 logger = logging.getLogger(__name__)
@@ -83,7 +83,7 @@ class BackendRuntime(DataClayRuntime):
             vars(instance).update(object_properties)
             self.heap_manager.retain_in_heap(instance)
 
-    def make_persistent(self, instance: DataClayObject, alias, backend_id):
+    def make_persistent(self, instance: DataClayObject, alias=None, backend_id=None):
         """This method creates a new Persistent Object using the provided stub instance and,
         if indicated, all its associated objects also Logic module API used for communication
 
@@ -108,10 +108,12 @@ class BackendRuntime(DataClayRuntime):
             # If backend is different than the current backend, move object
             return
 
-        instance._dc_dataset_name = self.session.dataset_name
+        # Necessary for new version
+        if instance._dc_dataset_name is None:
+            instance._dc_dataset_name = self.session.dataset_name
+
         if alias:
             self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_id)
-            # instance._dc_alias = alias
 
         # If backend_id is none, we register the object in the current backend (usual path)
         if backend_id is None:

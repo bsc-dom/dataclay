@@ -4,7 +4,6 @@ from dataclay import DataClayObject, activemethod
 
 
 class Person(DataClayObject):
-
     name: str
     age: int
     spouse: Person
@@ -23,7 +22,6 @@ class Person(DataClayObject):
 
 
 class Dog(DataClayObject):
-
     name: str
     age: int
     puppies: list[Dog]
@@ -56,7 +54,6 @@ class Dog(DataClayObject):
 
 
 class Family(DataClayObject):
-
     members: list[Person | Dog]
 
     @activemethod

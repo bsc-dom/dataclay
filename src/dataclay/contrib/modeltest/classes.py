@@ -26,6 +26,7 @@ class Dog(DataClayObject):
 class Criminal(DataClayObject):
     name: str
     detained: bool
+    fake_names: list[str]
 
     @activemethod
     def __init__(self, name):
@@ -34,7 +35,6 @@ class Criminal(DataClayObject):
 
 
 class Police(DataClayObject):
-
     name: str
     dog: Dog
 
@@ -53,7 +53,6 @@ class Police(DataClayObject):
 
 
 class Person(DataClayObject):
-
     name: str
     age: int
 
@@ -64,7 +63,6 @@ class Person(DataClayObject):
 
 
 class People(DataClayObject):
-
     people: list[Person]
 
     @activemethod

@@ -20,7 +20,6 @@ from dataclay.protos import (
     dataservice_pb2,
     dataservice_pb2_grpc,
 )
-from dataclay.runtime import get_runtime
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +108,7 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
 
     def GetObjectProperties(self, request, context):
         try:
-            result = self.backend.get_object_properties(UUID(request.object_id), request.recursive)
+            result = self.backend.get_object_properties(UUID(request.object_id))
             return BytesValue(value=result)
         except Exception as e:
             context.set_details(str(e))
@@ -117,9 +116,31 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             traceback.print_exc()
             return BytesValue()
 
-    def UpdateObject(self, request, context):
+    def UpdateObjectProperties(self, request, context):
         try:
-            self.backend.update_object(UUID(request.object_id), request.serialized_properties)
+            self.backend.update_object_properties(
+                UUID(request.object_id), request.serialized_properties
+            )
+            return Empty()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+
+    def NewObjectVersion(self, request, context):
+        try:
+            result = self.backend.new_object_version(UUID(request.object_id))
+            return dataservice_pb2.NewObjectVersionResponse(object_full_id=result)
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return dataservice_pb2.NewObjectVersionResponse()
+
+    def ConsolidateObjectVersion(self, request, context):
+        try:
+            self.backend.consolidate_object_version(UUID(request.object_id))
             return Empty()
         except Exception as e:
             context.set_details(str(e))

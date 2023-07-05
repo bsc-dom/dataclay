@@ -138,22 +138,34 @@ class BackendClient:
     #################
 
     @grpc_error_handler
-    def get_object_properties(self, object_id: UUID, recursive):
+    def get_object_properties(self, object_id: UUID):
         request = dataservice_pb2.GetObjectPropertiesRequest(
             object_id=str(object_id),
-            recursive=recursive,
         )
 
         response = self.stub.GetObjectProperties(request)
         return response.value
 
     @grpc_error_handler
-    def update_object(self, object_id: UUID, serialized_properties):
-        request = dataservice_pb2.UpdateObjectRequest(
+    def update_object_properties(self, object_id: UUID, serialized_properties):
+        request = dataservice_pb2.UpdateObjectPropertiesRequest(
             object_id=str(object_id),
             serialized_properties=serialized_properties,
         )
-        self.stub.UpdateObject(request)
+        self.stub.UpdateObjectProperties(request)
+
+    def new_object_version(self, object_id: UUID):
+        request = dataservice_pb2.NewObjectVersionRequest(
+            object_id=str(object_id),
+        )
+        response = self.stub.NewObjectVersion(request)
+        return response.object_full_id
+
+    def consolidate_object_version(self, object_id: UUID):
+        request = dataservice_pb2.ConsolidateObjectVersionRequest(
+            object_id=str(object_id),
+        )
+        self.stub.ConsolidateObjectVersion(request)
 
     @grpc_error_handler
     def proxify_object(self, object_id: UUID, new_object_id: UUID):

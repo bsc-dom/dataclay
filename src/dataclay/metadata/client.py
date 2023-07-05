@@ -110,13 +110,6 @@ class MetadataClient:
         return result
 
     @grpc_error_handler
-    def register_object(self, object_md: ObjectMetadata, session_id: UUID):
-        request = metadata_service_pb2.RegisterObjectRequest(
-            session_id=str(session_id), object_md=object_md.get_proto()
-        )
-        self.stub.RegisterObject(request)
-
-    @grpc_error_handler
     def get_object_md_by_id(self, object_id: UUID) -> ObjectMetadata:
         request = metadata_service_pb2.GetObjectMDByIdRequest(
             session_id=str(self.session.id), object_id=str(object_id)

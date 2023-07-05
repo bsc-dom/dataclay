@@ -1,27 +1,26 @@
 """ Class description goes here. """
 from __future__ import annotations
 
+import copy
 import importlib
 import logging
 import pickle
 from abc import ABC, abstractmethod
 from builtins import Exception
-from contextlib import AbstractContextManager
-from threading import Condition, Lock, RLock
 from typing import TYPE_CHECKING
 from uuid import UUID
 from weakref import WeakValueDictionary
 
+from dataclay import utils
 from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
+from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.protos.common_messages_pb2 import LANG_PYTHON
-from dataclay.utils import metrics
+from dataclay.runtime import UUIDLock
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
-    from dataclay.backend.runtime import BackendRuntime
-    from dataclay.client.runtime import ClientRuntime
     from dataclay.dataclay_object import DataClayObject
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
@@ -29,80 +28,6 @@ if TYPE_CHECKING:
 
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
-
-
-current_runtime = None
-
-
-def get_runtime() -> ClientRuntime | BackendRuntime:
-    return current_runtime
-
-
-def set_runtime(new_runtime):
-    global current_runtime
-    current_runtime = new_runtime
-
-
-class UUIDLock(AbstractContextManager):
-    """This class is used as a global lock for UUIDs
-
-    Use it always with context manager:
-        with UUIDLock(id):
-            ...
-    """
-
-    object_locks: dict[UUID, RLock] = dict()
-    class_lock = Lock()
-
-    def __init__(self, object_id):
-        self.object_id = object_id
-
-    def __enter__(self):
-        try:
-            self.object_locks[self.object_id].acquire()
-            # NOTE: This assert checks that cleanup thread don't remove
-            # lock while trying to acquire.
-            assert self.object_id in self.object_locks
-        except KeyError:
-            with self.class_lock:
-                try:
-                    self.object_locks[self.object_id].acquire()
-                except KeyError:
-                    self.object_locks[self.object_id] = RLock()
-                    self.object_locks[self.object_id].acquire()
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        try:
-            self.object_locks[self.object_id].release()
-        except KeyError:
-            pass
-
-
-# NOTE this lock is faster and don't require cleanup,
-# however, it doesn't allow recursive locking in same thread
-class UUIDLock_old(AbstractContextManager):
-    """This class is used as a global lock for UUIDs
-
-    Use it always with context manager:
-        with UUIDLock(id):
-            ...
-    """
-
-    cv = Condition()
-    locked_objects = set()
-
-    def __init__(self, id):
-        self.id = id
-
-    def __enter__(self):
-        with self.cv:
-            self.cv.wait_for(lambda: self.id not in self.locked_objects)
-            self.locked_objects.add(self.id)
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        with self.cv:
-            self.locked_objects.remove(self.id)
-            self.cv.notify_all()
 
 
 class DataClayRuntime(ABC):
@@ -113,7 +38,7 @@ class DataClayRuntime(ABC):
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
         self.inmemory_objects = WeakValueDictionary()
-        metrics.dataclay_inmemory_objects.set_function(lambda: len(self.inmemory_objects))
+        utils.metrics.dataclay_inmemory_objects.set_function(lambda: len(self.inmemory_objects))
 
     ##############
     # Properties #
@@ -139,12 +64,15 @@ class DataClayRuntime(ABC):
     def add_to_heap(self, instance: DataClayObject):
         pass
 
+    def load_object_from_db(self, instance: DataClayObject):
+        pass
+
     ##############
     # Get Object #
     ##############
 
     # TODO: Check if is taking the metrics from KeyError, if not put inside
-    @metrics.dataclay_inmemory_misses_total.count_exceptions(KeyError)
+    @utils.metrics.dataclay_inmemory_misses_total.count_exceptions(KeyError)
     def get_object_by_id(self, object_id: UUID, object_md: ObjectMetadata = None) -> DataClayObject:
         """Get dataclay object from inmemory_objects. If not present, get object metadata
         and create new proxy object.
@@ -154,13 +82,13 @@ class DataClayRuntime(ABC):
         # Check if object is in heap
         try:
             dc_object = self.inmemory_objects[object_id]
-            metrics.dataclay_inmemory_hits_total.inc()
+            utils.metrics.dataclay_inmemory_hits_total.inc()
             return dc_object
         except KeyError:
             with UUIDLock(object_id):
                 try:
                     dc_object = self.inmemory_objects[object_id]
-                    metrics.dataclay_inmemory_hits_total.inc()
+                    utils.metrics.dataclay_inmemory_hits_total.inc()
                     return dc_object
                 except KeyError:
                     # NOTE: When the object is not in the inmemory_objects,
@@ -170,9 +98,7 @@ class DataClayRuntime(ABC):
                     if object_md is None:
                         object_md = self.metadata_service.get_object_md_by_id(object_id)
 
-                    module_name, class_name = object_md.class_name.rsplit(".", 1)
-                    m = importlib.import_module(module_name)
-                    cls = getattr(m, class_name)
+                    cls = utils.get_class_by_name(object_md.class_name)
 
                     proxy_object = cls.new_proxy_object()
                     proxy_object.metadata = object_md
@@ -297,44 +223,119 @@ class DataClayRuntime(ABC):
     # Store Methods #
     #################
 
-    def get_object_copy(self, instance, recursive):
-        backend_id = instance._dc_backend_id
-        backend_client = self.get_backend_client(backend_id)
-
-        serialized_properties = backend_client.get_object_properties(instance._dc_id, recursive)
-        object_properties = pickle.loads(serialized_properties)
-
-        proxy_object = instance._dc_class.new_proxy_object()
-        vars(proxy_object).update(object_properties)
-        self.add_to_heap(proxy_object)
-
-        return proxy_object
-
-    # TODO: If can also be executed in active_method, then if the object is local,
-    # don't call the gRPC client
-    def update_object(self, instance, new_instance):
-        if new_instance._dc_is_local:
-            serialized_properties = pickle.dumps(new_instance._dc_properties)
+    def get_object_properties(self, instance):
+        if instance._dc_is_local:
+            self.load_object_from_db(instance)
+            return instance._dc_properties
         else:
-            new_backend_client = self.get_backend_client(new_instance._dc_backend_id)
-            serialized_properties = new_backend_client.get_object_properties(
-                new_instance._dc_id, False
-            )
+            backend_client = self.get_backend_client(instance._dc_backend_id)
+            serialized_properties = backend_client.get_object_properties(instance._dc_id)
+            return pickle.loads(serialized_properties)
 
-        backend_client = self.get_backend_client(instance._dc_backend_id)
-        backend_client.update_object(instance._dc_id, serialized_properties)
+    def make_object_copy(self, instance, recursive=None):
+        # It cannot be called if instnace is not persistent, because
+        # the deepcopy from the class will try to serialize the instance
+        # and it will be made persistent in the process
+        # A solution could be to override the __deepcopy__, but I don't see the need...
+        object_properties = copy.deepcopy(self.get_object_properties(instance))
+        # object_copy = instance.__class__.__new__(__class__)
+        object_copy = DataClayObject.__new__(instance.__class__)
+        vars(object_copy).update(object_properties)
+        return object_copy
+
+    def replace_object_properties(self, instance, new_instance):
+        new_object_properties = self.get_object_properties(new_instance)
+        self.update_object_properties(instance, new_object_properties)
+
+    def update_object_properties(self, instance, new_properties):
+        if instance._dc_is_local:
+            self.load_object_from_db(instance)
+            vars(instance).update(new_properties)
+        else:
+            backend_client = self.get_backend_client(instance._dc_backend_id)
+            backend_client.update_object_properties(instance._dc_id, pickle.dumps(new_properties))
+
+    def make_new_version(self, instance, backend_id=None):
+        new_version = self.make_object_copy(instance)
+
+        if instance._dc_original_object_id is None:
+            new_version._dc_original_object_id = instance._dc_id
+
+        else:
+            new_version._dc_original_object_id = instance._dc_original_object_id
+            new_version._dc_versions_object_ids = instance._dc_versions_object_ids + [
+                instance._dc_id
+            ]
+
+        new_version._dc_dataset_name = instance._dc_dataset_name
+
+        if not new_version._dc_is_registered:
+            self.make_persistent(new_version, backend_id=backend_id)
+
+        return new_version
+
+    def consolidate_version(self, instance):
+        if instance._dc_original_object_id is None:
+            logger.warning("Trying to consolidate an object that is not a version")
+            return
+
+        original_object_id = instance._dc_original_object_id
+
+        for version_object_id in instance._dc_versions_object_ids:
+            version = self.get_object_by_id(version_object_id)
+            self.proxify_object(version, original_object_id)
+
+        original_object = self.get_object_by_id(original_object_id)
+        self.proxify_object(original_object, original_object_id)
+        self.change_object_id(instance, original_object_id)
+
+        instance._dc_original_object_id = None
+        instance._dc_versions_object_ids = []
 
     def proxify_object(self, instance, new_object_id):
-        backend_client = self.get_backend_client(instance._dc_backend_id)
-        backend_client.proxify_object(instance._dc_id, new_object_id)
+        if instance._dc_is_local:
+            with UUIDLock(instance._dc_id):
+                self.load_object_from_db(instance)
+                instance._clean_dc_properties()
+                instance._dc_is_loaded = False
+                instance._dc_is_local = False
+                self.heap_manager.release_from_heap(instance)
+                # NOTE: There is no need to delete, and it may be good
+                # in case that an object was serialized to disk before a
+                # consolidation. However, it will be deleted also since
+                # inmemory_objects is a weakref dict.
+                # del self.inmemory_objects[instance._dc_id]
+                self.metadata_service.delete_object(instance._dc_id)
+        else:
+            backend_client = self.get_backend_client(instance._dc_backend_id)
+            backend_client.proxify_object(instance._dc_id, new_object_id)
+
         instance._dc_id = new_object_id
 
     def change_object_id(self, instance, new_object_id):
-        backend_client = self.get_backend_client(instance._dc_backend_id)
-        backend_client.change_object_id(instance._dc_id, new_object_id)
-        instance._dc_id = new_object_id
+        old_object_id = instance._dc_id
 
-        # Remove the object
+        if instance._dc_is_local:
+            with UUIDLock(instance._dc_id):
+                self.load_object_from_db(instance)
+                # We need to update the loaded_objects with the new object_id key
+                self.heap_manager.release_from_heap(instance)
+                instance._dc_id = new_object_id
+                self.heap_manager.retain_in_heap(instance)
+                # Also update the inmemory_objects with the new object_id key
+                self.inmemory_objects[new_object_id] = instance
+                self.metadata_service.change_object_id(old_object_id, new_object_id)
+
+                # The only use case for change_object_id is to consolidate, therefore:
+                instance._dc_original_object_id = None
+                instance._dc_versions_object_ids = []
+                self.metadata_service.register_object(instance.metadata)
+        else:
+            backend_client = self.get_backend_client(instance._dc_backend_id)
+            backend_client.change_object_id(instance._dc_id, new_object_id)
+            instance._dc_id = new_object_id
+
+        del self.inmemory_objects[old_object_id]
 
     #####################
     # Garbage collector #

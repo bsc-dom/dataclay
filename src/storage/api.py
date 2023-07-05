@@ -9,17 +9,15 @@ import dataclay.client.api
 
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
+from dataclay.metadata.kvdata import ObjectMetadata
 
 # Also "publish" the split method
-from dataclay.contrib.splitting import split
+# from dataclay.contrib.splitting import split
 from dataclay.runtime import get_runtime
 
 # The StorageDict and StorageList data structures
-from .models.storagedict import StorageDict
-from .models.storagelist import StorageList
-
-__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
-__copyright__ = "2015 Barcelona Supercomputing Center (BSC-CNS)"
+# from .models.storagedict import StorageDict
+# from .models.storagelist import StorageList
 
 _initialized = False
 
@@ -32,16 +30,13 @@ def getByID(object_strid):
     :return: The (Persistent) DataClayObject
     """
     try:
-        object_id, hint, class_id = object_strid.split(":")
-        ret = get_runtime().get_object_by_id(
-            uuid.UUID(object_id), class_id=uuid.UUID(class_id), hint=uuid.UUID(hint)
-        )
+        object_id, backend_id, class_name = object_strid.split(":")
+        object_md = ObjectMetadata(id=object_id, backend_id=backend_id, class_name=class_name)
+        return get_runtime().get_object_by_id(uuid.UUID(object_id), object_md)
     except ValueError:  # this can fail for both [not enough semicolons]|[invalid uuid]
         # Fallback behaviour: no extra fields, the whole string is the ObjectID UUID
         object_id = object_strid
-        ret = get_runtime().get_object_by_id(uuid.UUID(object_id))
-
-    return ret
+        return get_runtime().get_object_by_id(uuid.UUID(object_id))
 
 
 def initWorker(config_file_path, **kwargs):

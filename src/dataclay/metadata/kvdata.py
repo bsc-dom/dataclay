@@ -7,7 +7,7 @@ import bcrypt
 
 from dataclay.exceptions import *
 from dataclay.protos import common_messages_pb2
-from dataclay.utils.json import UUIDEncoder, uuid_parser
+from dataclay.utils.json import UUIDEncoder, str_to_uuid, uuid_parser, uuid_to_str
 
 
 class KeyValue(ABC):
@@ -42,7 +42,6 @@ class KeyValue(ABC):
 
 @dataclass
 class Dataclay(KeyValue):
-
     path = "/dataclay/"
 
     id: UUID
@@ -57,7 +56,7 @@ class Dataclay(KeyValue):
     @classmethod
     def from_proto(cls, proto):
         return cls(
-            UUID(proto.id),
+            str_to_uuid(proto.id),
             proto.hostname,
             proto.port,
             proto.is_this,
@@ -65,7 +64,7 @@ class Dataclay(KeyValue):
 
     def get_proto(self):
         return common_messages_pb2.Dataclay(
-            id=str(self.id),
+            id=uuid_to_str(self.id),
             hostname=self.hostname,
             port=self.port,
             is_this=self.is_this,
@@ -74,7 +73,6 @@ class Dataclay(KeyValue):
 
 @dataclass
 class Backend(KeyValue):
-
     path = "/backend/"
 
     id: UUID
@@ -89,35 +87,34 @@ class Backend(KeyValue):
     @classmethod
     def from_proto(cls, proto):
         return cls(
-            UUID(proto.id),
+            str_to_uuid(proto.id),
             proto.hostname,
             proto.port,
-            UUID(proto.dataclay_id),
+            str_to_uuid(proto.dataclay_id),
         )
 
     # TODO: Improve it with __getattributes__ and interface
     def get_proto(self):
         return common_messages_pb2.Backend(
-            id=str(self.id),
+            id=uuid_to_str(self.id),
             hostname=self.hostname,
             port=self.port,
-            dataclay_id=str(self.dataclay_id),
+            dataclay_id=uuid_to_str(self.dataclay_id),
         )
 
 
 @dataclass
 class ObjectMetadata(KeyValue):
-
     path = "/object/"
 
     id: UUID = None
-    alias_name: str = None
     dataset_name: str = None
-    class_name: UUID = None
+    class_name: str = None
     backend_id: UUID = None
-    replica_backend_ids: UUID = None
-    language: str = None
+    replica_backend_ids: list[UUID] = None
     is_read_only: bool = False
+    original_object_id: UUID = None
+    versions_object_ids: list[UUID] = None
 
     @property
     def key(self):
@@ -125,33 +122,37 @@ class ObjectMetadata(KeyValue):
 
     @classmethod
     def from_proto(cls, proto):
+        print(proto)
+        print(proto.is_read_only)
+        print(proto.replica_backend_ids)
+        print(proto.original_object_id)
+        print(type(proto.original_object_id))
         return cls(
-            UUID(proto.id),
-            proto.alias_name if proto.alias_name != "" else None,
+            str_to_uuid(proto.id),
             proto.dataset_name,
             proto.class_name,
-            UUID(proto.backend_id),
-            list(map(UUID, proto.replica_backend_ids)),
-            proto.language,
+            str_to_uuid(proto.backend_id),
+            list(map(str_to_uuid, proto.replica_backend_ids)),
             proto.is_read_only,
+            str_to_uuid(proto.original_object_id),
+            list(map(str_to_uuid, proto.versions_object_ids)),
         )
 
     def get_proto(self):
         return common_messages_pb2.ObjectMetadata(
-            id=str(self.id),
-            alias_name=self.alias_name,
+            id=uuid_to_str(self.id),
             dataset_name=self.dataset_name,
             class_name=self.class_name,
-            backend_id=str(self.backend_id),
-            replica_backend_ids=list(map(str, self.replica_backend_ids)),
-            language=self.language,
+            backend_id=uuid_to_str(self.backend_id),
+            replica_backend_ids=list(map(uuid_to_str, self.replica_backend_ids)),
             is_read_only=self.is_read_only,
+            original_object_id=uuid_to_str(self.original_object_id),
+            versions_object_ids=list(map(uuid_to_str, self.versions_object_ids)),
         )
 
 
 @dataclass
 class Alias(KeyValue):
-
     path = "/alias/"
 
     name: str
@@ -165,7 +166,6 @@ class Alias(KeyValue):
 
 @dataclass
 class Session(KeyValue):
-
     path = "/session/"
 
     id: UUID
@@ -179,11 +179,11 @@ class Session(KeyValue):
 
     @classmethod
     def from_proto(cls, proto):
-        return cls(UUID(proto.id), proto.username, proto.dataset_name, proto.is_active)
+        return cls(str_to_uuid(proto.id), proto.username, proto.dataset_name, proto.is_active)
 
     def get_proto(self):
         return common_messages_pb2.Session(
-            id=str(self.id),
+            id=uuid_to_str(self.id),
             username=self.username,
             dataset_name=self.dataset_name,
             is_active=self.is_active,
@@ -192,7 +192,6 @@ class Session(KeyValue):
 
 @dataclass
 class Account(KeyValue):
-
     path = "/account/"
 
     username: str
@@ -223,7 +222,6 @@ class Account(KeyValue):
 
 @dataclass
 class Dataset(KeyValue):
-
     path = "/dataset/"
 
     name: str

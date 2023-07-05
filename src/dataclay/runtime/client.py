@@ -8,7 +8,7 @@ import traceback
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.metadata.client import MetadataClient
-from dataclay.runtime import DataClayRuntime
+from dataclay.runtime.runtime import DataClayRuntime
 from dataclay.utils.pickle import RecursiveLocalPickler
 from dataclay.utils.telemetry import trace
 
@@ -30,7 +30,7 @@ class ClientRuntime(DataClayRuntime):
     def add_to_heap(self, instance: DataClayObject):
         self.inmemory_objects[instance._dc_id] = instance
 
-    def make_persistent(self, instance: DataClayObject, alias, backend_id):
+    def make_persistent(self, instance: DataClayObject, alias=None, backend_id=None):
         """This method creates a new Persistent Object using the provided stub
         instance and, if indicated, all its associated objects also Logic module API used for communication
         This function is called from a stub/execution class

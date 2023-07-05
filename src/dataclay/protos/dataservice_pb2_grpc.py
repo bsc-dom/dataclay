@@ -249,9 +249,9 @@ class DataServiceStub(object):
                 request_serializer=protos_dot_dataservice__pb2.GetObjectPropertiesRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BytesValue.FromString,
                 )
-        self.UpdateObject = channel.unary_unary(
-                '/protos.dataservice.DataService/UpdateObject',
-                request_serializer=protos_dot_dataservice__pb2.UpdateObjectRequest.SerializeToString,
+        self.UpdateObjectProperties = channel.unary_unary(
+                '/protos.dataservice.DataService/UpdateObjectProperties',
+                request_serializer=protos_dot_dataservice__pb2.UpdateObjectPropertiesRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.MoveObject = channel.unary_unary(
@@ -262,6 +262,16 @@ class DataServiceStub(object):
         self.SendObject = channel.unary_unary(
                 '/protos.dataservice.DataService/SendObject',
                 request_serializer=protos_dot_dataservice__pb2.SendObjectRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.NewObjectVersion = channel.unary_unary(
+                '/protos.dataservice.DataService/NewObjectVersion',
+                request_serializer=protos_dot_dataservice__pb2.NewObjectVersionRequest.SerializeToString,
+                response_deserializer=protos_dot_dataservice__pb2.NewObjectVersionResponse.FromString,
+                )
+        self.ConsolidateObjectVersion = channel.unary_unary(
+                '/protos.dataservice.DataService/ConsolidateObjectVersion',
+                request_serializer=protos_dot_dataservice__pb2.ConsolidateObjectVersionRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.ProxifyObject = channel.unary_unary(
@@ -578,7 +588,7 @@ class DataServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def UpdateObject(self, request, context):
+    def UpdateObjectProperties(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -591,6 +601,18 @@ class DataServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def SendObject(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def NewObjectVersion(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ConsolidateObjectVersion(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -859,9 +881,9 @@ def add_DataServiceServicer_to_server(servicer, server):
                     request_deserializer=protos_dot_dataservice__pb2.GetObjectPropertiesRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.BytesValue.SerializeToString,
             ),
-            'UpdateObject': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdateObject,
-                    request_deserializer=protos_dot_dataservice__pb2.UpdateObjectRequest.FromString,
+            'UpdateObjectProperties': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateObjectProperties,
+                    request_deserializer=protos_dot_dataservice__pb2.UpdateObjectPropertiesRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'MoveObject': grpc.unary_unary_rpc_method_handler(
@@ -872,6 +894,16 @@ def add_DataServiceServicer_to_server(servicer, server):
             'SendObject': grpc.unary_unary_rpc_method_handler(
                     servicer.SendObject,
                     request_deserializer=protos_dot_dataservice__pb2.SendObjectRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'NewObjectVersion': grpc.unary_unary_rpc_method_handler(
+                    servicer.NewObjectVersion,
+                    request_deserializer=protos_dot_dataservice__pb2.NewObjectVersionRequest.FromString,
+                    response_serializer=protos_dot_dataservice__pb2.NewObjectVersionResponse.SerializeToString,
+            ),
+            'ConsolidateObjectVersion': grpc.unary_unary_rpc_method_handler(
+                    servicer.ConsolidateObjectVersion,
+                    request_deserializer=protos_dot_dataservice__pb2.ConsolidateObjectVersionRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'ProxifyObject': grpc.unary_unary_rpc_method_handler(
@@ -1693,7 +1725,7 @@ class DataService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def UpdateObject(request,
+    def UpdateObjectProperties(request,
             target,
             options=(),
             channel_credentials=None,
@@ -1703,8 +1735,8 @@ class DataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/UpdateObject',
-            protos_dot_dataservice__pb2.UpdateObjectRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/UpdateObjectProperties',
+            protos_dot_dataservice__pb2.UpdateObjectPropertiesRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -1739,6 +1771,40 @@ class DataService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/SendObject',
             protos_dot_dataservice__pb2.SendObjectRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def NewObjectVersion(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/NewObjectVersion',
+            protos_dot_dataservice__pb2.NewObjectVersionRequest.SerializeToString,
+            protos_dot_dataservice__pb2.NewObjectVersionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ConsolidateObjectVersion(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/protos.dataservice.DataService/ConsolidateObjectVersion',
+            protos_dot_dataservice__pb2.ConsolidateObjectVersionRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

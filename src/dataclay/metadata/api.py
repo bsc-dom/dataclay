@@ -213,7 +213,7 @@ class MetadataAPI:
         return {UUID(k): v for k, v in result.items()}
 
     @tracer.start_as_current_span("register_object")
-    def register_object(self, object_md: ObjectMetadata, session_id: UUID = None):
+    def register_object(self, object_md: ObjectMetadata):
         # NOTE: If only EE can register objects, no need to check session
         # Checks that session exists and is active
         # session = self.session_mgr.get_session(session_id)

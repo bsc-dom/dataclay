@@ -23,3 +23,11 @@ def uuid_parser(obj):
         except Exception:
             pass
     return obj
+
+
+def uuid_to_str(uuid: UUID):
+    return str(uuid) if uuid is not None else None
+
+
+def str_to_uuid(s: str):
+    return UUID(s) if s else None

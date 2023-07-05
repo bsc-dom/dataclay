@@ -77,7 +77,7 @@ class HeapManager(threading.Thread):
         using weak references. In order to avoid objects to be GC without a flush in DB, HeapManager has hard-references to
         them and is the only one able to release them. This function creates the hard-reference.
         """
-        logger.debug("New object retained in heap")
+        logger.debug(f"New object retained in heap {dc_obj._dc_id}")
         self.loaded_objects[dc_obj._dc_id] = dc_obj
 
     def release_from_heap(self, dc_obj):

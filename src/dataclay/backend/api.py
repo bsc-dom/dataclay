@@ -7,15 +7,14 @@ import logging
 import pickle
 import time
 import traceback
-import uuid
 from typing import TYPE_CHECKING
 
 from dataclay import utils
 from dataclay.backend.client import BackendClient
-from dataclay.backend.runtime import BackendRuntime
 from dataclay.conf import settings
 from dataclay.exceptions import *
 from dataclay.runtime import UUIDLock, set_runtime
+from dataclay.runtime.backend import BackendRuntime
 from dataclay.utils.pickle import RecursiveLocalPickler, RecursiveLocalUnpickler
 from dataclay.utils.telemetry import trace
 
@@ -83,7 +82,7 @@ class BackendAPI:
             try:
                 proxy_object = unserialized_objects[object_id]
             except KeyError:
-                cls: type[DataClayObject] = object_dict["_dc_class"]
+                cls: type[DataClayObject] = utils.get_class_by_name(object_dict["_dc_class_name"])
                 proxy_object = cls.new_proxy_object()
                 unserialized_objects[object_id] = proxy_object
 
@@ -94,8 +93,8 @@ class BackendAPI:
 
         assert len(serialized_dicts) == len(unserialized_objects)
 
-        for object_id, proxy_object in unserialized_objects.items():
-            self.runtime.inmemory_objects[object_id] = proxy_object
+        for proxy_object in unserialized_objects.values():
+            self.runtime.inmemory_objects[proxy_object._dc_id] = proxy_object
             self.runtime.heap_manager.retain_in_heap(proxy_object)
 
             self.runtime.metadata_service.register_object(proxy_object.metadata)
@@ -137,7 +136,7 @@ class BackendAPI:
     # Store Methods
 
     @tracer.start_as_current_span("get_object_properties")
-    def get_object_properties(self, object_id, recursive):
+    def get_object_properties(self, object_id):
         """Returns a non-persistent copy of the object with ID provided
 
         Args:
@@ -145,65 +144,37 @@ class BackendAPI:
         Returns:
             the generated non-persistent objects
         """
-        # TODO: Implement recursive option
         instance = self.runtime.get_object_by_id(object_id)
+        object_properties = self.runtime.get_object_properties(instance)
+        return pickle.dumps(object_properties)
 
-        # Lock to avoid unloading after the object is loaded
-        with UUIDLock(object_id):
-            # NOTE: The object should be loaded to get the _dc_properties
-            # TODO: Maybe send directly the pickled file if not loaded?
-            self.runtime.load_object_from_db(instance)
-            serialized_properties = pickle.dumps(instance._dc_properties)
-
-        return serialized_properties
-
-    @tracer.start_as_current_span("update_object")
-    def update_object(self, object_id, serialized_properties):
+    @tracer.start_as_current_span("update_object_properties")
+    def update_object_properties(self, object_id, serialized_properties):
         """Updates an object with ID provided with contents from another object"""
         instance = self.runtime.get_object_by_id(object_id)
         object_properties = pickle.loads(serialized_properties)
+        self.runtime.update_object_properties(instance, object_properties)
 
-        with UUIDLock(object_id):
-            self.runtime.load_object_from_db(instance)
-            vars(instance).update(object_properties)
+    def new_object_version(self, object_id):
+        """Creates a new version of the object with ID provided"""
+        instance = self.runtime.get_object_by_id(object_id)
+        new_version = self.runtime.make_new_version(instance)
+        return new_version.getID()
+
+    def consolidate_object_version(self, object_id):
+        """Consolidates the object with ID provided"""
+        instance = self.runtime.get_object_by_id(object_id)
+        self.runtime.consolidate_version(instance)
 
     @tracer.start_as_current_span("proxify_object")
     def proxify_object(self, object_id, new_object_id):
         instance = self.runtime.get_object_by_id(object_id)
-
-        with UUIDLock(object_id):
-            self.runtime.load_object_from_db(instance)
-            instance._clean_dc_properties()
-            instance._dc_is_loaded = False
-            instance._dc_is_local = False
-            self.runtime.heap_manager.release_from_heap(instance)
-
-            # NOTE: There is no need to delete, and it may be good
-            # in case that an object was serialized to disk before a
-            # consolidation. However, it will be deleted also since
-            # inmemory_objects is a weakref dict.
-            # del self.runtime.inmemory_objects[object_id]
-            self.runtime.metadata_service.delete_object(object_id)
-            instance._dc_id = new_object_id
+        self.runtime.proxify_object(instance, new_object_id)
 
     @tracer.start_as_current_span("change_object_id")
     def change_object_id(self, object_id, new_object_id):
         instance = self.runtime.get_object_by_id(object_id)
-
-        with UUIDLock(object_id):
-            self.runtime.load_object_from_db(instance)
-
-            # We need to update the loaded_objects with the new object_id key
-            self.runtime.heap_manager.release_from_heap(instance)
-
-            instance._dc_id = new_object_id
-            self.runtime.heap_manager.retain_in_heap(instance)
-
-            # Also update the inmemory_objects with the new object_id key
-            self.runtime.inmemory_objects[new_object_id] = self.runtime.inmemory_objects[object_id]
-            del self.runtime.inmemory_objects[object_id]
-
-            self.runtime.metadata_service.change_object_id(object_id, new_object_id)
+        self.runtime.change_object_id(instance, new_object_id)
 
     @tracer.start_as_current_span("move_object")
     def move_object(self, object_id, backend_id, recursive):

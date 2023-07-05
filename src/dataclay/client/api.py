@@ -13,11 +13,11 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from dataclay.backend.client import BackendClient
-from dataclay.client.runtime import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
-from dataclay.client.runtime import ClientRuntime
 from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.runtime import get_runtime, set_runtime
+from dataclay.runtime.client import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
+from dataclay.runtime.client import ClientRuntime
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
