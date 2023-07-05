@@ -72,7 +72,6 @@ class ReadWriteLock:
 
 def activemethod(func):
     """Decorator for DataClayObject active methods."""
-
     @functools.wraps(func)
     def wrapper_activemethod(self: DataClayObject, *args, **kwargs):
         logger.debug(f"Calling activemethod {func.__name__} on {self._dc_id}")
