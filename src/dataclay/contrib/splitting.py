@@ -1,7 +1,6 @@
-from itertools import cycle
-from typing import Iterable, Any
-
 import logging
+from itertools import cycle
+from typing import Any, Iterable
 
 from dataclay import DataClayObject, activemethod
 from dataclay.util.IdentityDict import IdentityDict
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 # Note to the future: #
 #######################
 #
-# The functions here may need some consistency and clean-up. The function 
+# The functions here may need some consistency and clean-up. The function
 # `split` should become more well-defined, and the general behaviour of split,
 # split_by_rows and the general idea of split_nd (the n-dimensional split)
 # should be tied together somehow.
@@ -29,6 +28,7 @@ logger = logging.getLogger(__name__)
 # have mercy on the pour souls that worked on this! (And also keep an open mind
 # on the rationale and use cases that were considered at that point).
 ###############################################################################
+
 
 def batch_object_info(objects):
     """Relying on object metadata (which may be outdated / wrong)."""
@@ -45,6 +45,7 @@ def batch_object_info(objects):
 
 class SplitCallResult:
     """Helper class for returning a coherent result on split calls."""
+
     def __init__(self, split_class, multiplicity=1):
         self.split_class = split_class
         self.multiplicity = multiplicity
@@ -94,8 +95,7 @@ def _test_and_coerce_for_pobj(obj):
     # Now let's start to look into the casuistics
     real_type = type(obj)
 
-    if real_type.__name__ == "Future" and \
-            real_type.__module__.startswith("pycompss"):
+    if real_type.__name__ == "Future" and real_type.__module__.startswith("pycompss"):
         from pycompss.api.api import compss_wait_on
 
         waited_obj = compss_wait_on(obj)
@@ -128,7 +128,7 @@ def split(iterable, **split_options):
         return split_by_rows(iterable, **split_options)
 
 
-def _split_helper(indexes, objects, split_class, **split_options):    
+def _split_helper(indexes, objects, split_class, **split_options):
     boi = batch_object_info(objects)
 
     multiplicity = split_options.get("multiplicity", 1)
@@ -159,7 +159,7 @@ def _split_helper(indexes, objects, split_class, **split_options):
 
 def split_nd(gaggle, split_class=None, **split_options):
     """Perform a split on a n-dimensional structure containing persistent objects.
-    
+
     Note that the input structure (`gaggle`) is expected to be a list or list-like
     with nested lists on itself --unless it is a 1-dimensional gaggle.
     """
@@ -178,13 +178,13 @@ def split_nd(gaggle, split_class=None, **split_options):
         else:
             for i, item in enumerate(subgaggle):
                 indexes.append(curr_index + (i,))
-                
+
                 # We may want to assert that *everything* is indeed a Persistent Object,
                 # but doing so may incur in a substantial penalty.
                 _, obj = _test_and_coerce_for_pobj(item)
 
                 objects.append(obj)
-        
+
         return indexes, objects
 
     indexes, objects = gather_objects(gaggle)
@@ -194,7 +194,7 @@ def split_nd(gaggle, split_class=None, **split_options):
 
 def split_1d(gaggle, split_class=None, **split_options):
     """Perform a split on a n-dimensional structure containing persistent objects.
-    
+
     Note that the input structure (`gaggle`) is expected to be a list or list-like
     with nested lists on itself --unless it is a 1-dimensional gaggle.
     """
@@ -205,7 +205,7 @@ def split_1d(gaggle, split_class=None, **split_options):
 
 
 # This function repeats a lot of code from the _split_helper, but there was no
-# easy way of making it generic, and there may be more corner cases to handle 
+# easy way of making it generic, and there may be more corner cases to handle
 # or different strategies to implement.
 def split_by_rows(gaggle, split_class=None, **split_options):
     """Perform a split on a 2-dimensional structure, splitting by rows.
@@ -305,9 +305,12 @@ class SplittableCollectionMixin(object):
         try:
             return self.chunks
         except AttributeError:
-            raise NotImplementedError("ChunkedCollections must either implement the get_chunks method "
-                                      "or contain a `chunks` attribute.")
+            raise NotImplementedError(
+                "ChunkedCollections must either implement the get_chunks method "
+                "or contain a `chunks` attribute."
+            )
 
     def split(self, split_class=None):
         from dataclay.contrib.splitting import split_1d
+
         return split_1d(self.get_chunks(), split_class=split_class)

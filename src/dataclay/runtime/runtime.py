@@ -179,6 +179,9 @@ class DataClayRuntime(ABC):
     # Alias #
     #########
 
+    def add_alias(self, instance, alias):
+        self.metadata_service.new_alias(alias, instance._dc_dataset_name, instance._dc_id)
+
     def delete_alias(self, alias, dataset_name):
         if dataset_name is None:
             dataset_name = self.session.dataset_name
@@ -188,6 +191,9 @@ class DataClayRuntime(ABC):
     def update_object_metadata(self, instance: DataClayObject):
         object_md = self.metadata_service.get_object_md_by_id(instance._dc_id)
         instance.metadata = object_md
+
+    def get_all_alias(self, dataset_name: str = None, object_id: UUID = None):
+        return self.metadata_service.get_all_alias(dataset_name, object_id)
 
     ############
     # Backends #

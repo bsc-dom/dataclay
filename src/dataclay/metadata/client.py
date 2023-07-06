@@ -5,13 +5,14 @@ from uuid import UUID
 import grpc
 from google.protobuf.empty_pb2 import Empty
 
-from dataclay.metadata.kvdata import Backend, Dataclay, ObjectMetadata, Session
+from dataclay.metadata.kvdata import Alias, Backend, Dataclay, ObjectMetadata, Session
 from dataclay.protos import (
     common_messages_pb2,
     metadata_service_pb2,
     metadata_service_pb2_grpc,
 )
 from dataclay.utils.decorators import grpc_error_handler
+from dataclay.utils.uuid import str_to_uuid, uuid_to_str
 
 logger = logging.getLogger(__name__)
 
@@ -138,6 +139,18 @@ class MetadataClient:
             object_id=str(object_id),
         )
         self.stub.NewAlias(request)
+
+    @grpc_error_handler
+    def get_all_alias(self, dataset_name: str, object_id: UUID) -> dict:
+        request = metadata_service_pb2.GetAllAliasRequest(
+            dataset_name=dataset_name, object_id=uuid_to_str(object_id)
+        )
+        response = self.stub.GetAllAlias(request)
+
+        result = dict()
+        for alias_name, proto in response.aliases.items():
+            result[alias_name] = Alias.from_proto(proto)
+        return result
 
     @grpc_error_handler
     def delete_alias(self, alias_name: str, dataset_name: str, session_id: UUID):

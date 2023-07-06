@@ -8,7 +8,7 @@ import grpc
 
 from dataclay.backend.client import BackendClient
 from dataclay.metadata.client import MetadataClient
-from dataclay.utils.json import UUIDEncoder, uuid_parser
+from dataclay.utils.uuid import UUIDEncoder, uuid_parser
 
 DATACLAY_LOGLEVEL = os.getenv("DATACLAY_LOGLEVEL", default="INFO").upper()
 logging.basicConfig(level=DATACLAY_LOGLEVEL)

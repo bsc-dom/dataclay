@@ -72,6 +72,7 @@ class ReadWriteLock:
 
 def activemethod(func):
     """Decorator for DataClayObject active methods."""
+
     @functools.wraps(func)
     def wrapper_activemethod(self: DataClayObject, *args, **kwargs):
         logger.debug(f"Calling activemethod {func.__name__} on {self._dc_id}")
@@ -331,20 +332,32 @@ class DataClayObject:
         """
         return get_runtime().get_object_by_alias(alias, dataset_name)
 
-    # def add_alias(self, alias):
-    #     """Adds an alias to the object.
+    def add_alias(self, alias):
+        """Adds an alias to the object.
 
-    #     Args:
-    #         alias: Alias to be added.
+        Args:
+            alias: Alias to be added.
 
-    #     Raises:
-    #         AttributeError: If the alias is an empty string.
-    #         RuntimeError: If the object is not persistent.
-    #         AlreadyExistsError: If the alias already exists.
-    #     """
-    #     if alias == "":
-    #         raise AttributeError("Alias cannot be empty")
-    #     get_runtime().add_alias(self, alias)
+        Raises:
+            ObjectNotRegisteredError: If the object is not registered.
+            AttributeError: If the alias is an empty string.
+            DataClayException: If the alias already exists.
+        """
+        if not self._dc_is_registered:
+            raise ObjectNotRegisteredError(self._dc_id)
+
+        if alias == "":
+            raise AttributeError("Alias cannot be empty")
+        get_runtime().add_alias(self, alias)
+
+    def get_all_alias(self):
+        """Returns all the aliases of the object.
+
+        Returns:
+            A list with all the aliases of the object.
+        """
+        aliases = get_runtime().get_all_alias(self._dc_dataset_name, self._dc_id)
+        return set(aliases)
 
     @classmethod
     @tracer.start_as_current_span("delete_alias")

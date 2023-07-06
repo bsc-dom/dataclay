@@ -281,6 +281,15 @@ class MetadataAPI:
         alias = Alias(alias_name, dataset_name, object_id)
         self.kv_manager.set_new(alias)
 
+    @tracer.start_as_current_span("get_all_alias")
+    def get_all_alias(self, dataset_name: str = None, object_id: UUID = None):
+        prefix = "/alias/"
+        if dataset_name:
+            prefix = prefix + dataset_name + "/"
+
+        result = self.kv_manager.getprefix(Alias, prefix)
+        return {k: v for k, v in result.items() if v.object_id == object_id or not object_id}
+
     @tracer.start_as_current_span("delete_alias")
     def delete_alias(
         self, alias_name: str, dataset_name: str, session_id: UUID, check_session=False

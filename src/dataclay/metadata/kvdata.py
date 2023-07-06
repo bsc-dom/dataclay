@@ -7,7 +7,7 @@ import bcrypt
 
 from dataclay.exceptions import *
 from dataclay.protos import common_messages_pb2
-from dataclay.utils.json import UUIDEncoder, str_to_uuid, uuid_parser, uuid_to_str
+from dataclay.utils.uuid import UUIDEncoder, str_to_uuid, uuid_parser, uuid_to_str
 
 
 class KeyValue(ABC):
@@ -122,11 +122,6 @@ class ObjectMetadata(KeyValue):
 
     @classmethod
     def from_proto(cls, proto):
-        print(proto)
-        print(proto.is_read_only)
-        print(proto.replica_backend_ids)
-        print(proto.original_object_id)
-        print(type(proto.original_object_id))
         return cls(
             str_to_uuid(proto.id),
             proto.dataset_name,
@@ -162,6 +157,21 @@ class Alias(KeyValue):
     @property
     def key(self):
         return self.path + f"{self.dataset_name}/{self.name}"
+
+    @classmethod
+    def from_proto(cls, proto):
+        return cls(
+            proto.name,
+            proto.dataset_name,
+            str_to_uuid(proto.object_id),
+        )
+
+    def get_proto(self):
+        return common_messages_pb2.Alias(
+            name=self.name,
+            dataset_name=self.dataset_name,
+            object_id=uuid_to_str(self.object_id),
+        )
 
 
 @dataclass

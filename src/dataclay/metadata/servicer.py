@@ -20,6 +20,7 @@ from dataclay.protos import (
     metadata_service_pb2,
     metadata_service_pb2_grpc,
 )
+from dataclay.utils.uuid import str_to_uuid, uuid_to_str
 
 logger = logging.getLogger(__name__)
 
@@ -205,6 +206,21 @@ class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
             traceback.print_exc()
             return Empty()
         return Empty()
+
+    def GetAllAlias(self, request, context):
+        try:
+            aliases = self.metadata_service.get_all_alias(
+                request.dataset_name, str_to_uuid(request.object_id)
+            )
+            response = dict()
+            for alias_name, alias in aliases.items():
+                response[alias_name] = alias.get_proto()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return metadata_service_pb2.GetAllAliasResponse()
+        return metadata_service_pb2.GetAllAliasResponse(aliases=response)
 
     def DeleteAlias(self, request, context):
         try:
