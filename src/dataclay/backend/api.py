@@ -178,41 +178,8 @@ class BackendAPI:
 
     @tracer.start_as_current_span("move_object")
     def move_object(self, object_id, backend_id, recursive):
-        # TODO: check that the object is local to us
         instance = self.runtime.get_object_by_id(object_id)
-
-        with UUIDLock(object_id):
-            # NOTE: The object should be loaded to get the _dc_properties
-            # TODO: Maybe send directly the pickled file if not loaded?
-
-            # Option 1
-            # self.runtime.heap_manager.unload_object(object_id)
-            # path = f"{settings.DATACLAY_STORAGE_PATH}/{object_id}"
-            # with open(path, "rb") as file:
-            #     serialized_properties = file.read()
-
-            # Option 2
-            self.runtime.load_object_from_db(instance)
-
-            f = io.BytesIO()
-            serialized_local_dicts = []
-            visited_objects = {instance._dc_id: instance}
-
-            RecursiveLocalPickler(f, visited_objects, serialized_local_dicts, recursive).dump(
-                instance._dc_dict
-            )
-            serialized_local_dicts.append(f.getvalue())
-            backend_client = self.runtime.get_backend_client(backend_id)
-            backend_client.make_persistent(serialized_local_dicts)
-
-            # TODO: Remove pickle file to reduce space
-
-            for dc_object in visited_objects.values():
-                self.runtime.heap_manager.release_from_heap(dc_object)
-                dc_object._clean_dc_properties()
-                dc_object._dc_is_local = False
-                dc_object._dc_is_loaded = False
-                dc_object._dc_backend_id = backend_id
+        self.runtime.move_object(instance, backend_id, recursive)
 
     # Shutdown
 

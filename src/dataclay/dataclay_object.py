@@ -351,11 +351,7 @@ class DataClayObject:
         get_runtime().add_alias(self, alias)
 
     def get_aliases(self):
-        """Returns all the aliases of the object.
-
-        Returns:
-            A list with all the aliases of the object.
-        """
+        """Returns a set with all the aliases of the object."""
         aliases = get_runtime().get_all_alias(self._dc_dataset_name, self._dc_id)
         return set(aliases)
 
@@ -401,10 +397,6 @@ class DataClayObject:
             KeyError: If the backend_id is not registered in dataClay.
             ObjectNotRegisteredError: If the object is not registered in dataClay.
         """
-
-        if not self._dc_is_registered:
-            raise ObjectNotRegisteredError(self._dc_id)
-
         get_runtime().move_object(self, backend_id, recursive)
 
     ########################

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import copy
 import importlib
+import io
 import logging
 import pickle
 from abc import ABC, abstractmethod
@@ -18,6 +19,7 @@ from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.runtime import UUIDLock
+from dataclay.utils.pickle import RecursiveLocalPickler, RecursiveLocalUnpickler
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -66,6 +68,43 @@ class DataClayRuntime(ABC):
 
     def load_object_from_db(self, instance: DataClayObject):
         pass
+
+    def move_object(self, instance, backend_id, recursive):
+        if not instance._dc_is_registered:
+            raise ObjectNotRegisteredException(instance._dc_id)
+
+        if instance._dc_is_local:
+            if backend_id == instance._dc_backend_id:
+                return
+            else:
+                with UUIDLock(instance._dc_id):
+                    # NOTE: The object should be loaded to get the _dc_properties
+                    # TODO: Maybe send directly the pickled file if not loaded?
+                    self.load_object_from_db(instance)
+
+                    f = io.BytesIO()
+                    serialized_local_dicts = []
+                    visited_objects = {instance._dc_id: instance}
+
+                    RecursiveLocalPickler(
+                        f, visited_objects, serialized_local_dicts, recursive
+                    ).dump(instance._dc_dict)
+                    serialized_local_dicts.append(f.getvalue())
+                    backend_client = self.get_backend_client(backend_id)
+                    backend_client.make_persistent(serialized_local_dicts)
+
+                    # TODO: Remove pickle file to reduce space
+
+                    for dc_object in visited_objects.values():
+                        self.heap_manager.release_from_heap(instance)
+                        dc_object._clean_dc_properties()
+                        dc_object._dc_is_local = False
+                        dc_object._dc_is_loaded = False
+                        dc_object._dc_backend_id = backend_id
+        else:
+            backend_client = self.get_backend_client(instance._dc_backend_id)
+            backend_client.move_object(instance._dc_id, backend_id, recursive)
+            instance._dc_backend_id = backend_id
 
     ##############
     # Get Object #

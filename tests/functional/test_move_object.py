@@ -1,6 +1,6 @@
 import pytest
 
-from dataclay.contrib.modeltest.family import Dog, Family, Person
+from dataclay.contrib.modeltest.family import Dog, Family, Person, TestActivemethod
 
 
 def test_move_object(client):
@@ -96,3 +96,10 @@ def test_wrong_backend_id(client):
     assert person._dc_backend_id == backend_ids[1]
     assert person.name == "Marc"
     assert person._dc_backend_id == backend_ids[0]
+
+
+def test_move_activemethod(client):
+    """Move object inside an active method"""
+    test_activemethod = TestActivemethod()
+    test_activemethod.make_persistent()
+    test_activemethod.test_move_activemethod()

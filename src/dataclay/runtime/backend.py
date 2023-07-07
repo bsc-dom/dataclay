@@ -116,7 +116,7 @@ class BackendRuntime(DataClayRuntime):
             self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_id)
 
         # If backend_id is none, we register the object in the current backend (usual path)
-        if backend_id is None:
+        if backend_id is None or backend_id == settings.DATACLAY_BACKEND_ID:
             instance._dc_backend_id = settings.DATACLAY_BACKEND_ID
             self.metadata_service.register_object(instance.metadata)
             instance._dc_is_registered = True

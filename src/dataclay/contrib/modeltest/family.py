@@ -100,3 +100,15 @@ class Family(DataClayObject):
         members.append(dog)
         assert members is not self.members
         assert members != self.members
+
+
+class TestActivemethod(DataClayObject):
+    @activemethod
+    def test_move_activemethod(self):
+        from dataclay.runtime import get_runtime
+
+        person = Person("Marc", 24)
+        get_runtime().update_backend_clients()
+        backend_ids = list(get_runtime().backend_clients)
+        person.move(backend_ids[0])
+        assert person._dc_backend_id == backend_ids[0]
