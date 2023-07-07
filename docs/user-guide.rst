@@ -207,6 +207,17 @@ The alias can be removed by calling :meth:`delete_alias() <DataClayObject.delete
 
     Employee.delete_alias("CEO")
 
+We can add an alias to a registered object by calling :meth:`add_alias() <DataClayObject.add_alias>`::
+
+    employee.add_alias("CFO")
+
+And we can get all the aliases of an object with :meth:`get_aliases() <DataClayObject.get_aliases>`::
+
+    aliases = employee.get_aliases()
+    assert "CFO" in aliases
+    assert "CEO" in aliases
+
+
 Get, Put & Update
 -----------------
 

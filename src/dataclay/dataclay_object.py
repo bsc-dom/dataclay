@@ -350,7 +350,7 @@ class DataClayObject:
             raise AttributeError("Alias cannot be empty")
         get_runtime().add_alias(self, alias)
 
-    def get_all_alias(self):
+    def get_aliases(self):
         """Returns all the aliases of the object.
 
         Returns:
