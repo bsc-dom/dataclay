@@ -96,7 +96,7 @@ class DataClayRuntime(ABC):
                     # TODO: Remove pickle file to reduce space
 
                     for dc_object in visited_objects.values():
-                        self.heap_manager.release_from_heap(instance)
+                        self.heap_manager.release_from_heap(dc_object)
                         dc_object._clean_dc_properties()
                         dc_object._dc_is_local = False
                         dc_object._dc_is_loaded = False

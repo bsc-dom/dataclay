@@ -9,6 +9,7 @@ def test_dc_put(client):
     assert person.is_registered == True
     assert person.name == "Marc"
     assert person.age == 24
+    Person.delete_alias("test_dc_put")
 
 
 def test_dc_clone(client):
@@ -17,6 +18,7 @@ def test_dc_clone(client):
     copy = person.dc_clone()
     assert copy.name == person.name
     assert copy.age == person.age
+    Person.delete_alias("test_dc_clone")
 
 
 def test_dc_clone_by_alias(client):
@@ -25,6 +27,7 @@ def test_dc_clone_by_alias(client):
     clone = Person.dc_clone_by_alias("test_dc_clone_by_alias")
     assert clone.name == person.name
     assert clone.age == person.age
+    Person.delete_alias("test_dc_clone_by_alias")
 
 
 def test_dc_update(client):
@@ -34,6 +37,7 @@ def test_dc_update(client):
     person.dc_update(new_person)
     assert person.name == new_person.name
     assert person.age == new_person.age
+    Person.delete_alias("test_dc_update")
 
 
 def test_dc_update_by_alias(client):
@@ -43,3 +47,4 @@ def test_dc_update_by_alias(client):
     Person.dc_update_by_alias("test_dc_update_by_alias", new_person)
     assert person.name == new_person.name
     assert person.age == new_person.age
+    Person.delete_alias("test_dc_update_by_alias")

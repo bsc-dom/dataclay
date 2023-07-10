@@ -309,10 +309,3 @@ class MetadataAPI:
                 raise DatasetIsNotAccessibleError(dataset_name, session.username)
 
         alias = self.kv_manager.getdel_kv(Alias, f"{dataset_name}/{alias_name}")
-
-        with self.kv_manager.lock(ObjectMetadata.path + str(alias.object_id)):
-            object_md = self.kv_manager.get_kv(ObjectMetadata, alias.object_id)
-
-            # Remove alias from object metadata
-            object_md.alias_name = None
-            self.kv_manager.set(object_md)

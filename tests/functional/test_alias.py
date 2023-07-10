@@ -28,6 +28,7 @@ def test_same_alias(client):
         person_1.make_persistent("test_same_alias")
         person_2.make_persistent("test_same_alias")
     assert "already exist" in str(excinfo.value)
+    Person.delete_alias("test_same_alias")
 
 
 def test_add_alias(client):
@@ -35,6 +36,7 @@ def test_add_alias(client):
     person.make_persistent()
     person.add_alias("test_add_alias")
     assert person is Person.get_by_alias("test_add_alias")
+    Person.delete_alias("test_add_alias")
 
 
 def test_get_aliases(client):
@@ -46,3 +48,6 @@ def test_get_aliases(client):
     assert "test_get_aliases" in aliases
     assert "test_get_aliases_1" in aliases
     assert "test_get_aliases_2" in aliases
+    Person.delete_alias("test_get_aliases")
+    Person.delete_alias("test_get_aliases_1")
+    Person.delete_alias("test_get_aliases_2")

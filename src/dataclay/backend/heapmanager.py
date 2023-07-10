@@ -89,7 +89,7 @@ class HeapManager(threading.Thread):
         try:
             del self.loaded_objects[dc_obj._dc_id]
         except KeyError as e:
-            logger.debug("Object with id %s is not loaded.", dc_obj._dc_id)
+            logger.warning("Object with id %s is not loaded.", dc_obj._dc_id)
 
     def unload_object(self, object_id):
         instance = self.loaded_objects[object_id]
