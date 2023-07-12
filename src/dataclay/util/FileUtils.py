@@ -78,7 +78,7 @@ def deploy_class(namespace, full_name, source, imports, source_deploy_path, ds_d
     :param full_name: The full name (including package) of the class.
     :param source: The Python's source code for the class.
     :param source_deploy_path: The root for deployed source code.
-    :param ds_deploy: If true, that means that the deploy is for a DataService (not client)
+    :param ds_deploy: If true, that means that the deploy is for a BackendService (not client)
     """
     _ensure_package(source_deploy_path, ds_deploy)
 

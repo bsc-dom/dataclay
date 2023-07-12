@@ -20,7 +20,6 @@ from uuid import UUID
 
 from dataclay.exceptions import *
 from dataclay.metadata.kvdata import ObjectMetadata
-from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.runtime import get_runtime
 from dataclay.utils.telemetry import trace
 

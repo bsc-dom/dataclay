@@ -56,17 +56,6 @@ class BackendAPI:
 
         return False
 
-    def exists(self, object_id):
-        with UUIDLock(object_id):
-            # object might be in heap but as a "proxy"
-            # since this function is used from SL after checking if the object is in database,
-            # we return false if the object is not loaded so the combination of SL exists and EE exists
-            # can tell if the object actually exists
-            # summary: the object only exist in EE if it is loaded.
-            try:
-                return self.runtime.inmemory_objects[object_id]._dc_is_loaded
-            except KeyError:
-                return False
 
     # Object Methods
 

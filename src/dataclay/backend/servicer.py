@@ -14,11 +14,10 @@ from google.protobuf.wrappers_pb2 import BytesValue
 
 from dataclay.backend.api import BackendAPI
 from dataclay.conf import settings
-from dataclay.protos import (
-    common_messages_pb2,
-    dataservice_messages_pb2,
-    dataservice_pb2,
-    dataservice_pb2_grpc,
+from dataclay.proto import (
+    backend_pb2,
+    backend_pb2_grpc,
+    common_pb2,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,7 +41,7 @@ def serve():
         futures.ThreadPoolExecutor(max_workers=settings.THREAD_POOL_WORKERS),
         options=[("grpc.max_send_message_length", -1), ("grpc.max_receive_message_length", -1)],
     )
-    dataservice_pb2_grpc.add_DataServiceServicer_to_server(
+    backend_pb2_grpc.add_BackendServiceServicer_to_server(
         BackendServicer(backend, stop_event), server
     )
 
@@ -70,7 +69,7 @@ def serve():
     server.stop(5)
 
 
-class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
+class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     def __init__(self, backend: BackendAPI, stop_event: threading.Event):
         """Execution environment being managed"""
         self.backend = backend
@@ -95,12 +94,12 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
                 request.args,
                 request.kwargs,
             )
-            return dataservice_pb2.CallActiveMethodResponse(value=value, is_exception=is_exception)
+            return backend_pb2.CallActiveMethodResponse(value=value, is_exception=is_exception)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return dataservice_pb2.CallActiveMethodResponse()
+            return backend_pb2.CallActiveMethodResponse()
 
     #################
     # Store Methods #
@@ -131,12 +130,12 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
     def NewObjectVersion(self, request, context):
         try:
             result = self.backend.new_object_version(UUID(request.object_id))
-            return dataservice_pb2.NewObjectVersionResponse(object_full_id=result)
+            return backend_pb2.NewObjectVersionResponse(object_full_id=result)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return dataservice_pb2.NewObjectVersionResponse()
+            return backend_pb2.NewObjectVersionResponse()
 
     def ConsolidateObjectVersion(self, request, context):
         try:
@@ -212,13 +211,13 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
             return Empty()
-
+        
     ###########
     # END NEW #
     ###########
 
     def synchronize(self, request, context):
-        raise ("To refactor")
+        raise Exception("To refactor")
         try:
             object_id = UUID(request.objectID)
             implementation_id = UUID(request.implementationID)
@@ -228,40 +227,13 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             self.backend.synchronize(
                 session_id, object_id, implementation_id, serialized_params, calling_backend_id
             )
-            return common_messages_pb2.ExceptionInfo()
+            return common_pb2.ExceptionInfo()
         except DataClayException as ex:
             return self.get_exception_info(ex)
 
-    def getObjects(self, request, context):
-        raise ("To refactor")
-        try:
-            object_ids = set()
-            for oid in request.objectIDS:
-                object_ids.add(UUID(oid))
-            already_obtained_objects = set()
-            for oid in request.alreadyObtainedObjects:
-                already_obtained_objects.add(UUID(oid))
-            result = self.backend.get_objects(
-                UUID(request.sessionID),
-                object_ids,
-                already_obtained_objects,
-                request.recursive,
-                UUID(request.destBackendID),
-                request.updateReplicaLocs,
-            )
-
-            obj_list = []
-            for entry in result:
-                obj_list.append(Utils.get_obj_with_data_param_or_return(entry))
-
-            return dataservice_messages_pb2.GetObjectsResponse(objects=obj_list)
-
-        except Exception as ex:
-            traceback.print_exc()
-            return dataservice_messages_pb2.GetObjectsResponse(excInfo=self.get_exception_info(ex))
 
     def newReplica(self, request, context):
-        raise ("To refactor")
+        raise Exception("To refactor")
         try:
             result = self.backend.new_replica(
                 UUID(request.sessionID),
@@ -280,6 +252,7 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             return dataservice_messages_pb2.NewReplicaResponse(excInfo=self.get_exception_info(ex))
 
     def removeObjects(self, request, context):
+        raise Exception("To refactor")
         try:
             object_ids = set()
 
@@ -306,14 +279,9 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
                 excInfo=self.get_exception_info(ex)
             )
 
-    def exists(self, request, context):
-        try:
-            exists = self.backend.exists(UUID(request.objectID))
-            return dataservice_messages_pb2.ExistsResponse(exists=exists)
-        except Exception as ex:
-            return dataservice_messages_pb2.ExistsResponse(excInfo=self.get_exception_info(ex))
 
     def updateRefs(self, request, context):
+        raise Exception("To refactor")
         try:
             """deserialize into dictionary of object id - integer"""
             ref_counting = dict()
@@ -321,13 +289,14 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
                 ref_counting[serialized_oid] = counter
 
             self.backend.update_refs(ref_counting)
-            return common_messages_pb2.ExceptionInfo()
+            return common_pb2.ExceptionInfo()
 
         except Exception as ex:
             traceback.print_exc()
             return self.get_exception_info(ex)
 
     def getRetainedReferences(self, request, context):
+        raise Exception("To refactor")
         try:
             result = self.backend.get_retained_references()
             retained_refs = []
@@ -342,22 +311,25 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             return self.get_exception_info(ex)
 
     def closeSessionInDS(self, request, context):
+        raise Exception("To refactor")
         try:
             self.backend.close_session_in_ee(UUID(request.sessionID))
-            return common_messages_pb2.ExceptionInfo()
+            return common_pb2.ExceptionInfo()
 
         except Exception as ex:
             return self.get_exception_info(ex)
 
     def detachObjectFromSession(self, request, context):
+        raise Exception("To refactor")
         try:
             self.backend.detach_object_from_session(UUID(request.objectID), UUID(request.sessionID))
-            return common_messages_pb2.ExceptionInfo()
+            return common_pb2.ExceptionInfo()
 
         except Exception as ex:
             return self.get_exception_info(ex)
 
     def migrateObjectsToBackends(self, request, context):
+        raise Exception("To refactor")
         try:
             backends = dict()
 
@@ -402,6 +374,7 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
     ##############
 
     def federate(self, request, context):
+        raise Exception("To refactor")
         try:
             logger.debug("Federation started")
             self.backend.federate(
@@ -411,12 +384,13 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
                 request.recursive,
             )
             logger.debug("Federation finished, sending response")
-            return common_messages_pb2.ExceptionInfo()
+            return common_pb2.ExceptionInfo()
         except Exception as ex:
             traceback.print_exc()
             return self.get_exception_info(ex)
 
     def unfederate(self, request, context):
+        raise Exception("To refactor")
         try:
             logger.debug("Unfederation started")
             self.backend.unfederate(
@@ -426,11 +400,12 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
                 request.recursive,
             )
             logger.debug("Unfederation finished, sending response")
-            return common_messages_pb2.ExceptionInfo()
+            return common_pb2.ExceptionInfo()
         except Exception as ex:
             return self.get_exception_info(ex)
 
     def notifyFederation(self, request, context):
+        raise Exception("To refactor")
         try:
             logger.debug("Notify Federation started")
             objects_to_persist = []
@@ -440,12 +415,13 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
             session_id = UUID(request.sessionID)
             self.backend.notify_federation(session_id, objects_to_persist)
             logger.debug("Notify Federation finished, sending response")
-            return common_messages_pb2.ExceptionInfo()
+            return common_pb2.ExceptionInfo()
 
         except Exception as ex:
             return self.get_exception_info(ex)
 
     def notifyUnfederation(self, request, context):
+        raise Exception("To refactor")
         try:
             logger.debug("Notify Unfederation started")
             session_id = UUID(request.sessionID)
@@ -454,7 +430,7 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
                 object_ids.add(UUID(oid))
             self.backend.notify_unfederation(session_id, object_ids)
             logger.debug("Notify Unfederation finished, sending response")
-            return common_messages_pb2.ExceptionInfo()
+            return common_pb2.ExceptionInfo()
 
         except Exception as ex:
             traceback.print_exc()
@@ -465,24 +441,27 @@ class BackendServicer(dataservice_pb2_grpc.DataServiceServicer):
     ###########
 
     def activateTracing(self, request, context):
+        raise Exception("To refactor")
         try:
             self.backend.activate_tracing(request.taskid)
-            return common_messages_pb2.ExceptionInfo()
+            return common_pb2.ExceptionInfo()
 
         except Exception as ex:
             return self.get_exception_info(ex)
 
     def getTraces(self, request, context):
+        raise Exception("To refactor")
         try:
             result = self.backend.get_traces()
-            return common_messages_pb2.GetTracesResponse(traces=result)
+            return common_pb2.GetTracesResponse(traces=result)
         except Exception as ex:
             return self.get_exception_info(ex)
 
     def deactivateTracing(self, request, context):
+        raise Exception("To refactor")
         try:
             self.backend.deactivate_tracing()
-            return common_messages_pb2.ExceptionInfo()
+            return common_pb2.ExceptionInfo()
 
         except Exception as ex:
             return self.get_exception_info(ex)

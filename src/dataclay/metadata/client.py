@@ -6,10 +6,9 @@ import grpc
 from google.protobuf.empty_pb2 import Empty
 
 from dataclay.metadata.kvdata import Alias, Backend, Dataclay, ObjectMetadata, Session
-from dataclay.protos import (
-    common_messages_pb2,
-    metadata_service_pb2,
-    metadata_service_pb2_grpc,
+from dataclay.proto import (
+    metadata_pb2,
+    metadata_pb2_grpc,
 )
 from dataclay.utils.decorators import grpc_error_handler
 from dataclay.utils.uuid import str_to_uuid, uuid_to_str
@@ -23,7 +22,7 @@ class MetadataClient:
     def __init__(self, hostname, port):
         self.address = f"{hostname}:{port}"
         self.channel = grpc.insecure_channel(self.address)
-        self.stub = metadata_service_pb2_grpc.MetadataServiceStub(self.channel)
+        self.stub = metadata_pb2_grpc.MetadataServiceStub(self.channel)
         # atexit.register(self.close)
 
     def is_ready(self, timeout=None):
@@ -42,7 +41,7 @@ class MetadataClient:
 
     @grpc_error_handler
     def new_session(self, username: str, password: str, dataset_name: str) -> Session:
-        request = metadata_service_pb2.NewSessionRequest(
+        request = metadata_pb2.NewSessionRequest(
             username=username, password=password, dataset_name=dataset_name
         )
         response = self.stub.NewSession(request)
@@ -50,7 +49,7 @@ class MetadataClient:
 
     @grpc_error_handler
     def close_session(self, session_id: UUID):
-        request = metadata_service_pb2.CloseSessionRequest(id=str(session_id))
+        request = metadata_pb2.CloseSessionRequest(id=str(session_id))
         self.stub.CloseSession(request)
 
     ###################
@@ -59,7 +58,7 @@ class MetadataClient:
 
     @grpc_error_handler
     def new_account(self, username: str, password: str):
-        request = metadata_service_pb2.NewAccountRequest(username=username, password=password)
+        request = metadata_pb2.NewAccountRequest(username=username, password=password)
         self.stub.NewAccount(request)
 
     ###################
@@ -68,7 +67,7 @@ class MetadataClient:
 
     @grpc_error_handler
     def new_dataset(self, username: str, password: str, dataset: str):
-        request = metadata_service_pb2.NewDatasetRequest(
+        request = metadata_pb2.NewDatasetRequest(
             username=username, password=password, dataset=dataset
         )
         self.stub.NewDataset(request)
@@ -79,7 +78,7 @@ class MetadataClient:
 
     @grpc_error_handler
     def get_dataclay(self, id) -> UUID:
-        request = metadata_service_pb2.GetDataclayRequest(dataclay_id=str(id))
+        request = metadata_pb2.GetDataclayRequest(dataclay_id=str(id))
         response = self.stub.GetDataclay(request)
         return Dataclay.from_proto(response)
 
@@ -89,7 +88,7 @@ class MetadataClient:
 
     @grpc_error_handler
     def get_all_backends(self, from_backend=False) -> dict:
-        request = metadata_service_pb2.GetAllBackendsRequest(from_backend=from_backend)
+        request = metadata_pb2.GetAllBackendsRequest(from_backend=from_backend)
         response = self.stub.GetAllBackends(request)
 
         result = dict()
@@ -112,7 +111,7 @@ class MetadataClient:
 
     @grpc_error_handler
     def get_object_md_by_id(self, object_id: UUID) -> ObjectMetadata:
-        request = metadata_service_pb2.GetObjectMDByIdRequest(
+        request = metadata_pb2.GetObjectMDByIdRequest(
             session_id=str(self.session.id), object_id=str(object_id)
         )
         object_md_proto = self.stub.GetObjectMDById(request)
@@ -120,7 +119,7 @@ class MetadataClient:
 
     @grpc_error_handler
     def get_object_md_by_alias(self, alias_name: str, dataset_name: str) -> ObjectMetadata:
-        request = metadata_service_pb2.GetObjectMDByAliasRequest(
+        request = metadata_pb2.GetObjectMDByAliasRequest(
             session_id=str(self.session.id), alias_name=alias_name, dataset_name=dataset_name
         )
         object_md_proto = self.stub.GetObjectMDByAlias(request)
@@ -132,7 +131,7 @@ class MetadataClient:
 
     @grpc_error_handler
     def new_alias(self, alias_name: str, dataset_name: str, object_id: UUID):
-        request = metadata_service_pb2.NewAliasRequest(
+        request = metadata_pb2.NewAliasRequest(
             session_id=str(self.session.id),
             alias_name=alias_name,
             dataset_name=dataset_name,
@@ -142,7 +141,7 @@ class MetadataClient:
 
     @grpc_error_handler
     def get_all_alias(self, dataset_name: str, object_id: UUID) -> dict:
-        request = metadata_service_pb2.GetAllAliasRequest(
+        request = metadata_pb2.GetAllAliasRequest(
             dataset_name=dataset_name, object_id=uuid_to_str(object_id)
         )
         response = self.stub.GetAllAlias(request)
@@ -154,7 +153,7 @@ class MetadataClient:
 
     @grpc_error_handler
     def delete_alias(self, alias_name: str, dataset_name: str, session_id: UUID):
-        request = metadata_service_pb2.DeleteAliasRequest(
+        request = metadata_pb2.DeleteAliasRequest(
             session_id=str(session_id), alias_name=alias_name, dataset_name=dataset_name
         )
         self.stub.DeleteAlias(request)

@@ -10,11 +10,9 @@ from grpc._cython.cygrpc import ChannelArgKey
 
 from dataclay.conf import settings
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.protos import common_messages_pb2 as CommonMessages
-from dataclay.protos import (
-    dataservice_messages_pb2,
-    dataservice_pb2,
-    dataservice_pb2_grpc,
+from dataclay.proto import backend_pb2, common_pb2
+from dataclay.proto import (
+    backend_pb2_grpc,
 )
 from dataclay.utils.decorators import grpc_error_handler
 
@@ -98,7 +96,7 @@ class BackendClient:
         except Exception as e:
             sys.exit("Error connecting to server %s" % self.address)
         else:
-            self.stub = dataservice_pb2_grpc.DataServiceStub(self.channel)
+            self.stub = backend_pb2_grpc.BackendServiceStub(self.channel)
 
     # NOTE: It may be not need if the channel_ready_future is check on __init__
     def is_ready(self, timeout=None):
@@ -117,12 +115,12 @@ class BackendClient:
 
     @grpc_error_handler
     def make_persistent(self, pickled_obj: list[bytes]):
-        request = dataservice_pb2.MakePersistentRequest(pickled_obj=pickled_obj)
+        request = backend_pb2.MakePersistentRequest(pickled_obj=pickled_obj)
         self.stub.MakePersistent(request)
 
     @grpc_error_handler
     def call_active_method(self, session_id, object_id, method_name, args, kwargs):
-        request = dataservice_pb2.CallActiveMethodRequest(
+        request = backend_pb2.CallActiveMethodRequest(
             session_id=str(session_id),
             object_id=str(object_id),
             method_name=method_name,
@@ -139,7 +137,7 @@ class BackendClient:
 
     @grpc_error_handler
     def get_object_properties(self, object_id: UUID):
-        request = dataservice_pb2.GetObjectPropertiesRequest(
+        request = backend_pb2.GetObjectPropertiesRequest(
             object_id=str(object_id),
         )
 
@@ -148,28 +146,28 @@ class BackendClient:
 
     @grpc_error_handler
     def update_object_properties(self, object_id: UUID, serialized_properties):
-        request = dataservice_pb2.UpdateObjectPropertiesRequest(
+        request = backend_pb2.UpdateObjectPropertiesRequest(
             object_id=str(object_id),
             serialized_properties=serialized_properties,
         )
         self.stub.UpdateObjectProperties(request)
 
     def new_object_version(self, object_id: UUID):
-        request = dataservice_pb2.NewObjectVersionRequest(
+        request = backend_pb2.NewObjectVersionRequest(
             object_id=str(object_id),
         )
         response = self.stub.NewObjectVersion(request)
         return response.object_full_id
 
     def consolidate_object_version(self, object_id: UUID):
-        request = dataservice_pb2.ConsolidateObjectVersionRequest(
+        request = backend_pb2.ConsolidateObjectVersionRequest(
             object_id=str(object_id),
         )
         self.stub.ConsolidateObjectVersion(request)
 
     @grpc_error_handler
     def proxify_object(self, object_id: UUID, new_object_id: UUID):
-        request = dataservice_pb2.ProxifyObjectRequest(
+        request = backend_pb2.ProxifyObjectRequest(
             object_id=str(object_id),
             new_object_id=str(new_object_id),
         )
@@ -177,7 +175,7 @@ class BackendClient:
 
     @grpc_error_handler
     def change_object_id(self, object_id: UUID, new_object_id: UUID):
-        request = dataservice_pb2.ChangeObjectIdRequest(
+        request = backend_pb2.ChangeObjectIdRequest(
             object_id=str(object_id),
             new_object_id=str(new_object_id),
         )
@@ -185,7 +183,7 @@ class BackendClient:
 
     @grpc_error_handler
     def move_object(self, object_id: UUID, backend_id: UUID, recursive):
-        request = dataservice_pb2.MoveObjectRequest(
+        request = backend_pb2.MoveObjectRequest(
             object_id=str(object_id),
             backend_id=str(backend_id),
             recursive=recursive,
@@ -207,7 +205,7 @@ class BackendClient:
 
     @grpc_error_handler
     def send_object(self, session_id: UUID, object_id: UUID, serialized_properties):
-        request = dataservice_pb2.MoveObjectRequest(
+        request = backend_pb2.MoveObjectRequest(
             session_id=str(session_id),
             object_id=str(object_id),
             backend_id=str(backend_id),
@@ -220,127 +218,9 @@ class BackendClient:
     # END NEW #
     ###########
 
-    def ds_store_objects(self, session_id, objects, moving, ids_with_alias):
-        raise ("To Refactor")
-        obj_list = []
-        id_with_alias_list = []
-
-        for obj in objects:
-            obj_list.append(Utils.get_obj_with_data_param_or_return(obj))
-
-        if ids_with_alias is not None:
-            for id_with_alias in ids_with_alias:
-                if id_with_alias is not None:
-                    id_with_alias_list.append(str(id_with_alias))
-
-        request = dataservice_messages_pb2.StoreObjectsRequest(
-            sessionID=str(session_id),
-            objects=obj_list,
-            moving=moving,
-            idsWithAlias=id_with_alias_list,
-        )
-
-        try:
-            response = self.stub.storeObjects(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            traceback.print_exc(file=sys.stdout)
-            raise e
-
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def ds_get_objects(
-        self,
-        session_id,
-        object_ids,
-        already_obtained_obs,
-        recursive,
-        dest_backend_id,
-        update_replica_locs,
-    ):
-        raise ("To refactor")
-        object_ids_list = []
-        for oid in object_ids:
-            object_ids_list.append(str(oid))
-        already_obtained_objects = []
-        for oid in already_obtained_obs:
-            already_obtained_objects.append(str(oid))
-
-        request = dataservice_messages_pb2.GetObjectsRequest(
-            sessionID=str(session_id),
-            objectIDS=object_ids_list,
-            alreadyObtainedObjects=already_obtained_objects,
-            recursive=recursive,
-            destBackendID=str(dest_backend_id),
-            updateReplicaLocs=update_replica_locs,
-        )
-
-        try:
-            response = self.stub.getObjects(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            raise e
-
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        serialized_objs = list()
-        for obj_with_data in response.objects:
-            serialized_objs.append(Utils.get_obj_with_data_param_or_return(obj_with_data))
-
-        return serialized_objs
-
-    def new_version(self, session_id, object_id, dest_backend_id):
-        request = dataservice_messages_pb2.NewVersionRequest(
-            sessionID=str(session_id),
-            objectID=str(object_id),
-            destBackendID=str(dest_backend_id),
-        )
-        try:
-            response = self.stub.newVersion(request, metadata=self.metadata_call)
-        except RuntimeError as e:
-            raise e
-
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        return UUID(response.objectID)
-
-    def consolidate_version(self, session_id, version_object_id):
-        request = dataservice_messages_pb2.ConsolidateVersionRequest(
-            sessionID=str(session_id),
-            versionObjectID=str(version_object_id),
-        )
-        try:
-            response = self.stub.consolidateVersion(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            raise e
-
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def ds_upsert_objects(self, session_id, object_bytes):
-        raise ("To refactor")
-        obj_byt_list = []
-        for entry in object_bytes:
-            obj_byt_list.append(Utils.get_obj_with_data_param_or_return(entry))
-
-        request = dataservice_messages_pb2.UpsertObjectsRequest(
-            sessionID=str(session_id), bytesUpdate=obj_byt_list
-        )
-
-        try:
-            response = self.stub.upsertObjects(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            raise e
-
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
 
     def federate(self, session_id, object_id, external_execution_env_id, recursive):
+        raise Exception("To refactor")
         try:
             request = dataservice_messages_pb2.FederateRequest(
                 sessionID=str(session_id),
@@ -357,6 +237,7 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def unfederate(self, session_id, object_id, external_execution_env_id, recursive):
+        raise Exception("To refactor")
         request = dataservice_messages_pb2.UnfederateRequest(
             sessionID=str(session_id),
             objectID=str(object_id),
@@ -372,7 +253,7 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def notify_federation(self, session_id, params):
-        raise ("To refactor")
+        raise Exception("To refactor")
         obj_list = []
         for entry in params:
             obj_list.append(Utils.get_obj_with_data_param_or_return(entry))
@@ -393,6 +274,7 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def notify_unfederation(self, session_id, object_ids):
+        raise Exception("To refactor")
         obj_list = []
         for entry in object_ids:
             obj_list.append(str(entry))
@@ -413,7 +295,7 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def synchronize(self, session_id, object_id, implementation_id, params, calling_backend_id):
-        raise ("To refactor")
+        raise Exception("To refactor")
         request = dataservice_messages_pb2.SynchronizeRequest(
             sessionID=str(session_id),
             objectID=str(object_id),
@@ -429,6 +311,7 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def new_replica(self, session_id, object_id, dest_backend_id, recursive):
+        raise Exception("To refactor")
         request = dataservice_messages_pb2.NewReplicaRequest(
             sessionID=str(session_id),
             objectID=str(object_id),
@@ -452,34 +335,6 @@ class BackendClient:
 
         return result
 
-    def ds_remove_objects(self, session_id, object_ids, recursive, moving, new_hint):
-        obj_ids_list = []
-        for oid in object_ids:
-            obj_ids_list.append(str(oid))
-
-        request = dataservice_messages_pb2.RemoveObjectsRequest(
-            sessionID=str(session_id),
-            objectIDs=obj_ids_list,
-            recursive=recursive,
-            moving=moving,
-            newHint=str(new_hint),
-        )
-
-        try:
-            response = self.stub.removeObjects(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            raise e
-
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        result = dict()
-
-        for k, v in response.removedObjects.items():
-            result[UUID(k)] = UUID(v)
-
-        return result
 
     def ds_migrate_objects_to_backends(self, back_ends):
         raise ("To refactor")
@@ -520,18 +375,9 @@ class BackendClient:
 
         return t
 
-    def delete_alias(self, session_id, object_id):
-        request = dataservice_messages_pb2.DeleteAliasRequest(
-            sessionID=str(session_id), objectID=str(object_id)
-        )
-        try:
-            response = self.stub.deleteAlias(request, metadata=self.metadata_call)
-        except RuntimeError as e:
-            raise e
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
 
     def detach_object_from_session(self, object_id, session_id):
+        raise Exception("To refactor")
         request = dataservice_messages_pb2.DetachObjectFromSessionRequest(
             objectID=str(object_id), sessionID=str(session_id)
         )
@@ -543,6 +389,7 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def activate_tracing(self, task_id):
+        raise Exception("To refactor")
         request = dataservice_messages_pb2.ActivateTracingRequest(taskid=task_id)
 
         try:
@@ -555,9 +402,10 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def deactivate_tracing(self):
+        raise Exception("To refactor")
         try:
             response = self.stub.deactivateTracing(
-                CommonMessages.EmptyMessage(), metadata=self.metadata_call
+                common_pb2.EmptyMessage(), metadata=self.metadata_call
             )
 
         except RuntimeError as e:
@@ -567,9 +415,10 @@ class BackendClient:
             raise DataClayException(response.exceptionMessage)
 
     def get_traces(self):
+        raise Exception("To refactor")
         try:
             response = self.stub.getTraces(
-                CommonMessages.EmptyMessage(), metadata=self.metadata_call
+                common_pb2.EmptyMessage(), metadata=self.metadata_call
             )
         except RuntimeError as e:
             raise e
@@ -581,5 +430,5 @@ class BackendClient:
         return result
 
     ################## EXTRAE IGNORED FUNCTIONS ###########################
-    deactivate_tracing.do_not_trace = True
-    activate_tracing.do_not_trace = True
+    # deactivate_tracing.do_not_trace = True
+    # activate_tracing.do_not_trace = True

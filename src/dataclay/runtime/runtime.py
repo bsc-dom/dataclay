@@ -17,7 +17,6 @@ from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
-from dataclay.protos.common_messages_pb2 import LANG_PYTHON
 from dataclay.runtime import UUIDLock
 from dataclay.utils.pickle import RecursiveLocalPickler, RecursiveLocalUnpickler
 from dataclay.utils.telemetry import trace

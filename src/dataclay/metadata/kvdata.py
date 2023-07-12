@@ -6,7 +6,7 @@ from uuid import UUID
 import bcrypt
 
 from dataclay.exceptions import *
-from dataclay.protos import common_messages_pb2
+from dataclay.proto import common_pb2
 from dataclay.utils.uuid import UUIDEncoder, str_to_uuid, uuid_parser, uuid_to_str
 
 
@@ -63,7 +63,7 @@ class Dataclay(KeyValue):
         )
 
     def get_proto(self):
-        return common_messages_pb2.Dataclay(
+        return common_pb2.Dataclay(
             id=uuid_to_str(self.id),
             hostname=self.hostname,
             port=self.port,
@@ -95,7 +95,7 @@ class Backend(KeyValue):
 
     # TODO: Improve it with __getattributes__ and interface
     def get_proto(self):
-        return common_messages_pb2.Backend(
+        return common_pb2.Backend(
             id=uuid_to_str(self.id),
             hostname=self.hostname,
             port=self.port,
@@ -134,7 +134,7 @@ class ObjectMetadata(KeyValue):
         )
 
     def get_proto(self):
-        return common_messages_pb2.ObjectMetadata(
+        return common_pb2.ObjectMetadata(
             id=uuid_to_str(self.id),
             dataset_name=self.dataset_name,
             class_name=self.class_name,
@@ -167,7 +167,7 @@ class Alias(KeyValue):
         )
 
     def get_proto(self):
-        return common_messages_pb2.Alias(
+        return common_pb2.Alias(
             name=self.name,
             dataset_name=self.dataset_name,
             object_id=uuid_to_str(self.object_id),
@@ -192,7 +192,7 @@ class Session(KeyValue):
         return cls(str_to_uuid(proto.id), proto.username, proto.dataset_name, proto.is_active)
 
     def get_proto(self):
-        return common_messages_pb2.Session(
+        return common_pb2.Session(
             id=uuid_to_str(self.id),
             username=self.username,
             dataset_name=self.dataset_name,

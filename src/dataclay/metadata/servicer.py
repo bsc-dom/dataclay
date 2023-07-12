@@ -14,11 +14,10 @@ from google.protobuf.empty_pb2 import Empty
 from dataclay.conf import settings
 from dataclay.exceptions.exceptions import AlreadyExistError
 from dataclay.metadata.api import MetadataAPI
-from dataclay.metadata.kvdata import ObjectMetadata
-from dataclay.protos import (
-    common_messages_pb2,
-    metadata_service_pb2,
-    metadata_service_pb2_grpc,
+from dataclay.proto import (
+    common_pb2,
+    metadata_pb2,
+    metadata_pb2_grpc,
 )
 from dataclay.utils.uuid import str_to_uuid, uuid_to_str
 
@@ -51,7 +50,7 @@ def serve():
     logger.info("Metadata service has been registered")
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.THREAD_POOL_WORKERS))
-    metadata_service_pb2_grpc.add_MetadataServiceServicer_to_server(
+    metadata_pb2_grpc.add_MetadataServiceServicer_to_server(
         MetadataServicer(metadata_service), server
     )
 
@@ -69,7 +68,7 @@ def serve():
     server.stop(5)
 
 
-class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
+class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
     """Provides methods that implement functionality of metadata server"""
 
     def __init__(self, metadata_service: MetadataAPI):
@@ -97,7 +96,7 @@ class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return common_messages_pb2.Session()
+            return common_pb2.Session()
         return session.get_proto()
 
     def NewDataset(self, request, context):
@@ -127,7 +126,7 @@ class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return common_messages_pb2.Dataclay()
+            return common_pb2.Dataclay()
         return dataclay.get_proto()
 
     def GetAllBackends(self, request, context):
@@ -140,8 +139,8 @@ class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return metadata_service_pb2.GetAllBackendsResponse()
-        return metadata_service_pb2.GetAllBackendsResponse(backends=response)
+            return metadata_pb2.GetAllBackendsResponse()
+        return metadata_pb2.GetAllBackendsResponse(backends=response)
 
     ###################
     # Object Metadata #
@@ -157,8 +156,8 @@ class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return metadata_service_pb2.GetAllObjectsResponse()
-        return metadata_service_pb2.GetAllObjectsResponse(objects=response)
+            return metadata_pb2.GetAllObjectsResponse()
+        return metadata_pb2.GetAllObjectsResponse(objects=response)
 
     def GetObjectMDById(self, request, context):
         try:
@@ -171,7 +170,7 @@ class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return common_messages_pb2.ObjectMetadata()
+            return common_pb2.ObjectMetadata()
         return object_md.get_proto()
 
     def GetObjectMDByAlias(self, request, context):
@@ -219,8 +218,8 @@ class MetadataServicer(metadata_service_pb2_grpc.MetadataServiceServicer):
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return metadata_service_pb2.GetAllAliasResponse()
-        return metadata_service_pb2.GetAllAliasResponse(aliases=response)
+            return metadata_pb2.GetAllAliasResponse()
+        return metadata_pb2.GetAllAliasResponse(aliases=response)
 
     def DeleteAlias(self, request, context):
         try:

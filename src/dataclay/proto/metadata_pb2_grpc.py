@@ -3,8 +3,8 @@
 import grpc
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-from . import common_messages_pb2 as protos_dot_common__messages__pb2
-from . import metadata_service_pb2 as protos_dot_metadata__service__pb2
+from . import common_pb2 as proto_dot_common__pb2
+from . import metadata_pb2 as proto_dot_metadata__pb2
 
 
 class MetadataServiceStub(object):
@@ -17,74 +17,74 @@ class MetadataServiceStub(object):
             channel: A grpc.Channel.
         """
         self.NewAccount = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/NewAccount',
-                request_serializer=protos_dot_metadata__service__pb2.NewAccountRequest.SerializeToString,
+                '/proto.metadata.MetadataService/NewAccount',
+                request_serializer=proto_dot_metadata__pb2.NewAccountRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.GetAccount = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/GetAccount',
-                request_serializer=protos_dot_metadata__service__pb2.GetAccountRequest.SerializeToString,
-                response_deserializer=protos_dot_metadata__service__pb2.GetAccountResponse.FromString,
+                '/proto.metadata.MetadataService/GetAccount',
+                request_serializer=proto_dot_metadata__pb2.GetAccountRequest.SerializeToString,
+                response_deserializer=proto_dot_metadata__pb2.GetAccountResponse.FromString,
                 )
         self.NewSession = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/NewSession',
-                request_serializer=protos_dot_metadata__service__pb2.NewSessionRequest.SerializeToString,
-                response_deserializer=protos_dot_common__messages__pb2.Session.FromString,
+                '/proto.metadata.MetadataService/NewSession',
+                request_serializer=proto_dot_metadata__pb2.NewSessionRequest.SerializeToString,
+                response_deserializer=proto_dot_common__pb2.Session.FromString,
                 )
         self.CloseSession = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/CloseSession',
-                request_serializer=protos_dot_metadata__service__pb2.CloseSessionRequest.SerializeToString,
+                '/proto.metadata.MetadataService/CloseSession',
+                request_serializer=proto_dot_metadata__pb2.CloseSessionRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.NewDataset = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/NewDataset',
-                request_serializer=protos_dot_metadata__service__pb2.NewDatasetRequest.SerializeToString,
+                '/proto.metadata.MetadataService/NewDataset',
+                request_serializer=proto_dot_metadata__pb2.NewDatasetRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.GetAllBackends = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/GetAllBackends',
-                request_serializer=protos_dot_metadata__service__pb2.GetAllBackendsRequest.SerializeToString,
-                response_deserializer=protos_dot_metadata__service__pb2.GetAllBackendsResponse.FromString,
+                '/proto.metadata.MetadataService/GetAllBackends',
+                request_serializer=proto_dot_metadata__pb2.GetAllBackendsRequest.SerializeToString,
+                response_deserializer=proto_dot_metadata__pb2.GetAllBackendsResponse.FromString,
                 )
         self.GetDataclay = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/GetDataclay',
-                request_serializer=protos_dot_metadata__service__pb2.GetDataclayRequest.SerializeToString,
-                response_deserializer=protos_dot_common__messages__pb2.Dataclay.FromString,
+                '/proto.metadata.MetadataService/GetDataclay',
+                request_serializer=proto_dot_metadata__pb2.GetDataclayRequest.SerializeToString,
+                response_deserializer=proto_dot_common__pb2.Dataclay.FromString,
                 )
         self.RegisterObject = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/RegisterObject',
-                request_serializer=protos_dot_metadata__service__pb2.RegisterObjectRequest.SerializeToString,
+                '/proto.metadata.MetadataService/RegisterObject',
+                request_serializer=proto_dot_metadata__pb2.RegisterObjectRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.GetObjectMDById = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/GetObjectMDById',
-                request_serializer=protos_dot_metadata__service__pb2.GetObjectMDByIdRequest.SerializeToString,
-                response_deserializer=protos_dot_common__messages__pb2.ObjectMetadata.FromString,
+                '/proto.metadata.MetadataService/GetObjectMDById',
+                request_serializer=proto_dot_metadata__pb2.GetObjectMDByIdRequest.SerializeToString,
+                response_deserializer=proto_dot_common__pb2.ObjectMetadata.FromString,
                 )
         self.GetObjectMDByAlias = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/GetObjectMDByAlias',
-                request_serializer=protos_dot_metadata__service__pb2.GetObjectMDByAliasRequest.SerializeToString,
-                response_deserializer=protos_dot_common__messages__pb2.ObjectMetadata.FromString,
+                '/proto.metadata.MetadataService/GetObjectMDByAlias',
+                request_serializer=proto_dot_metadata__pb2.GetObjectMDByAliasRequest.SerializeToString,
+                response_deserializer=proto_dot_common__pb2.ObjectMetadata.FromString,
                 )
         self.GetAllObjects = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/GetAllObjects',
+                '/proto.metadata.MetadataService/GetAllObjects',
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=protos_dot_metadata__service__pb2.GetAllObjectsResponse.FromString,
+                response_deserializer=proto_dot_metadata__pb2.GetAllObjectsResponse.FromString,
                 )
         self.DeleteAlias = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/DeleteAlias',
-                request_serializer=protos_dot_metadata__service__pb2.DeleteAliasRequest.SerializeToString,
+                '/proto.metadata.MetadataService/DeleteAlias',
+                request_serializer=proto_dot_metadata__pb2.DeleteAliasRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.NewAlias = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/NewAlias',
-                request_serializer=protos_dot_metadata__service__pb2.NewAliasRequest.SerializeToString,
+                '/proto.metadata.MetadataService/NewAlias',
+                request_serializer=proto_dot_metadata__pb2.NewAliasRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.GetAllAlias = channel.unary_unary(
-                '/protos.metadata_service.MetadataService/GetAllAlias',
-                request_serializer=protos_dot_metadata__service__pb2.GetAllAliasRequest.SerializeToString,
-                response_deserializer=protos_dot_metadata__service__pb2.GetAllAliasResponse.FromString,
+                '/proto.metadata.MetadataService/GetAllAlias',
+                request_serializer=proto_dot_metadata__pb2.GetAllAliasRequest.SerializeToString,
+                response_deserializer=proto_dot_metadata__pb2.GetAllAliasResponse.FromString,
                 )
 
 
@@ -187,77 +187,77 @@ def add_MetadataServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'NewAccount': grpc.unary_unary_rpc_method_handler(
                     servicer.NewAccount,
-                    request_deserializer=protos_dot_metadata__service__pb2.NewAccountRequest.FromString,
+                    request_deserializer=proto_dot_metadata__pb2.NewAccountRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'GetAccount': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAccount,
-                    request_deserializer=protos_dot_metadata__service__pb2.GetAccountRequest.FromString,
-                    response_serializer=protos_dot_metadata__service__pb2.GetAccountResponse.SerializeToString,
+                    request_deserializer=proto_dot_metadata__pb2.GetAccountRequest.FromString,
+                    response_serializer=proto_dot_metadata__pb2.GetAccountResponse.SerializeToString,
             ),
             'NewSession': grpc.unary_unary_rpc_method_handler(
                     servicer.NewSession,
-                    request_deserializer=protos_dot_metadata__service__pb2.NewSessionRequest.FromString,
-                    response_serializer=protos_dot_common__messages__pb2.Session.SerializeToString,
+                    request_deserializer=proto_dot_metadata__pb2.NewSessionRequest.FromString,
+                    response_serializer=proto_dot_common__pb2.Session.SerializeToString,
             ),
             'CloseSession': grpc.unary_unary_rpc_method_handler(
                     servicer.CloseSession,
-                    request_deserializer=protos_dot_metadata__service__pb2.CloseSessionRequest.FromString,
+                    request_deserializer=proto_dot_metadata__pb2.CloseSessionRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'NewDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.NewDataset,
-                    request_deserializer=protos_dot_metadata__service__pb2.NewDatasetRequest.FromString,
+                    request_deserializer=proto_dot_metadata__pb2.NewDatasetRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'GetAllBackends': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAllBackends,
-                    request_deserializer=protos_dot_metadata__service__pb2.GetAllBackendsRequest.FromString,
-                    response_serializer=protos_dot_metadata__service__pb2.GetAllBackendsResponse.SerializeToString,
+                    request_deserializer=proto_dot_metadata__pb2.GetAllBackendsRequest.FromString,
+                    response_serializer=proto_dot_metadata__pb2.GetAllBackendsResponse.SerializeToString,
             ),
             'GetDataclay': grpc.unary_unary_rpc_method_handler(
                     servicer.GetDataclay,
-                    request_deserializer=protos_dot_metadata__service__pb2.GetDataclayRequest.FromString,
-                    response_serializer=protos_dot_common__messages__pb2.Dataclay.SerializeToString,
+                    request_deserializer=proto_dot_metadata__pb2.GetDataclayRequest.FromString,
+                    response_serializer=proto_dot_common__pb2.Dataclay.SerializeToString,
             ),
             'RegisterObject': grpc.unary_unary_rpc_method_handler(
                     servicer.RegisterObject,
-                    request_deserializer=protos_dot_metadata__service__pb2.RegisterObjectRequest.FromString,
+                    request_deserializer=proto_dot_metadata__pb2.RegisterObjectRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'GetObjectMDById': grpc.unary_unary_rpc_method_handler(
                     servicer.GetObjectMDById,
-                    request_deserializer=protos_dot_metadata__service__pb2.GetObjectMDByIdRequest.FromString,
-                    response_serializer=protos_dot_common__messages__pb2.ObjectMetadata.SerializeToString,
+                    request_deserializer=proto_dot_metadata__pb2.GetObjectMDByIdRequest.FromString,
+                    response_serializer=proto_dot_common__pb2.ObjectMetadata.SerializeToString,
             ),
             'GetObjectMDByAlias': grpc.unary_unary_rpc_method_handler(
                     servicer.GetObjectMDByAlias,
-                    request_deserializer=protos_dot_metadata__service__pb2.GetObjectMDByAliasRequest.FromString,
-                    response_serializer=protos_dot_common__messages__pb2.ObjectMetadata.SerializeToString,
+                    request_deserializer=proto_dot_metadata__pb2.GetObjectMDByAliasRequest.FromString,
+                    response_serializer=proto_dot_common__pb2.ObjectMetadata.SerializeToString,
             ),
             'GetAllObjects': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAllObjects,
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=protos_dot_metadata__service__pb2.GetAllObjectsResponse.SerializeToString,
+                    response_serializer=proto_dot_metadata__pb2.GetAllObjectsResponse.SerializeToString,
             ),
             'DeleteAlias': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteAlias,
-                    request_deserializer=protos_dot_metadata__service__pb2.DeleteAliasRequest.FromString,
+                    request_deserializer=proto_dot_metadata__pb2.DeleteAliasRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'NewAlias': grpc.unary_unary_rpc_method_handler(
                     servicer.NewAlias,
-                    request_deserializer=protos_dot_metadata__service__pb2.NewAliasRequest.FromString,
+                    request_deserializer=proto_dot_metadata__pb2.NewAliasRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'GetAllAlias': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAllAlias,
-                    request_deserializer=protos_dot_metadata__service__pb2.GetAllAliasRequest.FromString,
-                    response_serializer=protos_dot_metadata__service__pb2.GetAllAliasResponse.SerializeToString,
+                    request_deserializer=proto_dot_metadata__pb2.GetAllAliasRequest.FromString,
+                    response_serializer=proto_dot_metadata__pb2.GetAllAliasResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'protos.metadata_service.MetadataService', rpc_method_handlers)
+            'proto.metadata.MetadataService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -276,8 +276,8 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/NewAccount',
-            protos_dot_metadata__service__pb2.NewAccountRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/NewAccount',
+            proto_dot_metadata__pb2.NewAccountRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -293,9 +293,9 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetAccount',
-            protos_dot_metadata__service__pb2.GetAccountRequest.SerializeToString,
-            protos_dot_metadata__service__pb2.GetAccountResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/GetAccount',
+            proto_dot_metadata__pb2.GetAccountRequest.SerializeToString,
+            proto_dot_metadata__pb2.GetAccountResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -310,9 +310,9 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/NewSession',
-            protos_dot_metadata__service__pb2.NewSessionRequest.SerializeToString,
-            protos_dot_common__messages__pb2.Session.FromString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/NewSession',
+            proto_dot_metadata__pb2.NewSessionRequest.SerializeToString,
+            proto_dot_common__pb2.Session.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -327,8 +327,8 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/CloseSession',
-            protos_dot_metadata__service__pb2.CloseSessionRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/CloseSession',
+            proto_dot_metadata__pb2.CloseSessionRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -344,8 +344,8 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/NewDataset',
-            protos_dot_metadata__service__pb2.NewDatasetRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/NewDataset',
+            proto_dot_metadata__pb2.NewDatasetRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -361,9 +361,9 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetAllBackends',
-            protos_dot_metadata__service__pb2.GetAllBackendsRequest.SerializeToString,
-            protos_dot_metadata__service__pb2.GetAllBackendsResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/GetAllBackends',
+            proto_dot_metadata__pb2.GetAllBackendsRequest.SerializeToString,
+            proto_dot_metadata__pb2.GetAllBackendsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -378,9 +378,9 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetDataclay',
-            protos_dot_metadata__service__pb2.GetDataclayRequest.SerializeToString,
-            protos_dot_common__messages__pb2.Dataclay.FromString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/GetDataclay',
+            proto_dot_metadata__pb2.GetDataclayRequest.SerializeToString,
+            proto_dot_common__pb2.Dataclay.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -395,8 +395,8 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/RegisterObject',
-            protos_dot_metadata__service__pb2.RegisterObjectRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/RegisterObject',
+            proto_dot_metadata__pb2.RegisterObjectRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -412,9 +412,9 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetObjectMDById',
-            protos_dot_metadata__service__pb2.GetObjectMDByIdRequest.SerializeToString,
-            protos_dot_common__messages__pb2.ObjectMetadata.FromString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/GetObjectMDById',
+            proto_dot_metadata__pb2.GetObjectMDByIdRequest.SerializeToString,
+            proto_dot_common__pb2.ObjectMetadata.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -429,9 +429,9 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetObjectMDByAlias',
-            protos_dot_metadata__service__pb2.GetObjectMDByAliasRequest.SerializeToString,
-            protos_dot_common__messages__pb2.ObjectMetadata.FromString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/GetObjectMDByAlias',
+            proto_dot_metadata__pb2.GetObjectMDByAliasRequest.SerializeToString,
+            proto_dot_common__pb2.ObjectMetadata.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -446,9 +446,9 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetAllObjects',
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/GetAllObjects',
             google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            protos_dot_metadata__service__pb2.GetAllObjectsResponse.FromString,
+            proto_dot_metadata__pb2.GetAllObjectsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -463,8 +463,8 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/DeleteAlias',
-            protos_dot_metadata__service__pb2.DeleteAliasRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/DeleteAlias',
+            proto_dot_metadata__pb2.DeleteAliasRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -480,8 +480,8 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/NewAlias',
-            protos_dot_metadata__service__pb2.NewAliasRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/NewAlias',
+            proto_dot_metadata__pb2.NewAliasRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -497,8 +497,8 @@ class MetadataService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/protos.metadata_service.MetadataService/GetAllAlias',
-            protos_dot_metadata__service__pb2.GetAllAliasRequest.SerializeToString,
-            protos_dot_metadata__service__pb2.GetAllAliasResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/proto.metadata.MetadataService/GetAllAlias',
+            proto_dot_metadata__pb2.GetAllAliasRequest.SerializeToString,
+            proto_dot_metadata__pb2.GetAllAliasResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
