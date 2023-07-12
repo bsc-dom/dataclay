@@ -3,19 +3,16 @@
 python3 -m grpc_tools.protoc \
 --proto_path=dataclay-common \
 --python_out=src/dataclay \
-dataclay-common/protos/common_messages.proto \
-dataclay-common/protos/dataservice_messages.proto \
-dataclay-common/protos/logicmodule_messages.proto
+dataclay-common/proto/common.proto
 
 # Protobuf + grpc
 python3 -m grpc_tools.protoc \
 --proto_path=dataclay-common \
 --python_out=src/dataclay \
 --grpc_python_out=src/dataclay \
-dataclay-common/protos/dataservice.proto \
-dataclay-common/protos/logicmodule.proto \
-dataclay-common/protos/metadata_service.proto
+dataclay-common/proto/backend.proto \
+dataclay-common/proto/metadata.proto
 
 # Replace wrong import from pb2_grpc.py
-sed -i 's/from protos/from ./g' \
-src/dataclay/protos/*pb2*.py
+sed -i 's/from proto/from ./g' \
+src/dataclay/proto/*pb2*.py
