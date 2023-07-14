@@ -14,11 +14,8 @@ from google.protobuf.wrappers_pb2 import BytesValue
 
 from dataclay.backend.api import BackendAPI
 from dataclay.conf import settings
-from dataclay.proto import (
-    backend_pb2,
-    backend_pb2_grpc,
-    common_pb2,
-)
+from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
+from dataclay.proto.common import common_pb2
 
 logger = logging.getLogger(__name__)
 
@@ -211,7 +208,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
             return Empty()
-        
+
     ###########
     # END NEW #
     ###########
@@ -230,7 +227,6 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return common_pb2.ExceptionInfo()
         except DataClayException as ex:
             return self.get_exception_info(ex)
-
 
     def newReplica(self, request, context):
         raise Exception("To refactor")
@@ -278,7 +274,6 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return dataservice_messages_pb2.RemoveObjectsResponse(
                 excInfo=self.get_exception_info(ex)
             )
-
 
     def updateRefs(self, request, context):
         raise Exception("To refactor")

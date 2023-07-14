@@ -6,10 +6,7 @@ import grpc
 from google.protobuf.empty_pb2 import Empty
 
 from dataclay.metadata.kvdata import Alias, Backend, Dataclay, ObjectMetadata, Session
-from dataclay.proto import (
-    metadata_pb2,
-    metadata_pb2_grpc,
-)
+from dataclay.proto.metadata import metadata_pb2, metadata_pb2_grpc
 from dataclay.utils.decorators import grpc_error_handler
 from dataclay.utils.uuid import str_to_uuid, uuid_to_str
 

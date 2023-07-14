@@ -56,7 +56,6 @@ class BackendAPI:
 
         return False
 
-
     # Object Methods
 
     @tracer.start_as_current_span("make_persistent")

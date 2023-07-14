@@ -14,11 +14,8 @@ from google.protobuf.empty_pb2 import Empty
 from dataclay.conf import settings
 from dataclay.exceptions.exceptions import AlreadyExistError
 from dataclay.metadata.api import MetadataAPI
-from dataclay.proto import (
-    common_pb2,
-    metadata_pb2,
-    metadata_pb2_grpc,
-)
+from dataclay.proto.common import common_pb2
+from dataclay.proto.metadata import metadata_pb2, metadata_pb2_grpc
 from dataclay.utils.uuid import str_to_uuid, uuid_to_str
 
 logger = logging.getLogger(__name__)

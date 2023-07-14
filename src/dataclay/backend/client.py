@@ -10,10 +10,8 @@ from grpc._cython.cygrpc import ChannelArgKey
 
 from dataclay.conf import settings
 from dataclay.exceptions.exceptions import DataClayException
-from dataclay.proto import backend_pb2, common_pb2
-from dataclay.proto import (
-    backend_pb2_grpc,
-)
+from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
+from dataclay.proto.common import common_pb2
 from dataclay.utils.decorators import grpc_error_handler
 
 logger = logging.getLogger(__name__)
@@ -218,7 +216,6 @@ class BackendClient:
     # END NEW #
     ###########
 
-
     def federate(self, session_id, object_id, external_execution_env_id, recursive):
         raise Exception("To refactor")
         try:
@@ -335,7 +332,6 @@ class BackendClient:
 
         return result
 
-
     def ds_migrate_objects_to_backends(self, back_ends):
         raise ("To refactor")
 
@@ -374,7 +370,6 @@ class BackendClient:
         t = (result, non_migrated)
 
         return t
-
 
     def detach_object_from_session(self, object_id, session_id):
         raise Exception("To refactor")
@@ -417,9 +412,7 @@ class BackendClient:
     def get_traces(self):
         raise Exception("To refactor")
         try:
-            response = self.stub.getTraces(
-                common_pb2.EmptyMessage(), metadata=self.metadata_call
-            )
+            response = self.stub.getTraces(common_pb2.EmptyMessage(), metadata=self.metadata_call)
         except RuntimeError as e:
             raise e
 

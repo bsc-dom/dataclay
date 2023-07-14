@@ -6,7 +6,7 @@ from uuid import UUID
 import bcrypt
 
 from dataclay.exceptions import *
-from dataclay.proto import common_pb2
+from dataclay.proto.common import common_pb2
 from dataclay.utils.uuid import UUIDEncoder, str_to_uuid, uuid_parser, uuid_to_str
 
 
