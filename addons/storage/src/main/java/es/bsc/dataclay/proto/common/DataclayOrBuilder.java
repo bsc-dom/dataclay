@@ -20,16 +20,16 @@ public interface DataclayOrBuilder extends
       getIdBytes();
 
   /**
-   * <code>string hostname = 2;</code>
-   * @return The hostname.
+   * <code>string host = 2;</code>
+   * @return The host.
    */
-  java.lang.String getHostname();
+  java.lang.String getHost();
   /**
-   * <code>string hostname = 2;</code>
-   * @return The bytes for hostname.
+   * <code>string host = 2;</code>
+   * @return The bytes for host.
    */
   com.google.protobuf.ByteString
-      getHostnameBytes();
+      getHostBytes();
 
   /**
    * <code>int32 port = 3;</code>

@@ -17,7 +17,7 @@ private static final long serialVersionUID = 0L;
   }
   private Dataclay() {
     id_ = "";
-    hostname_ = "";
+    host_ = "";
   }
 
   @java.lang.Override
@@ -79,39 +79,39 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int HOSTNAME_FIELD_NUMBER = 2;
+  public static final int HOST_FIELD_NUMBER = 2;
   @SuppressWarnings("serial")
-  private volatile java.lang.Object hostname_ = "";
+  private volatile java.lang.Object host_ = "";
   /**
-   * <code>string hostname = 2;</code>
-   * @return The hostname.
+   * <code>string host = 2;</code>
+   * @return The host.
    */
   @java.lang.Override
-  public java.lang.String getHostname() {
-    java.lang.Object ref = hostname_;
+  public java.lang.String getHost() {
+    java.lang.Object ref = host_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      hostname_ = s;
+      host_ = s;
       return s;
     }
   }
   /**
-   * <code>string hostname = 2;</code>
-   * @return The bytes for hostname.
+   * <code>string host = 2;</code>
+   * @return The bytes for host.
    */
   @java.lang.Override
   public com.google.protobuf.ByteString
-      getHostnameBytes() {
-    java.lang.Object ref = hostname_;
+      getHostBytes() {
+    java.lang.Object ref = host_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
-      hostname_ = b;
+      host_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
@@ -157,8 +157,8 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(id_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, id_);
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(hostname_)) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, hostname_);
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(host_)) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, host_);
     }
     if (port_ != 0) {
       output.writeInt32(3, port_);
@@ -178,8 +178,8 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(id_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, id_);
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(hostname_)) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, hostname_);
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(host_)) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, host_);
     }
     if (port_ != 0) {
       size += com.google.protobuf.CodedOutputStream
@@ -206,8 +206,8 @@ private static final long serialVersionUID = 0L;
 
     if (!getId()
         .equals(other.getId())) return false;
-    if (!getHostname()
-        .equals(other.getHostname())) return false;
+    if (!getHost()
+        .equals(other.getHost())) return false;
     if (getPort()
         != other.getPort()) return false;
     if (getIsThis()
@@ -225,8 +225,8 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + ID_FIELD_NUMBER;
     hash = (53 * hash) + getId().hashCode();
-    hash = (37 * hash) + HOSTNAME_FIELD_NUMBER;
-    hash = (53 * hash) + getHostname().hashCode();
+    hash = (37 * hash) + HOST_FIELD_NUMBER;
+    hash = (53 * hash) + getHost().hashCode();
     hash = (37 * hash) + PORT_FIELD_NUMBER;
     hash = (53 * hash) + getPort();
     hash = (37 * hash) + IS_THIS_FIELD_NUMBER;
@@ -362,7 +362,7 @@ private static final long serialVersionUID = 0L;
       super.clear();
       bitField0_ = 0;
       id_ = "";
-      hostname_ = "";
+      host_ = "";
       port_ = 0;
       isThis_ = false;
       return this;
@@ -402,7 +402,7 @@ private static final long serialVersionUID = 0L;
         result.id_ = id_;
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.hostname_ = hostname_;
+        result.host_ = host_;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.port_ = port_;
@@ -429,8 +429,8 @@ private static final long serialVersionUID = 0L;
         bitField0_ |= 0x00000001;
         onChanged();
       }
-      if (!other.getHostname().isEmpty()) {
-        hostname_ = other.hostname_;
+      if (!other.getHost().isEmpty()) {
+        host_ = other.host_;
         bitField0_ |= 0x00000002;
         onChanged();
       }
@@ -472,7 +472,7 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 10
             case 18: {
-              hostname_ = input.readStringRequireUtf8();
+              host_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000002;
               break;
             } // case 18
@@ -575,73 +575,73 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.lang.Object hostname_ = "";
+    private java.lang.Object host_ = "";
     /**
-     * <code>string hostname = 2;</code>
-     * @return The hostname.
+     * <code>string host = 2;</code>
+     * @return The host.
      */
-    public java.lang.String getHostname() {
-      java.lang.Object ref = hostname_;
+    public java.lang.String getHost() {
+      java.lang.Object ref = host_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        hostname_ = s;
+        host_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
       }
     }
     /**
-     * <code>string hostname = 2;</code>
-     * @return The bytes for hostname.
+     * <code>string host = 2;</code>
+     * @return The bytes for host.
      */
     public com.google.protobuf.ByteString
-        getHostnameBytes() {
-      java.lang.Object ref = hostname_;
+        getHostBytes() {
+      java.lang.Object ref = host_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        hostname_ = b;
+        host_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
     /**
-     * <code>string hostname = 2;</code>
-     * @param value The hostname to set.
+     * <code>string host = 2;</code>
+     * @param value The host to set.
      * @return This builder for chaining.
      */
-    public Builder setHostname(
+    public Builder setHost(
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
-      hostname_ = value;
+      host_ = value;
       bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
     /**
-     * <code>string hostname = 2;</code>
+     * <code>string host = 2;</code>
      * @return This builder for chaining.
      */
-    public Builder clearHostname() {
-      hostname_ = getDefaultInstance().getHostname();
+    public Builder clearHost() {
+      host_ = getDefaultInstance().getHost();
       bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
     /**
-     * <code>string hostname = 2;</code>
-     * @param value The bytes for hostname to set.
+     * <code>string host = 2;</code>
+     * @param value The bytes for host to set.
      * @return This builder for chaining.
      */
-    public Builder setHostnameBytes(
+    public Builder setHostBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
-      hostname_ = value;
+      host_ = value;
       bitField0_ |= 0x00000002;
       onChanged();
       return this;

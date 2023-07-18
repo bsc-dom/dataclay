@@ -3,9 +3,6 @@ package es.bsc.dataclay.proto.backend;
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 
 /**
- * <pre>
- * Interface exported by the server.
- * </pre>
  */
 @javax.annotation.Generated(
     value = "by gRPC proto compiler (version 1.56.0)",
@@ -466,16 +463,10 @@ public final class BackendServiceGrpc {
   }
 
   /**
-   * <pre>
-   * Interface exported by the server.
-   * </pre>
    */
   public interface AsyncService {
 
     /**
-     * <pre>
-     * NEW
-     * </pre>
      */
     default void makePersistent(es.bsc.dataclay.proto.backend.MakePersistentRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
@@ -569,9 +560,6 @@ public final class BackendServiceGrpc {
 
   /**
    * Base class for the server implementation of the service BackendService.
-   * <pre>
-   * Interface exported by the server.
-   * </pre>
    */
   public static abstract class BackendServiceImplBase
       implements io.grpc.BindableService, AsyncService {
@@ -583,9 +571,6 @@ public final class BackendServiceGrpc {
 
   /**
    * A stub to allow clients to do asynchronous rpc calls to service BackendService.
-   * <pre>
-   * Interface exported by the server.
-   * </pre>
    */
   public static final class BackendServiceStub
       extends io.grpc.stub.AbstractAsyncStub<BackendServiceStub> {
@@ -601,9 +586,6 @@ public final class BackendServiceGrpc {
     }
 
     /**
-     * <pre>
-     * NEW
-     * </pre>
      */
     public void makePersistent(es.bsc.dataclay.proto.backend.MakePersistentRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
@@ -710,9 +692,6 @@ public final class BackendServiceGrpc {
 
   /**
    * A stub to allow clients to do synchronous rpc calls to service BackendService.
-   * <pre>
-   * Interface exported by the server.
-   * </pre>
    */
   public static final class BackendServiceBlockingStub
       extends io.grpc.stub.AbstractBlockingStub<BackendServiceBlockingStub> {
@@ -728,9 +707,6 @@ public final class BackendServiceGrpc {
     }
 
     /**
-     * <pre>
-     * NEW
-     * </pre>
      */
     public com.google.protobuf.Empty makePersistent(es.bsc.dataclay.proto.backend.MakePersistentRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
@@ -824,9 +800,6 @@ public final class BackendServiceGrpc {
 
   /**
    * A stub to allow clients to do ListenableFuture-style rpc calls to service BackendService.
-   * <pre>
-   * Interface exported by the server.
-   * </pre>
    */
   public static final class BackendServiceFutureStub
       extends io.grpc.stub.AbstractFutureStub<BackendServiceFutureStub> {
@@ -842,9 +815,6 @@ public final class BackendServiceGrpc {
     }
 
     /**
-     * <pre>
-     * NEW
-     * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty> makePersistent(
         es.bsc.dataclay.proto.backend.MakePersistentRequest request) {

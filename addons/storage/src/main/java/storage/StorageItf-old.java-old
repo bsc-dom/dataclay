@@ -76,7 +76,7 @@ public final class StorageItfOld {
 	}
 
 	/**
-	 * @brief Create a new version of the object in the specified hostname. If no destination is specified random one is
+	 * @brief Create a new version of the object in the specified host. If no destination is specified random one is
 	 *        selected.
 	 * @param objectIDstr
 	 *            object id to be versioned

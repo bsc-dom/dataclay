@@ -1,9 +1,9 @@
 package es.bsc.dataclay.metadata;
 
 
-public class BackendMD {
+public class BackendMetadata {
     private String id;
-    private String hostname;
+    private String host;
     private int port;
     private String dataclay_id;
 
@@ -12,8 +12,8 @@ public class BackendMD {
         return this.id;
     }
 
-    public String getHostname() {
-        return this.hostname;
+    public String getHost() {
+        return this.host;
     }
 
     public int getPort() {

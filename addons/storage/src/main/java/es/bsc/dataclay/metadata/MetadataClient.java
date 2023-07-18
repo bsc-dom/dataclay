@@ -18,7 +18,6 @@ public class MetadataClient {
   private final MetadataServiceGrpc.MetadataServiceBlockingStub blockingStub;
   private final ManagedChannel channel;
 
-
   public MetadataClient(String target) {
     channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create()).build();
     blockingStub = MetadataServiceGrpc.newBlockingStub(channel);
@@ -41,15 +40,4 @@ public class MetadataClient {
     // logger.info("Greeting: " + response.getMessage());
   }
 
-  public static void main(String[] args) throws Exception {
-    // Access a service running on the local machine on port 50051
-    String target = "127.0.0.1:16587";
-
-    MetadataClient client = new MetadataClient(target);
-    try {
-      client.newAccount("user", "pass");
-    } finally {
-      client.shutdown();
-    }
-  }
 }

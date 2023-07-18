@@ -55,15 +55,15 @@ public final class Backend {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_dataclay_proto_backend_NewObjectVersionRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_dataclay_proto_backend_ConsolidateObjectVersionRequest_descriptor;
-  static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_dataclay_proto_backend_ConsolidateObjectVersionRequest_fieldAccessorTable;
-  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_dataclay_proto_backend_NewObjectVersionResponse_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_dataclay_proto_backend_NewObjectVersionResponse_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_dataclay_proto_backend_ConsolidateObjectVersionRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_dataclay_proto_backend_ConsolidateObjectVersionRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_dataclay_proto_backend_ProxifyObjectRequest_descriptor;
   static final 
@@ -100,44 +100,44 @@ public final class Backend {
       "(\010\"Y\n\021SendObjectRequest\022\022\n\nsession_id\030\001 " +
       "\001(\t\022\021\n\tobject_id\030\002 \001(\t\022\035\n\025serialized_pro" +
       "perties\030\003 \001(\014\",\n\027NewObjectVersionRequest" +
-      "\022\021\n\tobject_id\030\001 \001(\t\"4\n\037ConsolidateObject" +
-      "VersionRequest\022\021\n\tobject_id\030\001 \001(\t\"2\n\030New" +
-      "ObjectVersionResponse\022\026\n\016object_full_id\030" +
-      "\001 \001(\t\"@\n\024ProxifyObjectRequest\022\021\n\tobject_" +
-      "id\030\001 \001(\t\022\025\n\rnew_object_id\030\002 \001(\t\"A\n\025Chang" +
-      "eObjectIdRequest\022\021\n\tobject_id\030\001 \001(\t\022\025\n\rn" +
-      "ew_object_id\030\002 \001(\t2\262\t\n\016BackendService\022Y\n" +
-      "\016MakePersistent\022-.dataclay.proto.backend" +
-      ".MakePersistentRequest\032\026.google.protobuf" +
-      ".Empty\"\000\022w\n\020CallActiveMethod\022/.dataclay." +
-      "proto.backend.CallActiveMethodRequest\0320." +
-      "dataclay.proto.backend.CallActiveMethodR" +
-      "esponse\"\000\022h\n\023GetObjectProperties\0222.datac" +
-      "lay.proto.backend.GetObjectPropertiesReq" +
-      "uest\032\033.google.protobuf.BytesValue\"\000\022i\n\026U" +
-      "pdateObjectProperties\0225.dataclay.proto.b" +
-      "ackend.UpdateObjectPropertiesRequest\032\026.g" +
-      "oogle.protobuf.Empty\"\000\022Q\n\nMoveObject\022).d" +
-      "ataclay.proto.backend.MoveObjectRequest\032" +
-      "\026.google.protobuf.Empty\"\000\022Q\n\nSendObject\022" +
-      ").dataclay.proto.backend.SendObjectReque" +
-      "st\032\026.google.protobuf.Empty\"\000\022w\n\020NewObjec" +
-      "tVersion\022/.dataclay.proto.backend.NewObj" +
-      "ectVersionRequest\0320.dataclay.proto.backe" +
-      "nd.NewObjectVersionResponse\"\000\022m\n\030Consoli" +
-      "dateObjectVersion\0227.dataclay.proto.backe" +
-      "nd.ConsolidateObjectVersionRequest\032\026.goo" +
-      "gle.protobuf.Empty\"\000\022W\n\rProxifyObject\022,." +
-      "dataclay.proto.backend.ProxifyObjectRequ" +
-      "est\032\026.google.protobuf.Empty\"\000\022Y\n\016ChangeO" +
-      "bjectId\022-.dataclay.proto.backend.ChangeO" +
-      "bjectIdRequest\032\026.google.protobuf.Empty\"\000" +
-      "\022<\n\010FlushAll\022\026.google.protobuf.Empty\032\026.g" +
-      "oogle.protobuf.Empty\"\000\022<\n\010Shutdown\022\026.goo" +
-      "gle.protobuf.Empty\032\026.google.protobuf.Emp" +
-      "ty\"\000\0229\n\005Drain\022\026.google.protobuf.Empty\032\026." +
-      "google.protobuf.Empty\"\000B!\n\035es.bsc.datacl" +
-      "ay.proto.backendP\001b\006proto3"
+      "\022\021\n\tobject_id\030\001 \001(\t\"/\n\030NewObjectVersionR" +
+      "esponse\022\023\n\013object_info\030\001 \001(\t\"4\n\037Consolid" +
+      "ateObjectVersionRequest\022\021\n\tobject_id\030\001 \001" +
+      "(\t\"@\n\024ProxifyObjectRequest\022\021\n\tobject_id\030" +
+      "\001 \001(\t\022\025\n\rnew_object_id\030\002 \001(\t\"A\n\025ChangeOb" +
+      "jectIdRequest\022\021\n\tobject_id\030\001 \001(\t\022\025\n\rnew_" +
+      "object_id\030\002 \001(\t2\262\t\n\016BackendService\022Y\n\016Ma" +
+      "kePersistent\022-.dataclay.proto.backend.Ma" +
+      "kePersistentRequest\032\026.google.protobuf.Em" +
+      "pty\"\000\022w\n\020CallActiveMethod\022/.dataclay.pro" +
+      "to.backend.CallActiveMethodRequest\0320.dat" +
+      "aclay.proto.backend.CallActiveMethodResp" +
+      "onse\"\000\022h\n\023GetObjectProperties\0222.dataclay" +
+      ".proto.backend.GetObjectPropertiesReques" +
+      "t\032\033.google.protobuf.BytesValue\"\000\022i\n\026Upda" +
+      "teObjectProperties\0225.dataclay.proto.back" +
+      "end.UpdateObjectPropertiesRequest\032\026.goog" +
+      "le.protobuf.Empty\"\000\022Q\n\nMoveObject\022).data" +
+      "clay.proto.backend.MoveObjectRequest\032\026.g" +
+      "oogle.protobuf.Empty\"\000\022Q\n\nSendObject\022).d" +
+      "ataclay.proto.backend.SendObjectRequest\032" +
+      "\026.google.protobuf.Empty\"\000\022w\n\020NewObjectVe" +
+      "rsion\022/.dataclay.proto.backend.NewObject" +
+      "VersionRequest\0320.dataclay.proto.backend." +
+      "NewObjectVersionResponse\"\000\022m\n\030Consolidat" +
+      "eObjectVersion\0227.dataclay.proto.backend." +
+      "ConsolidateObjectVersionRequest\032\026.google" +
+      ".protobuf.Empty\"\000\022W\n\rProxifyObject\022,.dat" +
+      "aclay.proto.backend.ProxifyObjectRequest" +
+      "\032\026.google.protobuf.Empty\"\000\022Y\n\016ChangeObje" +
+      "ctId\022-.dataclay.proto.backend.ChangeObje" +
+      "ctIdRequest\032\026.google.protobuf.Empty\"\000\022<\n" +
+      "\010FlushAll\022\026.google.protobuf.Empty\032\026.goog" +
+      "le.protobuf.Empty\"\000\022<\n\010Shutdown\022\026.google" +
+      ".protobuf.Empty\032\026.google.protobuf.Empty\"" +
+      "\000\0229\n\005Drain\022\026.google.protobuf.Empty\032\026.goo" +
+      "gle.protobuf.Empty\"\000B!\n\035es.bsc.dataclay." +
+      "proto.backendP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -193,18 +193,18 @@ public final class Backend {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_dataclay_proto_backend_NewObjectVersionRequest_descriptor,
         new java.lang.String[] { "ObjectId", });
-    internal_static_dataclay_proto_backend_ConsolidateObjectVersionRequest_descriptor =
+    internal_static_dataclay_proto_backend_NewObjectVersionResponse_descriptor =
       getDescriptor().getMessageTypes().get(8);
+    internal_static_dataclay_proto_backend_NewObjectVersionResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_dataclay_proto_backend_NewObjectVersionResponse_descriptor,
+        new java.lang.String[] { "ObjectInfo", });
+    internal_static_dataclay_proto_backend_ConsolidateObjectVersionRequest_descriptor =
+      getDescriptor().getMessageTypes().get(9);
     internal_static_dataclay_proto_backend_ConsolidateObjectVersionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_dataclay_proto_backend_ConsolidateObjectVersionRequest_descriptor,
         new java.lang.String[] { "ObjectId", });
-    internal_static_dataclay_proto_backend_NewObjectVersionResponse_descriptor =
-      getDescriptor().getMessageTypes().get(9);
-    internal_static_dataclay_proto_backend_NewObjectVersionResponse_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_dataclay_proto_backend_NewObjectVersionResponse_descriptor,
-        new java.lang.String[] { "ObjectFullId", });
     internal_static_dataclay_proto_backend_ProxifyObjectRequest_descriptor =
       getDescriptor().getMessageTypes().get(10);
     internal_static_dataclay_proto_backend_ProxifyObjectRequest_fieldAccessorTable = new

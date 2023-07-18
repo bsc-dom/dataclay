@@ -16,7 +16,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private NewObjectVersionResponse() {
-    objectFullId_ = "";
+    objectInfo_ = "";
   }
 
   @java.lang.Override
@@ -39,39 +39,39 @@ private static final long serialVersionUID = 0L;
             es.bsc.dataclay.proto.backend.NewObjectVersionResponse.class, es.bsc.dataclay.proto.backend.NewObjectVersionResponse.Builder.class);
   }
 
-  public static final int OBJECT_FULL_ID_FIELD_NUMBER = 1;
+  public static final int OBJECT_INFO_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
-  private volatile java.lang.Object objectFullId_ = "";
+  private volatile java.lang.Object objectInfo_ = "";
   /**
-   * <code>string object_full_id = 1;</code>
-   * @return The objectFullId.
+   * <code>string object_info = 1;</code>
+   * @return The objectInfo.
    */
   @java.lang.Override
-  public java.lang.String getObjectFullId() {
-    java.lang.Object ref = objectFullId_;
+  public java.lang.String getObjectInfo() {
+    java.lang.Object ref = objectInfo_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      objectFullId_ = s;
+      objectInfo_ = s;
       return s;
     }
   }
   /**
-   * <code>string object_full_id = 1;</code>
-   * @return The bytes for objectFullId.
+   * <code>string object_info = 1;</code>
+   * @return The bytes for objectInfo.
    */
   @java.lang.Override
   public com.google.protobuf.ByteString
-      getObjectFullIdBytes() {
-    java.lang.Object ref = objectFullId_;
+      getObjectInfoBytes() {
+    java.lang.Object ref = objectInfo_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
-      objectFullId_ = b;
+      objectInfo_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
@@ -92,8 +92,8 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(objectFullId_)) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, objectFullId_);
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(objectInfo_)) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, objectInfo_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -104,8 +104,8 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(objectFullId_)) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, objectFullId_);
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(objectInfo_)) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, objectInfo_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -122,8 +122,8 @@ private static final long serialVersionUID = 0L;
     }
     es.bsc.dataclay.proto.backend.NewObjectVersionResponse other = (es.bsc.dataclay.proto.backend.NewObjectVersionResponse) obj;
 
-    if (!getObjectFullId()
-        .equals(other.getObjectFullId())) return false;
+    if (!getObjectInfo()
+        .equals(other.getObjectInfo())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -135,8 +135,8 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + OBJECT_FULL_ID_FIELD_NUMBER;
-    hash = (53 * hash) + getObjectFullId().hashCode();
+    hash = (37 * hash) + OBJECT_INFO_FIELD_NUMBER;
+    hash = (53 * hash) + getObjectInfo().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -266,7 +266,7 @@ private static final long serialVersionUID = 0L;
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
-      objectFullId_ = "";
+      objectInfo_ = "";
       return this;
     }
 
@@ -301,7 +301,7 @@ private static final long serialVersionUID = 0L;
     private void buildPartial0(es.bsc.dataclay.proto.backend.NewObjectVersionResponse result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
-        result.objectFullId_ = objectFullId_;
+        result.objectInfo_ = objectInfo_;
       }
     }
 
@@ -317,8 +317,8 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(es.bsc.dataclay.proto.backend.NewObjectVersionResponse other) {
       if (other == es.bsc.dataclay.proto.backend.NewObjectVersionResponse.getDefaultInstance()) return this;
-      if (!other.getObjectFullId().isEmpty()) {
-        objectFullId_ = other.objectFullId_;
+      if (!other.getObjectInfo().isEmpty()) {
+        objectInfo_ = other.objectInfo_;
         bitField0_ |= 0x00000001;
         onChanged();
       }
@@ -349,7 +349,7 @@ private static final long serialVersionUID = 0L;
               done = true;
               break;
             case 10: {
-              objectFullId_ = input.readStringRequireUtf8();
+              objectInfo_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000001;
               break;
             } // case 10
@@ -370,73 +370,73 @@ private static final long serialVersionUID = 0L;
     }
     private int bitField0_;
 
-    private java.lang.Object objectFullId_ = "";
+    private java.lang.Object objectInfo_ = "";
     /**
-     * <code>string object_full_id = 1;</code>
-     * @return The objectFullId.
+     * <code>string object_info = 1;</code>
+     * @return The objectInfo.
      */
-    public java.lang.String getObjectFullId() {
-      java.lang.Object ref = objectFullId_;
+    public java.lang.String getObjectInfo() {
+      java.lang.Object ref = objectInfo_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        objectFullId_ = s;
+        objectInfo_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
       }
     }
     /**
-     * <code>string object_full_id = 1;</code>
-     * @return The bytes for objectFullId.
+     * <code>string object_info = 1;</code>
+     * @return The bytes for objectInfo.
      */
     public com.google.protobuf.ByteString
-        getObjectFullIdBytes() {
-      java.lang.Object ref = objectFullId_;
+        getObjectInfoBytes() {
+      java.lang.Object ref = objectInfo_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        objectFullId_ = b;
+        objectInfo_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
     /**
-     * <code>string object_full_id = 1;</code>
-     * @param value The objectFullId to set.
+     * <code>string object_info = 1;</code>
+     * @param value The objectInfo to set.
      * @return This builder for chaining.
      */
-    public Builder setObjectFullId(
+    public Builder setObjectInfo(
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
-      objectFullId_ = value;
+      objectInfo_ = value;
       bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
     /**
-     * <code>string object_full_id = 1;</code>
+     * <code>string object_info = 1;</code>
      * @return This builder for chaining.
      */
-    public Builder clearObjectFullId() {
-      objectFullId_ = getDefaultInstance().getObjectFullId();
+    public Builder clearObjectInfo() {
+      objectInfo_ = getDefaultInstance().getObjectInfo();
       bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
     /**
-     * <code>string object_full_id = 1;</code>
-     * @param value The bytes for objectFullId to set.
+     * <code>string object_info = 1;</code>
+     * @param value The bytes for objectInfo to set.
      * @return This builder for chaining.
      */
-    public Builder setObjectFullIdBytes(
+    public Builder setObjectInfoBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
-      objectFullId_ = value;
+      objectInfo_ = value;
       bitField0_ |= 0x00000001;
       onChanged();
       return this;

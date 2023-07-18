@@ -11,7 +11,6 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 
-
 public class MetadataAPI {
 
     private Jedis jedis;
@@ -31,11 +30,11 @@ public class MetadataAPI {
         return objMD;
     }
 
-    public Map<String, BackendMD> getBackends() {
+    public Map<String, BackendMetadata> getBackends() {
         String prefix = "/backend/";
         String cursor = ScanParams.SCAN_POINTER_START;
 
-        Map<String, BackendMD> backendMDs = new HashMap<>();
+        Map<String, BackendMetadata> backendMetadatas = new HashMap<>();
 
         do {
             // Use the SCAN command to iterate over keys that match the prefix
@@ -43,15 +42,15 @@ public class MetadataAPI {
 
             scanResult.getResult().forEach((key) -> {
                 String value = jedis.get(key);
-                BackendMD backendMD = gson.fromJson(value, BackendMD.class);
-                backendMDs.put(key, backendMD);
+                BackendMetadata backendMetadata = gson.fromJson(value, BackendMetadata.class);
+                backendMetadatas.put(key, backendMetadata);
             });
 
             // Get the next cursor
             cursor = scanResult.getCursor();
         } while (!cursor.equals(ScanParams.SCAN_POINTER_START));
 
-        return backendMDs;
+        return backendMetadatas;
     }
-    
+
 }

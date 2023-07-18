@@ -10,13 +10,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import es.bsc.dataclay.proto.backend.BackendServiceGrpc;
+import es.bsc.dataclay.proto.backend.NewObjectVersionRequest;
+import es.bsc.dataclay.proto.backend.NewObjectVersionResponse;
+import es.bsc.dataclay.proto.backend.ConsolidateObjectVersionRequest;
 
 public class BackendClient {
   private static final Logger logger = Logger.getLogger(BackendClient.class.getName());
 
   private final BackendServiceGrpc.BackendServiceBlockingStub blockingStub;
   private final ManagedChannel channel;
-
 
   public BackendClient(String host, int port) {
     channel = Grpc.newChannelBuilderForAddress(host, port, InsecureChannelCredentials.create()).build();
@@ -27,13 +29,17 @@ public class BackendClient {
     channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
   }
 
-  public static void main(String[] args) throws Exception {
-    // Access a service running on the local machine on port 50051
-    BackendClient client = new BackendClient("127.0.0.1", 16587);
-    try {
-      // client.newAccount("user", "pass");
-    } finally {
-      client.shutdown();
-    }
+  public String newObjectVersion(String objectId) {
+    NewObjectVersionRequest request = NewObjectVersionRequest.newBuilder().setObjectId(objectId).build();
+    NewObjectVersionResponse response;
+    response = blockingStub.newObjectVersion(request);
+    return response.getObjectInfo();
+  }
+
+  public void consolidateObjectVersion(String objectId) {
+    ConsolidateObjectVersionRequest request = ConsolidateObjectVersionRequest.newBuilder().setObjectId(objectId)
+        .build();
+    NewObjectVersionResponse response;
+    blockingStub.consolidateObjectVersion(request);
   }
 }

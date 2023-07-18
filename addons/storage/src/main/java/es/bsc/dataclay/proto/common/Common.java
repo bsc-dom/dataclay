@@ -49,20 +49,20 @@ public final class Common {
   static {
     java.lang.String[] descriptorData = {
       "\n\"dataclay/proto/common/common.proto\022\025da" +
-      "taclay.proto.common\"J\n\007Backend\022\n\n\002id\030\001 \001" +
-      "(\t\022\020\n\010hostname\030\002 \001(\t\022\014\n\004port\030\003 \001(\005\022\023\n\013da" +
-      "taclay_id\030\004 \001(\t\"\306\001\n\016ObjectMetadata\022\n\n\002id" +
-      "\030\001 \001(\t\022\024\n\014dataset_name\030\002 \001(\t\022\022\n\nclass_na" +
-      "me\030\003 \001(\t\022\022\n\nbackend_id\030\004 \001(\t\022\033\n\023replica_" +
-      "backend_ids\030\005 \003(\t\022\024\n\014is_read_only\030\006 \001(\010\022" +
-      "\032\n\022original_object_id\030\007 \001(\t\022\033\n\023versions_" +
-      "object_ids\030\010 \003(\t\"P\n\007Session\022\n\n\002id\030\001 \001(\t\022" +
-      "\020\n\010username\030\002 \001(\t\022\024\n\014dataset_name\030\003 \001(\t\022" +
-      "\021\n\tis_active\030\004 \001(\010\"G\n\010Dataclay\022\n\n\002id\030\001 \001" +
-      "(\t\022\020\n\010hostname\030\002 \001(\t\022\014\n\004port\030\003 \001(\005\022\017\n\007is" +
-      "_this\030\004 \001(\010\">\n\005Alias\022\014\n\004name\030\001 \001(\t\022\024\n\014da" +
-      "taset_name\030\002 \001(\t\022\021\n\tobject_id\030\003 \001(\tB \n\034e" +
-      "s.bsc.dataclay.proto.commonP\001b\006proto3"
+      "taclay.proto.common\"F\n\007Backend\022\n\n\002id\030\001 \001" +
+      "(\t\022\014\n\004host\030\002 \001(\t\022\014\n\004port\030\003 \001(\005\022\023\n\013datacl" +
+      "ay_id\030\004 \001(\t\"\306\001\n\016ObjectMetadata\022\n\n\002id\030\001 \001" +
+      "(\t\022\024\n\014dataset_name\030\002 \001(\t\022\022\n\nclass_name\030\003" +
+      " \001(\t\022\022\n\nbackend_id\030\004 \001(\t\022\033\n\023replica_back" +
+      "end_ids\030\005 \003(\t\022\024\n\014is_read_only\030\006 \001(\010\022\032\n\022o" +
+      "riginal_object_id\030\007 \001(\t\022\033\n\023versions_obje" +
+      "ct_ids\030\010 \003(\t\"P\n\007Session\022\n\n\002id\030\001 \001(\t\022\020\n\010u" +
+      "sername\030\002 \001(\t\022\024\n\014dataset_name\030\003 \001(\t\022\021\n\ti" +
+      "s_active\030\004 \001(\010\"C\n\010Dataclay\022\n\n\002id\030\001 \001(\t\022\014" +
+      "\n\004host\030\002 \001(\t\022\014\n\004port\030\003 \001(\005\022\017\n\007is_this\030\004 " +
+      "\001(\010\">\n\005Alias\022\014\n\004name\030\001 \001(\t\022\024\n\014dataset_na" +
+      "me\030\002 \001(\t\022\021\n\tobject_id\030\003 \001(\tB \n\034es.bsc.da" +
+      "taclay.proto.commonP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -73,7 +73,7 @@ public final class Common {
     internal_static_dataclay_proto_common_Backend_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_dataclay_proto_common_Backend_descriptor,
-        new java.lang.String[] { "Id", "Hostname", "Port", "DataclayId", });
+        new java.lang.String[] { "Id", "Host", "Port", "DataclayId", });
     internal_static_dataclay_proto_common_ObjectMetadata_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_dataclay_proto_common_ObjectMetadata_fieldAccessorTable = new
@@ -91,7 +91,7 @@ public final class Common {
     internal_static_dataclay_proto_common_Dataclay_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_dataclay_proto_common_Dataclay_descriptor,
-        new java.lang.String[] { "Id", "Hostname", "Port", "IsThis", });
+        new java.lang.String[] { "Id", "Host", "Port", "IsThis", });
     internal_static_dataclay_proto_common_Alias_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_dataclay_proto_common_Alias_fieldAccessorTable = new

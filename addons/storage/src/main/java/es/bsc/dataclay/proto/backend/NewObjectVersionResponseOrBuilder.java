@@ -8,14 +8,14 @@ public interface NewObjectVersionResponseOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>string object_full_id = 1;</code>
-   * @return The objectFullId.
+   * <code>string object_info = 1;</code>
+   * @return The objectInfo.
    */
-  java.lang.String getObjectFullId();
+  java.lang.String getObjectInfo();
   /**
-   * <code>string object_full_id = 1;</code>
-   * @return The bytes for objectFullId.
+   * <code>string object_info = 1;</code>
+   * @return The bytes for objectInfo.
    */
   com.google.protobuf.ByteString
-      getObjectFullIdBytes();
+      getObjectInfoBytes();
 }
