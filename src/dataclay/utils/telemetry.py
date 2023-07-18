@@ -42,8 +42,8 @@ class LoggerEvent:
         return wrapper
 
 
-def set_tracing(service_name, hostname, port, exporter="otlp"):
-    logger.info(f"Setting tracer {exporter} for service {service_name} to {hostname}:{port}")
+def set_tracing(service_name, host, port, exporter="otlp"):
+    logger.info(f"Setting tracer {exporter} for service {service_name} to {host}:{port}")
     from opentelemetry.sdk.resources import SERVICE_NAME, Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -56,7 +56,7 @@ def set_tracing(service_name, hostname, port, exporter="otlp"):
             OTLPSpanExporter,
         )
 
-        otlp_exporter = OTLPSpanExporter(endpoint=f"{hostname}:{port}", insecure=True)
+        otlp_exporter = OTLPSpanExporter(endpoint=f"{host}:{port}", insecure=True)
         processor = BatchSpanProcessor(otlp_exporter)
 
     elif exporter == "console":

@@ -655,11 +655,11 @@ class BackendAPI:
                         "[==GetObjectsInOtherBackend==] Not found Client to ExecutionEnvironment {%s}!"
                         " Starting it at %s:%d",
                         backend_id,
-                        backend.hostname,
+                        backend.host,
                         backend.port,
                     )
 
-                    client_backend = BackendClient(backend.hostname, backend.port)
+                    client_backend = BackendClient(backend.host, backend.port)
                     self.runtime.backend_clients[backend_id] = client_backend
 
                 cur_result = client_backend.ds_get_objects(

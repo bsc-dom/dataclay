@@ -60,7 +60,7 @@ def rebalance(host, port):
     # Get backend clients
     backend_clients = {}
     for id, info in backend_infos.items():
-        backend_client = BackendClient(info.hostname, info.port)
+        backend_client = BackendClient(info.host, info.port)
         if backend_client.is_ready(5):
             backend_clients[id] = backend_client
 

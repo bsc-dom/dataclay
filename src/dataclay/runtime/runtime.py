@@ -255,7 +255,7 @@ class DataClayRuntime(ABC):
                     new_backend_clients[id] = self.backend_clients[id]
                     continue
 
-            backend_client = BackendClient(info.hostname, info.port)
+            backend_client = BackendClient(info.host, info.port)
             if backend_client.is_ready(settings.TIMEOUT_CHANNEL_READY):
                 new_backend_clients[id] = backend_client
             else:
@@ -409,14 +409,14 @@ class DataClayRuntime(ABC):
 
     # TODO: Change name to something like get_other_backend...
     def prepare_for_new_replica_version_consolidate(
-        self, object_id, hint, backend_id, backend_hostname, different_location
+        self, object_id, hint, backend_id, backend_host, different_location
     ):
         """Helper function to prepare information for new replica - version - consolidate algorithms
 
         Args:
             object_id: id of the object
             backend_id: Destination backend ID to get information from (can be none)
-            backend_hostname: Destination hostname to get information from (can be null)
+            backend_host: Destination host to get information from (can be null)
             different_location:
                 If true indicates that destination backend
                 should be different to any location of the object
@@ -436,8 +436,8 @@ class DataClayRuntime(ABC):
         dest_backend_id = backend_id
         dest_backend = None
         if dest_backend_id is None:
-            if backend_hostname is not None:
-                exec_envs_at_host = self.get_all_execution_environments_at_host(backend_hostname)
+            if backend_host is not None:
+                exec_envs_at_host = self.get_all_execution_environments_at_host(backend_host)
                 if len(exec_envs_at_host) > 0:
                     dest_backend = list(exec_envs_at_host.values())[0]
                     dest_backend_id = dest_backend.id
@@ -481,16 +481,16 @@ class DataClayRuntime(ABC):
             ee_client = self.backend_clients[hint]
         except KeyError:
             backend_to_call = self.get_execution_environment_info(hint)
-            ee_client = BackendClient(backend_to_call.hostname, backend_to_call.port)
+            ee_client = BackendClient(backend_to_call.host, backend_to_call.port)
             self.backend_clients[hint] = ee_client
         return ee_client, dest_backend
 
-    def new_replica(self, object_id, hint, backend_id, backend_hostname, recursive):
+    def new_replica(self, object_id, hint, backend_id, backend_host, recursive):
         logger.debug(f"Starting new replica of {object_id}")
         # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
 
         ee_client, dest_backend = self.prepare_for_new_replica_version_consolidate(
-            object_id, hint, backend_id, backend_hostname, True
+            object_id, hint, backend_id, backend_host, True
         )
         replicated_object_ids = ee_client.new_replica(
             self.session.id, object_id, dest_backend.id, recursive
@@ -542,13 +542,13 @@ class DataClayRuntime(ABC):
     def federate_all_objects(self, dest_dataclay_id):
         raise NotImplementedError()
 
-    def register_external_dataclay(self, id, hostname, port):
+    def register_external_dataclay(self, id, host, port):
         """Register external dataClay for federation
         Args:
-            hostname: external dataClay host name
+            host: external dataClay host name
             port: external dataClay port
         """
-        self.metadata_service.autoregister_mds(id, hostname, port)
+        self.metadata_service.autoregister_mds(id, host, port)
 
     ###########
     # Tracing #

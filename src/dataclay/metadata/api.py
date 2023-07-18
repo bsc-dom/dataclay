@@ -176,8 +176,8 @@ class MetadataAPI:
     ############
 
     @tracer.start_as_current_span("new_dataclay")
-    def new_dataclay(self, dataclay_id, hostname, port, is_this=False):
-        dataclay = Dataclay(dataclay_id, hostname, port, is_this)
+    def new_dataclay(self, dataclay_id, host, port, is_this=False):
+        dataclay = Dataclay(dataclay_id, host, port, is_this)
         self.kv_manager.set_new(dataclay)
 
     @tracer.start_as_current_span("get_dataclay")
@@ -194,10 +194,10 @@ class MetadataAPI:
         return {UUID(k): v for k, v in result.items()}
 
     @tracer.start_as_current_span("register_backend")
-    def register_backend(self, id: UUID, hostname: str, port: int, dataclay_id: UUID):
-        backend = Backend(id, hostname, port, dataclay_id)
+    def register_backend(self, id: UUID, host: str, port: int, dataclay_id: UUID):
+        backend = Backend(id, host, port, dataclay_id)
         self.kv_manager.set_new(backend)
-        logger.info(f"Registered new backend with id={id}, hostname={hostname}, port={port}")
+        logger.info(f"Registered new backend with id={id}, host={host}, port={port}")
 
     @tracer.start_as_current_span("delete_backend")
     def delete_backend(self, id: UUID):

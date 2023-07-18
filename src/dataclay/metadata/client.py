@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 class MetadataClient:
     session: Session
 
-    def __init__(self, hostname, port):
-        self.address = f"{hostname}:{port}"
+    def __init__(self, host, port):
+        self.address = f"{host}:{port}"
         self.channel = grpc.insecure_channel(self.address)
         self.stub = metadata_pb2_grpc.MetadataServiceStub(self.channel)
         # atexit.register(self.close)

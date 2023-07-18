@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 
 
 class BackendClient:
-    def __init__(self, hostname, port):
+    def __init__(self, host, port):
         """Create the stub and the channel at the address passed by the server."""
-        self.address = str(hostname) + ":" + str(port)
+        self.address = str(host) + ":" + str(port)
         options = [
             (ChannelArgKey.max_send_message_length, -1),
             (ChannelArgKey.max_receive_message_length, -1),
@@ -36,8 +36,8 @@ class BackendClient:
             if port != 443:
                 service_alias = str(port)
                 self.metadata_call.append(("service-alias", service_alias))
-                self.address = f"{hostname}:443"
-                logger.info(f"SSL configured: changed address {hostname}:{port} to {hostname}:443")
+                self.address = f"{host}:443"
+                logger.info(f"SSL configured: changed address {host}:{port} to {host}:443")
                 logger.info("SSL configured: using service-alias  " + service_alias)
             else:
                 self.metadata_call.append(("service-alias", settings.SSL_TARGET_EE_ALIAS))

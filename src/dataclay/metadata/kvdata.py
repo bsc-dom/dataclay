@@ -45,7 +45,7 @@ class Dataclay(KeyValue):
     path = "/dataclay/"
 
     id: UUID
-    hostname: str
+    host: str
     port: int
     is_this: bool = False
 
@@ -57,7 +57,7 @@ class Dataclay(KeyValue):
     def from_proto(cls, proto):
         return cls(
             str_to_uuid(proto.id),
-            proto.hostname,
+            proto.host,
             proto.port,
             proto.is_this,
         )
@@ -65,7 +65,7 @@ class Dataclay(KeyValue):
     def get_proto(self):
         return common_pb2.Dataclay(
             id=uuid_to_str(self.id),
-            hostname=self.hostname,
+            host=self.host,
             port=self.port,
             is_this=self.is_this,
         )
@@ -76,7 +76,7 @@ class Backend(KeyValue):
     path = "/backend/"
 
     id: UUID
-    hostname: str
+    host: str
     port: int
     dataclay_id: UUID
 
@@ -88,7 +88,7 @@ class Backend(KeyValue):
     def from_proto(cls, proto):
         return cls(
             str_to_uuid(proto.id),
-            proto.hostname,
+            proto.host,
             proto.port,
             str_to_uuid(proto.dataclay_id),
         )
@@ -97,7 +97,7 @@ class Backend(KeyValue):
     def get_proto(self):
         return common_pb2.Backend(
             id=uuid_to_str(self.id),
-            hostname=self.hostname,
+            host=self.host,
             port=self.port,
             dataclay_id=uuid_to_str(self.dataclay_id),
         )
