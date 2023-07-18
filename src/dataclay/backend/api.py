@@ -13,6 +13,7 @@ from dataclay import utils
 from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
 from dataclay.exceptions import *
+from dataclay.metadata.kvdata import Session
 from dataclay.runtime import UUIDLock, set_runtime
 from dataclay.runtime.backend import BackendRuntime
 from dataclay.utils.pickle import RecursiveLocalPickler, RecursiveLocalUnpickler
@@ -146,6 +147,12 @@ class BackendAPI:
     def new_object_version(self, object_id):
         """Creates a new version of the object with ID provided"""
         instance = self.runtime.get_object_by_id(object_id)
+
+        # HACK: The dataset is needed to create a new version because
+        # a new dataclay object is created and registered instantly in __new__
+        # dataset_name = instance._dc_dataset_name
+        # self.runtime.session = Session(None, None, dataset_name)
+
         new_version = self.runtime.make_new_version(instance)
         return new_version.getID()
 

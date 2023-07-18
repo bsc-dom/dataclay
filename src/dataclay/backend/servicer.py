@@ -127,7 +127,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     def NewObjectVersion(self, request, context):
         try:
             result = self.backend.new_object_version(UUID(request.object_id))
-            return backend_pb2.NewObjectVersionResponse(object_full_id=result)
+            return backend_pb2.NewObjectVersionResponse(object_info=result)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)

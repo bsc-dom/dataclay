@@ -276,14 +276,19 @@ class DataClayRuntime(ABC):
             serialized_properties = backend_client.get_object_properties(instance._dc_id)
             return pickle.loads(serialized_properties)
 
-    def make_object_copy(self, instance, recursive=None):
-        # It cannot be called if instnace is not persistent, because
+    def make_object_copy(self, instance, recursive=None, is_proxy=False):
+        # It cannot be called if instance is not persistent, because
         # the deepcopy from the class will try to serialize the instance
         # and it will be made persistent in the process
         # A solution could be to override the __deepcopy__, but I don't see the need...
         object_properties = copy.deepcopy(self.get_object_properties(instance))
-        # object_copy = instance.__class__.__new__(__class__)
-        object_copy = DataClayObject.__new__(instance.__class__)
+        if is_proxy:
+            # This is to avoid the object get persistent automatically when called in a backend
+            # Needed for new_version
+            object_copy = instance.__class__.new_proxy_object()
+            self.add_to_heap(object_copy)
+        else:
+            object_copy = DataClayObject.__new__(instance.__class__)
         vars(object_copy).update(object_properties)
         return object_copy
 
@@ -300,7 +305,7 @@ class DataClayRuntime(ABC):
             backend_client.update_object_properties(instance._dc_id, pickle.dumps(new_properties))
 
     def make_new_version(self, instance, backend_id=None):
-        new_version = self.make_object_copy(instance)
+        new_version = self.make_object_copy(instance, is_proxy=True)
 
         if instance._dc_original_object_id is None:
             new_version._dc_original_object_id = instance._dc_id
@@ -313,9 +318,7 @@ class DataClayRuntime(ABC):
 
         new_version._dc_dataset_name = instance._dc_dataset_name
 
-        if not new_version._dc_is_registered:
-            self.make_persistent(new_version, backend_id=backend_id)
-
+        self.make_persistent(new_version, backend_id=backend_id)
         return new_version
 
     def consolidate_version(self, instance):
@@ -370,7 +373,7 @@ class DataClayRuntime(ABC):
                 self.inmemory_objects[new_object_id] = instance
                 self.metadata_service.change_object_id(old_object_id, new_object_id)
 
-                # The only use case for change_object_id is to consolidate, therefore:
+                # HACK: The only use case for change_object_id is to consolidate, therefore:
                 instance._dc_original_object_id = None
                 instance._dc_versions_object_ids = []
                 self.metadata_service.register_object(instance.metadata)
