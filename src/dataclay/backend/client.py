@@ -157,7 +157,7 @@ class BackendClient:
         )
         response = self.stub.NewObjectVersion(request)
         return response.object_info
-    
+
     @grpc_error_handler
     def consolidate_object_version(self, object_id: UUID):
         request = backend_pb2.ConsolidateObjectVersionRequest(
