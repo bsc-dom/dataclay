@@ -255,7 +255,7 @@ class DataClayRuntime(ABC):
                     new_backend_clients[id] = self.backend_clients[id]
                     continue
 
-            backend_client = BackendClient(info.hostname, info.port)
+            backend_client = BackendClient(info.host, info.port)
             if backend_client.is_ready(settings.TIMEOUT_CHANNEL_READY):
                 new_backend_clients[id] = backend_client
             else:
@@ -276,14 +276,19 @@ class DataClayRuntime(ABC):
             serialized_properties = backend_client.get_object_properties(instance._dc_id)
             return pickle.loads(serialized_properties)
 
-    def make_object_copy(self, instance, recursive=None):
-        # It cannot be called if instnace is not persistent, because
+    def make_object_copy(self, instance, recursive=None, is_proxy=False):
+        # It cannot be called if instance is not persistent, because
         # the deepcopy from the class will try to serialize the instance
         # and it will be made persistent in the process
         # A solution could be to override the __deepcopy__, but I don't see the need...
         object_properties = copy.deepcopy(self.get_object_properties(instance))
-        # object_copy = instance.__class__.__new__(__class__)
-        object_copy = DataClayObject.__new__(instance.__class__)
+        if is_proxy:
+            # This is to avoid the object get persistent automatically when called in a backend
+            # Needed for new_version
+            object_copy = instance.__class__.new_proxy_object()
+            self.add_to_heap(object_copy)
+        else:
+            object_copy = DataClayObject.__new__(instance.__class__)
         vars(object_copy).update(object_properties)
         return object_copy
 
@@ -300,7 +305,7 @@ class DataClayRuntime(ABC):
             backend_client.update_object_properties(instance._dc_id, pickle.dumps(new_properties))
 
     def make_new_version(self, instance, backend_id=None):
-        new_version = self.make_object_copy(instance)
+        new_version = self.make_object_copy(instance, is_proxy=True)
 
         if instance._dc_original_object_id is None:
             new_version._dc_original_object_id = instance._dc_id
@@ -313,9 +318,7 @@ class DataClayRuntime(ABC):
 
         new_version._dc_dataset_name = instance._dc_dataset_name
 
-        if not new_version._dc_is_registered:
-            self.make_persistent(new_version, backend_id=backend_id)
-
+        self.make_persistent(new_version, backend_id=backend_id)
         return new_version
 
     def consolidate_version(self, instance):
@@ -370,7 +373,7 @@ class DataClayRuntime(ABC):
                 self.inmemory_objects[new_object_id] = instance
                 self.metadata_service.change_object_id(old_object_id, new_object_id)
 
-                # The only use case for change_object_id is to consolidate, therefore:
+                # HACK: The only use case for change_object_id is to consolidate, therefore:
                 instance._dc_original_object_id = None
                 instance._dc_versions_object_ids = []
                 self.metadata_service.register_object(instance.metadata)
@@ -406,14 +409,14 @@ class DataClayRuntime(ABC):
 
     # TODO: Change name to something like get_other_backend...
     def prepare_for_new_replica_version_consolidate(
-        self, object_id, hint, backend_id, backend_hostname, different_location
+        self, object_id, hint, backend_id, backend_host, different_location
     ):
         """Helper function to prepare information for new replica - version - consolidate algorithms
 
         Args:
             object_id: id of the object
             backend_id: Destination backend ID to get information from (can be none)
-            backend_hostname: Destination hostname to get information from (can be null)
+            backend_host: Destination host to get information from (can be null)
             different_location:
                 If true indicates that destination backend
                 should be different to any location of the object
@@ -433,8 +436,8 @@ class DataClayRuntime(ABC):
         dest_backend_id = backend_id
         dest_backend = None
         if dest_backend_id is None:
-            if backend_hostname is not None:
-                exec_envs_at_host = self.get_all_execution_environments_at_host(backend_hostname)
+            if backend_host is not None:
+                exec_envs_at_host = self.get_all_execution_environments_at_host(backend_host)
                 if len(exec_envs_at_host) > 0:
                     dest_backend = list(exec_envs_at_host.values())[0]
                     dest_backend_id = dest_backend.id
@@ -478,16 +481,16 @@ class DataClayRuntime(ABC):
             ee_client = self.backend_clients[hint]
         except KeyError:
             backend_to_call = self.get_execution_environment_info(hint)
-            ee_client = BackendClient(backend_to_call.hostname, backend_to_call.port)
+            ee_client = BackendClient(backend_to_call.host, backend_to_call.port)
             self.backend_clients[hint] = ee_client
         return ee_client, dest_backend
 
-    def new_replica(self, object_id, hint, backend_id, backend_hostname, recursive):
+    def new_replica(self, object_id, hint, backend_id, backend_host, recursive):
         logger.debug(f"Starting new replica of {object_id}")
         # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
 
         ee_client, dest_backend = self.prepare_for_new_replica_version_consolidate(
-            object_id, hint, backend_id, backend_hostname, True
+            object_id, hint, backend_id, backend_host, True
         )
         replicated_object_ids = ee_client.new_replica(
             self.session.id, object_id, dest_backend.id, recursive
@@ -539,13 +542,13 @@ class DataClayRuntime(ABC):
     def federate_all_objects(self, dest_dataclay_id):
         raise NotImplementedError()
 
-    def register_external_dataclay(self, id, hostname, port):
+    def register_external_dataclay(self, id, host, port):
         """Register external dataClay for federation
         Args:
-            hostname: external dataClay host name
+            host: external dataClay host name
             port: external dataClay port
         """
-        self.metadata_service.autoregister_mds(id, hostname, port)
+        self.metadata_service.autoregister_mds(id, host, port)
 
     ###########
     # Tracing #

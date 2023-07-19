@@ -160,13 +160,13 @@ class Client:
 ##########
 
 
-def register_dataclay(id, hostname, port):
+def register_dataclay(id, host, port):
     """Register external dataClay for federation
     Args:
-        hostname: external dataClay host name
+        host: external dataClay host name
         port: external dataClay port
     """
-    return get_runtime().register_external_dataclay(id, hostname, port)
+    return get_runtime().register_external_dataclay(id, host, port)
 
 
 def unfederate(ext_dataclay_id=None):

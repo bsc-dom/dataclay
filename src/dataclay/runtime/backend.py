@@ -121,6 +121,8 @@ class BackendRuntime(DataClayRuntime):
             self.metadata_service.register_object(instance.metadata)
             instance._dc_is_registered = True
 
+        # TODO: When backend is different
+
         return instance._dc_backend_id
 
     # Shutdown
