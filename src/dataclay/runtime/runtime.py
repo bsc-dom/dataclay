@@ -1,6 +1,7 @@
 """ Class description goes here. """
 from __future__ import annotations
 
+import collections
 import copy
 import importlib
 import io
@@ -18,7 +19,11 @@ from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.runtime import UUIDLock
-from dataclay.utils.pickle import RecursiveLocalPickler, RecursiveLocalUnpickler
+from dataclay.utils.pickle import (
+    RecursiveLocalPickler,
+    RecursiveLocalUnpickler,
+    recursive_local_pickler,
+)
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -32,9 +37,11 @@ logger = logging.getLogger(__name__)
 
 
 class DataClayRuntime(ABC):
-    def __init__(self, metadata_service: MetadataAPI | MetadataClient):
+    def __init__(self, metadata_service: MetadataAPI | MetadataClient, backend_id=None):
         self.backend_clients: dict[UUID, BackendClient] = dict()
-        self._dataclay_id = None
+        # self._dataclay_id = None
+        self.backend_id = backend_id
+        self.is_backend = bool(backend_id)
         self.metadata_service = metadata_service
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
@@ -50,11 +57,6 @@ class DataClayRuntime(ABC):
     def session(self):
         pass
 
-    @property
-    @abstractmethod
-    def is_backend(self):
-        pass
-
     # Common runtime API
 
     @abstractmethod
@@ -68,46 +70,9 @@ class DataClayRuntime(ABC):
     def load_object_from_db(self, instance: DataClayObject):
         pass
 
-    def move_object(self, instance, backend_id, recursive):
-        if not instance._dc_is_registered:
-            raise ObjectNotRegisteredException(instance._dc_id)
-
-        if instance._dc_is_local:
-            if backend_id == instance._dc_backend_id:
-                return
-            else:
-                with UUIDLock(instance._dc_id):
-                    # NOTE: The object should be loaded to get the _dc_properties
-                    # TODO: Maybe send directly the pickled file if not loaded?
-                    self.load_object_from_db(instance)
-
-                    f = io.BytesIO()
-                    serialized_local_dicts = []
-                    visited_objects = {instance._dc_id: instance}
-
-                    RecursiveLocalPickler(
-                        f, visited_objects, serialized_local_dicts, recursive
-                    ).dump(instance._dc_dict)
-                    serialized_local_dicts.append(f.getvalue())
-                    backend_client = self.get_backend_client(backend_id)
-                    backend_client.make_persistent(serialized_local_dicts)
-
-                    # TODO: Remove pickle file to reduce space
-
-                    for dc_object in visited_objects.values():
-                        self.heap_manager.release_from_heap(dc_object)
-                        dc_object._clean_dc_properties()
-                        dc_object._dc_is_local = False
-                        dc_object._dc_is_loaded = False
-                        dc_object._dc_backend_id = backend_id
-        else:
-            backend_client = self.get_backend_client(instance._dc_backend_id)
-            backend_client.move_object(instance._dc_id, backend_id, recursive)
-            instance._dc_backend_id = backend_id
-
-    ##############
-    # Get Object #
-    ##############
+    ##################
+    # Object methods #
+    ##################
 
     # TODO: Check if is taking the metrics from KeyError, if not put inside
     @utils.metrics.dataclay_inmemory_misses_total.count_exceptions(KeyError)
@@ -141,10 +106,7 @@ class DataClayRuntime(ABC):
                     proxy_object = cls.new_proxy_object()
                     proxy_object.metadata = object_md
 
-                    if (
-                        self.is_backend
-                        and proxy_object._dc_backend_id == settings.DATACLAY_BACKEND_ID
-                    ):
+                    if proxy_object._dc_backend_id == self.backend_id:
                         proxy_object._dc_is_local = True
                     else:
                         proxy_object._dc_is_local = False
@@ -166,6 +128,76 @@ class DataClayRuntime(ABC):
         object_md = self.metadata_service.get_object_md_by_alias(alias, dataset_name)
 
         return self.get_object_by_id(object_md.id, object_md)
+
+    def get_object_properties(self, instance):
+        if instance._dc_is_local:
+            self.load_object_from_db(instance)
+            return instance._dc_properties
+        else:
+            backend_client = self.get_backend_client(instance._dc_backend_id)
+            serialized_properties = backend_client.get_object_properties(instance._dc_id)
+            return pickle.loads(serialized_properties)
+
+    def make_object_copy(self, instance, recursive=None, is_proxy=False):
+        # It cannot be called if instance is not persistent, because
+        # the deepcopy from the class will try to serialize the instance
+        # and it will be made persistent in the process
+        # A solution could be to override the __deepcopy__, but I don't see the need...
+        object_properties = copy.deepcopy(self.get_object_properties(instance))
+        if is_proxy:
+            # This is to avoid the object get persistent automatically when called in a backend
+            # Needed for new_version
+            object_copy = instance.__class__.new_proxy_object()
+            self.add_to_heap(object_copy)
+        else:
+            object_copy = DataClayObject.__new__(instance.__class__)
+        vars(object_copy).update(object_properties)
+        return object_copy
+
+    def proxify_object(self, instance, new_object_id):
+        if instance._dc_is_local:
+            with UUIDLock(instance._dc_id):
+                self.load_object_from_db(instance)
+                instance._clean_dc_properties()
+                instance._dc_is_loaded = False
+                instance._dc_is_local = False
+                self.heap_manager.release_from_heap(instance)
+                # NOTE: There is no need to delete, and it may be good
+                # in case that an object was serialized to disk before a
+                # consolidation. However, it will be deleted also since
+                # inmemory_objects is a weakref dict.
+                # del self.inmemory_objects[instance._dc_id]
+                self.metadata_service.delete_object(instance._dc_id)
+        else:
+            backend_client = self.get_backend_client(instance._dc_backend_id)
+            backend_client.proxify_object(instance._dc_id, new_object_id)
+
+        instance._dc_id = new_object_id
+
+    def change_object_id(self, instance, new_object_id):
+        old_object_id = instance._dc_id
+
+        if instance._dc_is_local:
+            with UUIDLock(instance._dc_id):
+                self.load_object_from_db(instance)
+                # We need to update the loaded_objects with the new object_id key
+                self.heap_manager.release_from_heap(instance)
+                instance._dc_id = new_object_id
+                self.heap_manager.retain_in_heap(instance)
+                # Also update the inmemory_objects with the new object_id key
+                self.inmemory_objects[new_object_id] = instance
+                self.metadata_service.change_object_id(old_object_id, new_object_id)
+
+                # HACK: The only use case for change_object_id is to consolidate, therefore:
+                instance._dc_original_object_id = None
+                instance._dc_versions_object_ids = []
+                self.metadata_service.register_object(instance.metadata)
+        else:
+            backend_client = self.get_backend_client(instance._dc_backend_id)
+            backend_client.change_object_id(instance._dc_id, new_object_id)
+            instance._dc_id = new_object_id
+
+        del self.inmemory_objects[old_object_id]
 
     ##################
     # Active Methods #
@@ -203,6 +235,7 @@ class DataClayRuntime(ABC):
 
                     if isinstance(response, ObjectWithWrongBackendId):
                         instance._dc_backend_id = response.backend_id
+                        instance._dc_replica_backend_ids = response.replica_backend_ids
                         continue
 
                     if is_exception:
@@ -267,30 +300,64 @@ class DataClayRuntime(ABC):
     # Store Methods #
     #################
 
-    def get_object_properties(self, instance):
-        if instance._dc_is_local:
-            self.load_object_from_db(instance)
-            return instance._dc_properties
-        else:
-            backend_client = self.get_backend_client(instance._dc_backend_id)
-            serialized_properties = backend_client.get_object_properties(instance._dc_id)
-            return pickle.loads(serialized_properties)
+    def move_objects(
+        self,
+        instances: list[DataClayObject],
+        backend_id: UUID,
+        recursive: bool = False,
+        remotes: bool = True,
+    ):
+        visited_local_objects = {}
+        visited_remote_objects = {}
+        serialized_local_dict = []
 
-    def make_object_copy(self, instance, recursive=None, is_proxy=False):
-        # It cannot be called if instance is not persistent, because
-        # the deepcopy from the class will try to serialize the instance
-        # and it will be made persistent in the process
-        # A solution could be to override the __deepcopy__, but I don't see the need...
-        object_properties = copy.deepcopy(self.get_object_properties(instance))
-        if is_proxy:
-            # This is to avoid the object get persistent automatically when called in a backend
-            # Needed for new_version
-            object_copy = instance.__class__.new_proxy_object()
-            self.add_to_heap(object_copy)
-        else:
-            object_copy = DataClayObject.__new__(instance.__class__)
-        vars(object_copy).update(object_properties)
-        return object_copy
+        for instance in instances:
+            if instance._dc_is_local:
+                if instance._dc_id in visited_local_objects:
+                    continue
+                self.load_object_from_db(instance)
+                if recursive:
+                    if remotes:
+                        dicts_bytes = recursive_local_pickler(
+                            instance, visited_local_objects, visited_remote_objects
+                        )
+                    else:
+                        dicts_bytes = recursive_local_pickler(instance, visited_local_objects)
+
+                    serialized_local_dict.extend(dicts_bytes)
+                else:
+                    dict_bytes = pickle.dumps(instance._dc_dict)
+                    serialized_local_dict.append(dict_bytes)
+            else:
+                visited_remote_objects[instance._dc_id] = instance
+
+        # Check that the destination backend is not this
+        if backend_id != self.backend_id:
+            backend_client = self.get_backend_client(backend_id)
+            backend_client.send_objects(serialized_local_dict, is_replica=False)
+
+            for local_object in visited_local_objects.values():
+                # TODO: Remove pickle file to reduce space
+                self.heap_manager.release_from_heap(local_object)
+                local_object._clean_dc_properties()
+                local_object._dc_is_local = False
+                local_object._dc_is_loaded = False
+                local_object._dc_backend_id = backend_id
+
+        # Get the backend with most remote references.
+        counter = collections.Counter()
+        for remote_object in visited_remote_objects.values():
+            counter[remote_object._dc_backend_id] += 1
+            remote_object._dc_backend_id = backend_id
+
+        assert counter[self.backend_id] == 0
+
+        if len(counter) > 0:
+            remote_backend_id = counter.most_common(1)[0][0]
+            remote_backend_client = self.get_backend_client(remote_backend_id)
+            remote_backend_client.move_objects(
+                visited_remote_objects.keys(), backend_id, recursive, remotes
+            )
 
     def replace_object_properties(self, instance, new_instance):
         new_object_properties = self.get_object_properties(new_instance)
@@ -339,50 +406,49 @@ class DataClayRuntime(ABC):
         instance._dc_original_object_id = None
         instance._dc_versions_object_ids = []
 
-    def proxify_object(self, instance, new_object_id):
-        if instance._dc_is_local:
-            with UUIDLock(instance._dc_id):
-                self.load_object_from_db(instance)
-                instance._clean_dc_properties()
-                instance._dc_is_loaded = False
-                instance._dc_is_local = False
-                self.heap_manager.release_from_heap(instance)
-                # NOTE: There is no need to delete, and it may be good
-                # in case that an object was serialized to disk before a
-                # consolidation. However, it will be deleted also since
-                # inmemory_objects is a weakref dict.
-                # del self.inmemory_objects[instance._dc_id]
-                self.metadata_service.delete_object(instance._dc_id)
-        else:
-            backend_client = self.get_backend_client(instance._dc_backend_id)
-            backend_client.proxify_object(instance._dc_id, new_object_id)
+    ############
+    # Replicas #
+    ############
 
-        instance._dc_id = new_object_id
+    def new_replica(self, instance, backend_id, recursive):
+        logger.debug(f"Starting new replica of {instance._dc_id}")
 
-    def change_object_id(self, instance, new_object_id):
-        old_object_id = instance._dc_id
+        # if
 
-        if instance._dc_is_local:
-            with UUIDLock(instance._dc_id):
-                self.load_object_from_db(instance)
-                # We need to update the loaded_objects with the new object_id key
-                self.heap_manager.release_from_heap(instance)
-                instance._dc_id = new_object_id
-                self.heap_manager.retain_in_heap(instance)
-                # Also update the inmemory_objects with the new object_id key
-                self.inmemory_objects[new_object_id] = instance
-                self.metadata_service.change_object_id(old_object_id, new_object_id)
+        if self.is_backend and backend_id == self.backend_id:
+            if instance._dc_is_local:
+                logger.warning(
+                    f"Trying to replicate the object {instance._dc_id} to owner backend {self.backend_id}"
+                )
+                return
+            else:
+                object_properties = self.get_object_properties(instance)
+                vars(instance).update(object_properties)
+                instance._dc_is_local = True
+                instance._dc_is_loaded = True
 
-                # HACK: The only use case for change_object_id is to consolidate, therefore:
-                instance._dc_original_object_id = None
-                instance._dc_versions_object_ids = []
-                self.metadata_service.register_object(instance.metadata)
-        else:
-            backend_client = self.get_backend_client(instance._dc_backend_id)
-            backend_client.change_object_id(instance._dc_id, new_object_id)
-            instance._dc_id = new_object_id
+                # instance._dc_replica_backend_ids.
 
-        del self.inmemory_objects[old_object_id]
+        elif backend_id != self.backend_id:
+            backend_client = self.get_backend_client(backend_id)
+            backend_client.new_replica(instance._dc_id, backend_id, recursive)
+
+        # ee_client, dest_backend = self.prepare_for_new_replica_version_consolidate(
+        #     object_id, hint, backend_id, backend_host, True
+        # )
+        # replicated_object_ids = ee_client.new_replica(
+        #     self.session.id, object_id, dest_backend.id, recursive
+        # )
+        # logger.debug(f"Replicated: {replicated_object_ids} into {dest_backend.id}")
+        # # Update replicated objects metadata
+        # for replicated_object_id in replicated_object_ids:
+        #     # NOTE: If it fails, use object_id instead of replicated_object_id
+        #     instance = self.inmemory_objects[replicated_object_id]
+        #     instance._add_replica_location(dest_backend.id)
+        #     if instance.get_origin_location() is None:
+        #         # NOTE: at client side there cannot be two replicas of same oid
+        #         instance.set_origin_location(hint)
+        # return dest_backend.id
 
     #####################
     # Garbage collector #
@@ -403,9 +469,7 @@ class DataClayRuntime(ABC):
         """
         pass
 
-    ############
-    # Replicas #
-    ############
+    ######################
 
     # TODO: Change name to something like get_other_backend...
     def prepare_for_new_replica_version_consolidate(
@@ -484,27 +548,6 @@ class DataClayRuntime(ABC):
             ee_client = BackendClient(backend_to_call.host, backend_to_call.port)
             self.backend_clients[hint] = ee_client
         return ee_client, dest_backend
-
-    def new_replica(self, object_id, hint, backend_id, backend_host, recursive):
-        logger.debug(f"Starting new replica of {object_id}")
-        # IMPORTANT NOTE: pyclay is not able to replicate/versionate/consolidate Java or other language objects
-
-        ee_client, dest_backend = self.prepare_for_new_replica_version_consolidate(
-            object_id, hint, backend_id, backend_host, True
-        )
-        replicated_object_ids = ee_client.new_replica(
-            self.session.id, object_id, dest_backend.id, recursive
-        )
-        logger.debug(f"Replicated: {replicated_object_ids} into {dest_backend.id}")
-        # Update replicated objects metadata
-        for replicated_object_id in replicated_object_ids:
-            # NOTE: If it fails, use object_id instead of replicated_object_id
-            instance = self.inmemory_objects[replicated_object_id]
-            instance._add_replica_location(dest_backend.id)
-            if instance.get_origin_location() is None:
-                # NOTE: at client side there cannot be two replicas of same oid
-                instance.set_origin_location(hint)
-        return dest_backend.id
 
     ##############
     # Federation #

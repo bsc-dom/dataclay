@@ -6,6 +6,8 @@ class UUIDEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, UUID):
             return str(obj)
+        elif isinstance(obj, set):
+            return list(obj)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
 

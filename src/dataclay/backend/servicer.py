@@ -72,6 +72,16 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
         self.backend = backend
         self.stop_event = stop_event
 
+    def SendObjects(self, request, context):
+        try:
+            self.backend.send_objects(list(request.dict_bytes), request.is_replica)
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+        return Empty()
+
     def MakePersistent(self, request, context):
         try:
             self.backend.make_persistent(list(request.pickled_obj))
@@ -164,12 +174,13 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def MoveObject(self, request, context):
+    def MoveObjects(self, request, context):
         try:
-            self.backend.move_object(
-                UUID(request.object_id),
+            self.backend.move_objects(
+                list(map(UUID, request.object_ids)),
                 UUID(request.backend_id),
                 request.recursive,
+                request.remotes,
             )
             return Empty()
         except Exception as e:

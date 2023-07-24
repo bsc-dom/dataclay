@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 class ClientRuntime(DataClayRuntime):
     session = None
-    is_backend = False
 
     def __init__(self, metadata_service_host, metadata_service_port):
         # Initialize parent
@@ -88,6 +87,8 @@ class ClientRuntime(DataClayRuntime):
             dc_object._dc_is_local = False
             dc_object._dc_is_loaded = False
             dc_object._dc_backend_id = backend_id
+
+            self.add_to_heap(dc_object)
 
         return instance._dc_backend_id
 

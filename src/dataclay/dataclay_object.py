@@ -159,12 +159,13 @@ class DataClayObject:
     _dc_class_name: str
     _dc_is_registered: bool
     _dc_backend_id: UUID
-    _dc_replica_backend_ids: list[UUID]
+    _dc_replica_backend_ids: set[UUID]
     _dc_is_read_only: bool
     _dc_is_loaded: bool
     _dc_is_local: bool
     _dc_original_object_id: UUID
     _dc_versions_object_ids: list[UUID]
+    _dc_is_replica: bool
     # _xdc_active_counter: ReadWriteLock # Commented to not break Pickle...
 
     def __init_subclass__(cls) -> None:
@@ -177,9 +178,8 @@ class DataClayObject:
         logger.debug(f"Creating new {cls.__name__} instance with args={args}, kwargs={kwargs}")
         obj = super().__new__(cls)
         obj._set_default_fields()
-        get_runtime().add_to_heap(obj)
 
-        if get_runtime().is_backend:
+        if get_runtime() and get_runtime().is_backend:
             obj.make_persistent()
 
         return obj
@@ -192,12 +192,14 @@ class DataClayObject:
         return obj
 
     def _set_default_fields(self):
-        # Metadata fields
+        # Metadata fields (immutable)
         self._dc_id = uuid.uuid4()
         self._dc_dataset_name = None
         self._dc_class_name = self.__class__.__module__ + "." + self.__class__.__name__
+
+        # Metadata fields (mutable)
         self._dc_backend_id = None
-        self._dc_replica_backend_ids = []
+        self._dc_replica_backend_ids = set()
         self._dc_is_read_only = False  # Remove it?
         self._dc_original_object_id = None
         self._dc_versions_object_ids = []
@@ -207,6 +209,7 @@ class DataClayObject:
         self._dc_is_loaded = True
         self._dc_is_registered = False  # cannot be unset (unregistered)
         self._xdc_active_counter = ReadWriteLock()
+        self._dc_is_replica = False
 
     @property
     def dataclay_id(self):
@@ -242,6 +245,11 @@ class DataClayObject:
     def _dc_properties(self):
         """Returns __dict__ with only _dc_property_ attributes"""
         return {k: v for k, v in vars(self).items() if k.startswith(DC_PROPERTY_PREFIX)}
+
+    @property
+    def _dc_all_backend_ids(self):
+        """Returns __dict__ with only _dc_property_ attributes"""
+        return self._dc_replica_backend_ids | {self._dc_backend_id}
 
     @property
     def metadata(self):
@@ -384,7 +392,7 @@ class DataClayObject:
         return backends
 
     @tracer.start_as_current_span("move")
-    def move(self, backend_id: UUID, recursive: bool = False):
+    def move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
         """Moves the object to the specified backend.
 
         Args:
@@ -396,7 +404,7 @@ class DataClayObject:
             KeyError: If the backend_id is not registered in dataClay.
             ObjectNotRegisteredError: If the object is not registered in dataClay.
         """
-        get_runtime().move_object(self, backend_id, recursive)
+        get_runtime().move_objects([self], backend_id, recursive, remotes)
 
     ########################
     # Object Store Methods #
@@ -647,7 +655,7 @@ class DataClayObject:
         if not self._dc_is_registered or not other._dc_is_registered:
             return False
 
-        return self._dc_id and other._dc_id and self._dc_id == other._dc_id
+        return self._dc_id == other._dc_id
 
     # FIXME: Think another solution, the user may want to override the method
     def __hash__(self):

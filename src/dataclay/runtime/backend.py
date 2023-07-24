@@ -17,12 +17,10 @@ logger = logging.getLogger(__name__)
 
 
 class BackendRuntime(DataClayRuntime):
-    is_backend = True
-
-    def __init__(self, kv_host, kv_port):
+    def __init__(self, kv_host, kv_port, backend_id):
         # Initialize parent
         metadata_service = MetadataAPI(kv_host, kv_port)
-        super().__init__(metadata_service)
+        super().__init__(metadata_service, backend_id)
 
         self.heap_manager = HeapManager()
         # start heap manager. Invokes run() in a separate thread
@@ -120,6 +118,8 @@ class BackendRuntime(DataClayRuntime):
             instance._dc_backend_id = settings.DATACLAY_BACKEND_ID
             self.metadata_service.register_object(instance.metadata)
             instance._dc_is_registered = True
+
+        self.add_to_heap(instance)
 
         # TODO: When backend is different
 

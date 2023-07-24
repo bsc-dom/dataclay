@@ -111,7 +111,7 @@ class ObjectMetadata(KeyValue):
     dataset_name: str = None
     class_name: str = None
     backend_id: UUID = None
-    replica_backend_ids: list[UUID] = None
+    replica_backend_ids: set() = None
     is_read_only: bool = False
     original_object_id: UUID = None
     versions_object_ids: list[UUID] = None
@@ -127,7 +127,7 @@ class ObjectMetadata(KeyValue):
             proto.dataset_name,
             proto.class_name,
             str_to_uuid(proto.backend_id),
-            list(map(str_to_uuid, proto.replica_backend_ids)),
+            set(map(str_to_uuid, proto.replica_backend_ids)),
             proto.is_read_only,
             str_to_uuid(proto.original_object_id),
             list(map(str_to_uuid, proto.versions_object_ids)),

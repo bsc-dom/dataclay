@@ -15,8 +15,8 @@ def test_move_object(client):
 
 
 def test_recursive_move(client):
-    """When moving recursively an object to new backend, all local references
-    from the same backend should also be moved (check gc)"""
+    """When moving recursively an object to new backend, all references
+    should also be moved (check gc)"""
     backend_ids = list(client.get_backends())
 
     person_1 = Person("Marc", 24)
@@ -27,11 +27,11 @@ def test_recursive_move(client):
     family.make_persistent(backend_id=backend_ids[0])
     family.move(backend_ids[2], recursive=True)
 
-    # person_1 should change backend, but person_2 should stay the same
+    # person_1 and person_2 should change
     person_1.name  # forcing update of backend_id
     assert person_1._dc_backend_id == backend_ids[2]
     person_2.name  # forcing update of backend_id
-    assert person_2._dc_backend_id == backend_ids[1]
+    assert person_2._dc_backend_id == backend_ids[2]
 
 
 def test_not_recursive_move(client):

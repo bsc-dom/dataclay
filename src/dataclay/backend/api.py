@@ -34,11 +34,11 @@ class BackendAPI:
         self.port = port
 
         # Initialize runtime
-        self.runtime = BackendRuntime(kv_host, kv_port)
+        self.backend_id = settings.DATACLAY_BACKEND_ID
+        self.runtime = BackendRuntime(kv_host, kv_port, settings.DATACLAY_BACKEND_ID)
         set_runtime(self.runtime)
 
         # UNDONE: Do not store EE information. If restarted, create new EE uuid.
-        self.backend_id = settings.DATACLAY_BACKEND_ID
         logger.info(f"Initialized Backend with ID: {self.backend_id}")
 
     def is_ready(self, timeout=None, pause=0.5):
@@ -58,6 +58,29 @@ class BackendAPI:
         return False
 
     # Object Methods
+    def send_objects(self, serialized_dicts: list[bytes], is_replica: bool):
+        for serial_dict in serialized_dicts:
+            object_dict = pickle.loads(serial_dict)
+
+            instance = self.runtime.get_object_by_id(object_dict["_dc_id"])
+            assert not instance._dc_is_local
+
+            with UUIDLock(instance._dc_id):
+                vars(instance).update(object_dict)
+                instance._dc_is_local = True
+                instance._dc_is_loaded = True
+                self.runtime.heap_manager.retain_in_heap(instance)
+
+                if is_replica:
+                    instance._dc_is_replica = True
+                    instance._dc_replica_backend_ids.add(self.backend_id)
+
+                else:
+                    # If not is_replica then its a move
+                    instance._dc_backend_id = self.backend_id
+
+                # ¿Should be always updated here, or from the calling backend?
+                self.runtime.metadata_service.register_object(instance.metadata)
 
     @tracer.start_as_current_span("make_persistent")
     def make_persistent(self, serialized_dicts: list[bytes]):
@@ -69,6 +92,7 @@ class BackendAPI:
             object_id = object_dict["_dc_id"]
 
             try:
+                # In case it was already unserialized by a reference
                 proxy_object = unserialized_objects[object_id]
             except KeyError:
                 cls: type[DataClayObject] = utils.get_class_by_name(object_dict["_dc_class_name"])
@@ -83,6 +107,9 @@ class BackendAPI:
         assert len(serialized_dicts) == len(unserialized_objects)
 
         for proxy_object in unserialized_objects.values():
+            # TODO: It could be that an object is moved using make_persistent,
+            # and that the new backend has already a replica of that object,
+            # (?? or that the object moved is a replica?? [i thinkg not possible])
             self.runtime.inmemory_objects[proxy_object._dc_id] = proxy_object
             self.runtime.heap_manager.retain_in_heap(proxy_object)
 
@@ -109,7 +136,14 @@ class BackendAPI:
             # we check to the metadata which is more reliable.
             object_md = self.runtime.metadata_service.get_object_md_by_id(object_id)
             instance._dc_backend_id = object_md.backend_id
-            return pickle.dumps(ObjectWithWrongBackendId(instance._dc_backend_id)), False
+            return (
+                pickle.dumps(
+                    ObjectWithWrongBackendId(
+                        instance._dc_backend_id, instance._dc_replica_backend_ids
+                    )
+                ),
+                False,
+            )
 
         args = pickle.loads(args)
         kwargs = pickle.loads(kwargs)
@@ -171,10 +205,11 @@ class BackendAPI:
         instance = self.runtime.get_object_by_id(object_id)
         self.runtime.change_object_id(instance, new_object_id)
 
-    @tracer.start_as_current_span("move_object")
-    def move_object(self, object_id, backend_id, recursive):
-        instance = self.runtime.get_object_by_id(object_id)
-        self.runtime.move_object(instance, backend_id, recursive)
+    @tracer.start_as_current_span("move_objects")
+    def move_objects(self, object_ids, backend_id, recursive, remotes):
+        instances = list(map(self.runtime.get_object_by_id, object_ids))
+        # instance = self.runtime.get_object_by_id(object_id)
+        self.runtime.move_objects(instances, backend_id, recursive, remotes)
 
     # Shutdown
 
@@ -223,27 +258,9 @@ class BackendAPI:
 
     # Replicas
 
-    def new_replica(self, session_id, object_id, dest_backend_id, recursive):
-        """Creates a new replica of the object with ID provided in the backend specified.
-
-        Args:
-            session_id: ID of session
-            object_id: ID of the object
-            dest_backend_id: destination backend id
-            recursive: Indicates if all sub-objects must be replicated as well.
-        """
-        logger.debug("----> Starting new replica of %s to backend %s", object_id, dest_backend_id)
-
-        serialized_objs = self.get_objects(
-            session_id, {object_id}, set(), recursive, dest_backend_id, 1
-        )
-        client_backend = self.runtime.get_backend_client(dest_backend_id)
-        client_backend.ds_store_objects(session_id, serialized_objs, False, None)
-        replicated_ids = set()
-        for serialized_obj in serialized_objs:
-            replicated_ids.add(serialized_obj.object_id)
-        logger.debug("<---- Finished new replica of %s", object_id)
-        return replicated_ids
+    def new_replica(self, object_id, backend_id, recursive):
+        instance = self.runtime.get_object_by_id(object_id)
+        self.runtime.new_replica(instance, backend_id, recursive)
 
     def synchronize(
         self, session_id, object_id, implementation_id, serialized_value, calling_backend_id=None

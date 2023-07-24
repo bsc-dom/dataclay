@@ -36,14 +36,14 @@ class BackendServiceStub(object):
                 request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.UpdateObjectPropertiesRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.MoveObject = channel.unary_unary(
-                '/dataclay.proto.backend.BackendService/MoveObject',
-                request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.MoveObjectRequest.SerializeToString,
+        self.MoveObjects = channel.unary_unary(
+                '/dataclay.proto.backend.BackendService/MoveObjects',
+                request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.MoveObjectsRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.SendObject = channel.unary_unary(
-                '/dataclay.proto.backend.BackendService/SendObject',
-                request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SendObjectRequest.SerializeToString,
+        self.SendObjects = channel.unary_unary(
+                '/dataclay.proto.backend.BackendService/SendObjects',
+                request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SendObjectsRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.NewObjectVersion = channel.unary_unary(
@@ -110,13 +110,13 @@ class BackendServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def MoveObject(self, request, context):
+    def MoveObjects(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def SendObject(self, request, context):
+    def SendObjects(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -187,14 +187,14 @@ def add_BackendServiceServicer_to_server(servicer, server):
                     request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.UpdateObjectPropertiesRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'MoveObject': grpc.unary_unary_rpc_method_handler(
-                    servicer.MoveObject,
-                    request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.MoveObjectRequest.FromString,
+            'MoveObjects': grpc.unary_unary_rpc_method_handler(
+                    servicer.MoveObjects,
+                    request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.MoveObjectsRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'SendObject': grpc.unary_unary_rpc_method_handler(
-                    servicer.SendObject,
-                    request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SendObjectRequest.FromString,
+            'SendObjects': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendObjects,
+                    request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SendObjectsRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'NewObjectVersion': grpc.unary_unary_rpc_method_handler(
@@ -311,7 +311,7 @@ class BackendService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def MoveObject(request,
+    def MoveObjects(request,
             target,
             options=(),
             channel_credentials=None,
@@ -321,14 +321,14 @@ class BackendService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/MoveObject',
-            dataclay_dot_proto_dot_backend_dot_backend__pb2.MoveObjectRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/MoveObjects',
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.MoveObjectsRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def SendObject(request,
+    def SendObjects(request,
             target,
             options=(),
             channel_credentials=None,
@@ -338,8 +338,8 @@ class BackendService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/SendObject',
-            dataclay_dot_proto_dot_backend_dot_backend__pb2.SendObjectRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/SendObjects',
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.SendObjectsRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

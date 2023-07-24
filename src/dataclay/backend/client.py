@@ -112,6 +112,11 @@ class BackendClient:
         self.stub = None
 
     @grpc_error_handler
+    def send_objects(self, dict_bytes: list[bytes], is_replica):
+        request = backend_pb2.SendObjectsRequest(dict_bytes=dict_bytes, is_replica=is_replica)
+        self.stub.SendObjects(request)
+
+    @grpc_error_handler
     def make_persistent(self, pickled_obj: list[bytes]):
         request = backend_pb2.MakePersistentRequest(pickled_obj=pickled_obj)
         self.stub.MakePersistent(request)
@@ -182,14 +187,16 @@ class BackendClient:
         self.stub.ChangeObjectId(request)
 
     @grpc_error_handler
-    def move_object(self, object_id: UUID, backend_id: UUID, recursive):
-        request = backend_pb2.MoveObjectRequest(
-            object_id=str(object_id),
+    def move_objects(
+        self, object_ids: list[UUID], backend_id: UUID, recursive: bool, remotes: bool
+    ):
+        request = backend_pb2.MoveObjectsRequest(
+            object_ids=list(map(str, object_ids)),
             backend_id=str(backend_id),
             recursive=recursive,
+            remotes=remotes,
         )
-
-        self.stub.MoveObject(request)
+        self.stub.MoveObjects(request)
 
     @grpc_error_handler
     def flush_all(self):
@@ -202,17 +209,6 @@ class BackendClient:
     @grpc_error_handler
     def drain(self):
         self.stub.Drain(Empty())
-
-    @grpc_error_handler
-    def send_object(self, session_id: UUID, object_id: UUID, serialized_properties):
-        request = backend_pb2.MoveObjectRequest(
-            session_id=str(session_id),
-            object_id=str(object_id),
-            backend_id=str(backend_id),
-            recursive=recursive,
-        )
-
-        self.stub.MoveObject(request)
 
     ###########
     # END NEW #

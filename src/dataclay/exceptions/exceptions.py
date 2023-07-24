@@ -166,8 +166,9 @@ class ObjectAlreadyExistError(ObjectError):
 
 
 class ObjectWithWrongBackendId(ObjectError):
-    def __init__(self, backend_id):
+    def __init__(self, backend_id, replica_backend_ids):
         self.backend_id = backend_id
+        self.replica_backend_ids = replica_backend_ids
 
     def __str__(self):
         return f"Object with wrong backend_id"
