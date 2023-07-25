@@ -72,9 +72,9 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
         self.backend = backend
         self.stop_event = stop_event
 
-    def SendObjects(self, request, context):
+    def RegisterObjects(self, request, context):
         try:
-            self.backend.send_objects(list(request.dict_bytes), request.is_replica)
+            self.backend.register_objects(list(request.dict_bytes), request.make_replica)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -174,11 +174,12 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def MoveObjects(self, request, context):
+    def SendObjects(self, request, context):
         try:
-            self.backend.move_objects(
+            self.backend.send_objects(
                 list(map(UUID, request.object_ids)),
                 UUID(request.backend_id),
+                request.make_replica,
                 request.recursive,
                 request.remotes,
             )

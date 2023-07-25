@@ -51,11 +51,6 @@ class MetadataServiceStub(object):
                 request_serializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.GetDataclayRequest.SerializeToString,
                 response_deserializer=dataclay_dot_proto_dot_common_dot_common__pb2.Dataclay.FromString,
                 )
-        self.RegisterObject = channel.unary_unary(
-                '/dataclay.proto.metadata.MetadataService/RegisterObject',
-                request_serializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.RegisterObjectRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                )
         self.GetObjectMDById = channel.unary_unary(
                 '/dataclay.proto.metadata.MetadataService/GetObjectMDById',
                 request_serializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.GetObjectMDByIdRequest.SerializeToString,
@@ -138,15 +133,9 @@ class MetadataServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def RegisterObject(self, request, context):
+    def GetObjectMDById(self, request, context):
         """Object Metadata
         """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def GetObjectMDById(self, request, context):
-        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -219,11 +208,6 @@ def add_MetadataServiceServicer_to_server(servicer, server):
                     servicer.GetDataclay,
                     request_deserializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.GetDataclayRequest.FromString,
                     response_serializer=dataclay_dot_proto_dot_common_dot_common__pb2.Dataclay.SerializeToString,
-            ),
-            'RegisterObject': grpc.unary_unary_rpc_method_handler(
-                    servicer.RegisterObject,
-                    request_deserializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.RegisterObjectRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'GetObjectMDById': grpc.unary_unary_rpc_method_handler(
                     servicer.GetObjectMDById,
@@ -381,23 +365,6 @@ class MetadataService(object):
         return grpc.experimental.unary_unary(request, target, '/dataclay.proto.metadata.MetadataService/GetDataclay',
             dataclay_dot_proto_dot_metadata_dot_metadata__pb2.GetDataclayRequest.SerializeToString,
             dataclay_dot_proto_dot_common_dot_common__pb2.Dataclay.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def RegisterObject(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.metadata.MetadataService/RegisterObject',
-            dataclay_dot_proto_dot_metadata_dot_metadata__pb2.RegisterObjectRequest.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

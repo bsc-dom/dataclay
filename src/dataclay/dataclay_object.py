@@ -404,7 +404,7 @@ class DataClayObject:
             KeyError: If the backend_id is not registered in dataClay.
             ObjectNotRegisteredError: If the object is not registered in dataClay.
         """
-        get_runtime().move_objects([self], backend_id, recursive, remotes)
+        get_runtime().send_objects([self], backend_id, False, recursive, remotes)
 
     ########################
     # Object Store Methods #

@@ -66,7 +66,8 @@ class RecursiveLocalUnpickler(pickle.Unpickler):
 
 
 class RecursiveLocalPicklerV2(pickle.Pickler):
-    """This should be used only in backends, where all objects are for sure registered"""
+    """This should be used only in backends, where all objects are for sure registered
+    This won't serialize local objects which are replicas and will consider them as remotes"""
 
     def __init__(
         self,
@@ -82,7 +83,7 @@ class RecursiveLocalPicklerV2(pickle.Pickler):
 
     def persistent_id(self, obj):
         if isinstance(obj, DataClayObject):
-            if obj._dc_is_local:
+            if obj._dc_is_local and not obj._dc_is_replica:
                 if obj._dc_id not in self.visited_local_objects:
                     self.visited_local_objects[obj._dc_id] = obj
 

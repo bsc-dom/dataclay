@@ -108,6 +108,10 @@ class DataClayRuntime(ABC):
 
                     if proxy_object._dc_backend_id == self.backend_id:
                         proxy_object._dc_is_local = True
+                        assert self.backend_id not in proxy_object._dc_replica_backend_ids
+                    elif self.backend_id in proxy_object._dc_replica_backend_ids:
+                        proxy_object._dc_is_local = True
+                        proxy_object._dc_is_replica = True
                     else:
                         proxy_object._dc_is_local = False
 
@@ -191,7 +195,7 @@ class DataClayRuntime(ABC):
                 # HACK: The only use case for change_object_id is to consolidate, therefore:
                 instance._dc_original_object_id = None
                 instance._dc_versions_object_ids = []
-                self.metadata_service.register_object(instance.metadata)
+                self.metadata_service.upsert_object(instance.metadata)
         else:
             backend_client = self.get_backend_client(instance._dc_backend_id)
             backend_client.change_object_id(instance._dc_id, new_object_id)
@@ -300,10 +304,11 @@ class DataClayRuntime(ABC):
     # Store Methods #
     #################
 
-    def move_objects(
+    def send_objects(
         self,
         instances: list[DataClayObject],
         backend_id: UUID,
+        make_replica: bool,
         recursive: bool = False,
         remotes: bool = True,
     ):
@@ -312,7 +317,11 @@ class DataClayRuntime(ABC):
         serialized_local_dict = []
 
         for instance in instances:
-            if instance._dc_is_local:
+            # NOTE: We cannot make a replica of a replica because we need a global lock
+            # of the metadata to keep consistency of _dc_replica_backend_ids. Therefore,
+            # we only allow to make replicas of master objects, which will acquire a lock
+            # when updating the metadata.
+            if instance._dc_is_local and not instance._dc_is_replica:
                 if instance._dc_id in visited_local_objects:
                     continue
                 self.load_object_from_db(instance)
@@ -334,15 +343,19 @@ class DataClayRuntime(ABC):
         # Check that the destination backend is not this
         if backend_id != self.backend_id:
             backend_client = self.get_backend_client(backend_id)
-            backend_client.send_objects(serialized_local_dict, is_replica=False)
+            backend_client.register_objects(serialized_local_dict, make_replica=make_replica)
 
             for local_object in visited_local_objects.values():
-                # TODO: Remove pickle file to reduce space
-                self.heap_manager.release_from_heap(local_object)
-                local_object._clean_dc_properties()
-                local_object._dc_is_local = False
-                local_object._dc_is_loaded = False
-                local_object._dc_backend_id = backend_id
+                if make_replica:
+                    local_object._dc_replica_backend_ids.add(backend_id)
+                else:
+                    # Moving object
+                    # TODO: Remove pickle file to reduce space
+                    self.heap_manager.release_from_heap(local_object)
+                    local_object._clean_dc_properties()
+                    local_object._dc_is_local = False
+                    local_object._dc_is_loaded = False
+                    local_object._dc_backend_id = backend_id
 
         # Get the backend with most remote references.
         counter = collections.Counter()
@@ -355,8 +368,8 @@ class DataClayRuntime(ABC):
         if len(counter) > 0:
             remote_backend_id = counter.most_common(1)[0][0]
             remote_backend_client = self.get_backend_client(remote_backend_id)
-            remote_backend_client.move_objects(
-                visited_remote_objects.keys(), backend_id, recursive, remotes
+            remote_backend_client.send_objects(
+                visited_remote_objects.keys(), backend_id, make_replica, recursive, remotes
             )
 
     def replace_object_properties(self, instance, new_instance):

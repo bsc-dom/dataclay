@@ -58,7 +58,7 @@ class BackendAPI:
         return False
 
     # Object Methods
-    def send_objects(self, serialized_dicts: list[bytes], is_replica: bool):
+    def register_objects(self, serialized_dicts: list[bytes], make_replica: bool):
         for serial_dict in serialized_dicts:
             object_dict = pickle.loads(serial_dict)
 
@@ -71,16 +71,16 @@ class BackendAPI:
                 instance._dc_is_loaded = True
                 self.runtime.heap_manager.retain_in_heap(instance)
 
-                if is_replica:
+                if make_replica:
                     instance._dc_is_replica = True
                     instance._dc_replica_backend_ids.add(self.backend_id)
 
                 else:
-                    # If not is_replica then its a move
+                    # If not make_replica then its a move
                     instance._dc_backend_id = self.backend_id
 
                 # ¿Should be always updated here, or from the calling backend?
-                self.runtime.metadata_service.register_object(instance.metadata)
+                self.runtime.metadata_service.upsert_object(instance.metadata)
 
     @tracer.start_as_current_span("make_persistent")
     def make_persistent(self, serialized_dicts: list[bytes]):
@@ -113,7 +113,7 @@ class BackendAPI:
             self.runtime.inmemory_objects[proxy_object._dc_id] = proxy_object
             self.runtime.heap_manager.retain_in_heap(proxy_object)
 
-            self.runtime.metadata_service.register_object(proxy_object.metadata)
+            self.runtime.metadata_service.upsert_object(proxy_object.metadata)
             proxy_object._dc_is_registered = True
 
     @tracer.start_as_current_span("call_active_method")
@@ -205,11 +205,11 @@ class BackendAPI:
         instance = self.runtime.get_object_by_id(object_id)
         self.runtime.change_object_id(instance, new_object_id)
 
-    @tracer.start_as_current_span("move_objects")
-    def move_objects(self, object_ids, backend_id, recursive, remotes):
+    @tracer.start_as_current_span("send_objects")
+    def send_objects(self, object_ids, backend_id, make_replica, recursive, remotes):
         instances = list(map(self.runtime.get_object_by_id, object_ids))
         # instance = self.runtime.get_object_by_id(object_id)
-        self.runtime.move_objects(instances, backend_id, recursive, remotes)
+        self.runtime.send_objects(instances, backend_id, make_replica, recursive, remotes)
 
     # Shutdown
 
@@ -354,7 +354,7 @@ class BackendAPI:
             # Register objects with alias (should we?)
             for object in federated_objs:
                 if object._dc_alias:
-                    self.runtime.metadata_service.register_object(object.metadata)
+                    self.runtime.metadata_service.upsert_object(object.metadata)
 
             for federated_obj in federated_objs:
                 try:
