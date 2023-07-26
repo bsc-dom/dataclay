@@ -103,3 +103,258 @@ def test_move_activemethod(client):
     test_activemethod = TestActivemethod()
     test_activemethod.make_persistent()
     test_activemethod.test_move_activemethod()
+
+
+def test_move_recursive_remotes(client):
+    """The dc object and all its references, even remote references (in other backends),
+    should be moved"""
+    backend_ids = list(client.get_backends())
+
+    person = Person("Marc", 24)
+    person.make_persistent(backend_id=backend_ids[0])
+    family = Family(person)
+    family.make_persistent(backend_id=backend_ids[1])
+    family.move(backend_ids[2], recursive=True)
+
+    # person should change
+    person.name  # forcing update of backend_id
+    assert person._dc_backend_id == backend_ids[2]
+
+
+def test_move_recursive_not_remotes(client):
+    """Only the dc object and the local references should be moved"""
+    backend_ids = list(client.get_backends())
+
+    person_1 = Person("Marc", 24)
+    person_1.make_persistent(backend_id=backend_ids[0])
+    person_2 = Person("Alice", 21)
+    person_2.make_persistent(backend_id=backend_ids[1])
+
+    family = Family(person_1, person_2)
+    family.make_persistent(backend_id=backend_ids[0])
+    family.move(backend_ids[2], recursive=True, remotes=False)
+
+    # person_1 should change, but not person_2
+    person_1.name  # forcing update of backend_id
+    assert person_1._dc_backend_id == backend_ids[2]
+    person_2.name  # forcing update of backend_id
+    assert person_2._dc_backend_id == backend_ids[1]
+
+
+def test_move_recursive_reference_of_reference_v1(client):
+    """All the references should be recursively moved"""
+    backend_ids = list(client.get_backends())
+
+    person_1 = Person("Marc", 24)
+    person_1.make_persistent(backend_id=backend_ids[0])
+    person_2 = Person("Alice", 21)
+    person_2.make_persistent(backend_id=backend_ids[0])
+    person_3 = Person("Carol", 56)
+    person_3.make_persistent(backend_id=backend_ids[1])
+    person_4 = Person("Javi", 55)
+    person_4.make_persistent(backend_id=backend_ids[1])
+
+    person_1.spouse = person_2
+    person_2.spouse = person_3
+    person_3.spouse = person_4
+
+    family = Family(person_1)
+    family.make_persistent(backend_id=backend_ids[0])
+    family.move(backend_ids[2], recursive=True)
+
+    person_1.name  # forcing update of backend_id
+    assert person_1._dc_backend_id == backend_ids[2]
+    person_2.name  # forcing update of backend_id
+    assert person_2._dc_backend_id == backend_ids[2]
+    person_3.name  # forcing update of backend_id
+    assert person_3._dc_backend_id == backend_ids[2]
+    person_4.name  # forcing update of backend_id
+    assert person_4._dc_backend_id == backend_ids[2]
+
+
+def test_move_recursive_reference_of_reference_v2(client):
+    """All the references should be recursively moved"""
+    backend_ids = list(client.get_backends())
+
+    person_1 = Person("Marc", 24)
+    person_1.make_persistent(backend_id=backend_ids[0])
+    person_2 = Person("Alice", 21)
+    person_2.make_persistent(backend_id=backend_ids[0])
+    person_3 = Person("Carol", 56)
+    person_3.make_persistent(backend_id=backend_ids[1])
+    person_4 = Person("Javi", 55)
+    person_4.make_persistent(backend_id=backend_ids[2])
+
+    person_1.spouse = person_2
+    person_2.spouse = person_3
+    person_3.spouse = person_4
+
+    family = Family(person_1)
+    family.make_persistent(backend_id=backend_ids[0])
+    family.move(backend_ids[2], recursive=True)
+
+    person_1.name  # forcing update of backend_id
+    assert person_1._dc_backend_id == backend_ids[2]
+    person_2.name  # forcing update of backend_id
+    assert person_2._dc_backend_id == backend_ids[2]
+    person_3.name  # forcing update of backend_id
+    assert person_3._dc_backend_id == backend_ids[2]
+    person_4.name  # forcing update of backend_id
+    assert person_4._dc_backend_id == backend_ids[2]
+
+
+def test_move_recursive_reference_of_reference_v3(client):
+    """All the references should be recursively moved"""
+    backend_ids = list(client.get_backends())
+
+    person_1 = Person("Marc", 24)
+    person_1.make_persistent(backend_id=backend_ids[2])
+    person_2 = Person("Alice", 21)
+    person_2.make_persistent(backend_id=backend_ids[2])
+    person_3 = Person("Carol", 56)
+    person_3.make_persistent(backend_id=backend_ids[1])
+    person_4 = Person("Javi", 55)
+    person_4.make_persistent(backend_id=backend_ids[0])
+
+    person_1.spouse = person_2
+    person_2.spouse = person_3
+    person_3.spouse = person_4
+
+    family = Family(person_1)
+    family.make_persistent(backend_id=backend_ids[0])
+    family.move(backend_ids[2], recursive=True)
+
+    person_1.name  # forcing update of backend_id
+    assert person_1._dc_backend_id == backend_ids[2]
+    person_2.name  # forcing update of backend_id
+    assert person_2._dc_backend_id == backend_ids[2]
+    person_3.name  # forcing update of backend_id
+    assert person_3._dc_backend_id == backend_ids[2]
+    person_4.name  # forcing update of backend_id
+    assert person_4._dc_backend_id == backend_ids[2]
+
+
+def test_move_recursive_reference_of_reference_v4(client):
+    """All the references should be recursively moved"""
+    backend_ids = list(client.get_backends())
+
+    person_1 = Person("Marc", 24)
+    person_1.make_persistent(backend_id=backend_ids[0])
+    person_2 = Person("Alice", 21)
+    person_2.make_persistent(backend_id=backend_ids[0])
+    person_3 = Person("Carol", 56)
+    person_3.make_persistent(backend_id=backend_ids[1])
+    person_4 = Person("Javi", 55)
+    person_4.make_persistent(backend_id=backend_ids[2])
+
+    person_1.spouse = person_2
+    person_2.spouse = person_3
+    person_3.spouse = person_4
+
+    family = Family(person_1, person_2, person_3, person_4)
+    family.make_persistent(backend_id=backend_ids[0])
+    family.move(backend_ids[2], recursive=True)
+
+    person_1.name  # forcing update of backend_id
+    assert person_1._dc_backend_id == backend_ids[2]
+    person_2.name  # forcing update of backend_id
+    assert person_2._dc_backend_id == backend_ids[2]
+    person_3.name  # forcing update of backend_id
+    assert person_3._dc_backend_id == backend_ids[2]
+    person_4.name  # forcing update of backend_id
+    assert person_4._dc_backend_id == backend_ids[2]
+
+
+def test_move_recursive_reference_cycle_v1(client):
+    """All the references should be recursively moved"""
+    backend_ids = list(client.get_backends())
+
+    person_1 = Person("Marc", 24)
+    person_1.make_persistent(backend_id=backend_ids[0])
+    person_2 = Person("Alice", 21)
+    person_2.make_persistent(backend_id=backend_ids[0])
+
+    person_1.spouse = person_2
+    person_2.spouse = person_1
+
+    family = Family(person_1)
+    family.make_persistent(backend_id=backend_ids[0])
+    family.move(backend_ids[2], recursive=True)
+
+    person_1.name  # forcing update of backend_id
+    assert person_1._dc_backend_id == backend_ids[2]
+    person_2.name  # forcing update of backend_id
+    assert person_2._dc_backend_id == backend_ids[2]
+
+
+def test_move_recursive_reference_cycle_v2(client):
+    """All the references should be recursively moved"""
+    backend_ids = list(client.get_backends())
+
+    person_1 = Person("Marc", 24)
+    person_1.make_persistent(backend_id=backend_ids[0])
+    person_2 = Person("Alice", 21)
+    person_2.make_persistent(backend_id=backend_ids[1])
+
+    person_1.spouse = person_2
+    person_2.spouse = person_1
+
+    family = Family(person_1)
+    family.make_persistent(backend_id=backend_ids[0])
+    family.move(backend_ids[2], recursive=True)
+
+    person_1.name  # forcing update of backend_id
+    assert person_1._dc_backend_id == backend_ids[2]
+    person_2.name  # forcing update of backend_id
+    assert person_2._dc_backend_id == backend_ids[2]
+
+
+def test_move_local_object(client):
+    """If the object is already in the backend, it should not be moved,
+    neither its references"""
+    backend_ids = list(client.get_backends())
+
+    person_1 = Person("Marc", 24)
+    person_1.make_persistent(backend_id=backend_ids[0])
+    person_2 = Person("Alice", 21)
+    person_2.make_persistent(backend_id=backend_ids[1])
+
+    family = Family(person_1, person_2)
+    family.make_persistent(backend_id=backend_ids[0])
+    family.move(backend_ids[0])
+
+    person_1.name  # forcing update of backend_id
+    assert person_1._dc_backend_id == backend_ids[0]
+    person_2.name  # forcing update of backend_id
+    assert person_2._dc_backend_id == backend_ids[1]
+
+
+def test_move_local_object_recursive_remotes(client):
+    """If the object is already in the backend, but recursive=True,
+    and remotes=True, the remote references should be moved"""
+    backend_ids = list(client.get_backends())
+
+    person_1 = Person("Marc", 24)
+    person_1.make_persistent(backend_id=backend_ids[0])
+    person_2 = Person("Alice", 21)
+    person_2.make_persistent(backend_id=backend_ids[1])
+    person_3 = Person("Carol", 56)
+    person_3.make_persistent(backend_id=backend_ids[1])
+    person_4 = Person("Javi", 55)
+    person_4.make_persistent(backend_id=backend_ids[2])
+
+    person_1.spouse = person_2
+    person_3.spouse = person_4
+
+    family = Family(person_1, person_3)
+    family.make_persistent(backend_id=backend_ids[0])
+    family.move(backend_ids[0], recursive=True)
+
+    person_1.name  # forcing update of backend_id
+    assert person_1._dc_backend_id == backend_ids[0]
+    person_2.name  # forcing update of backend_id
+    assert person_2._dc_backend_id == backend_ids[0]
+    person_3.name  # forcing update of backend_id
+    assert person_3._dc_backend_id == backend_ids[0]
+    person_4.name  # forcing update of backend_id
+    assert person_4._dc_backend_id == backend_ids[0]
