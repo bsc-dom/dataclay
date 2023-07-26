@@ -312,6 +312,17 @@ class DataClayRuntime(ABC):
         recursive: bool = False,
         remotes: bool = True,
     ):
+        """Send DataClay instances from one backend to another.
+
+        The instances must be registered in the metadata service.
+        It can be used for moving objects (changing _dc_backend_id)
+        or for creating remotes (appending to _dc_replica_backend_ids)
+
+        If recursive=True, all references from the objects will also be sent.
+        If recursice=True and remotes=False, local references will be sent, but
+        not remote references.
+        """
+
         visited_local_objects = {}
         visited_remote_objects = {}
         serialized_local_dict = []
@@ -324,6 +335,8 @@ class DataClayRuntime(ABC):
             if instance._dc_is_local and not instance._dc_is_replica:
                 if instance._dc_id in visited_local_objects:
                     continue
+                visited_local_objects[instance._dc_id] = instance
+
                 self.load_object_from_db(instance)
                 if recursive:
                     if remotes:
@@ -361,7 +374,10 @@ class DataClayRuntime(ABC):
         counter = collections.Counter()
         for remote_object in visited_remote_objects.values():
             counter[remote_object._dc_backend_id] += 1
-            remote_object._dc_backend_id = backend_id
+            if make_replica:
+                remote_object._dc_replica_backend_ids.add(backend_id)
+            else:
+                remote_object._dc_backend_id = backend_id
 
         assert counter[self.backend_id] == 0
 

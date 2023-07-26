@@ -35,3 +35,14 @@ services:
     command: python -m dataclay.backend
     volumes:
       - .:/pyclay:ro
+
+  backend_2:
+    image: "ghcr.io/bsc-dom/dataclay:dev"
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_LOGLEVEL=DEBUG
+    command: python -m dataclay.backend
+    volumes:
+      - .:/pyclay:ro
