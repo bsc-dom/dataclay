@@ -2,13 +2,16 @@
 from __future__ import annotations
 
 import collections
+import concurrent.futures
 import copy
 import importlib
 import io
 import logging
 import pickle
+import random
 from abc import ABC, abstractmethod
 from builtins import Exception
+from collections.abc import Iterable, Iterator
 from typing import TYPE_CHECKING
 from uuid import UUID
 from weakref import WeakValueDictionary
@@ -285,18 +288,25 @@ class DataClayRuntime(ABC):
         backend_infos = self.metadata_service.get_all_backends(from_backend=self.is_backend)
         new_backend_clients = {}
 
-        # TODO: Update backend_clients using multithreading
-        for id, info in backend_infos.items():
-            if id in self.backend_clients:
-                if self.backend_clients[id].is_ready(settings.TIMEOUT_CHANNEL_READY):
-                    new_backend_clients[id] = self.backend_clients[id]
-                    continue
+        def add_backend_client(backend_info):
+            if backend_info.id in self.backend_clients:
+                if self.backend_clients[backend_info.id].is_ready(settings.TIMEOUT_CHANNEL_READY):
+                    new_backend_clients[backend_info.id] = self.backend_clients[backend_info.id]
+                    return
 
-            backend_client = BackendClient(info.host, info.port)
+            backend_client = BackendClient(backend_info.host, backend_info.port)
             if backend_client.is_ready(settings.TIMEOUT_CHANNEL_READY):
-                new_backend_clients[id] = backend_client
+                new_backend_clients[backend_info.id] = backend_client
             else:
-                del backend_infos[id]
+                del backend_infos[backend_info.id]
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(add_backend_client, backend_info)
+                for backend_info in backend_infos.values()
+            ]
+            concurrent.futures.wait(futures)
+            # results = [future.result() for future in futures]
 
         self.backend_clients = new_backend_clients
 
@@ -306,7 +316,7 @@ class DataClayRuntime(ABC):
 
     def send_objects(
         self,
-        instances: list[DataClayObject],
+        instances: Iterable[DataClayObject],
         backend_id: UUID,
         make_replica: bool,
         recursive: bool = False,
@@ -369,15 +379,18 @@ class DataClayRuntime(ABC):
                     local_object._dc_is_local = False
                     local_object._dc_is_loaded = False
                     local_object._dc_backend_id = backend_id
+                    local_object._dc_replica_backend_ids.discard(backend_id)
 
         # Get the backend with most remote references.
         counter = collections.Counter()
         for remote_object in visited_remote_objects.values():
             counter[remote_object._dc_backend_id] += 1
             if make_replica:
-                remote_object._dc_replica_backend_ids.add(backend_id)
+                if backend_id != remote_object._dc_backend_id:
+                    remote_object._dc_replica_backend_ids.add(backend_id)
             else:
                 remote_object._dc_backend_id = backend_id
+                remote_object._dc_replica_backend_ids.discard(backend_id)
 
         assert counter[self.backend_id] == 0
 
@@ -439,45 +452,29 @@ class DataClayRuntime(ABC):
     # Replicas #
     ############
 
-    def new_replica(self, instance, backend_id, recursive):
+    def new_replica(
+        self, instance, backend_id: UUID = None, recursive: bool = False, remotes: bool = True
+    ):
         logger.debug(f"Starting new replica of {instance._dc_id}")
 
-        # if
-
-        if self.is_backend and backend_id == self.backend_id:
-            if instance._dc_is_local:
-                logger.warning(
-                    f"Trying to replicate the object {instance._dc_id} to owner backend {self.backend_id}"
-                )
-                return
+        if backend_id is None:
+            self.update_backend_clients()
+            candidate_backend_ids = set(self.backend_clients.keys()) - instance._dc_all_backend_ids
+            if not candidate_backend_ids:
+                logger.warning("All available backends have a replica")
+                if not recursive:
+                    return
+                else:
+                    backend_id = random.choice(tuple(self.backend_clients.keys()))
             else:
-                object_properties = self.get_object_properties(instance)
-                vars(instance).update(object_properties)
-                instance._dc_is_local = True
-                instance._dc_is_loaded = True
+                backend_id = random.choice(tuple(candidate_backend_ids))
 
-                # instance._dc_replica_backend_ids.
+        elif backend_id in instance._dc_replica_backend_ids:
+            logger.warning("The backend already have a replica")
+            if not recursive:
+                return
 
-        elif backend_id != self.backend_id:
-            backend_client = self.get_backend_client(backend_id)
-            backend_client.new_replica(instance._dc_id, backend_id, recursive)
-
-        # ee_client, dest_backend = self.prepare_for_new_replica_version_consolidate(
-        #     object_id, hint, backend_id, backend_host, True
-        # )
-        # replicated_object_ids = ee_client.new_replica(
-        #     self.session.id, object_id, dest_backend.id, recursive
-        # )
-        # logger.debug(f"Replicated: {replicated_object_ids} into {dest_backend.id}")
-        # # Update replicated objects metadata
-        # for replicated_object_id in replicated_object_ids:
-        #     # NOTE: If it fails, use object_id instead of replicated_object_id
-        #     instance = self.inmemory_objects[replicated_object_id]
-        #     instance._add_replica_location(dest_backend.id)
-        #     if instance.get_origin_location() is None:
-        #         # NOTE: at client side there cannot be two replicas of same oid
-        #         instance.set_origin_location(hint)
-        # return dest_backend.id
+        self.send_objects([instance], backend_id, True, recursive, remotes)
 
     #####################
     # Garbage collector #

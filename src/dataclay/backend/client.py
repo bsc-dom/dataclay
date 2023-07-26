@@ -198,7 +198,7 @@ class BackendClient:
         remotes: bool,
     ):
         request = backend_pb2.SendObjectsRequest(
-            object_ids=list(map(str, object_ids)),
+            object_ids=map(str, object_ids),
             backend_id=str(backend_id),
             make_replica=make_replica,
             recursive=recursive,

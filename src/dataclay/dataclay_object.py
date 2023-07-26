@@ -269,7 +269,7 @@ class DataClayObject:
         self._dc_id = object_md.id
         self._dc_dataset_name = object_md.dataset_name
         self._dc_backend_id = object_md.backend_id
-        self._dc_replica_backend_ids = object_md.replica_backend_ids
+        self._dc_replica_backend_ids = set(object_md.replica_backend_ids)
         self._dc_is_read_only = object_md.is_read_only
         self._dc_original_object_id = object_md.original_object_id
         self._dc_versions_object_ids = object_md.versions_object_ids
@@ -395,16 +395,23 @@ class DataClayObject:
     def move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
         """Moves the object to the specified backend.
 
+        If the object is not registered, it will be registered with all its references
+        to the corresponding backend
+
         Args:
-            backend_id: ID of the backend where the object will be moved.
+            backend_id: Id of the backend where the object will be moved.
             recursive: If True, all objects referenced by this object registered in the
                 same backend will also be moved.
+            remotes: If True (default), when recursive is True the remote references will
+                also be moved. Otherwise only the local references are moved.
 
         Raises:
             KeyError: If the backend_id is not registered in dataClay.
-            ObjectNotRegisteredError: If the object is not registered in dataClay.
         """
-        get_runtime().send_objects([self], backend_id, False, recursive, remotes)
+        if not self._dc_is_registered:
+            self.make_persistent(backend_id=backend_id)
+        else:
+            get_runtime().send_objects([self], backend_id, False, recursive, remotes)
 
     ########################
     # Object Store Methods #
@@ -504,7 +511,7 @@ class DataClayObject:
         """
         if not alias:
             raise AttributeError("Alias cannot be null or empty")
-        get_runtime().make_persistent(self, alias=alias, backend_id=backend_id)
+        self.make_persistent(alias=alias, backend_id=backend_id)
 
     # Versioning
 
@@ -560,30 +567,10 @@ class DataClayObject:
     # TODO: REFACTOR
     ################
 
-    def new_replica(self, backend_id=None, recursive=True):
-        return get_runtime().new_replica(
-            self._dc_id, self._dc_backend_id, backend_id, None, recursive
-        )
-
-    #################################
-    # Extradata getters and setters #
-    #################################
-
-    def _add_replica_location(self, new_replica_location):
-        replica_locations = self._dc_replica_backend_ids
-        if replica_locations is None:
-            replica_locations = list()
-            self._dc_replica_backend_ids = replica_locations
-        replica_locations.append(new_replica_location)
-
-    def _remove_replica_location(self, old_replica_location):
-        replica_locations = self._dc_replica_backend_ids
-        replica_locations.remove(old_replica_location)
-
-    def _clear_replica_locations(self):
-        replica_locations = self._dc_replica_backend_ids
-        if replica_locations is not None:
-            replica_locations.clear()
+    def new_replica(self, backend_id: UUID = None, recursive: bool = False, remotes: bool = True):
+        if not self._dc_is_registered:
+            raise ObjectNotRegisteredError(self._dc_id)
+        get_runtime().new_replica(self, backend_id, recursive, remotes)
 
     ##############
     # Federation #

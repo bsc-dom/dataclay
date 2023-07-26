@@ -145,7 +145,7 @@ class HeapManager(threading.Thread):
         if self.is_memory_under_pressure() and self.run_task_lock.acquire(blocking=False):
             try:
                 loaded_objects_keys = list(self.loaded_objects)
-                logger.debug(f"Num loaded objects before: {len(loaded_objects_keys)}")
+                logger.debug(f"Num loaded objects before: {len(self.loaded_objects)}")
 
                 while loaded_objects_keys:
                     object_id = loaded_objects_keys.pop()
@@ -181,6 +181,7 @@ class HeapManager(threading.Thread):
                 if self.run_task_lock.acquire(timeout=self.MAX_TIME_WAIT_FOR_GC_TO_FINISH):
                     self.run_task_lock.release()
 
+                # ?List used to create a copy and avoid it to grow?
                 for object_id in list(self.loaded_objects):
                     self.unload_object(object_id)
 

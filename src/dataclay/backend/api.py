@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
+import concurrent.futures
 import io
 import logging
 import pickle
 import time
 import traceback
+from collections.abc import Iterable, Iterator
 from typing import TYPE_CHECKING
 
 from dataclay import utils
-from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
 from dataclay.exceptions import *
-from dataclay.metadata.kvdata import Session
 from dataclay.runtime import UUIDLock, set_runtime
 from dataclay.runtime.backend import BackendRuntime
 from dataclay.utils.pickle import RecursiveLocalPickler, RecursiveLocalUnpickler
@@ -58,12 +58,17 @@ class BackendAPI:
         return False
 
     # Object Methods
-    def register_objects(self, serialized_dicts: list[bytes], make_replica: bool):
+    def register_objects(self, serialized_dicts: Iterable[bytes], make_replica: bool):
         for serial_dict in serialized_dicts:
             object_dict = pickle.loads(serial_dict)
 
             instance = self.runtime.get_object_by_id(object_dict["_dc_id"])
-            assert not instance._dc_is_local
+
+            if instance._dc_is_local:
+                assert instance._dc_is_replica
+                if make_replica:
+                    logger.warning(f"There is already a replica for object {instance._dc_id}")
+                    continue
 
             with UUIDLock(instance._dc_id):
                 vars(instance).update(object_dict)
@@ -78,12 +83,15 @@ class BackendAPI:
                 else:
                     # If not make_replica then its a move
                     instance._dc_backend_id = self.backend_id
+                    instance._dc_replica_backend_ids.discard(self.backend_id)
+                    # we can only move masters
+                    # instance._dc_is_replica = False # already set by vars(instance).update(object_dict)
 
                 # ¿Should be always updated here, or from the calling backend?
                 self.runtime.metadata_service.upsert_object(instance.metadata)
 
     @tracer.start_as_current_span("make_persistent")
-    def make_persistent(self, serialized_dicts: list[bytes]):
+    def make_persistent(self, serialized_dicts: Iterable[bytes]):
         unserialized_objects = dict()
         for serial_dict in serialized_dicts:
             object_dict = RecursiveLocalUnpickler(
@@ -207,8 +215,8 @@ class BackendAPI:
 
     @tracer.start_as_current_span("send_objects")
     def send_objects(self, object_ids, backend_id, make_replica, recursive, remotes):
-        instances = list(map(self.runtime.get_object_by_id, object_ids))
-        # instance = self.runtime.get_object_by_id(object_id)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            instances = tuple(executor.map(self.runtime.get_object_by_id, object_ids))
         self.runtime.send_objects(instances, backend_id, make_replica, recursive, remotes)
 
     # Shutdown
@@ -257,10 +265,6 @@ class BackendAPI:
                 backends_diff[new_backend_id] += 1
 
     # Replicas
-
-    def new_replica(self, object_id, backend_id, recursive):
-        instance = self.runtime.get_object_by_id(object_id)
-        self.runtime.new_replica(instance, backend_id, recursive)
 
     def synchronize(
         self, session_id, object_id, implementation_id, serialized_value, calling_backend_id=None
@@ -458,243 +462,6 @@ class BackendAPI:
         logger.debug("<--- Finished notification of unfederation")
 
     # Update Object
-
-    def get_objects(
-        self,
-        session_id,
-        object_ids,
-        already_obtained_objs,
-        recursive,
-        dest_replica_backend_id=None,
-        update_replica_locs=0,
-    ):
-        """Get the serialized objects with id provided
-
-        Args:
-            session_id: ID of session
-            object_ids: IDs of the objects to get
-            recursive: Indicates if, per each object to get, also obtain its associated objects.
-            dest_replica_backend_id:
-                Destination backend of objects being obtained for replica or NULL if going to client
-            update_replica_locs:
-                If 1, provided replica dest backend id must be added to replica locs of obtained objects
-                If 2, provided replica dest backend id must be removed from replica locs
-                If 0, replicaDestBackendID field is ignored
-        Returns:
-            List of serialized objects
-        """
-        logger.debug("[==Get==] Getting objects %s", object_ids)
-
-        self.set_local_session(session_id)
-
-        result = list()
-        pending_oids_and_hint = list()
-        objects_in_other_backend = list()
-
-        for oid in object_ids:
-            if recursive:
-                # Add object to pending
-                pending_oids_and_hint.append([oid, None])
-                while pending_oids_and_hint:
-                    current_oid_and_hint = pending_oids_and_hint.pop()
-                    current_oid = current_oid_and_hint[0]
-                    current_hint = current_oid_and_hint[1]
-                    if current_oid in already_obtained_objs:
-                        # Already Read
-                        logger.debug("[==Get==] Object %s already read", current_oid)
-                        continue
-                    if current_hint is not None and current_hint != self.backend_id:
-                        # in another backend
-                        objects_in_other_backend.append([current_oid, current_hint])
-                        continue
-
-                    else:
-                        try:
-                            logger.debug(
-                                "[==Get==] Trying to get local instance for object %s", current_oid
-                            )
-                            obj_with_data = self.get_object_internal(
-                                current_oid, dest_replica_backend_id, update_replica_locs
-                            )
-                            if obj_with_data is not None:
-                                result.append(obj_with_data)
-                                already_obtained_objs.add(current_oid)
-                                # Get associated objects and add them to pendings
-                                obj_metadata = obj_with_data.metadata
-                                for tag in obj_metadata.tags_to_oids:
-                                    oid_found = obj_metadata.tags_to_oids[tag]
-                                    hint_found = obj_metadata.tags_to_hints[tag]
-                                    if (
-                                        oid_found != current_oid
-                                        and oid_found not in already_obtained_objs
-                                    ):
-                                        pending_oids_and_hint.append([oid_found, hint_found])
-
-                        except:
-                            traceback.print_exc()
-                            logger.debug(
-                                f"[==Get==] Not in this backend (wrong or null hint) for {current_oid}"
-                            )
-                            # Get in other backend (remove hint, it failed here)
-                            objects_in_other_backend.append([current_oid, None])
-            else:
-                try:
-                    obj_with_data = self.get_object_internal(
-                        oid, dest_replica_backend_id, update_replica_locs
-                    )
-                    if obj_with_data is not None:
-                        result.append(obj_with_data)
-                except:
-                    logger.debug("[==Get==] Object is in other backend")
-                    # Get in other backend
-                    objects_in_other_backend.append([oid, None])
-
-        obj_with_data_in_other_backends = self.get_objects_in_other_backends(
-            session_id,
-            objects_in_other_backend,
-            already_obtained_objs,
-            recursive,
-            dest_replica_backend_id,
-            update_replica_locs,
-        )
-
-        for obj_in_oth_back in obj_with_data_in_other_backends:
-            result.append(obj_in_oth_back)
-        logger.debug("[==Get==] Finished get objects len = %s", str(len(result)))
-        return result
-
-    def get_object_internal(self, oid, dest_replica_backend_id, update_replica_locs):
-        """Get object internal function
-
-        Args:
-            oid: ID of the object ot get
-            dest_replica_backend_id:
-                Destination backend of objects being obtained for replica or NULL if going to client
-            update_replica_locs:
-                If 1, provided replica dest backend id must be added to replica locs of obtained objects
-                If 2, provided replica dest backend id must be removed from replica locs
-                If 0, replicaDestBackendID field is ignored
-        Returns:
-            Object with data
-        """
-        # Serialize the object
-        logger.debug("[==GetInternal==] Trying to get local instance for object %s", oid)
-
-        # ToDo: Manage better this try/catch
-        # Race condition with gc: make sure GC does not CLEAN the object while retrieving/serializing it!
-        with UUIDLock(oid):
-            current_obj = self.get_local_instance(oid, False)
-            pending_objs = list()
-
-            # update_replica_locs = 1 means new replica/federation
-            if dest_replica_backend_id is not None and update_replica_locs == 1:
-                if current_obj._dc_replica_backend_ids is not None:
-                    if dest_replica_backend_id in current_obj._dc_replica_backend_ids:
-                        # already replicated
-                        logger.debug(f"WARNING: Found already replicated object {oid}. Skipping")
-                        return None
-
-            # Add object to result and obtained_objs for return and recursive
-            obj_with_data = SerializationLibUtilsSingleton.serialize_dcobj_with_data(
-                current_obj, pending_objs, False, current_obj._dc_backend_id, self.runtime, False
-            )
-
-            if dest_replica_backend_id is not None and update_replica_locs == 1:
-                current_obj._add_replica_location(dest_replica_backend_id)
-                current_obj._dc_is_dirty = True
-                obj_with_data.metadata.origin_location = self.backend_id
-            elif update_replica_locs == 2:
-                if dest_replica_backend_id is not None:
-                    current_obj._remove_replica_location(dest_replica_backend_id)
-                else:
-                    current_obj._clear_replica_locations()
-                current_obj._dc_is_dirty = True
-
-        return obj_with_data
-
-    def get_objects_in_other_backends(
-        self,
-        session_id,
-        objects_in_other_backend,
-        already_obtained_objs,
-        recursive,
-        dest_replica_backend_id,
-        update_replica_locs,
-    ):
-        """Get object in another backend. This function is called from DbHandler in a recursive get.
-
-        Args:
-            session_id: ID of session
-            objects_in_other_backend: List of metadata of objects to read. It is useful to avoid multiple trips.
-            recursive: Indicates is recursive
-            dest_replica_backend_id:
-                Destination backend of objects being obtained for replica or NULL if going to client
-            update_replica_locs:
-                If 1, provided replica dest backend id must be added to replica locs of obtained objects
-                If 2, provided replica dest backend id must be removed from replica locs
-                If 0, replicaDestBackendID field is ignored
-        Returns:
-            List of serialized objects
-        """
-        raise Exception("To refactor")
-        result = list()
-
-        # Prepare to unify calls (only one call for DS)
-        objects_per_backend = dict()
-
-        for curr_oid_and_hint in objects_in_other_backend:
-            object_id = curr_oid_and_hint[0]
-            hint = curr_oid_and_hint[1]
-
-            if hint is None:
-                logger.debug(f"[==GetObjectsInOtherBackend==] Looking for metadata of {object_id}")
-                object_md = self.get_object_metadata(object_id)
-                hint = object_md.backend_id
-            try:
-                objects_in_backend = objects_per_backend[hint]
-            except KeyError:
-                objects_in_backend = set()
-                objects_per_backend[hint] = objects_in_backend
-            objects_in_backend.add(object_id)
-
-        # Now Call
-        for backend_id, objects_to_get in objects_per_backend.items():
-            if dest_replica_backend_id is None or dest_replica_backend_id != backend_id:
-                logger.debug(
-                    "[==GetObjectsInOtherBackend==] Get from other location, objects: %s",
-                    objects_to_get,
-                )
-                backend = self.runtime.ee_infos[backend_id]
-                try:
-                    client_backend = self.runtime.backend_clients[backend_id]
-                except KeyError:
-                    logger.debug(
-                        "[==GetObjectsInOtherBackend==] Not found Client to ExecutionEnvironment {%s}!"
-                        " Starting it at %s:%d",
-                        backend_id,
-                        backend.host,
-                        backend.port,
-                    )
-
-                    client_backend = BackendClient(backend.host, backend.port)
-                    self.runtime.backend_clients[backend_id] = client_backend
-
-                cur_result = client_backend.ds_get_objects(
-                    session_id,
-                    objects_to_get,
-                    already_obtained_objs,
-                    recursive,
-                    dest_replica_backend_id,
-                    update_replica_locs,
-                )
-                logger.debug(
-                    "[==GetObjectsInOtherBackend==] call return length: %d", len(cur_result)
-                )
-                logger.trace("[==GetObjectsInOtherBackend==] call return content: %s", cur_result)
-                for res in cur_result:
-                    result.append(res)
-
-        return result
 
     def update_refs(self, ref_counting):
         """forward to SL"""

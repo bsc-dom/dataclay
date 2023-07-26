@@ -54,12 +54,12 @@ class ClientRuntime(DataClayRuntime):
 
         if backend_id is None:
             self.update_backend_clients()
-            backend_id, backend_client = random.choice(list(self.backend_clients.items()))
+            backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
 
             # NOTE: Maybe use a quick update to avoid overhead.
             # Quiack_update only updates ee_infos, but don't check clients readiness
             # self.quick_update_backend_clients()
-            # backend_id = random.choice(list(self.ee_infos.keys()))
+            # backend_id = random.choice(tuple(self.ee_infos.keys()))
             # backend_client = self.backend_clients[backend_id]
         else:
             backend_client = self.get_backend_client(backend_id)

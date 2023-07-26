@@ -139,10 +139,10 @@ class ObjectMetadata(KeyValue):
             dataset_name=self.dataset_name,
             class_name=self.class_name,
             backend_id=uuid_to_str(self.backend_id),
-            replica_backend_ids=list(map(uuid_to_str, self.replica_backend_ids)),
+            replica_backend_ids=map(uuid_to_str, self.replica_backend_ids),
             is_read_only=self.is_read_only,
             original_object_id=uuid_to_str(self.original_object_id),
-            versions_object_ids=list(map(uuid_to_str, self.versions_object_ids)),
+            versions_object_ids=map(uuid_to_str, self.versions_object_ids),
         )
 
 
