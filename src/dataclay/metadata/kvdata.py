@@ -110,7 +110,7 @@ class ObjectMetadata(KeyValue):
     id: UUID = None
     dataset_name: str = None
     class_name: str = None
-    backend_id: UUID = None
+    master_backend_id: UUID = None
     replica_backend_ids: set() = None
     is_read_only: bool = False
     original_object_id: UUID = None
@@ -126,7 +126,7 @@ class ObjectMetadata(KeyValue):
             str_to_uuid(proto.id),
             proto.dataset_name,
             proto.class_name,
-            str_to_uuid(proto.backend_id),
+            str_to_uuid(proto.master_backend_id),
             set(map(str_to_uuid, proto.replica_backend_ids)),
             proto.is_read_only,
             str_to_uuid(proto.original_object_id),
@@ -138,7 +138,7 @@ class ObjectMetadata(KeyValue):
             id=uuid_to_str(self.id),
             dataset_name=self.dataset_name,
             class_name=self.class_name,
-            backend_id=uuid_to_str(self.backend_id),
+            master_backend_id=uuid_to_str(self.master_backend_id),
             replica_backend_ids=map(uuid_to_str, self.replica_backend_ids),
             is_read_only=self.is_read_only,
             original_object_id=uuid_to_str(self.original_object_id),

@@ -111,4 +111,4 @@ class TestActivemethod(DataClayObject):
         get_runtime().update_backend_clients()
         backend_ids = list(get_runtime().backend_clients)
         person.move(backend_ids[0])
-        assert person._dc_backend_id == backend_ids[0]
+        assert person._dc_master_backend_id == backend_ids[0]

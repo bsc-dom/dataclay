@@ -86,11 +86,11 @@ class ClientRuntime(DataClayRuntime):
             dc_object._dc_is_registered = True
             dc_object._dc_is_local = False
             dc_object._dc_is_loaded = False
-            dc_object._dc_backend_id = backend_id
+            dc_object._dc_master_backend_id = backend_id
 
             self.add_to_heap(dc_object)
 
-        return instance._dc_backend_id
+        return instance._dc_master_backend_id
 
     ############
     # Replicas #
@@ -107,7 +107,7 @@ class ClientRuntime(DataClayRuntime):
             iface_bitmaps=None,
             params_spec=operation.params,
             params_order=operation.paramsOrder,
-            hint_volatiles=instance._dc_backend_id,
+            hint_volatiles=instance._dc_master_backend_id,
             runtime=self,
         )
 
@@ -125,7 +125,7 @@ class ClientRuntime(DataClayRuntime):
             if hint is None:
                 instance = self.inmemory_objects[object_id]
                 self.update_object_metadata(instance)
-                hint = instance._dc_backend_id
+                hint = instance._dc_master_backend_id
 
             ee_client = self.get_backend_client(hint)
             ee_client.detach_object_from_session(object_id, self.session.id)
@@ -137,7 +137,7 @@ class ClientRuntime(DataClayRuntime):
     ##############
 
     def federate_to_backend(self, instance, external_execution_environment_id, recursive):
-        hint = instance._dc_backend_id
+        hint = instance._dc_master_backend_id
         if hint is None:
             self.update_object_metadata(instance)
             hint = self.get_hint()
@@ -162,7 +162,7 @@ class ClientRuntime(DataClayRuntime):
             external_execution_environment_id,
             self.session.id,
         )
-        hint = instance._dc_backend_id
+        hint = instance._dc_master_backend_id
         if hint is None:
             self.update_object_metadata(instance)
             hint = self.get_hint()

@@ -34,7 +34,7 @@ that are owned by the same backend, will be moved as well::
 
     # employee has also moved to the same backend as company
     person_1.name  # forcing update of the backend_id
-    assert employee._dc_backend_id == backend_ids[1]
+    assert employee._dc_master_backend_id == backend_ids[1]
 
 But referenced objects owned by another backend will not be moved::
 
@@ -52,7 +52,7 @@ But referenced objects owned by another backend will not be moved::
 
     # employee is still in backend 0
     person_1.name  # forcing update of the backend_id
-    assert employee._dc_backend_id == backend_ids[0]
+    assert employee._dc_master_backend_id == backend_ids[0]
 
 .. Replicas
 .. --------

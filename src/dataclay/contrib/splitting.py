@@ -38,7 +38,7 @@ def batch_object_info(objects):
     ret = IdentityDict()
     # Use hints
     for obj in objects:
-        ret[obj] = obj._dc_backend_id
+        ret[obj] = obj._dc_master_backend_id
 
     return ret
 

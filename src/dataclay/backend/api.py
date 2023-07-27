@@ -82,7 +82,7 @@ class BackendAPI:
 
                 else:
                     # If not make_replica then its a move
-                    instance._dc_backend_id = self.backend_id
+                    instance._dc_master_backend_id = self.backend_id
                     instance._dc_replica_backend_ids.discard(self.backend_id)
                     # we can only move masters
                     # instance._dc_is_replica = False # already set by vars(instance).update(object_dict)
@@ -110,17 +110,13 @@ class BackendAPI:
             vars(proxy_object).update(object_dict)
             proxy_object._dc_is_local = True
             proxy_object._dc_is_loaded = True
-            proxy_object._dc_backend_id = self.backend_id
+            proxy_object._dc_master_backend_id = self.backend_id
 
         assert len(serialized_dicts) == len(unserialized_objects)
 
         for proxy_object in unserialized_objects.values():
-            # TODO: It could be that an object is moved using make_persistent,
-            # and that the new backend has already a replica of that object,
-            # (?? or that the object moved is a replica?? [i thinkg not possible])
             self.runtime.inmemory_objects[proxy_object._dc_id] = proxy_object
             self.runtime.heap_manager.retain_in_heap(proxy_object)
-
             self.runtime.metadata_service.upsert_object(proxy_object.metadata)
             proxy_object._dc_is_registered = True
 
@@ -134,7 +130,7 @@ class BackendAPI:
         # for the client to update the backend_id, and call_active_method again
         if not instance._dc_is_local:
             logger.warning(
-                f"Object {object_id} with wrong backend_id. Update to {instance._dc_backend_id}"
+                f"Object {object_id} with wrong backend_id. Update to {instance._dc_master_backend_id}"
             )
             # NOTE: We check to the metadata because when consolidating an object
             # it might be that the proxy is pointing to the wrong backend_id which is
@@ -143,11 +139,11 @@ class BackendAPI:
             # problems with race conditions (e.g. a move before the consolidation). Therefore,
             # we check to the metadata which is more reliable.
             object_md = self.runtime.metadata_service.get_object_md_by_id(object_id)
-            instance._dc_backend_id = object_md.backend_id
+            instance._dc_master_backend_id = object_md.master_backend_id
             return (
                 pickle.dumps(
                     ObjectWithWrongBackendId(
-                        instance._dc_backend_id, instance._dc_replica_backend_ids
+                        instance._dc_master_backend_id, instance._dc_replica_backend_ids
                     )
                 ),
                 False,
@@ -243,7 +239,7 @@ class BackendAPI:
 
         backends_objects = {backend_id: [] for backend_id in backends.keys()}
         for object_md in dc_objects.values():
-            backends_objects[object_md.backend_id].append(object_md.id)
+            backends_objects[object_md.master_backend_id].append(object_md.id)
 
         backends_diff = dict()
         for backend_id, objects in backends_objects.items():
@@ -276,7 +272,7 @@ class BackendAPI:
 
         self.ds_exec_impl(object_id, implementation_id, serialized_value, session_id)
         instance = self.get_local_instance(object_id, True)
-        src_exec_env_id = instance._dc_backend_id()
+        src_exec_env_id = instance._dc_master_backend_id()
         if src_exec_env_id is not None:
             logger.debug(f"Found origin location {src_exec_env_id}")
             if calling_backend_id is None or src_exec_env_id != calling_backend_id:

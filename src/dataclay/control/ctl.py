@@ -74,7 +74,7 @@ def rebalance(host, port):
 
     backend_objects = {backend_id: [] for backend_id in backend_clients.keys()}
     for object_md in object_mds.values():
-        backend_objects[object_md.backend_id].append(object_md.id)
+        backend_objects[object_md.master_backend_id].append(object_md.id)
 
     print("\nBefore rebalance:")
     backends_diff = dict()

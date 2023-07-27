@@ -16,6 +16,6 @@ def test_new_replica(client):
     person.new_replica()
     person.new_replica()
 
-    assert person._dc_backend_id not in person._dc_replica_backend_ids
+    assert person._dc_master_backend_id not in person._dc_replica_backend_ids
 
-    # assert person._dc_backend_id == backend_ids[1]
+    # assert person._dc_master_backend_id == backend_ids[1]

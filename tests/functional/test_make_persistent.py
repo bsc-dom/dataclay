@@ -65,5 +65,5 @@ def test_make_persistent_backend_id(client):
     person_2 = Person("Alice", 21)
     person_2.make_persistent(backend_id=backend_ids[1])
 
-    assert person_1._dc_backend_id == backend_ids[0]
-    assert person_2._dc_backend_id == backend_ids[1]
+    assert person_1._dc_master_backend_id == backend_ids[0]
+    assert person_2._dc_master_backend_id == backend_ids[1]

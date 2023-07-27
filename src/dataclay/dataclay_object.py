@@ -158,7 +158,7 @@ class DataClayObject:
     _dc_dataset_name: str
     _dc_class_name: str
     _dc_is_registered: bool
-    _dc_backend_id: UUID
+    _dc_master_backend_id: UUID
     _dc_replica_backend_ids: set[UUID]
     _dc_is_read_only: bool
     _dc_is_loaded: bool
@@ -198,7 +198,7 @@ class DataClayObject:
         self._dc_class_name = self.__class__.__module__ + "." + self.__class__.__name__
 
         # Metadata fields (mutable)
-        self._dc_backend_id = None
+        self._dc_master_backend_id = None
         self._dc_replica_backend_ids = set()
         self._dc_is_read_only = False  # Remove it?
         self._dc_original_object_id = None
@@ -249,7 +249,7 @@ class DataClayObject:
     @property
     def _dc_all_backend_ids(self):
         """Returns __dict__ with only _dc_property_ attributes"""
-        return self._dc_replica_backend_ids | {self._dc_backend_id}
+        return self._dc_replica_backend_ids | {self._dc_master_backend_id}
 
     @property
     def metadata(self):
@@ -257,7 +257,7 @@ class DataClayObject:
             self._dc_id,
             self._dc_dataset_name,
             self._dc_class_name,
-            self._dc_backend_id,
+            self._dc_master_backend_id,
             self._dc_replica_backend_ids,
             self._dc_is_read_only,
             self._dc_original_object_id,
@@ -268,7 +268,7 @@ class DataClayObject:
     def metadata(self, object_md):
         self._dc_id = object_md.id
         self._dc_dataset_name = object_md.dataset_name
-        self._dc_backend_id = object_md.backend_id
+        self._dc_master_backend_id = object_md.master_backend_id
         self._dc_replica_backend_ids = set(object_md.replica_backend_ids)
         self._dc_is_read_only = object_md.is_read_only
         self._dc_original_object_id = object_md.original_object_id
@@ -387,7 +387,7 @@ class DataClayObject:
             get_runtime().update_object_metadata(self)
 
         backends = set()
-        backends.add(self._dc_backend_id)
+        backends.add(self._dc_master_backend_id)
         backends.update(self._dc_replica_backend_ids)
         return backends
 
@@ -557,7 +557,7 @@ class DataClayObject:
         if self._dc_is_registered:
             return "%s:%s:%s" % (
                 self._dc_id,
-                self._dc_backend_id,
+                self._dc_master_backend_id,
                 self._dc_class_name,
             )
         else:
@@ -599,7 +599,7 @@ class DataClayObject:
         Detach object from session, i.e. remove reference from current session provided to current object,
             'dear garbage-collector, the current session is not using this object anymore'
         """
-        get_runtime().detach_object_from_session(self._dc_id, self._dc_backend_id)
+        get_runtime().detach_object_from_session(self._dc_id, self._dc_master_backend_id)
 
     def __reduce__(self):
         """Support for pickle protocol.

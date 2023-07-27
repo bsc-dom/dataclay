@@ -115,7 +115,7 @@ class BackendRuntime(DataClayRuntime):
 
         # If backend_id is none, we register the object in the current backend (usual path)
         if backend_id is None or backend_id == settings.DATACLAY_BACKEND_ID:
-            instance._dc_backend_id = settings.DATACLAY_BACKEND_ID
+            instance._dc_master_backend_id = settings.DATACLAY_BACKEND_ID
             self.metadata_service.upsert_object(instance.metadata)
             instance._dc_is_registered = True
 
@@ -123,7 +123,7 @@ class BackendRuntime(DataClayRuntime):
 
         # TODO: When backend is different
 
-        return instance._dc_backend_id
+        return instance._dc_master_backend_id
 
     # Shutdown
 
@@ -297,7 +297,7 @@ class BackendRuntime(DataClayRuntime):
             iface_bitmaps=None,
             params_spec=operation.params,
             params_order=operation.paramsOrder,
-            hint_volatiles=instance._dc_backend_id,
+            hint_volatiles=instance._dc_master_backend_id,
             runtime=self,
         )
         self.execution_environment.synchronize(
