@@ -7,7 +7,7 @@ public class ObjectMetadata {
     private String id;
     private String dataset_name;
     private String class_name;
-    private String backend_id;
+    private String master_backend_id;
     private List<String> replica_backend_ids;
     private boolean is_read_only;
     private String original_object_id;
@@ -26,8 +26,8 @@ public class ObjectMetadata {
         return this.class_name;
     }
 
-    public String getBackendId() {
-        return this.backend_id;
+    public String getMasterBackendId() {
+        return this.master_backend_id;
     }
 
     public List<String> getReplicaBackendIds() {

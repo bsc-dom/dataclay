@@ -121,8 +121,8 @@
             <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.56.0:exe:${os.detected.classifier}</pluginArtifact>
             <protoSourceRoot>../../dataclay-common</protoSourceRoot>
             <!-- WARNING! The default is to clear the output directory -->
-            <outputDirectory>src/main/java</outputDirectory>
-            <clearOutputDirectory>false</clearOutputDirectory>
+            <!-- <outputDirectory>src/main/java</outputDirectory> -->
+            <!-- <clearOutputDirectory>false</clearOutputDirectory> -->
           </configuration>
           <executions>
             <execution>

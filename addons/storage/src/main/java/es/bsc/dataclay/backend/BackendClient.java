@@ -13,6 +13,8 @@ import es.bsc.dataclay.proto.backend.BackendServiceGrpc;
 import es.bsc.dataclay.proto.backend.NewObjectVersionRequest;
 import es.bsc.dataclay.proto.backend.NewObjectVersionResponse;
 import es.bsc.dataclay.proto.backend.ConsolidateObjectVersionRequest;
+import es.bsc.dataclay.proto.backend.NewObjectReplicaRequest;
+
 
 public class BackendClient {
   private static final Logger logger = Logger.getLogger(BackendClient.class.getName());
@@ -39,7 +41,20 @@ public class BackendClient {
   public void consolidateObjectVersion(String objectId) {
     ConsolidateObjectVersionRequest request = ConsolidateObjectVersionRequest.newBuilder().setObjectId(objectId)
         .build();
-    NewObjectVersionResponse response;
     blockingStub.consolidateObjectVersion(request);
   }
+
+  public void newObjectReplica(String objectId, String backendId) {
+    NewObjectReplicaRequest request = NewObjectReplicaRequest.newBuilder().setObjectId(objectId).setBackendId(backendId)
+        .build();
+    blockingStub.newObjectReplica(request);
+  }
+
+  public void newObjectReplica(String objectId, String backendId, boolean recursive, boolean remotes) {
+    NewObjectReplicaRequest request = NewObjectReplicaRequest.newBuilder().setObjectId(objectId).setBackendId(backendId)
+        .setRecursive(recursive).setRemotes(remotes)
+        .build();
+    blockingStub.newObjectReplica(request);
+  }
+
 }

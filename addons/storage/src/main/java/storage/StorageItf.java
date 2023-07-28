@@ -10,6 +10,9 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.security.auth.login.Configuration;
+
 import java.util.HashMap;
 
 import es.bsc.dataclay.metadata.ObjectMetadata;
@@ -37,20 +40,45 @@ public final class StorageItf {
 	public static List<String> getLocations(final String objectId) throws StorageException {
 		try {
 			ObjectMetadata objectMetadata = metadataAPI.getObjectMetadata(objectId);
-			List<String> locations = objectMetadata.getReplicaBackendIds();
-			String backend = objectMetadata.getBackendId();
-			locations.add(backend);
-			return locations;
+			List<String> replicaBackendIds = objectMetadata.getReplicaBackendIds();
+			String masterBackendId = objectMetadata.getMasterBackendId();
+			replicaBackendIds.add(masterBackendId);
+			return replicaBackendIds;
 		} catch (final Exception e) {
 			throw new StorageException("Error getting locations of object " + objectId, e);
 		}
 	}
 
+
+	/**
+	 * @brief Create a new replica of the given object.
+	 * @param objectInfo
+	 *            objectInfo to be replicated.
+	 * @param backendId
+	 *            target backend of the new replica.
+	 * @throws StorageException
+	 *            if an exception occurs
+	 */
+	public static void newReplica(final String objectInfo, final String backendId) throws StorageException {
+		try {
+			String[] splitObjectInfo = objectInfo.split(":");
+			final String objectId = splitObjectInfo[0];
+			final String masterBackendId = splitObjectInfo[1];
+			// final String className = splitObjectInfo[2];
+
+			BackendClient backendClient = getBackendClient(masterBackendId);
+			backendClient.newObjectReplica(objectId, backendId);
+		} catch (final Exception e) {
+			throw new StorageException("Error creating new version of object " + objectInfo, e);
+		}
+	}
+
+
 	/**
 	 * @brief Create a new version of the object in the specified host. If no
 	 *        destination is specified random one is
 	 *        selected.
-	 * @param objectIDstr
+	 * @param objectInfo
 	 *                       object id to be versioned
 	 * @param preserveSource
 	 *                       whether the source object is preserved or otherwise can
@@ -65,14 +93,13 @@ public final class StorageItf {
 	public static String newVersion(final String objectInfo, final boolean preserveSource, final String optDestHost)
 			throws StorageException {
 		// TODO preserveSource is currently ignored, but we could take advantage of it
-		// (jmarti 15-09-2017)
 		try {
 			String[] splitObjectInfo = objectInfo.split(":");
 			final String objectId = splitObjectInfo[0];
-			final String backendId = splitObjectInfo[1];
+			final String masterBackendId = splitObjectInfo[1];
 			// final String className = splitObjectInfo[2];
 
-			BackendClient backendClient = getBackendClient(backendId);
+			BackendClient backendClient = getBackendClient(masterBackendId);
 			String newVersionInfo = backendClient.newObjectVersion(objectId);
 
 			return newVersionInfo;
@@ -85,10 +112,10 @@ public final class StorageItf {
 		try {
 			String[] splitObjectInfo = objectInfo.split(":");
 			final String objectId = splitObjectInfo[0];
-			final String backendId = splitObjectInfo[1];
+			final String masterBackendId = splitObjectInfo[1];
 			// final String className = splitObjectInfo[2];
 
-			BackendClient backendClient = getBackendClient(backendId);
+			BackendClient backendClient = getBackendClient(masterBackendId);
 			backendClient.consolidateObjectVersion(objectId);
 		} catch (final Exception e) {
 			throw new StorageException("Error consolidating version " + objectInfo, e);
@@ -136,8 +163,9 @@ public final class StorageItf {
 
 	public static void main(String[] args) throws Exception {
 
-		String objectId = "3e8bd351-7bfc-4739-a78d-ee554168bdaa";
-		String backendId = "371405be-1dcb-476d-ad2d-cd8231e1bf32";
+		String objectId = "13ca3710-d971-47fc-bcbb-58daf047352f";
+		String backendId = "f3ec9132-40fb-4c72-8a5b-4dd0a280a6f2";
+		String objectInfo = objectId + ":" + backendId + ":" + "es.bsc.dataclay.logic.LogicModule";
 
 		System.out.println(getLocations(objectId));
 
@@ -147,7 +175,9 @@ public final class StorageItf {
 			System.out.println(key);
 		}
 
-		newVersion(objectId + ":" + backendId + ":" + "es.bsc.dataclay.logic.LogicModule", true, null);
+		newVersion(objectInfo, true, null);
+
+		newReplica(objectInfo, "9012d76c-ea44-4112-b646-178ee6dbcf0e");
 
 	}
 
