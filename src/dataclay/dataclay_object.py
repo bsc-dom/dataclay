@@ -533,7 +533,7 @@ class DataClayObject:
         if not self._dc_is_registered:
             raise ObjectNotRegisteredError(self._dc_id)
 
-        return get_runtime().make_new_version(self, backend_id)
+        return get_runtime().new_object_version(self, backend_id)
 
     @tracer.start_as_current_span("consolidate_version")
     def consolidate_version(self):
@@ -570,7 +570,7 @@ class DataClayObject:
     def new_replica(self, backend_id: UUID = None, recursive: bool = False, remotes: bool = True):
         if not self._dc_is_registered:
             raise ObjectNotRegisteredError(self._dc_id)
-        get_runtime().new_replica(self, backend_id, recursive, remotes)
+        get_runtime().new_object_replica(self, backend_id, recursive, remotes)
 
     ##############
     # Federation #

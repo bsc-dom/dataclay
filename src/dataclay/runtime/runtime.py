@@ -345,7 +345,7 @@ class DataClayRuntime(ABC):
         """
 
         visited_local_objects = {}
-        visited_remote_objects = {}
+        pending_remote_objects = {}
         serialized_local_dict = []
 
         for instance in instances:
@@ -362,7 +362,7 @@ class DataClayRuntime(ABC):
                 if recursive:
                     if remotes:
                         dicts_bytes = recursive_local_pickler(
-                            instance, visited_local_objects, visited_remote_objects
+                            instance, visited_local_objects, pending_remote_objects
                         )
                     else:
                         dicts_bytes = recursive_local_pickler(instance, visited_local_objects)
@@ -372,7 +372,7 @@ class DataClayRuntime(ABC):
                     dict_bytes = pickle.dumps(instance._dc_dict)
                     serialized_local_dict.append(dict_bytes)
             else:
-                visited_remote_objects[instance._dc_id] = instance
+                pending_remote_objects[instance._dc_id] = instance
 
         # Check that the destination backend is not this
         if backend_id != self.backend_id:
@@ -394,7 +394,7 @@ class DataClayRuntime(ABC):
 
         # Get the backend with most remote references.
         counter = collections.Counter()
-        for remote_object in visited_remote_objects.values():
+        for remote_object in pending_remote_objects.values():
             counter[remote_object._dc_master_backend_id] += 1
             if make_replica:
                 if backend_id != remote_object._dc_master_backend_id:
@@ -409,7 +409,7 @@ class DataClayRuntime(ABC):
             remote_backend_id = counter.most_common(1)[0][0]
             remote_backend_client = self.get_backend_client(remote_backend_id)
             remote_backend_client.send_objects(
-                visited_remote_objects.keys(), backend_id, make_replica, recursive, remotes
+                pending_remote_objects.keys(), backend_id, make_replica, recursive, remotes
             )
 
     def replace_object_properties(self, instance, new_instance):
@@ -424,7 +424,7 @@ class DataClayRuntime(ABC):
             backend_client = self.get_backend_client(instance._dc_master_backend_id)
             backend_client.update_object_properties(instance._dc_id, pickle.dumps(new_properties))
 
-    def make_new_version(self, instance, backend_id=None):
+    def new_object_version(self, instance, backend_id=None):
         new_version = self.make_object_copy(instance, is_proxy=True)
 
         if instance._dc_original_object_id is None:
@@ -463,8 +463,12 @@ class DataClayRuntime(ABC):
     # Replicas #
     ############
 
-    def new_replica(
-        self, instance, backend_id: UUID = None, recursive: bool = False, remotes: bool = True
+    def new_object_replica(
+        self,
+        instance: DataClayObject,
+        backend_id: UUID = None,
+        recursive: bool = False,
+        remotes: bool = True,
     ):
         logger.debug(f"Starting new replica of {instance._dc_id}")
 

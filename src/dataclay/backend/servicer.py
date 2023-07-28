@@ -221,6 +221,21 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
+    def NewObjectReplica(self, request, context):
+        try:
+            self.backend.new_object_replica(
+                UUID(request.object_id),
+                UUID(request.backend_id),
+                request.recursive,
+                request.remotes,
+            )
+            return Empty()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+
     ###########
     # END NEW #
     ###########
@@ -239,25 +254,6 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return common_pb2.ExceptionInfo()
         except DataClayException as ex:
             return self.get_exception_info(ex)
-
-    def newReplica(self, request, context):
-        raise Exception("To refactor")
-        try:
-            result = self.backend.new_replica(
-                UUID(request.sessionID),
-                UUID(request.objectID),
-                UUID(request.destBackendID),
-                request.recursive,
-            )
-            repl_ids_list = []
-            for oid in result:
-                repl_ids_list.append(Utils.get_msg_id(oid))
-
-            return dataservice_messages_pb2.NewReplicaResponse(replicatedObjects=repl_ids_list)
-
-        except Exception as ex:
-            traceback.print_exc()
-            return dataservice_messages_pb2.NewReplicaResponse(excInfo=self.get_exception_info(ex))
 
     def removeObjects(self, request, context):
         raise Exception("To refactor")

@@ -66,6 +66,11 @@ class BackendServiceStub(object):
                 request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.ChangeObjectIdRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.NewObjectReplica = channel.unary_unary(
+                '/dataclay.proto.backend.BackendService/NewObjectReplica',
+                request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.NewObjectReplicaRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
         self.FlushAll = channel.unary_unary(
                 '/dataclay.proto.backend.BackendService/FlushAll',
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
@@ -146,6 +151,12 @@ class BackendServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def NewObjectReplica(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def FlushAll(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -215,6 +226,11 @@ def add_BackendServiceServicer_to_server(servicer, server):
             'ChangeObjectId': grpc.unary_unary_rpc_method_handler(
                     servicer.ChangeObjectId,
                     request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.ChangeObjectIdRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'NewObjectReplica': grpc.unary_unary_rpc_method_handler(
+                    servicer.NewObjectReplica,
+                    request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.NewObjectReplicaRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'FlushAll': grpc.unary_unary_rpc_method_handler(
@@ -408,6 +424,23 @@ class BackendService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/ChangeObjectId',
             dataclay_dot_proto_dot_backend_dot_backend__pb2.ChangeObjectIdRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def NewObjectReplica(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/NewObjectReplica',
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.NewObjectReplicaRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

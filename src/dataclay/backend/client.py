@@ -218,6 +218,16 @@ class BackendClient:
     def drain(self):
         self.stub.Drain(Empty())
 
+    # @grpc_error_handler
+    # def new_object_replica(self, object_id: UUID, backend_id: UUID, recursive: bool, remotes: bool):
+    #     request = backend_pb2.NewObjectReplicaRequest(
+    #         object_id=str(object_id),
+    #         backend_id=str(backend_id),
+    #         recursive=recursive,
+    #         remotes=remotes,
+    #     )
+    #     self.stub.NewObjectReplica(request)
+
     ###########
     # END NEW #
     ###########
@@ -312,31 +322,6 @@ class BackendClient:
             raise e
         if response.isException:
             raise DataClayException(response.exceptionMessage)
-
-    def new_replica(self, session_id, object_id, dest_backend_id, recursive):
-        raise Exception("To refactor")
-        request = dataservice_messages_pb2.NewReplicaRequest(
-            sessionID=str(session_id),
-            objectID=str(object_id),
-            destBackendID=str(dest_backend_id),
-            recursive=recursive,
-        )
-
-        try:
-            response = self.stub.newReplica(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            raise e
-
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        result = set()
-
-        for oid in response.replicatedObjects:
-            result.add(UUID(oid))
-
-        return result
 
     def ds_migrate_objects_to_backends(self, back_ends):
         raise ("To refactor")

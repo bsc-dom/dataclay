@@ -20,6 +20,8 @@ from dataclay.utils.pickle import RecursiveLocalPickler, RecursiveLocalUnpickler
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
+    from uuid import UUID
+
     from dataclay.dataclay_object import DataClayObject
 
 tracer = trace.get_tracer(__name__)
@@ -191,7 +193,7 @@ class BackendAPI:
         # dataset_name = instance._dc_dataset_name
         # self.runtime.session = Session(None, None, dataset_name)
 
-        new_version = self.runtime.make_new_version(instance)
+        new_version = self.runtime.new_object_version(instance)
         return new_version.getID()
 
     def consolidate_object_version(self, object_id):
@@ -262,9 +264,20 @@ class BackendAPI:
 
     # Replicas
 
+    def new_object_replica(
+        self,
+        object_id: UUID,
+        backend_id: UUID = None,
+        recursive: bool = False,
+        remotes: bool = True,
+    ):
+        instance = self.runtime.get_object_by_id(object_id)
+        self.runtime.new_object_replica(instance, backend_id, recursive, remotes)
+
     def synchronize(
         self, session_id, object_id, implementation_id, serialized_value, calling_backend_id=None
     ):
+        raise Exception("To refactor")
         # set field
         logger.debug(
             f"----> Starting synchronization of {object_id} from calling backend {calling_backend_id}"
@@ -320,6 +333,7 @@ class BackendAPI:
             external_execution_id: id of dest external execution environment
             recursive: indicates if federation is recursive
         """
+        raise Exception("To refactor")
         logger.debug("----> Starting federation of %s", object_id)
 
         object_ids = set()
@@ -343,6 +357,7 @@ class BackendAPI:
             objects_to_persist: [num_params, imm_objs, lang_objs, vol_params, pers_params]
         """
 
+        raise Exception("To refactor")
         self.set_local_session(session_id)
 
         try:
@@ -378,6 +393,7 @@ class BackendAPI:
             recursive: also unfederates sub-objects
         """
         # TODO: redirect unfederation to owner if current dataClay is not the owner, check origLoc belongs to current dataClay
+        raise Exception("To refactor")
         try:
             logger.debug("----> Starting unfederation of %s", object_id)
             object_ids = set()
@@ -423,6 +439,7 @@ class BackendAPI:
             session_id: ID of session of federation call
             object_ids: List of IDs of the objects to unfederate
         """
+        raise Exception("To refactor")
         self.set_local_session(session_id)
         logger.debug("---> Notified unfederation: running when_unfederated")
         try:
