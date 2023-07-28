@@ -227,7 +227,18 @@ class DataClayRuntime(ABC):
             # NOTE: Loop to update the backend_id when we have the wrong one, and call again
             # the active method
             while True:
-                backend_client = self.get_backend_client(instance._dc_master_backend_id)
+
+                # TODO: Optimize by doing intersection between available backend clients and
+                # object backends. Update all backend clients beforehand. Keep the list of the
+                # intersection and remove the clients that fail the connection (that failed
+                # between the update all and the call)
+                while True:
+                    try:
+                        backend_id = random.choice(tuple(instance._dc_all_backend_ids))
+                        backend_client = self.get_backend_client(backend_id)
+                        break  # If no KeyError occurs, break out of the loop
+                    except KeyError:
+                        pass  # If KeyError occurs, do nothing and loop again
 
                 serialized_response, is_exception = backend_client.call_active_method(
                     self.session.id,

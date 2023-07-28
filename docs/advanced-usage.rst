@@ -18,40 +18,38 @@ Persistent objects can be moved from one backend to another with :meth:`move() <
 
 
 By default, only the current object will be moved. However, by passing ``recursive=True`` 
-to :meth:`move() <DataClayObject.move>`, all objects reachable from the current object,
-that are owned by the same backend, will be moved as well::
+to :meth:`move() <DataClayObject.move>`, all objects reachable from the current object
+will be moved as well::
 
     backend_ids = list(client.get_backends())
 
     employee = Employee("John", 1000.0)
-    company = Company("ABC", employee)
-
-    # Register employee and company in the same backend
-    company.make_persistent(backend_id=backend_ids[0])
-
-    # Move company to another backend
-    company.move(backend_ids[1], recursive=True)
-
-    # employee has also moved to the same backend as company
-    person_1.name  # forcing update of the backend_id
-    assert employee._dc_master_backend_id == backend_ids[1]
-
-But referenced objects owned by another backend will not be moved::
-
-    backend_ids = list(client.get_backends())
-
-    employee = Employee("John", 1000.0)
-    company = Company("ABC", employee)
-
-    # Register employee in backend 0 and company in backend 1
     employee.make_persistent(backend_id=backend_ids[0])
+
+    company = Company("ABC", employee)
     company.make_persistent(backend_id=backend_ids[1])
 
-    # Move company to backend 2
     company.move(backend_ids[2], recursive=True)
 
+    # employee has also moved
+    employee.name  # forcing update of the backend_id
+    assert employee._dc_master_backend_id == backend_ids[2]
+
+By setting ``remotes=False``, the recursive option will only move referents that are local
+int the same backend, ignoring referents owned by other backends.
+
+    backend_ids = list(client.get_backends())
+
+    employee = Employee("John", 1000.0)
+    employee.make_persistent(backend_id=backend_ids[0])
+
+    company = Company("ABC", employee)
+    company.make_persistent(backend_id=backend_ids[1])
+
+    company.move(backend_ids[2], recursive=True, remotes=False)
+
     # employee is still in backend 0
-    person_1.name  # forcing update of the backend_id
+    employee.name  # forcing update of the backend_id
     assert employee._dc_master_backend_id == backend_ids[0]
 
 .. Replicas
