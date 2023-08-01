@@ -16,7 +16,7 @@ from dataclay.conf import settings
 from dataclay.exceptions import *
 from dataclay.runtime import UUIDLock, set_runtime
 from dataclay.runtime.backend import BackendRuntime
-from dataclay.utils.pickle import RecursiveLocalPickler, RecursiveLocalUnpickler
+from dataclay.utils.pickle import unserialize_dataclay_object
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -96,9 +96,7 @@ class BackendAPI:
     def make_persistent(self, serialized_dicts: Iterable[bytes]):
         unserialized_objects = dict()
         for serial_dict in serialized_dicts:
-            object_dict = RecursiveLocalUnpickler(
-                io.BytesIO(serial_dict), unserialized_objects
-            ).load()
+            object_dict = unserialize_dataclay_object(serial_dict, unserialized_objects)
             object_id = object_dict["_dc_id"]
 
             try:

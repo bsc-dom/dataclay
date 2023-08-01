@@ -9,7 +9,7 @@ from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.metadata.client import MetadataClient
 from dataclay.runtime.runtime import DataClayRuntime
-from dataclay.utils.pickle import RecursiveLocalPickler
+from dataclay.utils.pickle import serialize_dataclay_object
 from dataclay.utils.telemetry import trace
 
 UNDEFINED_LOCAL = object()
@@ -73,13 +73,9 @@ class ClientRuntime(DataClayRuntime):
         # add_volatiles_under_deserialization and remove_volatiles_under_deserialization
         # TODO: Check if we can make a use of the recursive parameter
 
-        f = io.BytesIO()
-        serialized_local_dicts = []
-        visited_objects = {instance._dc_id: instance}
-
-        RecursiveLocalPickler(f, visited_objects, serialized_local_dicts).dump(instance._dc_dict)
-        serialized_local_dicts.append(f.getvalue())
-        backend_client.make_persistent(serialized_local_dicts)
+        visited_objects = {}
+        dicts_bytes = serialize_dataclay_object(instance, visited_objects, make_persistent=True)
+        backend_client.make_persistent(dicts_bytes)
 
         for dc_object in visited_objects.values():
             dc_object._clean_dc_properties()

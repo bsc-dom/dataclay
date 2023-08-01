@@ -22,11 +22,7 @@ from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.runtime import UUIDLock
-from dataclay.utils.pickle import (
-    RecursiveLocalPickler,
-    RecursiveLocalUnpickler,
-    recursive_local_pickler,
-)
+from dataclay.utils.pickle import serialize_dataclay_object
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -361,11 +357,11 @@ class DataClayRuntime(ABC):
                 self.load_object_from_db(instance)
                 if recursive:
                     if remotes:
-                        dicts_bytes = recursive_local_pickler(
+                        dicts_bytes = serialize_dataclay_object(
                             instance, visited_local_objects, pending_remote_objects
                         )
                     else:
-                        dicts_bytes = recursive_local_pickler(instance, visited_local_objects)
+                        dicts_bytes = serialize_dataclay_object(instance, visited_local_objects)
 
                     serialized_local_dict.extend(dicts_bytes)
                 else:

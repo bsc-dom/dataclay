@@ -5,10 +5,9 @@ import os
 import uuid
 from distutils.util import strtobool
 
-from dataclay.client.api import Client
-
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
+from dataclay.client.api import Client
 from dataclay.metadata.kvdata import ObjectMetadata
 
 # Also "publish" the split method
@@ -23,7 +22,8 @@ _initialized = False
 
 logger = logging.getLogger("dataclay.storage.api")
 
-_client : Client = None 
+_client: Client = None
+
 
 def getByID(object_strid):
     """Get a Persistent Object from its OID.
@@ -88,6 +88,7 @@ def initWorkerPostFork():
     logger.warning("Finishing initialization (post-fork)")
     _client.start()
 
+
 def finishWorkerPostFork():
     """Worker-side finalization per forked process.
 
@@ -111,6 +112,7 @@ def init(config_file_path, **kwargs):
     logger.info("Initialization of storage.api")
     initWorker(config_file_path)
     initWorkerPostFork()
+
 
 def finishWorker(**kwargs):
     """Worker-side finalization.
