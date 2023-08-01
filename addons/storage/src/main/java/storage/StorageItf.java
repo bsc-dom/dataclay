@@ -29,6 +29,12 @@ public final class StorageItf {
 	private static MetadataAPI metadataAPI = new MetadataAPI("localhost", 6379);
 	private static Map<String, BackendClient> backendClients = new HashMap<>();
 
+
+	public static void init(final String configFilePath) throws StorageException {
+
+	}
+
+
 	/**
 	 * @brief Gets all the locations of an object.
 	 * @param objectId

@@ -6,7 +6,7 @@
 
   <groupId>storage.StorageItf</groupId>
   <artifactId>StorageItf</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
 
   <name>StorageItf</name>
   <!-- FIXME change it to the project's website -->
@@ -91,6 +91,9 @@
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.0.2</version>
+          <configuration>
+            <outputDirectory>./</outputDirectory>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>

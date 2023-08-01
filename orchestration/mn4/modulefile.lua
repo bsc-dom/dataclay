@@ -42,6 +42,9 @@ setenv("VENV_PATH", VENV_PATH)
 -- prepend_path("PYTHONPATH", capture("find $VENV_PATH -name site-packages"))
 execute {cmd="export PYTHONPATH=$(find $VENV_PATH -name site-packages):$PYTHONPATH", modeA={"load"}}
 
+-- Necessary for COMPSs enqueue_compss --pythonpath
+execute {cmd="export DATACLAY_PYTHONPATH=$(find $VENV_PATH -name site-packages)", modeA={"load"}}
+
 --------------
 -- Update PATH
 --------------
@@ -53,6 +56,8 @@ append_path("PATH", VENV_PATH .. "/bin") -- for opentelemetry-instrument
 ------------------
 -- append_path("PATH", home .. "/scripts")
 setenv("COMPSS_STORAGE_HOME", home)
+
+-- Used in enqueue_compss
 setenv("DATACLAY_HOME", home)
 
 

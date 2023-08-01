@@ -31,3 +31,4 @@
 - CHANGES.rst
 - compile-protos.sh
 - Dockerfile*
+- /addons/

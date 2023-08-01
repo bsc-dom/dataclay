@@ -5,7 +5,7 @@ import os
 import uuid
 from distutils.util import strtobool
 
-import dataclay.client.api
+from dataclay.client.api import Client
 
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
@@ -23,6 +23,7 @@ _initialized = False
 
 logger = logging.getLogger("dataclay.storage.api")
 
+_client : Client = None 
 
 def getByID(object_strid):
     """Get a Persistent Object from its OID.
@@ -58,7 +59,17 @@ def initWorker(config_file_path, **kwargs):
       and/or other Persistent Object Library requirements.
     """
     logger.info("Initialization of worker through storage.api")
-    dataclay.client.api.pre_network_init(config_file_path)
+    # parsing config_file_path
+
+    with open(config_file_path, "r") as file:
+        for line in file:
+            line = line.strip()
+            if line and not line.startswith("#"):
+                key, value = line.split("=", 1)
+                os.environ[key] = value
+
+    global _client
+    _client = Client()
 
 
 def initWorkerPostFork():
@@ -75,22 +86,7 @@ def initWorkerPostFork():
     Once this method is called, dataClay can be considered "initialized".
     """
     logger.warning("Finishing initialization (post-fork)")
-    dataclay.client.api.reinitialize_logging()
-
-    # ToDo: this is ugly, avoid, fix the issue:
-    # https://storage.bsc.es/gitlab/object_storage/poas/issues/78
-    logger.warning(
-        "Arbitrary sleep done here in order to minimize "
-        "race conditions on opened connections to management database"
-    )
-    from random import randint
-    from time import sleep
-
-    sleep(randint(0, 30))
-    ##########################################################
-    dataclay.client.api.post_network_init()
-    logger.debug("Reinitialization post-fork finished")
-
+    _client.start()
 
 def finishWorkerPostFork():
     """Worker-side finalization per forked process.
@@ -103,18 +99,18 @@ def finishWorkerPostFork():
     (i.e. called from the same process) call to finishWorkerPostFork.
     """
     logger.warning("Finishing dataClay (post-fork)")
-    dataclay.client.api.finish()
+    _client.stop()
     logger.debug("Finalization post-fork finished")
 
 
-def init(config_file_path=None, **kwargs):
+def init(config_file_path, **kwargs):
     """Master-side initialization.
 
     Identical to initWorker (right now, may change).
     """
     logger.info("Initialization of storage.api")
-    dataclay.client.api.init(config_file_path)
-
+    initWorker(config_file_path)
+    initWorkerPostFork()
 
 def finishWorker(**kwargs):
     """Worker-side finalization.
@@ -124,7 +120,7 @@ def finishWorker(**kwargs):
     """
     logger.info("Finalization of worker through storage.api")
     # Nothing to do here, because finishWorkerPostFork is the real hero here
-    dataclay.client.api.finish_tracing()  # Not enough hero for Extrae :)
+    pass
 
 
 def finish(**kwargs):
@@ -133,7 +129,7 @@ def finish(**kwargs):
     Identical to finishworker (right now, may change).
     """
     logger.info("Finalization of storage.api")
-    dataclay.client.api.finish()
+    _client.stop()
 
 
 class TaskContext(object):

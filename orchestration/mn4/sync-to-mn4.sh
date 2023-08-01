@@ -19,3 +19,7 @@ scp modulefile.lua $MN1_HOST:$MN_LUA_PATH
 
 # examples
 rsync -av --delete --copy-links ../../examples $MN1_HOST:~/
+
+# storage
+mvn -f ../../addons/storage/pom.xml package
+rsync -av --delete --exclude target --exclude src ../../addons/storage $MN1_HOST:$MN_DATACLAY_PATH
