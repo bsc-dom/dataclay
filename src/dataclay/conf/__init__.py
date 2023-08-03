@@ -103,6 +103,9 @@ class Settings:
     # deploy_path = deploy_path
     # deploy_path_source = os.getenv("DEPLOY_PATH_SRC", os.path.join(deploy_path, "source"))
 
+    # Grace period to wait for and object to relase the lock before forcing to unload.
+    DATACLAY_UNLOAD_TIMEOUT = 5
+
     def load_backend_properties(self):
         self.THREAD_POOL_WORKERS = os.getenv("THREAD_POOL_WORKERS", default=None)
 

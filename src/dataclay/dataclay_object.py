@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import functools
 import logging
-import threading
 import traceback
 import uuid
 from collections import ChainMap
@@ -20,7 +19,7 @@ from uuid import UUID
 
 from dataclay.exceptions import *
 from dataclay.metadata.kvdata import ObjectMetadata
-from dataclay.runtime import get_runtime
+from dataclay.runtime import LockManager, get_runtime
 from dataclay.utils.telemetry import trace
 
 DC_PROPERTY_PREFIX = "_dc_property_"
@@ -28,45 +27,6 @@ DC_PROPERTY_PREFIX = "_dc_property_"
 
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
-
-
-class ReadWriteLock:
-    """Atomic Counter lock that can only be acquired when the internal counter is zero.
-
-    If the lock is acquired, it cannot be incremented until the lock is release.
-
-    Use the lock with context manager:
-        with counter_lock:
-            ...
-    """
-
-    def __init__(self):
-        self.lock = threading.Lock()
-        self.cv = threading.Condition()
-        self.counter = 0
-
-    def add(self, value=1):
-        with self.cv:
-            self.cv.wait_for(lambda: not self.lock.locked())
-            self.counter += value
-
-    def sub(self, value=1):
-        with self.cv:
-            self.counter -= value
-            self.cv.notify_all()
-
-    def acquire(self, timeout=None):
-        with self.cv:
-            # NOTE: Timeout to avoid dead lock when activemethod call flush_all
-            if self.cv.wait_for(lambda: self.counter == 0, timeout):
-                return self.lock.acquire(blocking=False)
-            else:
-                return False
-
-    def release(self):
-        with self.cv:
-            self.lock.release()
-            self.cv.notify_all()
 
 
 def activemethod(func):
@@ -80,9 +40,8 @@ def activemethod(func):
             # else, executes the method in the backend
             if self._dc_is_local:
                 # TODO: Use active_counter only if inside backend
-                self._xdc_active_counter.add()
-                result = func(self, *args, **kwargs)
-                self._xdc_active_counter.sub()
+                with LockManager.read(self._dc_id):
+                    result = func(self, *args, **kwargs)
                 return result
             else:
                 return get_runtime().call_active_method(self, func.__name__, args, kwargs)
@@ -166,7 +125,6 @@ class DataClayObject:
     _dc_original_object_id: UUID
     _dc_versions_object_ids: list[UUID]
     _dc_is_replica: bool
-    # _xdc_active_counter: ReadWriteLock # Commented to not break Pickle...
 
     def __init_subclass__(cls) -> None:
         """Defines a @property for each annotatted attribute"""
@@ -208,7 +166,6 @@ class DataClayObject:
         self._dc_is_local = True
         self._dc_is_loaded = True
         self._dc_is_registered = False  # cannot be unset (unregistered)
-        self._xdc_active_counter = ReadWriteLock()
         self._dc_is_replica = False
 
     @property

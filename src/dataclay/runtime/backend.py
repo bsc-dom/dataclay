@@ -10,7 +10,8 @@ from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.metadata.api import MetadataAPI
-from dataclay.runtime.runtime import DataClayRuntime, UUIDLock
+from dataclay.runtime import LockManager
+from dataclay.runtime.runtime import DataClayRuntime
 from dataclay.utils import metrics
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,7 @@ class BackendRuntime(DataClayRuntime):
             self.heap_manager.retain_in_heap(instance)
 
     def load_object_from_db(self, instance: DataClayObject):
-        with UUIDLock(instance._dc_id):
+        with LockManager.write(instance._dc_id):
             if instance._dc_is_loaded or not instance._dc_is_local:
                 # The object is already loaded or not local. It may had been loaded
                 # in another thread while waiting for lock
@@ -157,7 +158,7 @@ class BackendRuntime(DataClayRuntime):
 
         if object_id not in self.references_hold_by_sessions:
             """race condition: two objects creating set of sessions at same time"""
-            with UUIDLock(object_id):
+            with LockManager.write(object_id):
                 if object_id not in self.references_hold_by_sessions:
                     session_refs = set()
                     self.references_hold_by_sessions[object_id] = session_refs
@@ -183,7 +184,7 @@ class BackendRuntime(DataClayRuntime):
             What if T2 removes it after the put?
             Synchronization is needed to avoid this. It is not a big penalty if session expiration date was already added.
             """
-            with UUIDLock(session_id):
+            with LockManager.write(session_id):
                 self.session_expires_dates[session_id] = expiration_date
 
     def detach_object_from_session(self, object_id, _):

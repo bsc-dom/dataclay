@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 from dataclay import utils
 from dataclay.conf import settings
 from dataclay.exceptions import *
-from dataclay.runtime import UUIDLock, set_runtime
+from dataclay.runtime import LockManager, set_runtime
 from dataclay.runtime.backend import BackendRuntime
 from dataclay.utils.pickle import unserialize_dataclay_object
 from dataclay.utils.telemetry import trace
@@ -72,7 +72,7 @@ class BackendAPI:
                     logger.warning(f"There is already a replica for object {instance._dc_id}")
                     continue
 
-            with UUIDLock(instance._dc_id):
+            with LockManager.write(instance._dc_id):
                 vars(instance).update(object_dict)
                 instance._dc_is_local = True
                 instance._dc_is_loaded = True

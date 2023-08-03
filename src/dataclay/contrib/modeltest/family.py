@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from threading import Thread
+
 from dataclay import DataClayObject, activemethod
 
 
@@ -82,7 +84,11 @@ class Family(DataClayObject):
         from dataclay.runtime import get_runtime
 
         members = self.members
-        get_runtime().heap_manager.flush_all()
+
+        t = Thread(target=get_runtime().heap_manager.flush_all, args=(0, False))
+        t.start()
+        t.join()
+
         dog = Dog("Rio", 4)
         members.append(dog)
         # If the current instance was nullified,
@@ -91,6 +97,9 @@ class Family(DataClayObject):
 
     @activemethod
     def test_reference_is_unloaded(self):
+        """
+        Should this be the correct flow?
+        """
         from dataclay.runtime import get_runtime
 
         new_family = Family()

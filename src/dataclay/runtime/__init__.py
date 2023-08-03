@@ -1,5 +1,5 @@
-from contextlib import AbstractContextManager
-from threading import Condition, Lock, RLock
+import threading
+from contextlib import contextmanager
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -19,63 +19,109 @@ def set_runtime(new_runtime):
     current_runtime = new_runtime
 
 
-class UUIDLock(AbstractContextManager):
-    """This class is used as a global lock for UUIDs
+class ReadWriteLock:
+    """
+    This class implements a read-write lock for objects identified by an object_id.
 
-    Use it always with context manager:
-        with UUIDLock(id):
-            ...
+    The lock is reentrant for the same thread. Therefore, many read and write locks
+    can be acquired by the same thread.
+
+    The lock is not reentrant for different threads. Therefore, a thread cannot acquire
+    a read lock if another thread has acquired a write lock, and viceversa.
+
+    Many threads can acquire a read lock at the same time, but only one thread can acquire
+    a write lock at the same time.
     """
 
-    object_locks: dict[UUID, RLock] = dict()
-    class_lock = Lock()
+    def __init__(self):
+        self._write_lock = threading.RLock()
+        self._cv = threading.Condition()
+        self._read_count = 0
+        self._local = threading.local()
 
-    def __init__(self, object_id):
-        self.object_id = object_id
+    def acquire_read(self, timeout: float = None) -> bool:
+        with self._cv:
+            if self._cv.wait_for(lambda: self._write_lock.acquire(blocking=False), timeout):
+                self._read_count += 1
+                if not hasattr(self._local, "count"):
+                    self._local.count = 0
+                self._local.count += 1
+                self._write_lock.release()
+                self._cv.notify_all()
+                return True
+            else:
+                return False
 
-    def __enter__(self):
-        try:
-            self.object_locks[self.object_id].acquire()
-            # NOTE: This assert checks that cleanup thread don't remove
-            # lock while trying to acquire.
-            assert self.object_id in self.object_locks
-        except KeyError:
-            with self.class_lock:
-                try:
-                    self.object_locks[self.object_id].acquire()
-                except KeyError:
-                    self.object_locks[self.object_id] = RLock()
-                    self.object_locks[self.object_id].acquire()
+    def release_read(self):
+        with self._cv:
+            self._read_count -= 1
+            self._local.count -= 1
+            self._cv.notify_all()
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        try:
-            self.object_locks[self.object_id].release()
-        except KeyError:
-            pass
+    def acquire_write(self, timeout: float = None) -> bool:
+        with self._cv:
+            if not hasattr(self._local, "count"):
+                self._local.count = 0
+            return self._cv.wait_for(
+                lambda: self._read_count == self._local.count
+                and self._write_lock.acquire(blocking=False),
+                timeout,
+            )
+
+    def release_write(self):
+        with self._cv:
+            self._write_lock.release()
+            self._cv.notify_all()
 
 
-# NOTE this lock is faster and don't require cleanup,
-# however, it doesn't allow recursive locking in same thread
-class UUIDLock_old(AbstractContextManager):
-    """This class is used as a global lock for UUIDs
-
-    Use it always with context manager:
-        with UUIDLock(id):
-            ...
+class LockManager:
+    """
+    This class implements a global read-write lock manager for objects identified by an object_id.
     """
 
-    cv = Condition()
-    locked_objects = set()
+    object_locks: dict[UUID, ReadWriteLock] = dict()
+    class_lock = threading.Lock()
 
-    def __init__(self, id):
-        self.id = id
+    @classmethod
+    def acquire_read(cls, object_id, timeout=None):
+        try:
+            return cls.object_locks[object_id].acquire_read(timeout)
+        except KeyError:
+            with cls.class_lock:
+                if object_id not in cls.object_locks:
+                    cls.object_locks[object_id] = ReadWriteLock()
+                return cls.object_locks[object_id].acquire_read(timeout)
 
-    def __enter__(self):
-        with self.cv:
-            self.cv.wait_for(lambda: self.id not in self.locked_objects)
-            self.locked_objects.add(self.id)
+    @classmethod
+    def release_read(cls, object_id):
+        cls.object_locks[object_id].release_read()
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        with self.cv:
-            self.locked_objects.remove(self.id)
-            self.cv.notify_all()
+    @classmethod
+    @contextmanager
+    def read(cls, object_id):
+        try:
+            yield cls.acquire_read(object_id)
+        finally:
+            cls.release_read(object_id)
+
+    @classmethod
+    def acquire_write(cls, object_id, timeout=None):
+        try:
+            return cls.object_locks[object_id].acquire_write(timeout)
+        except KeyError:
+            with cls.class_lock:
+                if object_id not in cls.object_locks:
+                    cls.object_locks[object_id] = ReadWriteLock()
+                return cls.object_locks[object_id].acquire_write(timeout)
+
+    @classmethod
+    def release_write(cls, object_id):
+        cls.object_locks[object_id].release_write()
+
+    @classmethod
+    @contextmanager
+    def write(cls, object_id):
+        try:
+            yield cls.acquire_write(object_id)
+        finally:
+            cls.release_write(object_id)

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import psutil
 
 from dataclay.conf import settings
-from dataclay.runtime import UUIDLock
+from dataclay.runtime import LockManager
 from dataclay.utils import metrics
 
 if TYPE_CHECKING:
@@ -91,31 +91,28 @@ class HeapManager(threading.Thread):
         except KeyError as e:
             logger.warning("Object with id %s is not loaded.", dc_obj._dc_id)
 
-    def unload_object(self, object_id):
+    def unload_object(self, object_id, timeout=0, force=False):
         instance = self.loaded_objects[object_id]
 
-        # NOTE: If the another thread is executing any activemethod,
-        # the instance won't be unloaded, and will be kept in memory
-        if instance._xdc_active_counter.acquire(timeout=0):
+        if LockManager.acquire_write(object_id, timeout) or force:
             try:
-                with UUIDLock(object_id):
-                    logger.warning(f"Storing and unloading object {object_id}")
-                    assert instance._dc_is_loaded
-                    instance._dc_is_loaded = False
+                logger.warning(f"Storing and unloading object {object_id}")
+                assert instance._dc_is_loaded
+                instance._dc_is_loaded = False
 
-                    # NOTE: We do not serialize internal attributes, since these are
-                    # obtained from etcd, or are stateless
-                    path = f"{settings.DATACLAY_STORAGE_PATH}/{object_id}"
-                    pickle.dump(instance._dc_properties, open(path, "wb"))
-                    metrics.dataclay_stored_objects.inc()
+                # NOTE: We do not serialize internal attributes, since these are
+                # obtained from etcd, or are stateless
+                path = f"{settings.DATACLAY_STORAGE_PATH}/{object_id}"
+                pickle.dump(instance._dc_properties, open(path, "wb"))
+                metrics.dataclay_stored_objects.inc()
 
-                    # TODO: update etcd metadata (since is loaded has changed)
-                    # and store object in file system
-                    instance._clean_dc_properties()
+                # TODO: update etcd metadata (since is loaded has changed)
+                # and store object in file system
+                instance._clean_dc_properties()
 
-                    del self.loaded_objects[object_id]
+                del self.loaded_objects[object_id]
             finally:
-                instance._xdc_active_counter.release()
+                LockManager.release_write(object_id)
 
     def is_memory_under_pressure(self):
         """Check if memory is under pressure
@@ -149,7 +146,7 @@ class HeapManager(threading.Thread):
 
                 while loaded_objects_keys:
                     object_id = loaded_objects_keys.pop()
-                    self.unload_object(object_id)
+                    self.unload_object(object_id, timeout=0, force=False)
 
                     # TODO: ¿Do we need to call every time gc.collect()?
                     gc.collect()
@@ -166,11 +163,14 @@ class HeapManager(threading.Thread):
             finally:
                 self.run_task_lock.release()
 
-    def flush_all(self):
+    def flush_all(self, unload_timeout=None, force_unload=True):
         """Stores and unloads all loaded objects to disk.
 
         This function is usually called at shutdown of the backend.
         """
+
+        if unload_timeout is None:
+            unload_timeout = settings.DATACLAY_UNLOAD_TIMEOUT
 
         if self.flush_all_lock.acquire(blocking=False):
             try:
@@ -183,7 +183,7 @@ class HeapManager(threading.Thread):
 
                 # ?List used to create a copy and avoid it to grow?
                 for object_id in list(self.loaded_objects):
-                    self.unload_object(object_id)
+                    self.unload_object(object_id, timeout=unload_timeout, force=force_unload)
 
                 logger.debug(f"Num loaded objects not flushed: {len(self.loaded_objects)}")
 

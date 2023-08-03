@@ -4,14 +4,11 @@ from __future__ import annotations
 import collections
 import concurrent.futures
 import copy
-import importlib
-import io
 import logging
 import pickle
 import random
 from abc import ABC, abstractmethod
 from builtins import Exception
-from collections.abc import Iterable, Iterator
 from typing import TYPE_CHECKING
 from uuid import UUID
 from weakref import WeakValueDictionary
@@ -21,11 +18,13 @@ from dataclay.backend.client import BackendClient
 from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
-from dataclay.runtime import UUIDLock
+from dataclay.runtime import LockManager
 from dataclay.utils.pickle import serialize_dataclay_object
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from dataclay.dataclay_object import DataClayObject
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
@@ -87,7 +86,7 @@ class DataClayRuntime(ABC):
             utils.metrics.dataclay_inmemory_hits_total.inc()
             return dc_object
         except KeyError:
-            with UUIDLock(object_id):
+            with LockManager.write(object_id):
                 try:
                     dc_object = self.inmemory_objects[object_id]
                     utils.metrics.dataclay_inmemory_hits_total.inc()
@@ -159,7 +158,7 @@ class DataClayRuntime(ABC):
 
     def proxify_object(self, instance, new_object_id):
         if instance._dc_is_local:
-            with UUIDLock(instance._dc_id):
+            with LockManager.write(instance._dc_id):
                 self.load_object_from_db(instance)
                 instance._clean_dc_properties()
                 instance._dc_is_loaded = False
@@ -181,7 +180,7 @@ class DataClayRuntime(ABC):
         old_object_id = instance._dc_id
 
         if instance._dc_is_local:
-            with UUIDLock(instance._dc_id):
+            with LockManager.write(instance._dc_id):
                 self.load_object_from_db(instance)
                 # We need to update the loaded_objects with the new object_id key
                 self.heap_manager.release_from_heap(instance)
