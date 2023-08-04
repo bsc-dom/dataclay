@@ -95,12 +95,8 @@ ansible-playbook "$DATACLAY_HOME/config/deploy-playbook.yaml" -i "$hosts_file"
 
 #-------------------------------------- COMPSs specifc -------------------------------------------------
 # Get session config
-# JOB_CONFIG="$HOME/.dataClay/$DATACLAY_JOBID/client.config"
-# source $JOB_CONFIG
+mkdir -p ~/.COMPSs/${SLURM_JOB_ID}/storage/cfgfiles
+cp $storageProps ~/.COMPSs/${SLURM_JOB_ID}/storage/cfgfiles/storage.properties
+echo "DC_HOST=$DATACLAY_METADATA_HOST" >> ~/.COMPSs/${SLURM_JOB_ID}/storage/cfgfiles/storage.properties
 
-# echo "[@storage_init.sh] Symbolic linking $DATACLAYSESSIONCONFIG to COMPSs folder"
-# mkdir -p ~/.COMPSs/${jobId}/storage/cfgfiles
-# ln -s $DATACLAYSESSIONCONFIG ~/.COMPSs/${jobId}/storage/cfgfiles/storage.properties
-
-# echo "[@storage_init.sh] Ready!"
 
