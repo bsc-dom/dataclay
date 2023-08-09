@@ -27,12 +27,12 @@ class BackendClient:
         ]
         self.metadata_call = []
         if (
-            settings.SSL_CLIENT_TRUSTED_CERTIFICATES != ""
-            or settings.SSL_CLIENT_CERTIFICATE != ""
-            or settings.SSL_CLIENT_KEY != ""
+            settings.ssl_client_trusted_certificates != ""
+            or settings.ssl_client_certificate != ""
+            or settings.ssl_client_key != ""
         ):
             # read in certificates
-            options.append(("grpc.ssl_target_name_override", settings.SSL_TARGET_AUTHORITY))
+            options.append(("grpc.ssl_target_name_override", settings.ssl_target_authority))
             if port != 443:
                 service_alias = str(port)
                 self.metadata_call.append(("service-alias", service_alias))
@@ -40,18 +40,18 @@ class BackendClient:
                 logger.info(f"SSL configured: changed address {host}:{port} to {host}:443")
                 logger.info("SSL configured: using service-alias  " + service_alias)
             else:
-                self.metadata_call.append(("service-alias", settings.SSL_TARGET_EE_ALIAS))
+                self.metadata_call.append(("service-alias", settings.ssl_target_ee_alias))
 
             try:
-                if settings.SSL_CLIENT_TRUSTED_CERTIFICATES != "":
-                    with open(settings.SSL_CLIENT_TRUSTED_CERTIFICATES, "rb") as f:
+                if settings.ssl_client_trusted_certificates != "":
+                    with open(settings.ssl_client_trusted_certificates, "rb") as f:
                         trusted_certs = f.read()
-                if settings.SSL_CLIENT_CERTIFICATE != "":
-                    with open(settings.SSL_CLIENT_CERTIFICATE, "rb") as f:
+                if settings.ssl_client_certificate != "":
+                    with open(settings.ssl_client_certificate, "rb") as f:
                         client_cert = f.read()
 
-                if settings.SSL_CLIENT_KEY != "":
-                    with open(settings.SSL_CLIENT_KEY, "rb") as f:
+                if settings.ssl_client_key != "":
+                    with open(settings.ssl_client_key, "rb") as f:
                         client_key = f.read()
             except Exception as e:
                 logger.error("failed-to-read-cert-keys", reason=e)
@@ -72,16 +72,16 @@ class BackendClient:
 
             logger.info(
                 "SSL configured: using SSL_CLIENT_TRUSTED_CERTIFICATES located at "
-                + settings.SSL_CLIENT_TRUSTED_CERTIFICATES
+                + settings.ssl_client_trusted_certificates
             )
             logger.info(
                 "SSL configured: using SSL_CLIENT_CERTIFICATE located at "
-                + settings.SSL_CLIENT_CERTIFICATE
+                + settings.ssl_client_certificate
             )
             logger.info(
-                "SSL configured: using SSL_CLIENT_KEY located at " + settings.SSL_CLIENT_KEY
+                "SSL configured: using SSL_CLIENT_KEY located at " + settings.ssl_client_key
             )
-            logger.info("SSL configured: using authority  " + settings.SSL_TARGET_AUTHORITY)
+            logger.info("SSL configured: using authority  " + settings.ssl_target_authority)
 
         else:
             self.channel = grpc.insecure_channel(self.address, options)
@@ -89,7 +89,7 @@ class BackendClient:
 
         try:
             grpc.channel_ready_future(self.channel).result(
-                timeout=settings.GRPC_CHECK_ALIVE_TIMEOUT
+                timeout=settings.grpc_check_alive_timeout
             )
         except Exception as e:
             sys.exit("Error connecting to server %s" % self.address)

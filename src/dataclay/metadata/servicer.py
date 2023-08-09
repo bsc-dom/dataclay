@@ -6,7 +6,7 @@ import threading
 import traceback
 from concurrent import futures
 from typing import TYPE_CHECKING
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import grpc
 from google.protobuf.empty_pb2 import Empty
@@ -24,34 +24,37 @@ logger = logging.getLogger(__name__)
 def serve():
     stop_event = threading.Event()
 
-    metadata_service = MetadataAPI(settings.DATACLAY_KV_HOST, settings.DATACLAY_KV_PORT)
+    metadata_service = MetadataAPI(settings.kv_host, settings.kv_port)
     if not metadata_service.is_ready(timeout=10):
         logger.error("KV store is not ready. Aborting!")
         raise
 
     # Try to set the dataclay id if don't exists yet
     try:
+        if settings.dataclay_id is None:
+            settings.dataclay_id = uuid4()
+
         metadata_service.new_dataclay(
-            settings.DATACLAY_ID,
-            settings.DATACLAY_METADATA_HOST,
-            settings.DATACLAY_METADATA_PORT,
+            settings.dataclay_id,
+            settings.metadata.host,
+            settings.metadata.port,
             is_this=True,
         )
     except AlreadyExistError:
-        settings.DATACLAY_ID = metadata_service.get_dataclay("this").id
+        settings.dataclay_id = metadata_service.get_dataclay("this").id
     else:
         metadata_service.new_superuser(
-            settings.DATACLAY_USERNAME, settings.DATACLAY_PASSWORD, settings.DATACLAY_DATASET
+            settings.root_username, settings.root_password.get_secret_value(), settings.root_dataset
         )
 
     logger.info("Metadata service has been registered")
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.THREAD_POOL_WORKERS))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.thread_pool_workers))
     metadata_pb2_grpc.add_MetadataServiceServicer_to_server(
         MetadataServicer(metadata_service), server
     )
 
-    address = f"{settings.DATACLAY_LISTEN_ADDRESS}:{settings.DATACLAY_METADATA_PORT}"
+    address = f"{settings.metadata.listen_address}:{settings.metadata.port}"
     server.add_insecure_port(address)
     server.start()
 

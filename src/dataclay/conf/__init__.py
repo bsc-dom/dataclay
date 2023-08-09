@@ -1,94 +1,103 @@
 import logging
-import os
 import socket
 import uuid
 from datetime import datetime
+from typing import Literal
 
-import dataclay.utils.metrics
-import dataclay.utils.telemetry
+from pydantic import AliasChoices, Field, SecretStr, constr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings:
-    #####################
-    # Garbage collector #
-    #####################
+class BackendSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="dataclay_backend_", env_file=".env", secrets_dir="/run/secrets"
+    )
+    id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    name: str | None = None
+    host: str = socket.gethostbyname(socket.gethostname())
+    port: int = 6867
+    listen_address: str = "0.0.0.0"
 
-    DATE_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
-    CHECK_SESSION = False
+class MetadataSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="dataclay_metadata_", env_file=".env", secrets_dir="/run/secrets"
+    )
+    host: str = socket.gethostbyname(socket.gethostname())
+    port: int = 16587
+    listen_address: str = "0.0.0.0"
 
-    # Percentage to start flushing objects
-    MEMMGMT_PRESSURE_FRACTION = float(os.getenv("MEMMGMT_PRESSURE_FRACTION", default=0.75))
 
-    # Percentage to stop flushing objects
-    MEMMGMT_EASE_FRACTION = float(os.getenv("MEMMGMT_PRESSURE_FRACTION", default=0.50))
+class ClientSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="dc_", env_file=".env", secrets_dir="/run/secrets")
+    password: SecretStr
+    username: str
+    dataset: str
+    local_backend: str | None = None
+    dataclay_host: str = Field(
+        alias=AliasChoices("dc_host", "dataclay_metadata_host", "dataclay_host")
+    )
+    dataclay_port: int = Field(
+        default=16587, alias=AliasChoices("dc_port", "dataclay_metadata_port", "dataclay_port")
+    )
 
-    # Number of milliseconds to check if Heap needs to be cleaned.
-    MEMMGMT_CHECK_TIME_INTERVAL = int(os.getenv("MEMMGMT_CHECK_TIME_INTERVAL", default=5000))
 
-    # Global GC collection interval
-    NOCHECK_SESSION_EXPIRATION = datetime.strptime("2120-09-10T20:00:04", DATE_FORMAT)
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="dataclay_", env_file=".env", secrets_dir="/run/secrets"
+    )
 
-    #########################
-    # Time outs and retries #
-    #########################
+    # Other
+    grpc_check_alive_timeout: int = 60
+    ssl_client_trusted_certificates: str = ""
+    ssl_client_certificate: str = ""
+    ssl_client_key: str = ""
+    ssl_target_authority: str = "proxy"
+    ssl_target_ee_alias: str = "6867"
+    unload_timeout: int = 5
+    timeout_channel_ready: int = 5
+    date_format: str = "%Y-%m-%dT%H:%M:%S"
+    check_session: bool = False
+    memmgmt_pressure_fraction: float = 0.75
+    memmgmt_ease_fraction: float = 0.50
+    memmgmt_check_time_interval: int = 5000
+    nocheck_session_expiration: datetime = datetime.strptime("2120-09-10T20:00:04", date_format)
 
-    # Number of seconds to wait for grpc channel to be ready
-    TIMEOUT_CHANNEL_READY = 5
+    # root account
+    root_password: SecretStr = Field(default="admin", alias="dataclay_password")
+    root_username: str = Field(default="admin", alias="dataclay_username")
+    root_dataset: str = Field(default="admin", alias="dataclay_dataset")
 
-    # MAX_RETRY_AUTOREGISTER = int(os.getenv("MAX_RETRY_AUTOREGISTER", default=80))
+    dataclay_id: uuid.UUID | None = Field(default=None, alias="dataclay_id")
 
-    # RETRY_AUTOREGISTER_TIME = int(os.getenv("RETRY_AUTOREGISTER_TIME", default=5000))
+    storage_path: str = "/dataclay/storage/"
+    thread_pool_workers: int | None = None
+    loglevel: constr(to_upper=True) = "WARNING"
 
-    # Default value for number of retries IN EXECUTION
-    # MAX_EXECUTION_RETRIES = 5
+    # tracing
+    service_name: str | None = None
+    tracing: bool = False
+    tracing_exporter: Literal["otlp", "jaeger", "zipkin", "none"] = "otlp"
+    tracing_host: str = "localhost"
+    tracing_port: int = 4317
 
-    # Number of millis of time to wait for object to be registered. Default: NO WAIT
-    # TIMEOUT_WAIT_REGISTERED = 0  # fixme do we need this?
+    # metrics
+    metrics: bool = False
+    metrics_exporter: Literal["http", "prometheus", "none"] = "http"
+    metrics_host: str = "localhost"
+    metrics_port: int = 8000  # 9091 for pushgateway
+    metrics_push_interval: int = 10
 
-    # Waiting milliseconds to check if object to be registered.
-    # SLEEP_WAIT_REGISTERED = 50
+    # services
+    backend: BackendSettings | None = None
+    metadata: MetadataSettings | None = None
+    client: ClientSettings | None = None
 
-    ########
-    # gRPC #
-    ########
+    # key/value
+    kv_host: str | None = None
+    kv_port: int = 6379
 
-    # CHECK ALIVE TIME OUT IN GRPC in seconds
-    GRPC_CHECK_ALIVE_TIMEOUT = int(os.getenv("GRPC_CHECK_ALIVE_TIMEOUT", default=60))
-
-    # Path to Trusted certificates for verifying the remote endpoint's certificate.
-    SSL_CLIENT_TRUSTED_CERTIFICATES = os.getenv("SSL_CLIENT_TRUSTED_CERTIFICATES", default="")
-
-    # Path to identifying certificate for this host
-    SSL_CLIENT_CERTIFICATE = os.getenv("SSL_CLIENT_CERTIFICATE", default="")
-
-    # Path to identifying certificate for this host.
-    SSL_CLIENT_KEY = os.getenv("SSL_CLIENT_KEY", default="")
-
-    # Override authority hostname in SSL calls
-    SSL_TARGET_AUTHORITY = os.getenv("SSL_TARGET_AUTHORITY", default="proxy")
-
-    # Custom header of service alias for calls to EE. Used in Traefik.
-    SSL_TARGET_EE_ALIAS = os.getenv("SSL_TARGET_EE_ALIAS", default="6867")
-
-    #########
-    # Paths #
-    #########
-
-    # Indicates storage path for persistent data
-
-    # ETCD_PATH ¿?
-
-    #############
-    # Telemetry #
-    #############
-
-    DATACLAY_TRACING = os.getenv("DATACLAY_TRACING", default="false").lower() == "true"
-    DATACLAY_METRICS = os.getenv("DATACLAY_METRICS", default="false").lower() == "true"
-    _tracing_loaded = False
-
-    DATACLAY_LOGLEVEL = os.getenv("DATACLAY_LOGLEVEL", default="WARNING").upper()
-    logging.basicConfig(level=DATACLAY_LOGLEVEL)
+    # TODO: Chech that kv_host is not None when calling from backend or metadata.
 
     # Destination path for traces
     # TRACES_DEST_PATH = os.getcwd()
@@ -104,109 +113,9 @@ class Settings:
     # deploy_path_source = os.getenv("DEPLOY_PATH_SRC", os.path.join(deploy_path, "source"))
 
     # Grace period to wait for and object to relase the lock before forcing to unload.
-    DATACLAY_UNLOAD_TIMEOUT = 5
-
-    def load_backend_properties(self):
-        self.THREAD_POOL_WORKERS = os.getenv("THREAD_POOL_WORKERS", default=None)
-
-        self.DATACLAY_BACKEND_ID = os.getenv("DATACLAY_BACKEND_ID", uuid.uuid4())
-        self.DATACLAY_BACKEND_NAME = os.getenv("DATACLAY_BACKEND_NAME")
-
-        self.DATACLAY_LISTEN_ADDRESS = "0.0.0.0"
-        self.DATACLAY_BACKEND_PORT = int(os.getenv("DATACLAY_BACKEND_PORT", 6867))
-        self.DATACLAY_BACKEND_HOST = os.getenv(
-            "DATACLAY_BACKEND_HOST", socket.gethostbyname(socket.gethostname())
-        )
-
-        # self.ETCD_HOST = os.environ["ETCD_HOST"]
-        # self.ETCD_PORT = int(os.getenv("ETCD_PORT", 2379))
-
-        self.DATACLAY_KV_HOST = os.environ["DATACLAY_KV_HOST"]
-        self.DATACLAY_KV_PORT = int(os.getenv("DATACLAY_KV_PORT", 6379))
-
-        self.DATACLAY_STORAGE_PATH = os.getenv(
-            "DATACLAY_STORAGE_PATH", default="/dataclay/storage/"
-        )
-
-        self.DATACLAY_SERVICE_NAME = os.getenv("DATACLAY_SERVICE_NAME", "backend")
-        self.load_tracing_properties()
-
-    # TODO: Rename to client_proeprties?
-    def load_client_properties(
-        self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
-    ):
-        self.DATACLAY_METADATA_HOST = (
-            host or os.getenv("DATACLAY_METADATA_HOST") or os.environ["DC_HOST"]
-        )
-        self.DATACLAY_METADATA_PORT = int(
-            port or os.getenv("DATACLAY_METADATA_PORT") or os.getenv("DC_PORT", 16587)
-        )
-
-        self.DC_USERNAME = username or os.environ["DC_USERNAME"]
-        self.DC_PASSWORD = password or os.environ["DC_PASSWORD"]
-        self.DC_DATASET = dataset or os.environ["DC_DATASET"]
-        self.LOCAL_BACKEND = local_backend or os.getenv("LOCAL_BACKEND")
-
-    def load_metadata_properties(self):
-        self.THREAD_POOL_WORKERS = os.getenv("THREAD_POOL_WORKERS", default=None)
-
-        self.DATACLAY_LISTEN_ADDRESS = "0.0.0.0"
-        self.DATACLAY_METADATA_PORT = int(os.getenv("DATACLAY_METADATA_PORT", 16587))
-        self.DATACLAY_METADATA_HOST = os.getenv(
-            "DATACLAY_METADATA_HOST", socket.gethostbyname(socket.gethostname())
-        )
-
-        # self.ETCD_HOST = os.environ["ETCD_HOST"]
-        # self.ETCD_PORT = int(os.getenv("ETCD_PORT", 2379))
-
-        self.DATACLAY_KV_HOST = os.environ["DATACLAY_KV_HOST"]
-        self.DATACLAY_KV_PORT = int(os.getenv("DATACLAY_KV_PORT", 6379))
-
-        self.DATACLAY_ID = os.getenv("DATACLAY_ID", uuid.uuid4())
-        self.DATACLAY_PASSWORD = os.getenv("DATACLAY_PASSWORD", "admin")
-        self.DATACLAY_USERNAME = os.getenv("DATACLAY_USERNAME", "admin")
-        self.DATACLAY_DATASET = os.getenv("DATACLAY_DATASET", "admin")
-
-        self.DATACLAY_SERVICE_NAME = os.getenv("DATACLAY_SERVICE_NAME", "metadata")
-        self.load_tracing_properties()
-
-    def load_tracing_properties(self, service_name=None):
-        if self._tracing_loaded:
-            # logger.warning(
-            #     "Attempting to reload tracing properties while already instrumented. Ignoring!"
-            # )
-            return
-
-        if service_name is None:
-            service_name = self.DATACLAY_SERVICE_NAME
-
-        if self.DATACLAY_TRACING:
-            self.DATACLAY_TRACING_EXPORTER = os.getenv("DATACLAY_TRACING_EXPORTER", "otlp").lower()
-            self.DATACLAY_TRACING_HOST = os.getenv("DATACLAY_TRACING_HOST", "localhost")
-            self.DATACLAY_TRACING_PORT = int(os.getenv("DATACLAY_TRACING_PORT", 4317))
-            dataclay.utils.telemetry.set_tracing(
-                service_name,
-                self.DATACLAY_TRACING_HOST,
-                self.DATACLAY_TRACING_PORT,
-                self.DATACLAY_TRACING_EXPORTER,
-            )
-
-        self._tracing_loaded = True
-
-        if self.DATACLAY_METRICS:
-            self.DATACLAY_METRICS_EXPORTER = os.getenv("DATACLAY_METRICS_EXPORTER", "http").lower()
-            self.DATACLAY_METRICS_HOST = os.getenv("DATACLAY_METRICS_HOST", "localhost")
-            self.DATACLAY_METRICS_PORT = int(
-                os.getenv("DATACLAY_METRICS_PORT", 8000)
-            )  # 9091 for pushgateway
-            self.DATACLAY_METRICS_PUSH_INTERVAL = int(
-                os.getenv("DATACLAY_METRICS_PUSH_INTERVAL", 10)
-            )
-            dataclay.utils.metrics.set_metrics(
-                self.DATACLAY_METRICS_HOST,
-                self.DATACLAY_METRICS_PORT,
-                self.DATACLAY_METRICS_EXPORTER,
-            )
 
 
 settings = Settings()
+
+
+logging.basicConfig(level=settings.loglevel)

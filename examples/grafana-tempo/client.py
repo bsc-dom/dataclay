@@ -2,7 +2,7 @@ from dataclay import Client
 from dataclay.conf import settings
 from dataclay.contrib.modeltest.family import Dog, Family, Person
 
-settings.DATACLAY_TRACING = True
+settings.tracing = True
 
 client = Client(host="127.0.0.1", username="testuser", password="s3cret", dataset="testdata")
 client.start()

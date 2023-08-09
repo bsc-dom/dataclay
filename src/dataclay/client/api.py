@@ -12,11 +12,12 @@ import logging.config
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+import dataclay.utils.metrics
+import dataclay.utils.telemetry
 from dataclay.backend.client import BackendClient
-from dataclay.conf import settings
+from dataclay.conf import ClientSettings, settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.runtime import get_runtime, set_runtime
-from dataclay.runtime.client import UNDEFINED_LOCAL as _UNDEFINED_LOCAL
 from dataclay.runtime.client import ClientRuntime
 from dataclay.utils.telemetry import trace
 
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
     from dataclay.backend.client import BackendClient
 
 # This will be populated during initialization
-LOCAL = _UNDEFINED_LOCAL
+# LOCAL = _UNDEFINED_LOCAL
 
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
@@ -40,6 +41,35 @@ def init():
 
 def finish():
     pass
+
+
+_telemetry_started = False
+
+
+def start_telemetry():
+    global _telemetry_started
+    if _telemetry_started:
+        return
+
+    if settings.service_name is None:
+        settings.service_name = "client"
+
+    if settings.tracing:
+        dataclay.utils.telemetry.set_tracing(
+            settings.service_name,
+            settings.tracing_host,
+            settings.tracing_port,
+            settings.tracing_exporter,
+        )
+
+    if settings.metrics:
+        dataclay.utils.metrics.set_metrics(
+            settings.metrics_host,
+            settings.metrics_port,
+            settings.metrics_exporter,
+        )
+
+    _telemetry_started = True
 
 
 class Client:
@@ -57,17 +87,25 @@ class Client:
     def __init__(
         self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
     ):
+        client_settings_kwargs = {}
+        if host:
+            client_settings_kwargs["dataclay_host"] = host
+        if port:
+            client_settings_kwargs["dataclay_port"] = port
+        if username:
+            client_settings_kwargs["username"] = username
+        if password:
+            client_settings_kwargs["password"] = password
+        if dataset:
+            client_settings_kwargs["dataset"] = dataset
+        if local_backend:
+            client_settings_kwargs["local_backend"] = local_backend
+
+        self.client_settings = ClientSettings(**client_settings_kwargs)
+
         self.is_initialized = False
 
-        self.host = host
-        self.port = port
-        self.username = username
-        self.password = password
-        self.dataset = dataset
-        self.local_backend = local_backend
-
-        # Set tracer here to allow tracing "start" and "stop" methods
-        settings.load_tracing_properties(service_name="client")
+        start_telemetry()
 
         # Set LOCAL_BACKEND
         # if settings.LOCAL_BACKEND:
@@ -93,25 +131,20 @@ class Client:
 
         logger.info("Initializing client")
 
-        self.old_settings_dict = settings.__dict__.copy()
-        settings.load_client_properties(
-            self.host,
-            self.port,
-            self.username,
-            self.password,
-            self.dataset,
-            self.local_backend,
-        )
+        # Update settings
+        self.old_client_settings = settings.client
+        settings.client = self.client_settings
 
+        # Create a new runtime
         self.old_runtime = get_runtime()
-        self.runtime = ClientRuntime(
-            settings.DATACLAY_METADATA_HOST, settings.DATACLAY_METADATA_PORT
-        )
+        self.runtime = ClientRuntime(settings.client.dataclay_host, settings.client.dataclay_port)
         set_runtime(self.runtime)
 
         # Create a new session
         self.session = self.runtime.metadata_service.new_session(
-            settings.DC_USERNAME, settings.DC_PASSWORD, settings.DC_DATASET
+            settings.client.username,
+            settings.client.password.get_secret_value(),
+            settings.client.dataset,
         )
         self.runtime.session = self.session
         self.runtime.metadata_service.session = self.session
@@ -135,7 +168,8 @@ class Client:
 
         logger.info("Finishing client API")
         self.runtime.stop()
-        settings.__dict__.update(self.old_settings_dict)
+        settings.client = self.old_client_settings
+        set_runtime(self.old_runtime)
         self.is_initialized = False
 
     def __del__(self):

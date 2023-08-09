@@ -25,8 +25,8 @@ metadata_properties:
   DATACLAY_DATASET: "{{ lookup('env', 'DATACLAY_DATASET') | default('testdata', true) }}"
 
 client_properties:
-  DATACLAY_METADATA_HOST: "{{ lookup('env', 'DATACLAY_METADATA_HOST') }}"
-  DATACLAY_METADATA_PORT: "{{ lookup('env', 'DATACLAY_METADATA_PORT') | default(16587, true) }}"
+  DC_HOST: "{{ lookup('env', 'DC_HOST') }}"
+  DC_PORT: "{{ lookup('env', 'DC_PORT') | default(16587, true) }}"
   DC_USERNAME: "{{ lookup('env', 'DC_USERNAME') }}"
   DC_PASSWORD: "{{ lookup('env', 'DC_PASSWORD') }}"
   DC_DATASET: "{{ lookup('env', 'DC_DATASET') }}"

@@ -24,10 +24,10 @@ def serve():
     stop_event = threading.Event()
 
     backend = BackendAPI(
-        settings.DATACLAY_BACKEND_NAME,
-        settings.DATACLAY_BACKEND_PORT,
-        settings.DATACLAY_KV_HOST,
-        settings.DATACLAY_KV_PORT,
+        settings.backend.name,
+        settings.backend.port,
+        settings.kv_host,
+        settings.kv_port,
     )
 
     if not backend.is_ready(timeout=10):
@@ -35,23 +35,23 @@ def serve():
         raise
 
     server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=settings.THREAD_POOL_WORKERS),
+        futures.ThreadPoolExecutor(max_workers=settings.thread_pool_workers),
         options=[("grpc.max_send_message_length", -1), ("grpc.max_receive_message_length", -1)],
     )
     backend_pb2_grpc.add_BackendServiceServicer_to_server(
         BackendServicer(backend, stop_event), server
     )
 
-    address = f"{settings.DATACLAY_LISTEN_ADDRESS}:{settings.DATACLAY_BACKEND_PORT}"
+    address = f"{settings.backend.listen_address}:{settings.backend.port}"
     server.add_insecure_port(address)
     server.start()
 
     # Autoregister of backend to MetadataService
     backend.runtime.metadata_service.register_backend(
-        settings.DATACLAY_BACKEND_ID,
-        settings.DATACLAY_BACKEND_HOST,
-        settings.DATACLAY_BACKEND_PORT,
-        settings.DATACLAY_ID,
+        settings.backend.id,
+        settings.backend.host,
+        settings.backend.port,
+        settings.dataclay_id,
     )
 
     # Set signal hook for SIGINT and SIGTERM

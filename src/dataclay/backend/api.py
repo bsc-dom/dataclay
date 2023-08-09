@@ -16,7 +16,7 @@ from dataclay.conf import settings
 from dataclay.exceptions import *
 from dataclay.runtime import LockManager, set_runtime
 from dataclay.runtime.backend import BackendRuntime
-from dataclay.utils.pickle import unserialize_dataclay_object
+from dataclay.utils.serialization import unserialize_dataclay_object
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -36,8 +36,8 @@ class BackendAPI:
         self.port = port
 
         # Initialize runtime
-        self.backend_id = settings.DATACLAY_BACKEND_ID
-        self.runtime = BackendRuntime(kv_host, kv_port, settings.DATACLAY_BACKEND_ID)
+        self.backend_id = settings.backend.id
+        self.runtime = BackendRuntime(kv_host, kv_port, self.backend_id)
         set_runtime(self.runtime)
 
         # UNDONE: Do not store EE information. If restarted, create new EE uuid.
@@ -51,7 +51,7 @@ class BackendAPI:
             while timeout is None or (now - ref) < timeout:
                 try:
                     dataclay_id = self.runtime.metadata_service.get_dataclay("this").id
-                    settings.DATACLAY_ID = dataclay_id
+                    settings.dataclay_id = dataclay_id
                     return True
                 except DoesNotExistError:
                     time.sleep(pause)

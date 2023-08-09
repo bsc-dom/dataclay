@@ -19,7 +19,8 @@ from dataclay.conf import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.runtime import LockManager
-from dataclay.utils.pickle import serialize_dataclay_object
+from dataclay.utils import metrics
+from dataclay.utils.serialization import serialize_dataclay_object
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -44,7 +45,7 @@ class DataClayRuntime(ABC):
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
         self.inmemory_objects = WeakValueDictionary()
-        utils.metrics.dataclay_inmemory_objects.set_function(lambda: len(self.inmemory_objects))
+        metrics.dataclay_inmemory_objects.set_function(lambda: len(self.inmemory_objects))
 
     ##############
     # Properties #
@@ -73,7 +74,7 @@ class DataClayRuntime(ABC):
     ##################
 
     # TODO: Check if is taking the metrics from KeyError, if not put inside
-    @utils.metrics.dataclay_inmemory_misses_total.count_exceptions(KeyError)
+    @metrics.dataclay_inmemory_misses_total.count_exceptions(KeyError)
     def get_object_by_id(self, object_id: UUID, object_md: ObjectMetadata = None) -> DataClayObject:
         """Get dataclay object from inmemory_objects. If not present, get object metadata
         and create new proxy object.
@@ -83,13 +84,13 @@ class DataClayRuntime(ABC):
         # Check if object is in heap
         try:
             dc_object = self.inmemory_objects[object_id]
-            utils.metrics.dataclay_inmemory_hits_total.inc()
+            metrics.dataclay_inmemory_hits_total.inc()
             return dc_object
         except KeyError:
             with LockManager.write(object_id):
                 try:
                     dc_object = self.inmemory_objects[object_id]
-                    utils.metrics.dataclay_inmemory_hits_total.inc()
+                    metrics.dataclay_inmemory_hits_total.inc()
                     return dc_object
                 except KeyError:
                     # NOTE: When the object is not in the inmemory_objects,
@@ -222,7 +223,6 @@ class DataClayRuntime(ABC):
             # NOTE: Loop to update the backend_id when we have the wrong one, and call again
             # the active method
             while True:
-
                 # TODO: Optimize by doing intersection between available backend clients and
                 # object backends. Update all backend clients beforehand. Keep the list of the
                 # intersection and remove the clients that fail the connection (that failed
@@ -296,12 +296,12 @@ class DataClayRuntime(ABC):
 
         def add_backend_client(backend_info):
             if backend_info.id in self.backend_clients:
-                if self.backend_clients[backend_info.id].is_ready(settings.TIMEOUT_CHANNEL_READY):
+                if self.backend_clients[backend_info.id].is_ready(settings.timeout_channel_ready):
                     new_backend_clients[backend_info.id] = self.backend_clients[backend_info.id]
                     return
 
             backend_client = BackendClient(backend_info.host, backend_info.port)
-            if backend_client.is_ready(settings.TIMEOUT_CHANNEL_READY):
+            if backend_client.is_ready(settings.timeout_channel_ready):
                 new_backend_clients[backend_info.id] = backend_client
             else:
                 del backend_infos[backend_info.id]

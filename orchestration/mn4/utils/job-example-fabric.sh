@@ -20,7 +20,7 @@ network_suffix="-ib0"
 hostnames=($(scontrol show hostname $SLURM_JOB_NODELIST | sed "s/$/$network_suffix/"))
 
 # Set environment variables
-export DATACLAY_METADATA_HOST=${hostnames[0]} # DO NOT EDIT!
+export DC_HOST=${hostnames[0]} # DO NOT EDIT!
 export DC_USERNAME=user
 export DC_PASSWORD=s3cret
 export DEFAULT_DATASET=myDataset

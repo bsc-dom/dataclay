@@ -70,7 +70,7 @@ class BackendRuntime(DataClayRuntime):
                 return
 
             try:
-                path = f"{settings.DATACLAY_STORAGE_PATH}/{instance._dc_id}"
+                path = f"{settings.storage_path}/{instance._dc_id}"
                 object_properties = pickle.load(open(path, "rb"))
                 metrics.dataclay_stored_objects.dec()
             except Exception as e:
@@ -115,8 +115,8 @@ class BackendRuntime(DataClayRuntime):
             self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_id)
 
         # If backend_id is none, we register the object in the current backend (usual path)
-        if backend_id is None or backend_id == settings.DATACLAY_BACKEND_ID:
-            instance._dc_master_backend_id = settings.DATACLAY_BACKEND_ID
+        if backend_id is None or backend_id == settings.backend.id:
+            instance._dc_master_backend_id = settings.backend.id
             self.metadata_service.upsert_object(instance.metadata)
             instance._dc_is_registered = True
 
@@ -130,7 +130,7 @@ class BackendRuntime(DataClayRuntime):
 
     def stop(self):
         # Remove backend entry from metadata
-        self.metadata_service.delete_backend(settings.DATACLAY_BACKEND_ID)
+        self.metadata_service.delete_backend(settings.backend.id)
 
         # Stop HeapManager
         logger.debug("Stopping GC. Sending shutdown event.")
@@ -172,10 +172,10 @@ class BackendRuntime(DataClayRuntime):
         Concurrency note: adding two times same expiration date is not a problem since exp. date is the same. We avoid locking.
         """
         if not session_id in self.session_expires_dates:
-            if settings.CHECK_SESSION:
+            if settings.check_session:
                 """TODO: implement session control in python"""
             else:
-                expiration_date = settings.NOCHECK_SESSION_EXPIRATION
+                expiration_date = settings.nocheck_session_expiration
 
             """
             // === concurrency note === //

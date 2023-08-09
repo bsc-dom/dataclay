@@ -54,7 +54,7 @@ class HeapManager(threading.Thread):
 
     def run(self):
         """Overrides run function"""
-        # gc_check_time_interval_seconds = settings.MEMMGMT_CHECK_TIME_INTERVAL / 1000.0
+        # gc_check_time_interval_seconds = settings.memmgmt_check_time_interval / 1000.0
         gc_check_time_interval_seconds = 10
         while True:
             # logger.debug("HEAP MANAGER THREAD is awake...")
@@ -102,7 +102,7 @@ class HeapManager(threading.Thread):
 
                 # NOTE: We do not serialize internal attributes, since these are
                 # obtained from etcd, or are stateless
-                path = f"{settings.DATACLAY_STORAGE_PATH}/{object_id}"
+                path = f"{settings.storage_path}/{object_id}"
                 pickle.dump(instance._dc_properties, open(path, "wb"))
                 metrics.dataclay_stored_objects.inc()
 
@@ -127,11 +127,11 @@ class HeapManager(threading.Thread):
         """
 
         # return True
-        return psutil.virtual_memory().percent > (settings.MEMMGMT_PRESSURE_FRACTION * 100)
+        return psutil.virtual_memory().percent > (settings.memmgmt_pressure_fraction * 100)
 
     def is_memory_at_ease(self):
         # return False
-        return psutil.virtual_memory().percent < (settings.MEMMGMT_EASE_FRACTION * 100)
+        return psutil.virtual_memory().percent < (settings.memmgmt_ease_fraction * 100)
 
     def run_task(self):
         if self.flush_all_lock.locked():
@@ -170,7 +170,7 @@ class HeapManager(threading.Thread):
         """
 
         if unload_timeout is None:
-            unload_timeout = settings.DATACLAY_UNLOAD_TIMEOUT
+            unload_timeout = settings.unload_timeout
 
         if self.flush_all_lock.acquire(blocking=False):
             try:

@@ -9,10 +9,8 @@ from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.metadata.client import MetadataClient
 from dataclay.runtime.runtime import DataClayRuntime
-from dataclay.utils.pickle import serialize_dataclay_object
+from dataclay.utils.serialization import serialize_dataclay_object
 from dataclay.utils.telemetry import trace
-
-UNDEFINED_LOCAL = object()
 
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)

@@ -33,6 +33,7 @@ export DATACLAY_PASSWORD=s3cret
 export DATACLAY_DATASET=testdata
 
 # Set client credentials
+export DC_HOST=$DATACLAY_METADATA_HOST
 export DC_USERNAME=testuser
 export DC_PASSWORD=s3cret
 export DC_DATASET=testdata
