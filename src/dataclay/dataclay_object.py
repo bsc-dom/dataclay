@@ -211,14 +211,14 @@ class DataClayObject:
     @property
     def metadata(self):
         return ObjectMetadata(
-            self._dc_id,
-            self._dc_dataset_name,
-            self._dc_class_name,
-            self._dc_master_backend_id,
-            self._dc_replica_backend_ids,
-            self._dc_is_read_only,
-            self._dc_original_object_id,
-            self._dc_versions_object_ids,
+            id=self._dc_id,
+            dataset_name=self._dc_dataset_name,
+            class_name=self._dc_class_name,
+            master_backend_id=self._dc_master_backend_id,
+            replica_backend_ids=self._dc_replica_backend_ids,
+            is_read_only=self._dc_is_read_only,
+            original_object_id=self._dc_original_object_id,
+            versions_object_ids=self._dc_versions_object_ids,
         )
 
     @metadata.setter
