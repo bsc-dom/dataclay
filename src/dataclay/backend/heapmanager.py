@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import psutil
 
-from dataclay.conf import settings
+from dataclay.config import settings
 from dataclay.runtime import LockManager
 from dataclay.utils import metrics
 

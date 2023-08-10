@@ -2,7 +2,7 @@
 
 import dataclay.utils.metrics
 import dataclay.utils.telemetry
-from dataclay.conf import MetadataSettings, settings
+from dataclay.config import MetadataSettings, settings
 from dataclay.metadata import servicer
 
 settings.metadata = MetadataSettings()

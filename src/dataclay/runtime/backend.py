@@ -6,7 +6,7 @@ import pickle
 import threading
 
 from dataclay.backend.heapmanager import HeapManager
-from dataclay.conf import settings
+from dataclay.config import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.metadata.api import MetadataAPI

@@ -15,7 +15,7 @@ from weakref import WeakValueDictionary
 
 from dataclay import utils
 from dataclay.backend.client import BackendClient
-from dataclay.conf import settings
+from dataclay.config import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.runtime import LockManager

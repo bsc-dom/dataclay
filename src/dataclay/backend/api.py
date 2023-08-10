@@ -12,7 +12,7 @@ from collections.abc import Iterable, Iterator
 from typing import TYPE_CHECKING
 
 from dataclay import utils
-from dataclay.conf import settings
+from dataclay.config import settings
 from dataclay.exceptions import *
 from dataclay.runtime import LockManager, set_runtime
 from dataclay.runtime.backend import BackendRuntime

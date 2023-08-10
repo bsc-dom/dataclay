@@ -3,7 +3,7 @@
 import dataclay.utils.metrics
 import dataclay.utils.telemetry
 from dataclay.backend import servicer
-from dataclay.conf import BackendSettings, settings
+from dataclay.config import BackendSettings, settings
 
 settings.backend = BackendSettings()
 

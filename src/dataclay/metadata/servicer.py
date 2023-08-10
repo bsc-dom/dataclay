@@ -11,7 +11,7 @@ from uuid import UUID, uuid4
 import grpc
 from google.protobuf.empty_pb2 import Empty
 
-from dataclay.conf import settings
+from dataclay.config import settings
 from dataclay.exceptions.exceptions import AlreadyExistError
 from dataclay.metadata.api import MetadataAPI
 from dataclay.proto.common import common_pb2

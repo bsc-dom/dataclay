@@ -15,7 +15,7 @@ from uuid import UUID
 import dataclay.utils.metrics
 import dataclay.utils.telemetry
 from dataclay.backend.client import BackendClient
-from dataclay.conf import ClientSettings, settings
+from dataclay.config import ClientSettings, settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.runtime import get_runtime, set_runtime
 from dataclay.runtime.client import ClientRuntime

@@ -19,7 +19,7 @@ from ctypes import cdll
 from distutils.util import strtobool
 from functools import wraps
 
-from dataclay.conf import settings
+from dataclay.config import settings
 from dataclay.contrib.dummy_pycompss import task
 
 # Explicit and manually crafted list of CLASSES to be instrumentated

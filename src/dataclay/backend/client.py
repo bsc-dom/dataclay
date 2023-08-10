@@ -8,7 +8,7 @@ import grpc
 from google.protobuf.empty_pb2 import Empty
 from grpc._cython.cygrpc import ChannelArgKey
 
-from dataclay.conf import settings
+from dataclay.config import settings
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
