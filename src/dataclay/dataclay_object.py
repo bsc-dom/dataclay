@@ -12,15 +12,17 @@ from __future__ import annotations
 import functools
 import logging
 import traceback
-import uuid
 from collections import ChainMap
 from inspect import get_annotations
-from uuid import UUID
+from typing import TYPE_CHECKING
 
 from dataclay.exceptions import *
 from dataclay.metadata.kvdata import ObjectMetadata
 from dataclay.runtime import LockManager, get_runtime
 from dataclay.utils.telemetry import trace
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 DC_PROPERTY_PREFIX = "_dc_property_"
 
@@ -34,13 +36,13 @@ def activemethod(func):
 
     @functools.wraps(func)
     def wrapper_activemethod(self: DataClayObject, *args, **kwargs):
-        logger.debug(f"Calling activemethod {func.__name__} on {self._dc_id}")
+        logger.debug(f"Calling activemethod {func.__name__} on {self._dc_meta.id}")
         try:
             # If the object is local executes the method locally,
             # else, executes the method in the backend
             if self._dc_is_local:
                 # TODO: Use active_counter only if inside backend
-                with LockManager.read(self._dc_id):
+                with LockManager.read(self._dc_meta.id):
                     result = func(self, *args, **kwargs)
                 return result
             else:
@@ -56,7 +58,7 @@ def activemethod(func):
 class DataClayProperty:
     __slots__ = "property_name", "dc_property_name"
 
-    def __init__(self, property_name):
+    def __init__(self, property_name: str):
         self.property_name = property_name
         self.dc_property_name = DC_PROPERTY_PREFIX + property_name
 
@@ -69,7 +71,7 @@ class DataClayProperty:
         | False    | False   |  B (remote) or C (persistent)
         """
         logger.debug(
-            f"Calling getter for property {instance.__class__.__name__}.{self.property_name} on {instance._dc_id}"
+            f"Calling getter for property {instance.__class__.__name__}.{self.property_name} on {instance._dc_meta.id}"
         )
 
         if instance._dc_is_local:
@@ -92,7 +94,7 @@ class DataClayProperty:
         See the __get__ method for the basic behavioural explanation.
         """
         logger.debug(
-            f"Calling setter for property {instance.__class__.__name__}.{self.property_name} on {instance._dc_id}"
+            f"Calling setter for property {instance.__class__.__name__}.{self.property_name} on {instance._dc_meta.id}"
         )
 
         if instance._dc_is_local:
@@ -113,18 +115,13 @@ class DataClayObject:
     directly, through the StorageObject alias, or through a derived class).
     """
 
-    _dc_id: UUID
-    _dc_dataset_name: str
-    _dc_class_name: str
-    _dc_is_registered: bool
-    _dc_master_backend_id: UUID
-    _dc_replica_backend_ids: set[UUID]
-    _dc_is_read_only: bool
-    _dc_is_loaded: bool
-    _dc_is_local: bool
-    _dc_original_object_id: UUID
-    _dc_versions_object_ids: list[UUID]
-    _dc_is_replica: bool
+    _dc_meta: ObjectMetadata
+
+    # instance variables with default
+    _dc_is_local: bool = True
+    _dc_is_loaded: bool = True
+    _dc_is_registered: bool = False
+    _dc_is_replica: bool = False
 
     def __init_subclass__(cls) -> None:
         """Defines a @property for each annotatted attribute"""
@@ -135,48 +132,26 @@ class DataClayObject:
     def __new__(cls, *args, **kwargs):
         logger.debug(f"Creating new {cls.__name__} instance with args={args}, kwargs={kwargs}")
         obj = super().__new__(cls)
-        obj._set_default_fields()
-
+        obj._dc_meta = ObjectMetadata(class_name=cls.__module__ + "." + cls.__name__)
         if get_runtime() and get_runtime().is_backend:
             obj.make_persistent()
-
         return obj
 
     @classmethod
-    def new_proxy_object(cls, **kwargs):
+    def new_proxy_object(cls):
         obj = super().__new__(cls)
-        obj._set_default_fields()
-        obj.__dict__.update(kwargs)
+        obj._dc_meta = ObjectMetadata(class_name=cls.__module__ + "." + cls.__name__)
         return obj
-
-    def _set_default_fields(self):
-        # Metadata fields (immutable)
-        self._dc_id = uuid.uuid4()
-        self._dc_dataset_name = None
-        self._dc_class_name = self.__class__.__module__ + "." + self.__class__.__name__
-
-        # Metadata fields (mutable)
-        self._dc_master_backend_id = None
-        self._dc_replica_backend_ids = set()
-        self._dc_is_read_only = False  # Remove it?
-        self._dc_original_object_id = None
-        self._dc_versions_object_ids = []
-
-        # Extra fields
-        self._dc_is_local = True
-        self._dc_is_loaded = True
-        self._dc_is_registered = False  # cannot be unset (unregistered)
-        self._dc_is_replica = False
 
     @property
     def dataclay_id(self):
         """ID of the object in the dataClay system."""
-        return self._dc_id
+        return self._dc_meta.id
 
     @property
     def dataset(self):
         """Name of the dataset where the object is stored."""
-        return self._dc_dataset_name
+        return self._dc_meta.dataset_name
 
     @property
     def is_registered(self):
@@ -189,16 +164,6 @@ class DataClayObject:
         return {k: v for k, v in vars(self).items() if k.startswith("_dc_")}
 
     @property
-    def _dc_meta(self):
-        """Returns __dict__ with only _dc_ attributes"""
-        return {k: v for k, v in vars(self).items() if k.startswith("_dc_")}
-
-    @property
-    def _dc_extra(self):
-        """Returns __dict__ with only _dc_ attributes"""
-        return {k: v for k, v in vars(self).items() if k.startswith("_dc_")}
-
-    @property
     def _dc_properties(self):
         """Returns __dict__ with only _dc_property_ attributes"""
         return {k: v for k, v in vars(self).items() if k.startswith(DC_PROPERTY_PREFIX)}
@@ -206,30 +171,7 @@ class DataClayObject:
     @property
     def _dc_all_backend_ids(self):
         """Returns __dict__ with only _dc_property_ attributes"""
-        return self._dc_replica_backend_ids | {self._dc_master_backend_id}
-
-    @property
-    def metadata(self):
-        return ObjectMetadata(
-            self._dc_id,
-            self._dc_dataset_name,
-            self._dc_class_name,
-            self._dc_master_backend_id,
-            self._dc_replica_backend_ids,
-            self._dc_is_read_only,
-            self._dc_original_object_id,
-            self._dc_versions_object_ids,
-        )
-
-    @metadata.setter
-    def metadata(self, object_md):
-        self._dc_id = object_md.id
-        self._dc_dataset_name = object_md.dataset_name
-        self._dc_master_backend_id = object_md.master_backend_id
-        self._dc_replica_backend_ids = set(object_md.replica_backend_ids)
-        self._dc_is_read_only = object_md.is_read_only
-        self._dc_original_object_id = object_md.original_object_id
-        self._dc_versions_object_ids = object_md.versions_object_ids
+        return self._dc_meta.replica_backend_ids | {self._dc_meta.master_backend_id}
 
     def _clean_dc_properties(self):
         """
@@ -245,7 +187,7 @@ class DataClayObject:
     ###########################
 
     @tracer.start_as_current_span("make_persistent")
-    def make_persistent(self, alias=None, backend_id=None):
+    def make_persistent(self, alias: str = None, backend_id: UUID = None):
         """Makes the object persistent.
 
         Args:
@@ -264,7 +206,7 @@ class DataClayObject:
 
     @classmethod
     @tracer.start_as_current_span("get_by_id")
-    def get_by_id(cls, object_id: UUID):
+    def get_by_id(cls, object_id: UUID) -> DataClayObject:
         """Returns the object with the given id.
 
         Args:
@@ -280,7 +222,7 @@ class DataClayObject:
 
     @classmethod
     @tracer.start_as_current_span("get_by_alias")
-    def get_by_alias(cls, alias, dataset_name=None):
+    def get_by_alias(cls, alias: str, dataset_name: str = None) -> DataClayObject:
         """Returns the object with the given alias.
 
         Args:
@@ -296,7 +238,7 @@ class DataClayObject:
         """
         return get_runtime().get_object_by_alias(alias, dataset_name)
 
-    def add_alias(self, alias):
+    def add_alias(self, alias: str):
         """Adds an alias to the object.
 
         Args:
@@ -308,20 +250,20 @@ class DataClayObject:
             DataClayException: If the alias already exists.
         """
         if not self._dc_is_registered:
-            raise ObjectNotRegisteredError(self._dc_id)
+            raise ObjectNotRegisteredError(self._dc_meta.id)
 
         if alias == "":
             raise AttributeError("Alias cannot be empty")
         get_runtime().add_alias(self, alias)
 
-    def get_aliases(self):
+    def get_aliases(self) -> set[str]:
         """Returns a set with all the aliases of the object."""
-        aliases = get_runtime().get_all_alias(self._dc_dataset_name, self._dc_id)
+        aliases = get_runtime().get_all_alias(self._dc_meta.dataset_name, self._dc_meta.id)
         return set(aliases)
 
     @classmethod
     @tracer.start_as_current_span("delete_alias")
-    def delete_alias(cls, alias, dataset_name=None):
+    def delete_alias(cls, alias: str, dataset_name: str = None):
         """Removes the alias linked to an object.
 
         If this object is not referenced starting from a root object and no active session is
@@ -338,14 +280,14 @@ class DataClayObject:
         get_runtime().delete_alias(alias, dataset_name=dataset_name)
 
     @tracer.start_as_current_span("get_backends")
-    def get_backends(self):
+    def get_backends(self) -> set[UUID]:
         """Returns the set of backends where the object is stored"""
         if not self._dc_is_loaded:
             get_runtime().update_object_metadata(self)
 
         backends = set()
-        backends.add(self._dc_master_backend_id)
-        backends.update(self._dc_replica_backend_ids)
+        backends.add(self._dc_meta.master_backend_id)
+        backends.update(self._dc_meta.replica_backend_ids)
         return backends
 
     @tracer.start_as_current_span("move")
@@ -376,7 +318,7 @@ class DataClayObject:
 
     @classmethod
     @tracer.start_as_current_span("dc_clone_by_alias")
-    def dc_clone_by_alias(cls, alias, recursive=False):
+    def dc_clone_by_alias(cls, alias: str, recursive: bool = False) -> DataClayObject:
         """Returns a non-persistent object as a copy of the object with the alias specified.
 
         Fields referencing to other objects are kept as remote references to objects stored
@@ -398,7 +340,7 @@ class DataClayObject:
         return get_runtime().make_object_copy(instance, recursive)
 
     @tracer.start_as_current_span("dc_clone")
-    def dc_clone(self, recursive=False):
+    def dc_clone(self, recursive: bool = False) -> DataClayObject:
         """Returns a non-persistent object as a copy of the current object.
 
         Args:
@@ -412,13 +354,13 @@ class DataClayObject:
             ObjectNotRegisteredError: If the object is not registered.
         """
         if not self._dc_is_registered:
-            raise ObjectNotRegisteredError(self._dc_id)
+            raise ObjectNotRegisteredError(self._dc_meta.id)
 
         return get_runtime().make_object_copy(self, recursive)
 
     @classmethod
     @tracer.start_as_current_span("dc_update_by_alias")
-    def dc_update_by_alias(cls, alias, from_object):
+    def dc_update_by_alias(cls, alias: str, from_object: DataClayObject):
         """Updates the object identified by specified alias with contents of from_object.
 
         Args:
@@ -433,10 +375,10 @@ class DataClayObject:
             raise TypeError("Objects must be of the same type")
 
         o = cls.get_by_alias(alias)
-        return o.dc_update(from_object)
+        o.dc_update(from_object)
 
     @tracer.start_as_current_span("dc_update")
-    def dc_update(self, from_object):
+    def dc_update(self, from_object: DataClayObject):
         """Updates current object with contents of from_object.
 
         Args:
@@ -451,7 +393,7 @@ class DataClayObject:
         get_runtime().replace_object_properties(self, from_object)
 
     @tracer.start_as_current_span("dc_put")
-    def dc_put(self, alias, backend_id=None):
+    def dc_put(self, alias: str, backend_id: UUID = None):
         """Makes the object persistent in the specified backend.
 
         Args:
@@ -473,7 +415,7 @@ class DataClayObject:
     # Versioning
 
     @tracer.start_as_current_span("new_version")
-    def new_version(self, backend_id=None, recursive=False):
+    def new_version(self, backend_id: UUID = None, recursive: bool = False) -> DataClayObject:
         """Create a new version of the current object.
 
         Args:
@@ -488,7 +430,7 @@ class DataClayObject:
             KeyError: If the backend_id is not registered in dataClay.
         """
         if not self._dc_is_registered:
-            raise ObjectNotRegisteredError(self._dc_id)
+            raise ObjectNotRegisteredError(self._dc_meta.id)
 
         return get_runtime().new_object_version(self, backend_id)
 
@@ -498,7 +440,7 @@ class DataClayObject:
         get_runtime().consolidate_version(self)
 
     @tracer.start_as_current_span("getID")
-    def getID(self):
+    def getID(self) -> str | None:
         """Return the string representation of the persistent object for COMPSs.
 
         dataClay specific implementation: The objects are internally represented
@@ -513,20 +455,20 @@ class DataClayObject:
         """
         if self._dc_is_registered:
             return "%s:%s:%s" % (
-                self._dc_id,
-                self._dc_master_backend_id,
-                self._dc_class_name,
+                self._dc_meta.id,
+                self._dc_meta.master_backend_id,
+                self._dc_meta.class_name,
             )
         else:
             return None
 
-    ################
-    # TODO: REFACTOR
-    ################
+    ###########
+    # Replica #
+    ###########
 
     def new_replica(self, backend_id: UUID = None, recursive: bool = False, remotes: bool = True):
         if not self._dc_is_registered:
-            raise ObjectNotRegisteredError(self._dc_id)
+            raise ObjectNotRegisteredError(self._dc_meta.id)
         get_runtime().new_object_replica(self, backend_id, recursive, remotes)
 
     ##############
@@ -556,7 +498,7 @@ class DataClayObject:
         Detach object from session, i.e. remove reference from current session provided to current object,
             'dear garbage-collector, the current session is not using this object anymore'
         """
-        get_runtime().detach_object_from_session(self._dc_id, self._dc_master_backend_id)
+        get_runtime().detach_object_from_session(self._dc_meta.id, self._dc_meta.master_backend_id)
 
     def __reduce__(self):
         """Support for pickle protocol.
@@ -578,18 +520,18 @@ class DataClayObject:
 
         # TODO: If its a version, use the original object id.
 
-        return self.get_by_id, (self._dc_id,)
+        return self.get_by_id, (self._dc_meta.id,)
 
     def __repr__(self):
         if self._dc_is_registered:
             return "<%s instance with ObjectID=%s>" % (
-                self._dc_class_name,
-                self._dc_id,
+                self._dc_meta.class_name,
+                self._dc_meta.id,
             )
         else:
             return "<%s volatile instance with ObjectID=%s>" % (
-                self._dc_class_name,
-                self._dc_id,
+                self._dc_meta.class_name,
+                self._dc_meta.id,
             )
 
     def __eq__(self, other):
@@ -599,11 +541,11 @@ class DataClayObject:
         if not self._dc_is_registered or not other._dc_is_registered:
             return False
 
-        return self._dc_id == other._dc_id
+        return self._dc_meta.id == other._dc_meta.id
 
     # FIXME: Think another solution, the user may want to override the method
     def __hash__(self):
-        return hash(self._dc_id)
+        return hash(self._dc_meta.id)
 
     @activemethod
     def __setUpdate__(

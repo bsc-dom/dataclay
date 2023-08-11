@@ -27,8 +27,8 @@ class RecursiveDataClayObjectPickler(pickle.Pickler):
     def persistent_id(self, obj):
         if isinstance(obj, DataClayObject):
             if obj._dc_is_local and not obj._dc_is_replica:
-                if obj._dc_id not in self.visited_local_objects:
-                    self.visited_local_objects[obj._dc_id] = obj
+                if obj._dc_meta.id not in self.visited_local_objects:
+                    self.visited_local_objects[obj._dc_meta.id] = obj
 
                     f = io.BytesIO()
                     if not obj._dc_is_loaded:
@@ -42,11 +42,11 @@ class RecursiveDataClayObjectPickler(pickle.Pickler):
                     ).dump(obj._dc_dict)
                     self.serialized.append(f.getvalue())
                 if self.make_persistent:
-                    return ("unregistered", obj._dc_id, obj.__class__)
+                    return ("unregistered", obj._dc_meta.id, obj.__class__)
             else:
                 # Adding to visited_remote_objects
-                if obj._dc_id not in self.visited_remote_objects:
-                    self.visited_remote_objects[obj._dc_id] = obj
+                if obj._dc_meta.id not in self.visited_remote_objects:
+                    self.visited_remote_objects[obj._dc_meta.id] = obj
 
 
 class RecursiveDataClayObjectUnpickler(pickle.Unpickler):
@@ -87,7 +87,7 @@ def serialize_dataclay_object(
     if remote_objects is None:
         remote_objects = {}
 
-    local_objects[instance._dc_id] = instance
+    local_objects[instance._dc_meta.id] = instance
 
     RecursiveDataClayObjectPickler(
         f, local_objects, remote_objects, serialized_local_dicts, make_persistent

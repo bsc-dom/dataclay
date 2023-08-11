@@ -77,19 +77,19 @@ class HeapManager(threading.Thread):
         using weak references. In order to avoid objects to be GC without a flush in DB, HeapManager has hard-references to
         them and is the only one able to release them. This function creates the hard-reference.
         """
-        logger.debug(f"New object retained in heap {dc_obj._dc_id}")
-        self.loaded_objects[dc_obj._dc_id] = dc_obj
+        logger.debug(f"New object retained in heap {dc_obj._dc_meta.id}")
+        self.loaded_objects[dc_obj._dc_meta.id] = dc_obj
 
     def release_from_heap(self, dc_obj):
         """Release hard reference to object provided.
 
         Without hard reference, the object can be Garbage collected
         """
-        logger.debug("Releasing object with id %s from retained map. ", dc_obj._dc_id)
+        logger.debug("Releasing object with id %s from retained map. ", dc_obj._dc_meta.id)
         try:
-            del self.loaded_objects[dc_obj._dc_id]
+            del self.loaded_objects[dc_obj._dc_meta.id]
         except KeyError as e:
-            logger.warning("Object with id %s is not loaded.", dc_obj._dc_id)
+            logger.warning("Object with id %s is not loaded.", dc_obj._dc_meta.id)
 
     def unload_object(self, object_id, timeout=0, force=False):
         instance = self.loaded_objects[object_id]

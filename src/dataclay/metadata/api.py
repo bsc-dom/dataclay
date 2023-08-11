@@ -66,7 +66,7 @@ class MetadataAPI:
             raise DatasetIsNotAccessibleError(dataset_name, username)
 
         # Creates a new session
-        session = Session(uuid.uuid4(), username, dataset_name)
+        session = Session(id=uuid.uuid4(), username=username, dataset_name=dataset_name)
         self.kv_manager.set(session)
 
         logger.info(f"Created new session for {username} with id {session.id}")
@@ -103,7 +103,7 @@ class MetadataAPI:
         account = Account.new(username, password, role="ADMIN")
 
         # Creates new dataset and updates account's list of datasets
-        dataset = Dataset(dataset_name, username)
+        dataset = Dataset(name=dataset_name, owner=username)
         account.datasets.append(dataset_name)
 
         # Put new dataset and account to etcd
@@ -161,7 +161,7 @@ class MetadataAPI:
                 raise AccountInvalidCredentialsError(username)
 
             # Creates new dataset and updates account's list of datasets
-            dataset = Dataset(dataset_name, username)
+            dataset = Dataset(name=dataset_name, owner=username)
             account.datasets.append(dataset_name)
 
             # Put new dataset to kv and updates account metadata
@@ -177,7 +177,7 @@ class MetadataAPI:
 
     @tracer.start_as_current_span("new_dataclay")
     def new_dataclay(self, dataclay_id, host, port, is_this=False):
-        dataclay = Dataclay(dataclay_id, host, port, is_this)
+        dataclay = Dataclay(id=dataclay_id, host=host, port=port, is_this=is_this)
         self.kv_manager.set_new(dataclay)
 
     @tracer.start_as_current_span("get_dataclay")
@@ -195,7 +195,7 @@ class MetadataAPI:
 
     @tracer.start_as_current_span("register_backend")
     def register_backend(self, id: UUID, host: str, port: int, dataclay_id: UUID):
-        backend = Backend(id, host, port, dataclay_id)
+        backend = Backend(id=id, host=host, port=port, dataclay_id=dataclay_id)
         self.kv_manager.set_new(backend)
         logger.info(f"Registered new backend with id={id}, host={host}, port={port}")
 
@@ -237,7 +237,9 @@ class MetadataAPI:
         self.kv_manager.delete_kv(ObjectMetadata.path + str(id))
 
     @tracer.start_as_current_span("get_object_md_by_id")
-    def get_object_md_by_id(self, object_id: UUID, session_id=None, check_session=False):
+    def get_object_md_by_id(
+        self, object_id: UUID, session_id=None, check_session=False
+    ) -> ObjectMetadata:
         if check_session:
             session = self.kv_manager.get_kv(Session, session_id)
             if not session.is_active:
@@ -249,7 +251,7 @@ class MetadataAPI:
     @tracer.start_as_current_span("get_object_md_by_alias")
     def get_object_md_by_alias(
         self, alias_name: str, dataset_name: str, session_id: UUID = None, check_session=False
-    ):
+    ) -> ObjectMetadata:
         if check_session:
             # Checks that session exists and is active
             session = self.kv_manager.get_kv(Session, session_id)
@@ -278,7 +280,7 @@ class MetadataAPI:
         session_id: UUID,
         check_session=False,
     ):
-        alias = Alias(alias_name, dataset_name, object_id)
+        alias = Alias(name=alias_name, dataset_name=dataset_name, object_id=object_id)
         self.kv_manager.set_new(alias)
 
     @tracer.start_as_current_span("get_all_alias")
@@ -308,4 +310,4 @@ class MetadataAPI:
             elif dataset_name != session.dataset_name:
                 raise DatasetIsNotAccessibleError(dataset_name, session.username)
 
-        alias = self.kv_manager.getdel_kv(Alias, f"{dataset_name}/{alias_name}")
+        self.kv_manager.delete_kv(Alias.path + f"{dataset_name}/{alias_name}")

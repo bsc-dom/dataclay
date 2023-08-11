@@ -58,19 +58,19 @@ class BackendRuntime(DataClayRuntime):
     # Heap
 
     def add_to_heap(self, instance: DataClayObject):
-        self.inmemory_objects[instance._dc_id] = instance
+        self.inmemory_objects[instance._dc_meta.id] = instance
         if instance._dc_is_loaded:
             self.heap_manager.retain_in_heap(instance)
 
     def load_object_from_db(self, instance: DataClayObject):
-        with LockManager.write(instance._dc_id):
+        with LockManager.write(instance._dc_meta.id):
             if instance._dc_is_loaded or not instance._dc_is_local:
                 # The object is already loaded or not local. It may had been loaded
                 # in another thread while waiting for lock
                 return
 
             try:
-                path = f"{settings.storage_path}/{instance._dc_id}"
+                path = f"{settings.storage_path}/{instance._dc_meta.id}"
                 object_properties = pickle.load(open(path, "rb"))
                 metrics.dataclay_stored_objects.dec()
             except Exception as e:
@@ -97,7 +97,7 @@ class BackendRuntime(DataClayRuntime):
             ID of the backend in which te object was persisted.
         """
 
-        logger.debug(f"Starting make_persistent for object {instance._dc_id}")
+        logger.debug(f"Starting make_persistent for object {instance._dc_meta.id}")
 
         # It should always have a master location, since all objects intantiated
         # in a ee, get the ee as the master location
@@ -108,23 +108,23 @@ class BackendRuntime(DataClayRuntime):
             return
 
         # Necessary for new version
-        if instance._dc_dataset_name is None:
-            instance._dc_dataset_name = self.session.dataset_name
+        if instance._dc_meta.dataset_name is None:
+            instance._dc_meta.dataset_name = self.session.dataset_name
 
         if alias:
-            self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_id)
+            self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_meta.id)
 
         # If backend_id is none, we register the object in the current backend (usual path)
         if backend_id is None or backend_id == settings.backend.id:
-            instance._dc_master_backend_id = settings.backend.id
-            self.metadata_service.upsert_object(instance.metadata)
+            instance._dc_meta.master_backend_id = settings.backend.id
+            self.metadata_service.upsert_object(instance._dc_meta)
             instance._dc_is_registered = True
 
         self.add_to_heap(instance)
 
         # TODO: When backend is different
 
-        return instance._dc_master_backend_id
+        return instance._dc_meta.master_backend_id
 
     # Shutdown
 
@@ -289,16 +289,16 @@ class BackendRuntime(DataClayRuntime):
     def synchronize(self, instance, operation_name, params):
         raise Exception("To refactor")
         session_id = self.session.id
-        object_id = instance._dc_id
-        operation = self.get_operation_info(instance._dc_id, operation_name)
-        implementation_id = self.get_implementation_id(instance._dc_id, operation_name)
+        object_id = instance._dc_meta.id
+        operation = self.get_operation_info(instance._dc_meta.id, operation_name)
+        implementation_id = self.get_implementation_id(instance._dc_meta.id, operation_name)
         # === SERIALIZE PARAMETERS ===
         serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
             params=[params],
             iface_bitmaps=None,
             params_spec=operation.params,
             params_order=operation.paramsOrder,
-            hint_volatiles=instance._dc_master_backend_id,
+            hint_volatiles=instance._dc_meta.master_backend_id,
             runtime=self,
         )
         self.execution_environment.synchronize(
@@ -309,7 +309,7 @@ class BackendRuntime(DataClayRuntime):
 
     def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
         raise Exception("To refactor")
-        object_id = dc_obj._dc_id
+        object_id = dc_obj._dc_meta.id
         session_id = self.session.id
         logger.debug(
             "[==FederateObject==] Starting federation of object by %s with dest dataClay %s, and session %s",
@@ -323,7 +323,7 @@ class BackendRuntime(DataClayRuntime):
 
     def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
         raise Exception("To refactor")
-        object_id = dc_obj._dc_id
+        object_id = dc_obj._dc_meta.id
         session_id = self.session.id
         logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",

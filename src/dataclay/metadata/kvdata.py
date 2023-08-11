@@ -1,16 +1,24 @@
-import json
+import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from uuid import UUID
+from typing import Annotated, ClassVar, Literal
+from uuid import UUID, uuid4
 
 import bcrypt
+from google.protobuf.json_format import MessageToDict, ParseDict
+from pydantic import BaseModel, BeforeValidator, Field
 
 from dataclay.exceptions import *
 from dataclay.proto.common import common_pb2
-from dataclay.utils.uuid import UUIDEncoder, str_to_uuid, uuid_parser, uuid_to_str
+
+logger = logging.getLogger(__name__)
+
+EmptyNone = Annotated[
+    None,
+    BeforeValidator(lambda x: x if x else None),
+]
 
 
-class KeyValue(ABC):
+class KeyValue(BaseModel, ABC):
     @property
     @abstractmethod
     def key(self):
@@ -18,31 +26,33 @@ class KeyValue(ABC):
 
     @property
     def value(self):
-        return json.dumps(self.__dict__, cls=UUIDEncoder)
+        return self.model_dump_json()
 
     @property
     @abstractmethod
     def path(self):
         pass
 
+    @property
+    @abstractmethod
+    def proto_class(self):
+        pass
+
     @classmethod
     def from_json(cls, s):
-        return cls(**json.loads(s, object_hook=uuid_parser))
+        return cls.model_validate_json(s)
 
-    # NOTE: This is an alternative of "RedisManager.get_kv(...)"
-    # @classmethod
-    # def from_kv(cls, kv_manager, id):
-    #     name = cls.path + id
-    #     value = kv_manager.get(name)
-    #     if value is None:
-    #         raise DoesNotExistError(name)
+    @classmethod
+    def from_proto(cls, proto):
+        return cls.model_validate(MessageToDict(proto, preserving_proto_field_name=True))
 
-    #     return cls.from_json(value)
+    def get_proto(self):
+        return self.proto_class(**self.model_dump(mode="json"))
 
 
-@dataclass
 class Dataclay(KeyValue):
-    path = "/dataclay/"
+    path: ClassVar = "/dataclay/"
+    proto_class: ClassVar = common_pb2.Dataclay
 
     id: UUID
     host: str
@@ -53,27 +63,10 @@ class Dataclay(KeyValue):
     def key(self):
         return self.path + ("this" if self.is_this else str(id))
 
-    @classmethod
-    def from_proto(cls, proto):
-        return cls(
-            str_to_uuid(proto.id),
-            proto.host,
-            proto.port,
-            proto.is_this,
-        )
 
-    def get_proto(self):
-        return common_pb2.Dataclay(
-            id=uuid_to_str(self.id),
-            host=self.host,
-            port=self.port,
-            is_this=self.is_this,
-        )
-
-
-@dataclass
 class Backend(KeyValue):
-    path = "/backend/"
+    path: ClassVar = "/backend/"
+    proto_class: ClassVar = common_pb2.Backend
 
     id: UUID
     host: str
@@ -84,71 +77,28 @@ class Backend(KeyValue):
     def key(self):
         return self.path + str(self.id)
 
-    @classmethod
-    def from_proto(cls, proto):
-        return cls(
-            str_to_uuid(proto.id),
-            proto.host,
-            proto.port,
-            str_to_uuid(proto.dataclay_id),
-        )
 
-    # TODO: Improve it with __getattributes__ and interface
-    def get_proto(self):
-        return common_pb2.Backend(
-            id=uuid_to_str(self.id),
-            host=self.host,
-            port=self.port,
-            dataclay_id=uuid_to_str(self.dataclay_id),
-        )
-
-
-@dataclass
 class ObjectMetadata(KeyValue):
-    path = "/object/"
+    path: ClassVar = "/object/"
+    proto_class: ClassVar = common_pb2.ObjectMetadata
 
-    id: UUID = None
-    dataset_name: str = None
-    class_name: str = None
-    master_backend_id: UUID = None
-    replica_backend_ids: set() = None
+    id: UUID = Field(default_factory=uuid4)
+    dataset_name: str | None = None
+    class_name: str
+    master_backend_id: UUID | None = None
+    replica_backend_ids: set = Field(default_factory=set)
     is_read_only: bool = False
-    original_object_id: UUID = None
-    versions_object_ids: list[UUID] = None
+    original_object_id: UUID | EmptyNone = None
+    versions_object_ids: list[UUID] = Field(default_factory=list)
 
     @property
     def key(self):
         return self.path + str(self.id)
 
-    @classmethod
-    def from_proto(cls, proto):
-        return cls(
-            str_to_uuid(proto.id),
-            proto.dataset_name,
-            proto.class_name,
-            str_to_uuid(proto.master_backend_id),
-            set(map(str_to_uuid, proto.replica_backend_ids)),
-            proto.is_read_only,
-            str_to_uuid(proto.original_object_id),
-            list(map(str_to_uuid, proto.versions_object_ids)),
-        )
 
-    def get_proto(self):
-        return common_pb2.ObjectMetadata(
-            id=uuid_to_str(self.id),
-            dataset_name=self.dataset_name,
-            class_name=self.class_name,
-            master_backend_id=uuid_to_str(self.master_backend_id),
-            replica_backend_ids=map(uuid_to_str, self.replica_backend_ids),
-            is_read_only=self.is_read_only,
-            original_object_id=uuid_to_str(self.original_object_id),
-            versions_object_ids=map(uuid_to_str, self.versions_object_ids),
-        )
-
-
-@dataclass
 class Alias(KeyValue):
-    path = "/alias/"
+    path: ClassVar = "/alias/"
+    proto_class: ClassVar = common_pb2.Alias
 
     name: str
     dataset_name: str
@@ -158,25 +108,10 @@ class Alias(KeyValue):
     def key(self):
         return self.path + f"{self.dataset_name}/{self.name}"
 
-    @classmethod
-    def from_proto(cls, proto):
-        return cls(
-            proto.name,
-            proto.dataset_name,
-            str_to_uuid(proto.object_id),
-        )
 
-    def get_proto(self):
-        return common_pb2.Alias(
-            name=self.name,
-            dataset_name=self.dataset_name,
-            object_id=uuid_to_str(self.object_id),
-        )
-
-
-@dataclass
 class Session(KeyValue):
-    path = "/session/"
+    path: ClassVar = "/session/"
+    proto_class: ClassVar = common_pb2.Session
 
     id: UUID
     username: str
@@ -187,30 +122,15 @@ class Session(KeyValue):
     def key(self):
         return self.path + str(self.id)
 
-    @classmethod
-    def from_proto(cls, proto):
-        return cls(str_to_uuid(proto.id), proto.username, proto.dataset_name, proto.is_active)
 
-    def get_proto(self):
-        return common_pb2.Session(
-            id=uuid_to_str(self.id),
-            username=self.username,
-            dataset_name=self.dataset_name,
-            is_active=self.is_active,
-        )
-
-
-@dataclass
 class Account(KeyValue):
-    path = "/account/"
+    path: ClassVar = "/account/"
+    proto_class: ClassVar = None
 
     username: str
     hashed_password: str = None
     role: str = "NORMAL"
-    datasets: list = field(default_factory=list)
-
-    # def __post_init__(self):
-    #     self.datasets = set(self.datasets)
+    datasets: list = Field(default_factory=list)
 
     @property
     def key(self):
@@ -220,7 +140,7 @@ class Account(KeyValue):
     def new(cls, username, password, role="NORMAL", datasets=None):
         hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         datasets = datasets or []
-        return cls(username, hashed_password, role, datasets)
+        return cls(username=username, hashed_password=hashed_password, role=role, datasets=datasets)
 
     def verify(self, password, role=None):
         if not bcrypt.checkpw(password.encode(), self.hashed_password.encode()):
@@ -230,9 +150,9 @@ class Account(KeyValue):
         return True
 
 
-@dataclass
 class Dataset(KeyValue):
-    path = "/dataset/"
+    path: ClassVar = "/dataset/"
+    proto_class: ClassVar = None
 
     name: str
     owner: str

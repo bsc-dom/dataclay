@@ -107,8 +107,8 @@ def test_new_object_version(client):
     person = Person("Marc", 24)
     person.make_persistent()
 
-    backend_client = backends[person._dc_master_backend_id]
-    person_v1_info = backend_client.new_object_version(person._dc_id)
+    backend_client = backends[person._dc_meta.master_backend_id]
+    person_v1_info = backend_client.new_object_version(person._dc_meta.id)
     person_v1_id, _, _ = person_v1_info.split(":")
 
     person_v1 = Person.get_by_id(person_v1_id)
@@ -117,5 +117,5 @@ def test_new_object_version(client):
     person_v1.name = "Alice"
     assert person.name == "Marc"
 
-    backend_client.consolidate_object_version(person_v1._dc_id)
+    backend_client.consolidate_object_version(person_v1._dc_meta.id)
     assert person.name == "Alice"

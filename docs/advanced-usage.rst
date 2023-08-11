@@ -33,7 +33,7 @@ will be moved as well::
 
     # employee has also moved
     employee.name  # forcing update of the backend_id
-    assert employee._dc_master_backend_id == backend_ids[2]
+    assert employee._dc_meta.master_backend_id == backend_ids[2]
 
 By setting ``remotes=False``, the recursive option will only move referents that are local
 int the same backend, ignoring referents owned by other backends.
@@ -50,7 +50,7 @@ int the same backend, ignoring referents owned by other backends.
 
     # employee is still in backend 0
     employee.name  # forcing update of the backend_id
-    assert employee._dc_master_backend_id == backend_ids[0]
+    assert employee._dc_meta.master_backend_id == backend_ids[0]
 
 .. Replicas
 .. --------
