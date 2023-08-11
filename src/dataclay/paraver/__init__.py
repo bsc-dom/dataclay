@@ -34,7 +34,7 @@ CLASSES_WITH_EXTRAE_DECORATORS = {  # Similar to Java paraver/extrae AspectJ fil
 }
 
 PARAVER_FUNC_MAP = {}
-TRACED_METHODS = list()
+TRACED_METHODS = []
 TRACING_ENABLED = False
 LOGGER = logging.getLogger(__name__)
 TRACE_ENABLED = strtobool(os.getenv("PARAVER_TRACE_ENABLED", "False"))  # WARNING: not used
@@ -42,7 +42,7 @@ TASK_EVENTS = 8000010
 CURRENT_AVAILABLE_TASK_ID = 0
 TASK_ID = 0
 PYEXTRAE = None
-EXTRAE_DICT = dict()
+EXTRAE_DICT = {}
 EXTRAE_CUR_PID = None
 DATACLAY_EXTRAE_WRAPPER = None
 
@@ -323,7 +323,7 @@ def get_traces():
     global TASK_EVENTS
     global PARAVER_FUNC_MAP
     global TRACED_METHODS
-    traces = dict()
+    traces = {}
     global TASK_ID
     set_path = settings.TRACES_DEST_PATH + "/set-0"
     LOGGER.debug("Sending files in %s" % set_path)

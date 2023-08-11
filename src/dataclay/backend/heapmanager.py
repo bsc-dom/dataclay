@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import gc
 import logging
 import pickle
@@ -38,7 +40,7 @@ class HeapManager(threading.Thread):
         # n any deserialization from DB or parameter, objects deserialized first are referrers to
         # objects deserialized later. Second ones cannot be GC if first ones are not cleaned.
         # During GC,we should know that somehow. It's a hint but improves GC a lot.
-        self.loaded_objects: dict[UUID, DataClayObject] = dict()
+        self.loaded_objects: dict[UUID, DataClayObject] = {}
         metrics.dataclay_loaded_objects.set_function(lambda: len(self.loaded_objects))
 
         # Locks for run_task and flush_all
@@ -163,7 +165,7 @@ class HeapManager(threading.Thread):
             finally:
                 self.run_task_lock.release()
 
-    def flush_all(self, unload_timeout: str = None, force_unload: bool = True):
+    def flush_all(self, unload_timeout: str | None = None, force_unload: bool = True):
         """Stores and unloads all loaded objects to disk.
 
         This function is usually called at shutdown of the backend.

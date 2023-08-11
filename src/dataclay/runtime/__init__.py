@@ -9,10 +9,10 @@ if TYPE_CHECKING:
     from dataclay.runtime.backend import BackendRuntime
     from dataclay.runtime.client import ClientRuntime
 
-current_runtime: ClientRuntime | BackendRuntime = None
+current_runtime: ClientRuntime | BackendRuntime | None = None
 
 
-def get_runtime() -> ClientRuntime | BackendRuntime:
+def get_runtime() -> ClientRuntime | BackendRuntime | None:
     return current_runtime
 
 
@@ -81,7 +81,7 @@ class LockManager:
     This class implements a global read-write lock manager for objects identified by an object_id.
     """
 
-    object_locks: dict[UUID, ReadWriteLock] = dict()
+    object_locks: dict[UUID, ReadWriteLock] = {}
     class_lock = threading.Lock()
 
     @classmethod

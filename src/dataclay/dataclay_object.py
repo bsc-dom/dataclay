@@ -187,7 +187,7 @@ class DataClayObject:
     ###########################
 
     @tracer.start_as_current_span("make_persistent")
-    def make_persistent(self, alias: str = None, backend_id: UUID = None):
+    def make_persistent(self, alias: str | None = None, backend_id: UUID | None = None):
         """Makes the object persistent.
 
         Args:
@@ -196,12 +196,9 @@ class DataClayObject:
                 will be stored in a random backend.
 
         Raises:
-            AttributeError: If the alias is an empty string.
             RuntimeError: If the object is already persistent.
             KeyError: If the backend_id is not registered in dataClay.
         """
-        if alias == "":
-            raise AttributeError("Alias cannot be empty")
         get_runtime().make_persistent(self, alias=alias, backend_id=backend_id)
 
     @classmethod
@@ -249,11 +246,6 @@ class DataClayObject:
             AttributeError: If the alias is an empty string.
             DataClayException: If the alias already exists.
         """
-        if not self._dc_is_registered:
-            raise ObjectNotRegisteredError(self._dc_meta.id)
-
-        if alias == "":
-            raise AttributeError("Alias cannot be empty")
         get_runtime().add_alias(self, alias)
 
     def get_aliases(self) -> set[str]:
@@ -353,9 +345,6 @@ class DataClayObject:
         Raises:
             ObjectNotRegisteredError: If the object is not registered.
         """
-        if not self._dc_is_registered:
-            raise ObjectNotRegisteredError(self._dc_meta.id)
-
         return get_runtime().make_object_copy(self, recursive)
 
     @classmethod
@@ -429,9 +418,6 @@ class DataClayObject:
             ObjectNotRegisteredError: If the object is not registered in dataClay.
             KeyError: If the backend_id is not registered in dataClay.
         """
-        if not self._dc_is_registered:
-            raise ObjectNotRegisteredError(self._dc_meta.id)
-
         return get_runtime().new_object_version(self, backend_id)
 
     @tracer.start_as_current_span("consolidate_version")
@@ -467,8 +453,6 @@ class DataClayObject:
     ###########
 
     def new_replica(self, backend_id: UUID = None, recursive: bool = False, remotes: bool = True):
-        if not self._dc_is_registered:
-            raise ObjectNotRegisteredError(self._dc_meta.id)
         get_runtime().new_object_replica(self, backend_id, recursive, remotes)
 
     ##############

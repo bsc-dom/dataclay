@@ -132,7 +132,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
     def GetAllBackends(self, request, context):
         try:
             backends = self.metadata_service.get_all_backends(request.from_backend)
-            response = dict()
+            response = {}
             for id, backend in backends.items():
                 response[str(id)] = backend.get_proto()
         except Exception as e:
@@ -149,7 +149,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
     def GetAllObjects(self, request, context):
         try:
             object_mds = self.metadata_service.get_all_objects()
-            response = dict()
+            response = {}
             for id, object_md in object_mds.items():
                 response[str(id)] = object_md.get_proto()
         except Exception as e:
@@ -211,7 +211,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
             aliases = self.metadata_service.get_all_alias(
                 request.dataset_name, str_to_uuid(request.object_id)
             )
-            response = dict()
+            response = {}
             for alias_name, alias in aliases.items():
                 response[alias_name] = alias.get_proto()
         except Exception as e:

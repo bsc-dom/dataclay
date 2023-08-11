@@ -9,7 +9,7 @@ import pickle
 import random
 from abc import ABC, abstractmethod
 from builtins import Exception
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 from weakref import WeakValueDictionary
 
@@ -26,26 +26,26 @@ from dataclay.utils.telemetry import trace
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from dataclay.dataclay_object import DataClayObject
+    from dataclay.backend.heapmanager import HeapManager
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
-    from dataclay.metadata.kvdata import ObjectMetadata
-    from dataclay.runtime.backend import BackendRuntime
+    from dataclay.metadata.kvdata import Backend, ObjectMetadata, Session
+
 
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 
 class DataClayRuntime(ABC):
-    def __init__(self, metadata_service: MetadataAPI | MetadataClient, backend_id=None):
-        self.backend_clients: dict[UUID, BackendClient] = dict()
+    def __init__(self, metadata_service: MetadataAPI | MetadataClient, backend_id: UUID = None):
+        self.backend_clients: dict[UUID, BackendClient] = {}
         # self._dataclay_id = None
         self.backend_id = backend_id
         self.is_backend = bool(backend_id)
         self.metadata_service = metadata_service
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
-        self.inmemory_objects = WeakValueDictionary()
+        self.inmemory_objects: WeakValueDictionary[UUID, DataClayObject] = WeakValueDictionary()
         metrics.dataclay_inmemory_objects.set_function(lambda: len(self.inmemory_objects))
 
     ##############
@@ -54,13 +54,13 @@ class DataClayRuntime(ABC):
 
     @property
     @abstractmethod
-    def session(self):
+    def session(self) -> Session:
         pass
 
     # Common runtime API
 
     @abstractmethod
-    def make_persistent(self, instance, alias, backend_id):
+    def make_persistent(self, instance: DataClayObject, alias: str | None, backend_id: UUID | None):
         pass
 
     @abstractmethod
@@ -68,6 +68,11 @@ class DataClayRuntime(ABC):
         pass
 
     def load_object_from_db(self, instance: DataClayObject):
+        pass
+
+    @property
+    @abstractmethod
+    def heap_manager(self) -> HeapManager:
         pass
 
     ##################
@@ -132,7 +137,7 @@ class DataClayRuntime(ABC):
 
         return self.get_object_by_id(object_md.id, object_md)
 
-    def get_object_properties(self, instance: DataClayObject):
+    def get_object_properties(self, instance: DataClayObject) -> dict[str, Any]:
         if instance._dc_is_local:
             self.load_object_from_db(instance)
             return instance._dc_properties
@@ -148,6 +153,9 @@ class DataClayRuntime(ABC):
         # the deepcopy from the class will try to serialize the instance
         # and it will be made persistent in the process
         # A solution could be to override the __deepcopy__, but I don't see the need...
+        if not instance._dc_is_registered:
+            raise ObjectNotRegisteredError(instance._dc_meta.id)
+
         object_properties = copy.deepcopy(self.get_object_properties(instance))
         if is_proxy:
             # This is to avoid the object get persistent automatically when called in a backend
@@ -160,7 +168,11 @@ class DataClayRuntime(ABC):
         return object_copy
 
     def proxify_object(self, instance: DataClayObject, new_object_id: UUID):
+        if not instance._dc_is_registered:
+            raise ObjectNotRegisteredError(instance._dc_meta.id)
+
         if instance._dc_is_local:
+            assert self.is_backend
             with LockManager.write(instance._dc_meta.id):
                 self.load_object_from_db(instance)
                 instance._clean_dc_properties()
@@ -265,10 +277,14 @@ class DataClayRuntime(ABC):
     # Alias #
     #########
 
-    def add_alias(self, instance, alias):
+    def add_alias(self, instance: DataClayObject, alias: str):
+        if not instance._dc_is_registered:
+            raise ObjectNotRegisteredError(instance._dc_meta.id)
+        if alias == "":
+            raise AttributeError("Alias cannot be an empty string")
         self.metadata_service.new_alias(alias, instance._dc_meta.dataset_name, instance._dc_meta.id)
 
-    def delete_alias(self, alias, dataset_name):
+    def delete_alias(self, alias: str, dataset_name: str | None = None):
         if dataset_name is None:
             dataset_name = self.session.dataset_name
 
@@ -278,7 +294,7 @@ class DataClayRuntime(ABC):
         object_md = self.metadata_service.get_object_md_by_id(instance._dc_meta.id)
         instance._dc_meta = object_md
 
-    def get_all_alias(self, dataset_name: str = None, object_id: UUID = None):
+    def get_all_alias(self, dataset_name: str | None = None, object_id: UUID | None = None):
         return self.metadata_service.get_all_alias(dataset_name, object_id)
 
     ############
@@ -296,7 +312,7 @@ class DataClayRuntime(ABC):
         backend_infos = self.metadata_service.get_all_backends(from_backend=self.is_backend)
         new_backend_clients = {}
 
-        def add_backend_client(backend_info):
+        def add_backend_client(backend_info: Backend):
             if backend_info.id in self.backend_clients:
                 if self.backend_clients[backend_info.id].is_ready(settings.timeout_channel_ready):
                     new_backend_clients[backend_info.id] = self.backend_clients[backend_info.id]
@@ -409,11 +425,11 @@ class DataClayRuntime(ABC):
                 pending_remote_objects.keys(), backend_id, make_replica, recursive, remotes
             )
 
-    def replace_object_properties(self, instance, new_instance):
+    def replace_object_properties(self, instance: DataClayObject, new_instance: DataClayObject):
         new_object_properties = self.get_object_properties(new_instance)
         self.update_object_properties(instance, new_object_properties)
 
-    def update_object_properties(self, instance, new_properties):
+    def update_object_properties(self, instance: DataClayObject, new_properties: dict[str, Any]):
         if instance._dc_is_local:
             self.load_object_from_db(instance)
             vars(instance).update(new_properties)
@@ -423,7 +439,7 @@ class DataClayRuntime(ABC):
                 instance._dc_meta.id, pickle.dumps(new_properties)
             )
 
-    def new_object_version(self, instance, backend_id=None):
+    def new_object_version(self, instance: DataClayObject, backend_id: UUID | None = None):
         new_version = self.make_object_copy(instance, is_proxy=True)
 
         if instance._dc_meta.original_object_id is None:
@@ -440,10 +456,9 @@ class DataClayRuntime(ABC):
         self.make_persistent(new_version, backend_id=backend_id)
         return new_version
 
-    def consolidate_version(self, instance):
+    def consolidate_version(self, instance: DataClayObject):
         if instance._dc_meta.original_object_id is None:
-            logger.warning("Trying to consolidate an object that is not a version")
-            return
+            raise ObjectIsNotVersion(instance._dc_meta.id)
 
         original_object_id = instance._dc_meta.original_object_id
 
@@ -465,11 +480,14 @@ class DataClayRuntime(ABC):
     def new_object_replica(
         self,
         instance: DataClayObject,
-        backend_id: UUID = None,
+        backend_id: UUID | None = None,
         recursive: bool = False,
         remotes: bool = True,
     ):
         logger.debug(f"Starting new replica of {instance._dc_meta.id}")
+
+        if not instance._dc_is_registered:
+            raise ObjectNotRegisteredError(instance._dc_meta.id)
 
         if backend_id is None:
             self.update_backend_clients()
@@ -495,14 +513,14 @@ class DataClayRuntime(ABC):
     #####################
 
     @abstractmethod
-    def detach_object_from_session(self, object_id, hint):
+    def detach_object_from_session(self, object_id: UUID, hint):
         """Detach object from current session in use, i.e. remove reference from current session provided to object,
 
         'Dear garbage-collector, current session is not using the object anymore'
         """
         pass
 
-    def add_session_reference(self, object_id):
+    def add_session_reference(self, object_id: UUID):
         """reference associated to thread session
 
         Only implemented in BackendRuntime

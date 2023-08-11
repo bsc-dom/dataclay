@@ -1,33 +1,45 @@
 """ ClientRuntime """
+from __future__ import annotations
 
-import io
 import logging
 import random
 import traceback
+from typing import TYPE_CHECKING
 
-from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.metadata.client import MetadataClient
 from dataclay.runtime.runtime import DataClayRuntime
 from dataclay.utils.serialization import serialize_dataclay_object
 from dataclay.utils.telemetry import trace
 
+if TYPE_CHECKING:
+    from uuid import UUID
+
+    from dataclay.dataclay_object import DataClayObject
+    from dataclay.metadata.kvdata import Session
+
+
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 
 class ClientRuntime(DataClayRuntime):
-    session = None
+    session: Session = None
 
-    def __init__(self, metadata_service_host, metadata_service_port):
-        # Initialize parent
+    def __init__(self, metadata_service_host: str, metadata_service_port: int):
         metadata_service = MetadataClient(metadata_service_host, metadata_service_port)
         super().__init__(metadata_service)
+
+    @property
+    def heap_manager(self):
+        raise DataClayException("Client has no heap manager")
 
     def add_to_heap(self, instance: DataClayObject):
         self.inmemory_objects[instance._dc_meta.id] = instance
 
-    def make_persistent(self, instance: DataClayObject, alias=None, backend_id=None):
+    def make_persistent(
+        self, instance: DataClayObject, alias: str | None = None, backend_id: str | None = None
+    ):
         """This method creates a new Persistent Object using the provided stub
         instance and, if indicated, all its associated objects also Logic module API used for communication
         This function is called from a stub/execution class
@@ -48,7 +60,6 @@ class ClientRuntime(DataClayRuntime):
         instance._dc_meta.dataset_name = self.session.dataset_name
         if alias:
             self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_meta.id)
-            # instance._dc_alias = alias
 
         if backend_id is None:
             self.update_backend_clients()
@@ -62,17 +73,16 @@ class ClientRuntime(DataClayRuntime):
         else:
             backend_client = self.get_backend_client(backend_id)
 
-        ######################################
-        # Serialize instance with Pickle
-        ######################################
-
         # TODO: Avoid some race-conditions in communication
         # (make persistent + execute where execute arrives before).
         # add_volatiles_under_deserialization and remove_volatiles_under_deserialization
-        # TODO: Check if we can make a use of the recursive parameter
 
-        visited_objects = {}
-        dicts_bytes = serialize_dataclay_object(instance, visited_objects, make_persistent=True)
+        # Serialize instance with Pickle
+
+        visited_objects: dict[UUID, DataClayObject] = {}
+        dicts_bytes = serialize_dataclay_object(
+            instance, local_objects=visited_objects, make_persistent=True
+        )
         backend_client.make_persistent(dicts_bytes)
 
         for dc_object in visited_objects.values():

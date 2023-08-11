@@ -271,7 +271,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
                 UUID(request.newHint),
             )
 
-            rem_obj = dict()
+            rem_obj = {}
 
             for k, v in result.items():
                 rem_obj[str(k)] = str(v)
@@ -287,7 +287,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
         raise Exception("To refactor")
         try:
             """deserialize into dictionary of object id - integer"""
-            ref_counting = dict()
+            ref_counting = {}
             for serialized_oid, counter in request.refsToUpdate.items():
                 ref_counting[serialized_oid] = counter
 
@@ -334,14 +334,14 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     def migrateObjectsToBackends(self, request, context):
         raise Exception("To refactor")
         try:
-            backends = dict()
+            backends = {}
 
             for k, v in request.destStorageLocs.items():
                 backends[UUID(k)] = Utils.get_storage_location(v)
 
             result = self.client.ds_migrate_objects_to_backends(backends)
 
-            migr_obj_res = dict()
+            migr_obj_res = {}
 
             for k, v in result[0].items():
                 migrated_obj_list = list()

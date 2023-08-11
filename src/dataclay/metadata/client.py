@@ -16,13 +16,13 @@ logger = logging.getLogger(__name__)
 class MetadataClient:
     session: Session
 
-    def __init__(self, host, port):
+    def __init__(self, host: str, port: int):
         self.address = f"{host}:{port}"
         self.channel = grpc.insecure_channel(self.address)
         self.stub = metadata_pb2_grpc.MetadataServiceStub(self.channel)
         # atexit.register(self.close)
 
-    def is_ready(self, timeout=None):
+    def is_ready(self, timeout: float | None = None):
         try:
             grpc.channel_ready_future(self.channel).result(timeout)
             return True
@@ -74,7 +74,7 @@ class MetadataClient:
     #####################
 
     @grpc_error_handler
-    def get_dataclay(self, id) -> UUID:
+    def get_dataclay(self, id: UUID) -> Dataclay:
         request = metadata_pb2.GetDataclayRequest(dataclay_id=str(id))
         response = self.stub.GetDataclay(request)
         return Dataclay.from_proto(response)
@@ -84,11 +84,11 @@ class MetadataClient:
     #####################
 
     @grpc_error_handler
-    def get_all_backends(self, from_backend=False) -> dict:
+    def get_all_backends(self, from_backend: bool = False) -> dict[UUID, Backend]:
         request = metadata_pb2.GetAllBackendsRequest(from_backend=from_backend)
         response = self.stub.GetAllBackends(request)
 
-        result = dict()
+        result = {}
         for id, proto in response.backends.items():
             result[UUID(id)] = Backend.from_proto(proto)
         return result
@@ -98,10 +98,10 @@ class MetadataClient:
     ###################
 
     @grpc_error_handler
-    def get_all_objects(self) -> dict:
+    def get_all_objects(self) -> dict[UUID, ObjectMetadata]:
         response = self.stub.GetAllObjects(Empty())
 
-        result = dict()
+        result = {}
         for id, proto in response.objects.items():
             result[UUID(id)] = ObjectMetadata.from_proto(proto)
         return result
@@ -137,13 +137,13 @@ class MetadataClient:
         self.stub.NewAlias(request)
 
     @grpc_error_handler
-    def get_all_alias(self, dataset_name: str, object_id: UUID) -> dict:
+    def get_all_alias(self, dataset_name: str, object_id: UUID) -> dict[str, Alias]:
         request = metadata_pb2.GetAllAliasRequest(
             dataset_name=dataset_name, object_id=uuid_to_str(object_id)
         )
         response = self.stub.GetAllAlias(request)
 
-        result = dict()
+        result = {}
         for alias_name, proto in response.aliases.items():
             result[alias_name] = Alias.from_proto(proto)
         return result

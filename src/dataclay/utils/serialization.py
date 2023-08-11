@@ -69,7 +69,7 @@ def unserialize_dataclay_object(
     dict_binary, unserialized_objects: dict[UUID, DataClayObject] = None
 ):
     if unserialized_objects is None:
-        unserialized_objects = dict()
+        unserialized_objects = {}
     object_dict = RecursiveDataClayObjectUnpickler(
         io.BytesIO(dict_binary), unserialized_objects
     ).load()
@@ -77,7 +77,10 @@ def unserialize_dataclay_object(
 
 
 def serialize_dataclay_object(
-    instance, local_objects=None, remote_objects=None, make_persistent=False
+    instance: DataClayObject,
+    local_objects: dict[UUID, DataClayObject] | None = None,
+    remote_objects: dict[UUID, DataClayObject] | None = None,
+    make_persistent: bool = False,
 ):
     f = io.BytesIO()
     serialized_local_dicts = []

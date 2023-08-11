@@ -1,24 +1,35 @@
 """ BackendRuntime """
+from __future__ import annotations
 
 import datetime
 import logging
 import pickle
 import threading
+from typing import TYPE_CHECKING
 
 from dataclay.backend.heapmanager import HeapManager
 from dataclay.config import settings
-from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.metadata.api import MetadataAPI
 from dataclay.runtime import LockManager
 from dataclay.runtime.runtime import DataClayRuntime
 from dataclay.utils import metrics
 
+if TYPE_CHECKING:
+    from uuid import UUID
+
+    from dataclay.dataclay_object import DataClayObject
+    from dataclay.metadata.kvdata import Session
+
 logger = logging.getLogger(__name__)
 
 
 class BackendRuntime(DataClayRuntime):
-    def __init__(self, kv_host, kv_port, backend_id):
+
+    heap_manager: HeapManager = None
+    thread_local_data: threading.local
+
+    def __init__(self, kv_host: str, kv_port: int, backend_id: UUID):
         # Initialize parent
         metadata_service = MetadataAPI(kv_host, kv_port)
         super().__init__(metadata_service, backend_id)
@@ -31,7 +42,7 @@ class BackendRuntime(DataClayRuntime):
         # Also, important to think what happens if one single session is associated to two client threads? use case?
         # should we allow that?
         # Must be thread-safe.
-        self.references_hold_by_sessions = dict()
+        self.references_hold_by_sessions = {}
 
         # Sessions in quarantine. note: maximum size of this map is max number of sessions per EE: This map is needed to solve a race
         # condition in Global Garbage collection (@see getReferenceCounting).
@@ -39,19 +50,19 @@ class BackendRuntime(DataClayRuntime):
 
         # Per each session, it's expiration date. This is used to control 'retained' objects from sessions in Garbage collection.
         # Must be thread-safe.
-        self.session_expires_dates = dict()
+        self.session_expires_dates = {}
 
         self.thread_local_data = threading.local()
 
     @property
-    def session(self):
+    def session(self) -> Session:
         return self.thread_local_data.session
 
     @session.setter
-    def session(self, value):
+    def session(self, value: Session):
         self.thread_local_data.session = value
 
-    def set_session_by_id(self, session_id):
+    def set_session_by_id(self, session_id: UUID):
         session = self.metadata_service.get_session(session_id)
         self.session = session
 
@@ -82,7 +93,9 @@ class BackendRuntime(DataClayRuntime):
             vars(instance).update(object_properties)
             self.heap_manager.retain_in_heap(instance)
 
-    def make_persistent(self, instance: DataClayObject, alias=None, backend_id=None):
+    def make_persistent(
+        self, instance: DataClayObject, alias: str | None = None, backend_id: UUID | None = None
+    ):
         """This method creates a new Persistent Object using the provided stub instance and,
         if indicated, all its associated objects also Logic module API used for communication
 

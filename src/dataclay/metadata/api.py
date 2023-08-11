@@ -25,12 +25,11 @@ logger = logging.getLogger(__name__)
 
 
 class MetadataAPI:
-    def __init__(self, kv_host, kv_port):
+    def __init__(self, kv_host: str, kv_port: int):
         self.kv_manager = RedisManager(kv_host, kv_port)
-
         logger.info("Initialized MetadataService")
 
-    def is_ready(self, timeout=None, pause=0.5):
+    def is_ready(self, timeout: float | None = None, pause: float = 0.5):
         return self.kv_manager.is_ready(timeout=timeout, pause=pause)
 
     ###########
@@ -176,7 +175,7 @@ class MetadataAPI:
     ############
 
     @tracer.start_as_current_span("new_dataclay")
-    def new_dataclay(self, dataclay_id, host, port, is_this=False):
+    def new_dataclay(self, dataclay_id: UUID, host: str, port: int, is_this: bool = False):
         dataclay = Dataclay(id=dataclay_id, host=host, port=port, is_this=is_this)
         self.kv_manager.set_new(dataclay)
 
@@ -189,7 +188,7 @@ class MetadataAPI:
     ###########
 
     @tracer.start_as_current_span("get_all_backends")
-    def get_all_backends(self, from_backend=False) -> dict:
+    def get_all_backends(self, from_backend: bool = False) -> dict[UUID, Backend]:
         result = self.kv_manager.getprefix(Backend, "/backend/")
         return {UUID(k): v for k, v in result.items()}
 
@@ -208,7 +207,7 @@ class MetadataAPI:
     ###################
 
     @tracer.start_as_current_span("get_all_objects")
-    def get_all_objects(self):
+    def get_all_objects(self) -> dict[UUID, ObjectMetadata]:
         result = self.kv_manager.getprefix(ObjectMetadata, "/object/")
         return {UUID(k): v for k, v in result.items()}
 
@@ -238,7 +237,7 @@ class MetadataAPI:
 
     @tracer.start_as_current_span("get_object_md_by_id")
     def get_object_md_by_id(
-        self, object_id: UUID, session_id=None, check_session=False
+        self, object_id: UUID, session_id: UUID | None = None, check_session: bool = False
     ) -> ObjectMetadata:
         if check_session:
             session = self.kv_manager.get_kv(Session, session_id)
@@ -250,7 +249,11 @@ class MetadataAPI:
 
     @tracer.start_as_current_span("get_object_md_by_alias")
     def get_object_md_by_alias(
-        self, alias_name: str, dataset_name: str, session_id: UUID = None, check_session=False
+        self,
+        alias_name: str,
+        dataset_name: str,
+        session_id: UUID | None = None,
+        check_session: bool = False,
     ) -> ObjectMetadata:
         if check_session:
             # Checks that session exists and is active
@@ -277,14 +280,16 @@ class MetadataAPI:
         alias_name: str,
         dataset_name: str,
         object_id: UUID,
-        session_id: UUID,
-        check_session=False,
+        session_id: UUID | None = None,
+        check_session: bool = False,
     ):
         alias = Alias(name=alias_name, dataset_name=dataset_name, object_id=object_id)
         self.kv_manager.set_new(alias)
 
     @tracer.start_as_current_span("get_all_alias")
-    def get_all_alias(self, dataset_name: str = None, object_id: UUID = None):
+    def get_all_alias(
+        self, dataset_name: str | None = None, object_id: UUID | None = None
+    ) -> dict[str, Alias]:
         prefix = "/alias/"
         if dataset_name:
             prefix = prefix + dataset_name + "/"
@@ -294,7 +299,11 @@ class MetadataAPI:
 
     @tracer.start_as_current_span("delete_alias")
     def delete_alias(
-        self, alias_name: str, dataset_name: str, session_id: UUID, check_session=False
+        self,
+        alias_name: str,
+        dataset_name: str,
+        session_id: UUID | None = None,
+        check_session: bool = False,
     ):
         # NOTE: If the session is not checked, we supose the dataset_name is correct
         #       since only the EE is able to set check_session to False

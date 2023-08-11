@@ -32,17 +32,6 @@ if TYPE_CHECKING:
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
-
-def init():
-    client_api = Client()
-    client_api.start()
-    return client_api
-
-
-def finish():
-    pass
-
-
 _telemetry_started = False
 
 
@@ -72,6 +61,16 @@ def start_telemetry():
     _telemetry_started = True
 
 
+def init():
+    client_api = Client()
+    client_api.start()
+    return client_api
+
+
+def finish():
+    pass
+
+
 class Client:
     """Client API for dataClay.
 
@@ -79,35 +78,46 @@ class Client:
 
         from dataclay import client
         client = dataclay.client(host="127.0.0.1", username="testuser", password="s3cret", dataset="testuser")
-
-
-
+        client.start()
     """
 
+    settings: ClientSettings
+    runtime: ClientRuntime
+    previous_settings: ClientSettings | None
+    previous_runtime: ClientRuntime | None
+
+    is_active: bool = False
+
     def __init__(
-        self, host=None, port=None, username=None, password=None, dataset=None, local_backend=None
+        self,
+        host: str | None = None,
+        port: int | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        dataset: str | None = None,
+        local_backend: str | None = None,
     ):
-        client_settings_kwargs = {}
+
+        # Set settings
+        settings_kwargs = {}
         if host:
-            client_settings_kwargs["dataclay_host"] = host
+            settings_kwargs["dataclay_host"] = host
         if port:
-            client_settings_kwargs["dataclay_port"] = port
+            settings_kwargs["dataclay_port"] = port
         if username:
-            client_settings_kwargs["username"] = username
+            settings_kwargs["username"] = username
         if password:
-            client_settings_kwargs["password"] = password
+            settings_kwargs["password"] = password
         if dataset:
-            client_settings_kwargs["dataset"] = dataset
+            settings_kwargs["dataset"] = dataset
         if local_backend:
-            client_settings_kwargs["local_backend"] = local_backend
+            settings_kwargs["local_backend"] = local_backend
 
-        self.client_settings = ClientSettings(**client_settings_kwargs)
-
-        self.is_initialized = False
+        self.settings = ClientSettings(**settings_kwargs)
 
         start_telemetry()
 
-        # Set LOCAL_BACKEND
+        # Set local backend
         # if settings.LOCAL_BACKEND:
         #     for ee_id, ee_info in self.runtime.ee_infos.items():
         #         if ee_info.sl_name == settings.LOCAL_BACKEND:
@@ -119,35 +129,31 @@ class Client:
 
     @tracer.start_as_current_span("start")
     def start(self):
-        """Initialize the client API.
+        """Start the client runtime"""
 
-        Note that after a successful call to this method, subsequent calls will be
-        a no-operation.
-        """
-
-        if self.is_initialized:
-            logger.warning("Already initialized. Ignoring")
+        if self.is_active:
+            logger.warning("Client already active. Ignoring")
             return
 
-        logger.info("Initializing client")
+        logger.info("Starting client runtime")
 
-        # Update settings
-        self.old_client_settings = settings.client
-        settings.client = self.client_settings
+        # Replace settings
+        self.previous_settings = settings.client
+        settings.client = self.settings
 
-        # Create a new runtime
-        self.old_runtime = get_runtime()
+        # Create and replace runtime
+        self.previous_runtime = get_runtime()
         self.runtime = ClientRuntime(settings.client.dataclay_host, settings.client.dataclay_port)
         set_runtime(self.runtime)
 
         # Create a new session
-        self.session = self.runtime.metadata_service.new_session(
+        session = self.runtime.metadata_service.new_session(
             settings.client.username,
             settings.client.password.get_secret_value(),
             settings.client.dataset,
         )
-        self.runtime.session = self.session
-        self.runtime.metadata_service.session = self.session
+        self.runtime.session = session
+        self.runtime.metadata_service.session = session
 
         # Cache the backends clients
         self.runtime.update_backend_clients()
@@ -155,22 +161,21 @@ class Client:
         # Cache the dataclay_id, to avoid later request
         # self.runtime.dataclay_id
 
-        logger.debug(f"Started session {self.session.id}")
-        self.is_initialized = True
+        logger.debug(f"Created new session {session.id}")
+        self.is_active = True
 
     @tracer.start_as_current_span("stop")
     def stop(self):
-        """Finish the client API."""
-
-        if not self.is_initialized:
-            logger.warning("Already finished. Ignoring")
+        """Stop the client runtime"""
+        if not self.is_active:
+            logger.warning("Client is not active. Ignoring")
             return
 
-        logger.info("Finishing client API")
+        logger.info("Stopping client runtime")
         self.runtime.stop()
-        settings.client = self.old_client_settings
-        set_runtime(self.old_runtime)
-        self.is_initialized = False
+        settings.client = self.previous_settings
+        set_runtime(self.previous_runtime)
+        self.is_active = False
 
     def __del__(self):
         self.stop()
@@ -183,70 +188,53 @@ class Client:
         self.stop()
 
     @tracer.start_as_current_span("get_backends")
-    def get_backends(self) -> dict[UUID:BackendClient]:
-        """Return a dictionary of backends clients."""
+    def get_backends(self) -> dict[UUID, BackendClient]:
         self.runtime.update_backend_clients()
         return self.runtime.backend_clients
 
 
-##########
-# Dataclay
-##########
+###############
+# To Refactor #
+###############
 
 
-def register_dataclay(id, host, port):
-    """Register external dataClay for federation
-    Args:
-        host: external dataClay host name
-        port: external dataClay port
-    """
-    return get_runtime().register_external_dataclay(id, host, port)
+# def register_dataclay(id, host, port):
+#     """Register external dataClay for federation
+#     Args:
+#         host: external dataClay host name
+#         port: external dataClay port
+#     """
+#     return get_runtime().register_external_dataclay(id, host, port)
 
 
-def unfederate(ext_dataclay_id=None):
-    """Unfederate all objects belonging to/federated with external data clay with id provided
-    or with all any external dataclay if no argument provided.
-    :param ext_dataclay_id: external dataClay id
-    :return: None
-    :type ext_dataclay_id: uuid
-    :rtype: None
-    """
-    if ext_dataclay_id is not None:
-        return get_runtime().unfederate_all_objects(ext_dataclay_id)
-    else:
-        return get_runtime().unfederate_all_objects_with_all_dcs()
+# def unfederate(ext_dataclay_id=None):
+#     """Unfederate all objects belonging to/federated with external data clay with id provided
+#     or with all any external dataclay if no argument provided.
+#     :param ext_dataclay_id: external dataClay id
+#     :return: None
+#     :type ext_dataclay_id: uuid
+#     :rtype: None
+#     """
+#     if ext_dataclay_id is not None:
+#         return get_runtime().unfederate_all_objects(ext_dataclay_id)
+#     else:
+#         return get_runtime().unfederate_all_objects_with_all_dcs()
 
 
-def migrate_federated_objects(origin_dataclay_id, dest_dataclay_id):
-    """Migrate federated objects from origin dataclay to destination dataclay
-    :param origin_dataclay_id: origin dataclay id
-    :param dest_dataclay_id destination dataclay id
-    :return: None
-    :rtype: None
-    """
-    return get_runtime().migrate_federated_objects(origin_dataclay_id, dest_dataclay_id)
+# def migrate_federated_objects(origin_dataclay_id, dest_dataclay_id):
+#     """Migrate federated objects from origin dataclay to destination dataclay
+#     :param origin_dataclay_id: origin dataclay id
+#     :param dest_dataclay_id destination dataclay id
+#     :return: None
+#     :rtype: None
+#     """
+#     return get_runtime().migrate_federated_objects(origin_dataclay_id, dest_dataclay_id)
 
 
-def federate_all_objects(dest_dataclay_id):
-    """Federate all objects from current dataclay to destination dataclay
-    :param dest_dataclay_id destination dataclay id
-    :return: None
-    :rtype: None
-    """
-    return get_runtime().federate_all_objects(dest_dataclay_id)
-
-
-######################################
-# Static initialization of dataClay
-##########################################################
-
-# The client should never need the delete methods of persistent objects
-# ... not doing this is a performance hit
-# del DataClayObject.__del__
-
-
-# initialize()
-
-
-# Now the logger is ready
-# logger.debug("Client-mode initialized, dataclay.commonruntime should be ready")
+# def federate_all_objects(dest_dataclay_id):
+#     """Federate all objects from current dataclay to destination dataclay
+#     :param dest_dataclay_id destination dataclay id
+#     :return: None
+#     :rtype: None
+#     """
+#     return get_runtime().federate_all_objects(dest_dataclay_id)

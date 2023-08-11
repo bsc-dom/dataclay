@@ -171,7 +171,12 @@ class ObjectWithWrongBackendId(ObjectError):
         self.replica_backend_ids = replica_backend_ids
 
     def __str__(self):
-        return f"Object with wrong backend_id"
+        return f"Object {self.object_id} with wrong backend_id!"
+
+
+class ObjectIsNotVersion(ObjectError):
+    def __str__(self):
+        return f"Object {self.object_id} is not a version!"
 
 
 ###########

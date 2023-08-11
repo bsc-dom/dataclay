@@ -1,7 +1,7 @@
 import logging
-import pickle
 import sys
 import traceback
+from typing import Iterable
 from uuid import UUID
 
 import grpc
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class BackendClient:
-    def __init__(self, host, port):
+    def __init__(self, host: str, port: int):
         """Create the stub and the channel at the address passed by the server."""
         self.address = str(host) + ":" + str(port)
         options = [
@@ -97,7 +97,7 @@ class BackendClient:
             self.stub = backend_pb2_grpc.BackendServiceStub(self.channel)
 
     # NOTE: It may be not need if the channel_ready_future is check on __init__
-    def is_ready(self, timeout=None):
+    def is_ready(self, timeout: float | None = None):
         try:
             grpc.channel_ready_future(self.channel).result(timeout)
             return True
@@ -112,19 +112,21 @@ class BackendClient:
         self.stub = None
 
     @grpc_error_handler
-    def register_objects(self, dict_bytes: list[bytes], make_replica):
+    def register_objects(self, dict_bytes: Iterable[bytes], make_replica: bool):
         request = backend_pb2.RegisterObjectsRequest(
             dict_bytes=dict_bytes, make_replica=make_replica
         )
         self.stub.RegisterObjects(request)
 
     @grpc_error_handler
-    def make_persistent(self, pickled_obj: list[bytes]):
+    def make_persistent(self, pickled_obj: Iterable[bytes]):
         request = backend_pb2.MakePersistentRequest(pickled_obj=pickled_obj)
         self.stub.MakePersistent(request)
 
     @grpc_error_handler
-    def call_active_method(self, session_id, object_id, method_name, args, kwargs):
+    def call_active_method(
+        self, session_id: UUID, object_id: UUID, method_name: str, args: bytes, kwargs: bytes
+    ) -> tuple[bytes, bool]:
         request = backend_pb2.CallActiveMethodRequest(
             session_id=str(session_id),
             object_id=str(object_id),
@@ -141,7 +143,7 @@ class BackendClient:
     #################
 
     @grpc_error_handler
-    def get_object_properties(self, object_id: UUID):
+    def get_object_properties(self, object_id: UUID) -> bytes:
         request = backend_pb2.GetObjectPropertiesRequest(
             object_id=str(object_id),
         )
@@ -150,7 +152,7 @@ class BackendClient:
         return response.value
 
     @grpc_error_handler
-    def update_object_properties(self, object_id: UUID, serialized_properties):
+    def update_object_properties(self, object_id: UUID, serialized_properties: bytes):
         request = backend_pb2.UpdateObjectPropertiesRequest(
             object_id=str(object_id),
             serialized_properties=serialized_properties,
@@ -158,7 +160,7 @@ class BackendClient:
         self.stub.UpdateObjectProperties(request)
 
     @grpc_error_handler
-    def new_object_version(self, object_id: UUID):
+    def new_object_version(self, object_id: UUID) -> str:
         request = backend_pb2.NewObjectVersionRequest(
             object_id=str(object_id),
         )
@@ -191,7 +193,7 @@ class BackendClient:
     @grpc_error_handler
     def send_objects(
         self,
-        object_ids: list[UUID],
+        object_ids: Iterable[UUID],
         backend_id: UUID,
         make_replica: bool,
         recursive: bool,
@@ -326,7 +328,7 @@ class BackendClient:
     def ds_migrate_objects_to_backends(self, back_ends):
         raise ("To refactor")
 
-        back_ends_dict = dict()
+        back_ends_dict = {}
 
         for k, v in back_ends.items():
             back_ends_dict[k] = Utils.get_storage_location(v)
@@ -342,7 +344,7 @@ class BackendClient:
         if response.excInfo.isException:
             raise DataClayException(response.excInfo.exceptionMessage)
 
-        result = dict()
+        result = {}
 
         for k, v in response.migratedObjs.items():
             m_objs = v
@@ -407,7 +409,7 @@ class BackendClient:
         except RuntimeError as e:
             raise e
 
-        result = dict()
+        result = {}
         for k, v in response.stubs.items():
             result[k] = v
 

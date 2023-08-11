@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import concurrent.futures
-import io
 import logging
 import pickle
 import time
 import traceback
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 from dataclay import utils
@@ -29,7 +28,7 @@ logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
 class BackendAPI:
-    def __init__(self, name, port, kv_host, kv_port):
+    def __init__(self, name: str, port: int, kv_host: str, kv_port: int):
         # NOTE: the port is (atm) exclusively for unique identification of an EE
         # (given that the name is shared between all EE that share a SL, which happens in HPC deployments)
         self.name = name
@@ -41,9 +40,9 @@ class BackendAPI:
         set_runtime(self.runtime)
 
         # UNDONE: Do not store EE information. If restarted, create new EE uuid.
-        logger.info(f"Initialized Backend with ID: {self.backend_id}")
+        logger.info(f"Initialized backend {self.backend_id}")
 
-    def is_ready(self, timeout=None, pause=0.5):
+    def is_ready(self, timeout: float | None = None, pause: float = 0.5):
         ref = time.time()
         now = ref
         if self.runtime.metadata_service.is_ready(timeout):
@@ -123,7 +122,9 @@ class BackendAPI:
             proxy_object._dc_is_registered = True
 
     @tracer.start_as_current_span("call_active_method")
-    def call_active_method(self, session_id, object_id, method_name, args, kwargs):
+    def call_active_method(
+        self, session_id: UUID, object_id: UUID, method_name: str, args: tuple, kwargs: dict
+    ) -> tuple[bytes, bool]:
         # NOTE: Session (dataset) is needed for make_persistents inside dc_methods.
         self.runtime.set_session_by_id(session_id)
         instance = self.runtime.get_object_by_id(object_id)
@@ -165,7 +166,7 @@ class BackendAPI:
     # Store Methods
 
     @tracer.start_as_current_span("get_object_properties")
-    def get_object_properties(self, object_id):
+    def get_object_properties(self, object_id: UUID) -> bytes:
         """Returns a non-persistent copy of the object with ID provided
 
         Args:
@@ -178,13 +179,13 @@ class BackendAPI:
         return pickle.dumps(object_properties)
 
     @tracer.start_as_current_span("update_object_properties")
-    def update_object_properties(self, object_id, serialized_properties):
+    def update_object_properties(self, object_id: UUID, serialized_properties: bytes):
         """Updates an object with ID provided with contents from another object"""
         instance = self.runtime.get_object_by_id(object_id)
         object_properties = pickle.loads(serialized_properties)
         self.runtime.update_object_properties(instance, object_properties)
 
-    def new_object_version(self, object_id):
+    def new_object_version(self, object_id: UUID) -> UUID | None:
         """Creates a new version of the object with ID provided"""
         instance = self.runtime.get_object_by_id(object_id)
 
@@ -196,23 +197,30 @@ class BackendAPI:
         new_version = self.runtime.new_object_version(instance)
         return new_version.getID()
 
-    def consolidate_object_version(self, object_id):
+    def consolidate_object_version(self, object_id: UUID):
         """Consolidates the object with ID provided"""
         instance = self.runtime.get_object_by_id(object_id)
         self.runtime.consolidate_version(instance)
 
     @tracer.start_as_current_span("proxify_object")
-    def proxify_object(self, object_id, new_object_id):
+    def proxify_object(self, object_id: UUID, new_object_id: UUID):
         instance = self.runtime.get_object_by_id(object_id)
         self.runtime.proxify_object(instance, new_object_id)
 
     @tracer.start_as_current_span("change_object_id")
-    def change_object_id(self, object_id, new_object_id):
+    def change_object_id(self, object_id: UUID, new_object_id: UUID):
         instance = self.runtime.get_object_by_id(object_id)
         self.runtime.change_object_id(instance, new_object_id)
 
     @tracer.start_as_current_span("send_objects")
-    def send_objects(self, object_ids, backend_id, make_replica, recursive, remotes):
+    def send_objects(
+        self,
+        object_ids: Iterable[UUID],
+        backend_id: UUID,
+        make_replica: bool,
+        recursive: bool,
+        remotes: bool,
+    ):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             instances = tuple(executor.map(self.runtime.get_object_by_id, object_ids))
         self.runtime.send_objects(instances, backend_id, make_replica, recursive, remotes)
@@ -243,7 +251,7 @@ class BackendAPI:
         for object_md in dc_objects.values():
             backends_objects[object_md.master_backend_id].append(object_md.id)
 
-        backends_diff = dict()
+        backends_diff = {}
         for backend_id, objects in backends_objects.items():
             diff = len(objects) - mean
             backends_diff[backend_id] = diff
@@ -402,7 +410,7 @@ class BackendAPI:
                 session_id, object_ids, set(), recursive, external_execution_env_id, 2
             )
 
-            unfederate_per_backend = dict()
+            unfederate_per_backend = {}
 
             for serialized_obj in serialized_objs:
                 replica_locs = serialized_obj.metadata.replica_locations
