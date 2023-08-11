@@ -72,7 +72,7 @@ class HeapManager(threading.Thread):
     # BackendHeapManager specific methods
     #####################################
 
-    def retain_in_heap(self, dc_obj):
+    def retain_in_heap(self, dc_obj: DataClayObject):
         """Add a new Hard reference to the object provided. All code in stubs/exec classes using objects in dataClay heap are
         using weak references. In order to avoid objects to be GC without a flush in DB, HeapManager has hard-references to
         them and is the only one able to release them. This function creates the hard-reference.
@@ -80,7 +80,7 @@ class HeapManager(threading.Thread):
         logger.debug(f"New object retained in heap {dc_obj._dc_meta.id}")
         self.loaded_objects[dc_obj._dc_meta.id] = dc_obj
 
-    def release_from_heap(self, dc_obj):
+    def release_from_heap(self, dc_obj: DataClayObject):
         """Release hard reference to object provided.
 
         Without hard reference, the object can be Garbage collected
@@ -91,7 +91,7 @@ class HeapManager(threading.Thread):
         except KeyError as e:
             logger.warning("Object with id %s is not loaded.", dc_obj._dc_meta.id)
 
-    def unload_object(self, object_id, timeout=0, force=False):
+    def unload_object(self, object_id: UUID, timeout: str = 0, force: bool = False):
         instance = self.loaded_objects[object_id]
 
         if LockManager.acquire_write(object_id, timeout) or force:
@@ -163,7 +163,7 @@ class HeapManager(threading.Thread):
             finally:
                 self.run_task_lock.release()
 
-    def flush_all(self, unload_timeout=None, force_unload=True):
+    def flush_all(self, unload_timeout: str = None, force_unload: bool = True):
         """Stores and unloads all loaded objects to disk.
 
         This function is usually called at shutdown of the backend.

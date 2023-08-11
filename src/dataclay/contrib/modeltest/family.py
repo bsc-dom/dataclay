@@ -98,17 +98,21 @@ class Family(DataClayObject):
     @activemethod
     def test_reference_is_unloaded(self):
         """
-        Should this be the correct flow?
+        DataClayObjects that are not self, can be unloaded in memory pressure.
         """
         from dataclay.runtime import get_runtime
 
         new_family = Family()
         members = new_family.members
-        get_runtime().heap_manager.flush_all()
+
+        t = Thread(target=get_runtime().heap_manager.flush_all, args=(0, False))
+        t.start()
+        t.join()
+
         dog = Dog("Rio", 4)
         members.append(dog)
-        assert members is not self.members
-        assert members != self.members
+        assert members is not new_family.members
+        assert members != new_family.members
 
 
 class TestActivemethod(DataClayObject):
