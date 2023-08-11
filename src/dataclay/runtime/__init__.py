@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import threading
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
@@ -7,14 +9,14 @@ if TYPE_CHECKING:
     from dataclay.runtime.backend import BackendRuntime
     from dataclay.runtime.client import ClientRuntime
 
-current_runtime = None
+current_runtime: ClientRuntime | BackendRuntime = None
 
 
-def get_runtime():
+def get_runtime() -> ClientRuntime | BackendRuntime:
     return current_runtime
 
 
-def set_runtime(new_runtime):
+def set_runtime(new_runtime: ClientRuntime | BackendRuntime):
     global current_runtime
     current_runtime = new_runtime
 

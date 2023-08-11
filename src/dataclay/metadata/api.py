@@ -237,7 +237,9 @@ class MetadataAPI:
         self.kv_manager.delete_kv(ObjectMetadata.path + str(id))
 
     @tracer.start_as_current_span("get_object_md_by_id")
-    def get_object_md_by_id(self, object_id: UUID, session_id=None, check_session=False):
+    def get_object_md_by_id(
+        self, object_id: UUID, session_id=None, check_session=False
+    ) -> ObjectMetadata:
         if check_session:
             session = self.kv_manager.get_kv(Session, session_id)
             if not session.is_active:
@@ -249,7 +251,7 @@ class MetadataAPI:
     @tracer.start_as_current_span("get_object_md_by_alias")
     def get_object_md_by_alias(
         self, alias_name: str, dataset_name: str, session_id: UUID = None, check_session=False
-    ):
+    ) -> ObjectMetadata:
         if check_session:
             # Checks that session exists and is active
             session = self.kv_manager.get_kv(Session, session_id)

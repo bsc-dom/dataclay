@@ -29,7 +29,7 @@ class RedisManager:
     def set_new(self, kv_object):
         """Creates a new dataset. Checks that the dataset doesn't exists.
 
-        Use "set" if the kew is using a UUID, in order to optimize for etcd (if used)
+        Use "set" if the key is using a UUID, in order to optimize for etcd (if used)
         """
 
         if not self.r_client.set(kv_object.key, kv_object.value, nx=True):

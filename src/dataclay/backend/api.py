@@ -64,15 +64,15 @@ class BackendAPI:
         for serial_dict in serialized_dicts:
             object_dict = pickle.loads(serial_dict)
 
-            instance = self.runtime.get_object_by_id(object_dict["_dc_id"])
+            instance = self.runtime.get_object_by_id(object_dict["_dc_meta"].id)
 
             if instance._dc_is_local:
                 assert instance._dc_is_replica
                 if make_replica:
-                    logger.warning(f"There is already a replica for object {instance._dc_id}")
+                    logger.warning(f"There is already a replica for object {instance._dc_meta.id}")
                     continue
 
-            with LockManager.write(instance._dc_id):
+            with LockManager.write(instance._dc_meta.id):
                 vars(instance).update(object_dict)
                 instance._dc_is_local = True
                 instance._dc_is_loaded = True
@@ -80,44 +80,46 @@ class BackendAPI:
 
                 if make_replica:
                     instance._dc_is_replica = True
-                    instance._dc_replica_backend_ids.add(self.backend_id)
+                    instance._dc_meta.replica_backend_ids.add(self.backend_id)
 
                 else:
                     # If not make_replica then its a move
-                    instance._dc_master_backend_id = self.backend_id
-                    instance._dc_replica_backend_ids.discard(self.backend_id)
+                    instance._dc_meta.master_backend_id = self.backend_id
+                    instance._dc_meta.replica_backend_ids.discard(self.backend_id)
                     # we can only move masters
                     # instance._dc_is_replica = False # already set by vars(instance).update(object_dict)
 
                 # ¿Should be always updated here, or from the calling backend?
-                self.runtime.metadata_service.upsert_object(instance.metadata)
+                self.runtime.metadata_service.upsert_object(instance._dc_meta)
 
     @tracer.start_as_current_span("make_persistent")
     def make_persistent(self, serialized_dicts: Iterable[bytes]):
-        unserialized_objects = dict()
+        unserialized_objects: dict[UUID, DataClayObject] = {}
         for serial_dict in serialized_dicts:
             object_dict = unserialize_dataclay_object(serial_dict, unserialized_objects)
-            object_id = object_dict["_dc_id"]
+            object_id = object_dict["_dc_meta"].id
 
             try:
                 # In case it was already unserialized by a reference
                 proxy_object = unserialized_objects[object_id]
             except KeyError:
-                cls: type[DataClayObject] = utils.get_class_by_name(object_dict["_dc_class_name"])
+                cls: type[DataClayObject] = utils.get_class_by_name(
+                    object_dict["_dc_meta"].class_name
+                )
                 proxy_object = cls.new_proxy_object()
                 unserialized_objects[object_id] = proxy_object
 
             vars(proxy_object).update(object_dict)
             proxy_object._dc_is_local = True
             proxy_object._dc_is_loaded = True
-            proxy_object._dc_master_backend_id = self.backend_id
+            proxy_object._dc_meta.master_backend_id = self.backend_id
 
         assert len(serialized_dicts) == len(unserialized_objects)
 
         for proxy_object in unserialized_objects.values():
-            self.runtime.inmemory_objects[proxy_object._dc_id] = proxy_object
+            self.runtime.inmemory_objects[proxy_object._dc_meta.id] = proxy_object
             self.runtime.heap_manager.retain_in_heap(proxy_object)
-            self.runtime.metadata_service.upsert_object(proxy_object.metadata)
+            self.runtime.metadata_service.upsert_object(proxy_object._dc_meta)
             proxy_object._dc_is_registered = True
 
     @tracer.start_as_current_span("call_active_method")
@@ -130,7 +132,7 @@ class BackendAPI:
         # for the client to update the backend_id, and call_active_method again
         if not instance._dc_is_local:
             logger.warning(
-                f"Object {object_id} with wrong backend_id. Update to {instance._dc_master_backend_id}"
+                f"Object {object_id} with wrong backend_id. Update to {instance._dc_meta.master_backend_id}"
             )
             # NOTE: We check to the metadata because when consolidating an object
             # it might be that the proxy is pointing to the wrong backend_id which is
@@ -139,11 +141,11 @@ class BackendAPI:
             # problems with race conditions (e.g. a move before the consolidation). Therefore,
             # we check to the metadata which is more reliable.
             object_md = self.runtime.metadata_service.get_object_md_by_id(object_id)
-            instance._dc_master_backend_id = object_md.master_backend_id
+            instance._dc_meta.master_backend_id = object_md.master_backend_id
             return (
                 pickle.dumps(
                     ObjectWithWrongBackendId(
-                        instance._dc_master_backend_id, instance._dc_replica_backend_ids
+                        instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
                     )
                 ),
                 False,
@@ -188,7 +190,7 @@ class BackendAPI:
 
         # HACK: The dataset is needed to create a new version because
         # a new dataclay object is created and registered instantly in __new__
-        # dataset_name = instance._dc_dataset_name
+        # dataset_name = instance._dc_meta.dataset_name
         # self.runtime.session = Session(None, None, dataset_name)
 
         new_version = self.runtime.new_object_version(instance)
@@ -283,7 +285,7 @@ class BackendAPI:
 
         self.ds_exec_impl(object_id, implementation_id, serialized_value, session_id)
         instance = self.get_local_instance(object_id, True)
-        src_exec_env_id = instance._dc_master_backend_id()
+        src_exec_env_id = instance._dc_meta.master_backend_id()
         if src_exec_env_id is not None:
             logger.debug(f"Found origin location {src_exec_env_id}")
             if calling_backend_id is None or src_exec_env_id != calling_backend_id:
@@ -301,7 +303,7 @@ class BackendAPI:
                     calling_backend_id=self.backend_id,
                 )
 
-        replica_locations = instance._dc_replica_backend_ids
+        replica_locations = instance._dc_meta.replica_backend_ids
         if replica_locations is not None:
             logger.debug(f"Found replica locations {replica_locations}")
             for replica_location in replica_locations:
@@ -367,7 +369,7 @@ class BackendAPI:
             # Register objects with alias (should we?)
             for object in federated_objs:
                 if object._dc_alias:
-                    self.runtime.metadata_service.upsert_object(object.metadata)
+                    self.runtime.metadata_service.upsert_object(object._dc_meta)
 
             for federated_obj in federated_objs:
                 try:

@@ -25,7 +25,7 @@ class ClientRuntime(DataClayRuntime):
         super().__init__(metadata_service)
 
     def add_to_heap(self, instance: DataClayObject):
-        self.inmemory_objects[instance._dc_id] = instance
+        self.inmemory_objects[instance._dc_meta.id] = instance
 
     def make_persistent(self, instance: DataClayObject, alias=None, backend_id=None):
         """This method creates a new Persistent Object using the provided stub
@@ -40,14 +40,14 @@ class ClientRuntime(DataClayRuntime):
         Returns:
             ID of the backend in which the object was persisted.
         """
-        logger.debug(f"Starting make persistent for object {instance._dc_id}")
+        logger.debug(f"Starting make persistent for object {instance._dc_meta.id}")
 
         if instance._dc_is_registered:
-            raise ObjectAlreadyRegisteredError(instance._dc_id)
+            raise ObjectAlreadyRegisteredError(instance._dc_meta.id)
 
-        instance._dc_dataset_name = self.session.dataset_name
+        instance._dc_meta.dataset_name = self.session.dataset_name
         if alias:
-            self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_id)
+            self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_meta.id)
             # instance._dc_alias = alias
 
         if backend_id is None:
@@ -80,11 +80,11 @@ class ClientRuntime(DataClayRuntime):
             dc_object._dc_is_registered = True
             dc_object._dc_is_local = False
             dc_object._dc_is_loaded = False
-            dc_object._dc_master_backend_id = backend_id
+            dc_object._dc_meta.master_backend_id = backend_id
 
             self.add_to_heap(dc_object)
 
-        return instance._dc_master_backend_id
+        return instance._dc_meta.master_backend_id
 
     ############
     # Replicas #
@@ -93,21 +93,21 @@ class ClientRuntime(DataClayRuntime):
     def synchronize(self, instance, operation_name, params):
         raise Exception("To refactor")
         dest_backend_id = self.get_hint()
-        operation = self.get_operation_info(instance._dc_id, operation_name)
-        implementation_id = self.get_implementation_id(instance._dc_id, operation_name)
+        operation = self.get_operation_info(instance._dc_meta.id, operation_name)
+        implementation_id = self.get_implementation_id(instance._dc_meta.id, operation_name)
         # === SERIALIZE PARAMETER ===
         serialized_params = SerializationLibUtilsSingleton.serialize_params_or_return(
             params=[params],
             iface_bitmaps=None,
             params_spec=operation.params,
             params_order=operation.paramsOrder,
-            hint_volatiles=instance._dc_master_backend_id,
+            hint_volatiles=instance._dc_meta.master_backend_id,
             runtime=self,
         )
 
         ee_client = self.get_backend_client(dest_backend_id)
         ee_client.synchronize(
-            self.session.id, instance._dc_id, implementation_id, serialized_params
+            self.session.id, instance._dc_meta.id, implementation_id, serialized_params
         )
 
     #####################
@@ -119,7 +119,7 @@ class ClientRuntime(DataClayRuntime):
             if hint is None:
                 instance = self.inmemory_objects[object_id]
                 self.update_object_metadata(instance)
-                hint = instance._dc_master_backend_id
+                hint = instance._dc_meta.master_backend_id
 
             ee_client = self.get_backend_client(hint)
             ee_client.detach_object_from_session(object_id, self.session.id)
@@ -131,7 +131,7 @@ class ClientRuntime(DataClayRuntime):
     ##############
 
     def federate_to_backend(self, instance, external_execution_environment_id, recursive):
-        hint = instance._dc_master_backend_id
+        hint = instance._dc_meta.master_backend_id
         if hint is None:
             self.update_object_metadata(instance)
             hint = self.get_hint()
@@ -140,30 +140,30 @@ class ClientRuntime(DataClayRuntime):
 
         logger.debug(
             "[==FederateObject==] Starting federation of object by %s calling EE %s with dest dataClay %s, and session %s",
-            instance._dc_id,
+            instance._dc_meta.id,
             hint,
             external_execution_environment_id,
             self.session.id,
         )
         ee_client.federate(
-            self.session.id, instance._dc_id, external_execution_environment_id, recursive
+            self.session.id, instance._dc_meta.id, external_execution_environment_id, recursive
         )
 
     def unfederate_from_backend(self, instance, external_execution_environment_id, recursive):
         logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",
-            instance._dc_id,
+            instance._dc_meta.id,
             external_execution_environment_id,
             self.session.id,
         )
-        hint = instance._dc_master_backend_id
+        hint = instance._dc_meta.master_backend_id
         if hint is None:
             self.update_object_metadata(instance)
             hint = self.get_hint()
         ee_client = self.get_backend_client(hint)
 
         ee_client.unfederate(
-            self.session.id, instance._dc_id, external_execution_environment_id, recursive
+            self.session.id, instance._dc_meta.id, external_execution_environment_id, recursive
         )
 
     ############
