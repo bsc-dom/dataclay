@@ -65,6 +65,7 @@
 7. Push a new commit `start version <NEW_VERSION>` where you:
    - Update `dataclay.__version__` from `dataclay.__init__` to `<NEW_VERSION>.dev`
    - Add new entry to `CHANGES.rst` with `<NEW_VERSION>`
+   - Update orchestration/spack to point the new version in PyPI
 
 
 ## Publish a development distribution to TestPyPI

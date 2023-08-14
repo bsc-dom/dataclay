@@ -9,6 +9,7 @@ DataClay should be available as py-dataclay:
 ```bash
 spack info py-dataclay
 ```
+
 Install DataClay:
 ```bash
 spack install py-dataclay
