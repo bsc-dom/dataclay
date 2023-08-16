@@ -67,3 +67,23 @@ def test_make_persistent_backend_id(client):
 
     assert person_1._dc_meta.master_backend_id == backend_ids[0]
     assert person_2._dc_meta.master_backend_id == backend_ids[1]
+
+
+def test_make_persistent_already_registered(client):
+    """
+    Trying to make_persistent and already persistent object, will
+    move the object to the specified backend and add a new alias
+    """
+    backend_ids = list(client.get_backends())
+    person = Person("Marc", 24)
+
+    person.make_persistent(backend_id=backend_ids[0])
+    person.name
+    assert person._dc_meta.master_backend_id == backend_ids[0]
+
+    person.make_persistent(
+        alias="test_make_persistent_already_registered", backend_id=backend_ids[1]
+    )
+    person.name
+    assert person._dc_meta.master_backend_id == backend_ids[1]
+    assert "test_make_persistent_already_registered" in person.get_aliases()

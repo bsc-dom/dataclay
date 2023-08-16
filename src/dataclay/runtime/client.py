@@ -9,12 +9,9 @@ from typing import TYPE_CHECKING
 from dataclay.exceptions import *
 from dataclay.metadata.client import MetadataClient
 from dataclay.runtime.runtime import DataClayRuntime
-from dataclay.utils.serialization import serialize_dataclay_object
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
-    from uuid import UUID
-
     from dataclay.dataclay_object import DataClayObject
     from dataclay.metadata.kvdata import Session
 
@@ -36,65 +33,6 @@ class ClientRuntime(DataClayRuntime):
 
     def add_to_heap(self, instance: DataClayObject):
         self.inmemory_objects[instance._dc_meta.id] = instance
-
-    def make_persistent(
-        self, instance: DataClayObject, alias: str | None = None, backend_id: str | None = None
-    ):
-        """This method creates a new Persistent Object using the provided stub
-        instance and, if indicated, all its associated objects also Logic module API used for communication
-        This function is called from a stub/execution class
-
-        Args:
-            instance: Instance to make persistent
-            backend_id: Indicates which is the destination backend
-            alias: Alias for the object
-
-        Returns:
-            ID of the backend in which the object was persisted.
-        """
-        logger.debug(f"Starting make persistent for object {instance._dc_meta.id}")
-
-        if instance._dc_is_registered:
-            raise ObjectAlreadyRegisteredError(instance._dc_meta.id)
-
-        instance._dc_meta.dataset_name = self.session.dataset_name
-        if alias:
-            self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_meta.id)
-
-        if backend_id is None:
-            self.update_backend_clients()
-            backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
-
-            # NOTE: Maybe use a quick update to avoid overhead.
-            # Quiack_update only updates ee_infos, but don't check clients readiness
-            # self.quick_update_backend_clients()
-            # backend_id = random.choice(tuple(self.ee_infos.keys()))
-            # backend_client = self.backend_clients[backend_id]
-        else:
-            backend_client = self.get_backend_client(backend_id)
-
-        # TODO: Avoid some race-conditions in communication
-        # (make persistent + execute where execute arrives before).
-        # add_volatiles_under_deserialization and remove_volatiles_under_deserialization
-
-        # Serialize instance with Pickle
-
-        visited_objects: dict[UUID, DataClayObject] = {}
-        dicts_bytes = serialize_dataclay_object(
-            instance, local_objects=visited_objects, make_persistent=True
-        )
-        backend_client.make_persistent(dicts_bytes)
-
-        for dc_object in visited_objects.values():
-            dc_object._clean_dc_properties()
-            dc_object._dc_is_registered = True
-            dc_object._dc_is_local = False
-            dc_object._dc_is_loaded = False
-            dc_object._dc_meta.master_backend_id = backend_id
-
-            self.add_to_heap(dc_object)
-
-        return instance._dc_meta.master_backend_id
 
     ############
     # Replicas #

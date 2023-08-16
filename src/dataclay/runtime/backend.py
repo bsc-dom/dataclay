@@ -93,52 +93,6 @@ class BackendRuntime(DataClayRuntime):
             vars(instance).update(object_properties)
             self.heap_manager.retain_in_heap(instance)
 
-    def make_persistent(
-        self, instance: DataClayObject, alias: str | None = None, backend_id: UUID | None = None
-    ):
-        """This method creates a new Persistent Object using the provided stub instance and,
-        if indicated, all its associated objects also Logic module API used for communication
-
-        This function is called from a stub/execution class
-
-        Args:
-            instance (DataClayExecutionObject): Instance to make persistent
-            backend_id: Indicates which is the destination backend
-            alias: Alias for the object
-
-        Returns:
-            ID of the backend in which te object was persisted.
-        """
-
-        logger.debug(f"Starting make_persistent for object {instance._dc_meta.id}")
-
-        # It should always have a master location, since all objects intantiated
-        # in a ee, get the ee as the master location
-
-        if instance._dc_is_registered:
-            # TODO: If alias is not None, update alias
-            # If backend is different than the current backend, move object
-            return
-
-        # Necessary for new version
-        if instance._dc_meta.dataset_name is None:
-            instance._dc_meta.dataset_name = self.session.dataset_name
-
-        if alias:
-            self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_meta.id)
-
-        # If backend_id is none, we register the object in the current backend (usual path)
-        if backend_id is None or backend_id == settings.backend.id:
-            instance._dc_meta.master_backend_id = settings.backend.id
-            self.metadata_service.upsert_object(instance._dc_meta)
-            instance._dc_is_registered = True
-
-        self.add_to_heap(instance)
-
-        # TODO: When backend is different
-
-        return instance._dc_meta.master_backend_id
-
     # Shutdown
 
     def stop(self):

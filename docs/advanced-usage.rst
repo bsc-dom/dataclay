@@ -52,6 +52,10 @@ int the same backend, ignoring referents owned by other backends.
     employee.name  # forcing update of the backend_id
     assert employee._dc_meta.master_backend_id == backend_ids[0]
 
+Trying to :meth:`make_persistent() <DataClayObject.make_persistent>` and already registered object
+will make and underneath call to :meth:`move() <DataClayObject.move>` with ``recursive=False`` and
+:meth:`add_alias() <DataClayObject.add_alias>` if the alias is provided.
+
 .. Replicas
 .. --------
 

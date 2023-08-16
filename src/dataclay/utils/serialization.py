@@ -49,6 +49,30 @@ class RecursiveDataClayObjectPickler(pickle.Pickler):
                     self.visited_remote_objects[obj._dc_meta.id] = obj
 
 
+def serialize_dataclay_object(
+    instance: DataClayObject,
+    local_objects: dict[UUID, DataClayObject] | None = None,
+    remote_objects: dict[UUID, DataClayObject] | None = None,
+    make_persistent: bool = False,
+):
+    f = io.BytesIO()
+    serialized_local_dicts = []
+
+    if local_objects is None:
+        local_objects = {}
+    if remote_objects is None:
+        remote_objects = {}
+
+    local_objects[instance._dc_meta.id] = instance
+
+    RecursiveDataClayObjectPickler(
+        f, local_objects, remote_objects, serialized_local_dicts, make_persistent
+    ).dump(instance._dc_dict)
+
+    serialized_local_dicts.append(f.getvalue())
+    return serialized_local_dicts
+
+
 class RecursiveDataClayObjectUnpickler(pickle.Unpickler):
     def __init__(self, file, unserialized: dict[UUID, DataClayObject]):
         super().__init__(file)
@@ -74,27 +98,3 @@ def unserialize_dataclay_object(
         io.BytesIO(dict_binary), unserialized_objects
     ).load()
     return object_dict
-
-
-def serialize_dataclay_object(
-    instance: DataClayObject,
-    local_objects: dict[UUID, DataClayObject] | None = None,
-    remote_objects: dict[UUID, DataClayObject] | None = None,
-    make_persistent: bool = False,
-):
-    f = io.BytesIO()
-    serialized_local_dicts = []
-
-    if local_objects is None:
-        local_objects = {}
-    if remote_objects is None:
-        remote_objects = {}
-
-    local_objects[instance._dc_meta.id] = instance
-
-    RecursiveDataClayObjectPickler(
-        f, local_objects, remote_objects, serialized_local_dicts, make_persistent
-    ).dump(instance._dc_dict)
-
-    serialized_local_dicts.append(f.getvalue())
-    return serialized_local_dicts

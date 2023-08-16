@@ -196,10 +196,15 @@ class DataClayObject:
                 will be stored in a random backend.
 
         Raises:
-            RuntimeError: If the object is already persistent.
             KeyError: If the backend_id is not registered in dataClay.
         """
-        get_runtime().make_persistent(self, alias=alias, backend_id=backend_id)
+        if self._dc_is_registered:
+            if backend_id:
+                self.move(backend_id)
+            if alias:
+                self.add_alias(alias)
+        else:
+            get_runtime().make_persistent(self, alias=alias, backend_id=backend_id)
 
     @classmethod
     @tracer.start_as_current_span("get_by_id")

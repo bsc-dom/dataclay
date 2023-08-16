@@ -59,9 +59,74 @@ class DataClayRuntime(ABC):
 
     # Common runtime API
 
-    @abstractmethod
-    def make_persistent(self, instance: DataClayObject, alias: str | None, backend_id: UUID | None):
-        pass
+    def make_persistent(
+        self, instance: DataClayObject, alias: str | None = None, backend_id: str | None = None
+    ):
+        """This method creates a new Persistent Object using the provided stub
+        instance and, if indicated, all its associated objects also Logic module API used for communication
+        This function is called from a stub/execution class
+
+        Args:
+            instance: Instance to make persistent
+            backend_id: Indicates which is the destination backend
+            alias: Alias for the object
+
+        Returns:
+            ID of the backend in which the object was persisted.
+        """
+        logger.debug(f"Starting make persistent for object {instance._dc_meta.id}")
+
+        if instance._dc_is_registered:
+            raise ObjectAlreadyRegisteredError(instance._dc_meta.id)
+
+        # Check necessary for BackendAPI.new_object_version
+        if instance._dc_meta.dataset_name is None:
+            instance._dc_meta.dataset_name = self.session.dataset_name
+
+        if alias:
+            self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_meta.id)
+
+        if self.is_backend and (backend_id is None or backend_id == self.backend.id):
+            instance._dc_meta.master_backend_id = self.backend_id
+            self.metadata_service.upsert_object(instance._dc_meta)
+            instance._dc_is_registered = True
+            self.inmemory_objects[instance._dc_meta.id] = instance
+            self.heap_manager.retain_in_heap(instance)
+            return self.backend_id
+
+        elif backend_id is None:
+            self.update_backend_clients()
+            backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
+
+            # NOTE: Maybe use a quick update to avoid overhead.
+            # Quiack_update only updates ee_infos, but don't check clients readiness
+            # self.quick_update_backend_clients()
+            # backend_id = random.choice(tuple(self.ee_infos.keys()))
+            # backend_client = self.backend_clients[backend_id]
+        else:
+            backend_client = self.get_backend_client(backend_id)
+
+        # TODO: Avoid some race-conditions in communication
+        # (make persistent + execute where execute arrives before).
+        # add_volatiles_under_deserialization and remove_volatiles_under_deserialization
+
+        # Serialize instance with Pickle
+
+        visited_objects: dict[UUID, DataClayObject] = {}
+        dicts_bytes = serialize_dataclay_object(
+            instance, local_objects=visited_objects, make_persistent=True
+        )
+        backend_client.make_persistent(dicts_bytes)
+
+        for dc_object in visited_objects.values():
+            dc_object._clean_dc_properties()
+            dc_object._dc_is_registered = True
+            dc_object._dc_is_local = False
+            dc_object._dc_is_loaded = False
+            dc_object._dc_meta.master_backend_id = backend_id
+            self.inmemory_objects[dc_object._dc_meta.id] = dc_object
+
+        return instance._dc_meta.master_backend_id
 
     @abstractmethod
     def add_to_heap(self, instance: DataClayObject):
@@ -280,8 +345,8 @@ class DataClayRuntime(ABC):
     def add_alias(self, instance: DataClayObject, alias: str):
         if not instance._dc_is_registered:
             raise ObjectNotRegisteredError(instance._dc_meta.id)
-        if alias == "":
-            raise AttributeError("Alias cannot be an empty string")
+        if not alias:
+            raise AttributeError("Alias cannot be None or empty string")
         self.metadata_service.new_alias(alias, instance._dc_meta.dataset_name, instance._dc_meta.id)
 
     def delete_alias(self, alias: str, dataset_name: str | None = None):
