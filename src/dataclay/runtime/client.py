@@ -66,7 +66,7 @@ class ClientRuntime(DataClayRuntime):
         try:
             if hint is None:
                 instance = self.inmemory_objects[object_id]
-                self.update_object_metadata(instance)
+                self.sync_object_metadata(instance)
                 hint = instance._dc_meta.master_backend_id
 
             ee_client = self.get_backend_client(hint)
@@ -81,7 +81,7 @@ class ClientRuntime(DataClayRuntime):
     def federate_to_backend(self, instance, external_execution_environment_id, recursive):
         hint = instance._dc_meta.master_backend_id
         if hint is None:
-            self.update_object_metadata(instance)
+            self.sync_object_metadata(instance)
             hint = self.get_hint()
 
         ee_client = self.get_backend_client(hint)
@@ -106,7 +106,7 @@ class ClientRuntime(DataClayRuntime):
         )
         hint = instance._dc_meta.master_backend_id
         if hint is None:
-            self.update_object_metadata(instance)
+            self.sync_object_metadata(instance)
             hint = self.get_hint()
         ee_client = self.get_backend_client(hint)
 

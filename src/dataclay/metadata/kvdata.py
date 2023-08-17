@@ -86,7 +86,7 @@ class ObjectMetadata(KeyValue):
     dataset_name: str | None = None
     class_name: str
     master_backend_id: UUID | None = None
-    replica_backend_ids: set = Field(default_factory=set)
+    replica_backend_ids: set[UUID] = Field(default_factory=set)
     is_read_only: bool = False
     original_object_id: UUID | EmptyNone = None
     versions_object_ids: list[UUID] = Field(default_factory=list)

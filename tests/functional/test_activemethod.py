@@ -11,10 +11,10 @@ def test_activemethod_argument_make_persistent(client):
     family = Family()
     person = Person("Marc", 24)
     family.make_persistent()
-    assert person.is_registered == False
+    assert person._dc_is_registered == False
 
     family.add(person)
-    assert person.is_registered == True
+    assert person._dc_is_registered == True
     assert person == family.members[0]
 
 
@@ -62,7 +62,7 @@ def test_activemethod_inner_make_persistent(client):
     dog = Dog("Duna", 6)
     dog.make_persistent()
     puppy = dog.new_puppy("Rio")
-    assert puppy.is_registered == True
+    assert puppy._dc_is_registered == True
     assert puppy == dog.puppies[0]
     assert puppy.name == "Rio"
     assert puppy.age == 0

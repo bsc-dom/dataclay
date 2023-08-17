@@ -145,7 +145,7 @@ class BackendAPI:
             instance._dc_meta.master_backend_id = object_md.master_backend_id
             return (
                 pickle.dumps(
-                    ObjectWithWrongBackendId(
+                    ObjectWithWrongBackendIdError(
                         instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
                     )
                 ),

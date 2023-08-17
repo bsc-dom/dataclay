@@ -28,9 +28,9 @@ def test_recursive_move(client):
     family.move(backend_ids[2], recursive=True)
 
     # person_1 and person_2 should change
-    person_1.name  # forcing update of backend_id
+    person_1.sync()  # forcing update of backend_id
     assert person_1._dc_meta.master_backend_id == backend_ids[2]
-    person_2.name  # forcing update of backend_id
+    person_2.sync()  # forcing update of backend_id
     assert person_2._dc_meta.master_backend_id == backend_ids[2]
 
 
@@ -44,7 +44,7 @@ def test_not_recursive_move(client):
     family.make_persistent(backend_id=backend_ids[0])
     family.move(backend_ids[1])
 
-    person.name  # forcing update of backend_id
+    person.sync()  # forcing update of backend_id
     assert person._dc_meta.master_backend_id == backend_ids[0]
 
 
@@ -117,7 +117,7 @@ def test_move_recursive_remotes(client):
     family.move(backend_ids[2], recursive=True)
 
     # person should change
-    person.name  # forcing update of backend_id
+    person.sync()  # forcing update of backend_id
     assert person._dc_meta.master_backend_id == backend_ids[2]
 
 
@@ -135,9 +135,9 @@ def test_move_recursive_not_remotes(client):
     family.move(backend_ids[2], recursive=True, remotes=False)
 
     # person_1 should change, but not person_2
-    person_1.name  # forcing update of backend_id
+    person_1.sync()  # forcing update of backend_id
     assert person_1._dc_meta.master_backend_id == backend_ids[2]
-    person_2.name  # forcing update of backend_id
+    person_2.sync()  # forcing update of backend_id
     assert person_2._dc_meta.master_backend_id == backend_ids[1]
 
 
@@ -162,13 +162,13 @@ def test_move_recursive_reference_of_reference_v1(client):
     family.make_persistent(backend_id=backend_ids[0])
     family.move(backend_ids[2], recursive=True)
 
-    person_1.name  # forcing update of backend_id
+    person_1.sync()  # forcing update of backend_id
     assert person_1._dc_meta.master_backend_id == backend_ids[2]
-    person_2.name  # forcing update of backend_id
+    person_2.sync()  # forcing update of backend_id
     assert person_2._dc_meta.master_backend_id == backend_ids[2]
-    person_3.name  # forcing update of backend_id
+    person_3.sync()  # forcing update of backend_id
     assert person_3._dc_meta.master_backend_id == backend_ids[2]
-    person_4.name  # forcing update of backend_id
+    person_4.sync()  # forcing update of backend_id
     assert person_4._dc_meta.master_backend_id == backend_ids[2]
 
 
@@ -193,13 +193,13 @@ def test_move_recursive_reference_of_reference_v2(client):
     family.make_persistent(backend_id=backend_ids[0])
     family.move(backend_ids[2], recursive=True)
 
-    person_1.name  # forcing update of backend_id
+    person_1.sync()  # forcing update of backend_id
     assert person_1._dc_meta.master_backend_id == backend_ids[2]
-    person_2.name  # forcing update of backend_id
+    person_2.sync()  # forcing update of backend_id
     assert person_2._dc_meta.master_backend_id == backend_ids[2]
-    person_3.name  # forcing update of backend_id
+    person_3.sync()  # forcing update of backend_id
     assert person_3._dc_meta.master_backend_id == backend_ids[2]
-    person_4.name  # forcing update of backend_id
+    person_4.sync()  # forcing update of backend_id
     assert person_4._dc_meta.master_backend_id == backend_ids[2]
 
 
@@ -224,13 +224,13 @@ def test_move_recursive_reference_of_reference_v3(client):
     family.make_persistent(backend_id=backend_ids[0])
     family.move(backend_ids[2], recursive=True)
 
-    person_1.name  # forcing update of backend_id
+    person_1.sync()  # forcing update of backend_id
     assert person_1._dc_meta.master_backend_id == backend_ids[2]
-    person_2.name  # forcing update of backend_id
+    person_2.sync()  # forcing update of backend_id
     assert person_2._dc_meta.master_backend_id == backend_ids[2]
-    person_3.name  # forcing update of backend_id
+    person_3.sync()  # forcing update of backend_id
     assert person_3._dc_meta.master_backend_id == backend_ids[2]
-    person_4.name  # forcing update of backend_id
+    person_4.sync()  # forcing update of backend_id
     assert person_4._dc_meta.master_backend_id == backend_ids[2]
 
 
@@ -255,13 +255,13 @@ def test_move_recursive_reference_of_reference_v4(client):
     family.make_persistent(backend_id=backend_ids[0])
     family.move(backend_ids[2], recursive=True)
 
-    person_1.name  # forcing update of backend_id
+    person_1.sync()  # forcing update of backend_id
     assert person_1._dc_meta.master_backend_id == backend_ids[2]
-    person_2.name  # forcing update of backend_id
+    person_2.sync()  # forcing update of backend_id
     assert person_2._dc_meta.master_backend_id == backend_ids[2]
-    person_3.name  # forcing update of backend_id
+    person_3.sync()  # forcing update of backend_id
     assert person_3._dc_meta.master_backend_id == backend_ids[2]
-    person_4.name  # forcing update of backend_id
+    person_4.sync()  # forcing update of backend_id
     assert person_4._dc_meta.master_backend_id == backend_ids[2]
 
 
@@ -281,9 +281,9 @@ def test_move_recursive_reference_cycle_v1(client):
     family.make_persistent(backend_id=backend_ids[0])
     family.move(backend_ids[2], recursive=True)
 
-    person_1.name  # forcing update of backend_id
+    person_1.sync()  # forcing update of backend_id
     assert person_1._dc_meta.master_backend_id == backend_ids[2]
-    person_2.name  # forcing update of backend_id
+    person_2.sync()  # forcing update of backend_id
     assert person_2._dc_meta.master_backend_id == backend_ids[2]
 
 
@@ -303,9 +303,9 @@ def test_move_recursive_reference_cycle_v2(client):
     family.make_persistent(backend_id=backend_ids[0])
     family.move(backend_ids[2], recursive=True)
 
-    person_1.name  # forcing update of backend_id
+    person_1.sync()  # forcing update of backend_id
     assert person_1._dc_meta.master_backend_id == backend_ids[2]
-    person_2.name  # forcing update of backend_id
+    person_2.sync()  # forcing update of backend_id
     assert person_2._dc_meta.master_backend_id == backend_ids[2]
 
 
@@ -323,9 +323,9 @@ def test_move_local_object(client):
     family.make_persistent(backend_id=backend_ids[0])
     family.move(backend_ids[0])
 
-    person_1.name  # forcing update of backend_id
+    person_1.sync()  # forcing update of backend_id
     assert person_1._dc_meta.master_backend_id == backend_ids[0]
-    person_2.name  # forcing update of backend_id
+    person_2.sync()  # forcing update of backend_id
     assert person_2._dc_meta.master_backend_id == backend_ids[1]
 
 
@@ -350,11 +350,11 @@ def test_move_local_object_recursive_remotes(client):
     family.make_persistent(backend_id=backend_ids[0])
     family.move(backend_ids[0], recursive=True)
 
-    person_1.name  # forcing update of backend_id
+    person_1.sync()  # forcing update of backend_id
     assert person_1._dc_meta.master_backend_id == backend_ids[0]
-    person_2.name  # forcing update of backend_id
+    person_2.sync()  # forcing update of backend_id
     assert person_2._dc_meta.master_backend_id == backend_ids[0]
-    person_3.name  # forcing update of backend_id
+    person_3.sync()  # forcing update of backend_id
     assert person_3._dc_meta.master_backend_id == backend_ids[0]
-    person_4.name  # forcing update of backend_id
+    person_4.sync()  # forcing update of backend_id
     assert person_4._dc_meta.master_backend_id == backend_ids[0]

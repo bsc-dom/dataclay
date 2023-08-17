@@ -6,10 +6,10 @@ from dataclay.contrib.modeltest.family import Dog, Family, Person
 def test_make_persistent_basic(client):
     """Test a simple make_persistent call"""
     person = Person("Marc", 24)
-    assert person.is_registered == False
+    assert person._dc_is_registered == False
 
     person.make_persistent()
-    assert person.is_registered == True
+    assert person._dc_is_registered == True
     assert person.name == "Marc"
     assert person.age == 24
 
@@ -27,13 +27,13 @@ def test_make_persistent_recursive(client):
     dog = Dog("Rio", 5)
     family.add(person)
     person.dog = dog
-    assert person.is_registered == False
-    assert dog.is_registered == False
+    assert person._dc_is_registered == False
+    assert dog._dc_is_registered == False
 
     family.make_persistent()
-    assert person.is_registered == True
+    assert person._dc_is_registered == True
     assert person == family.members[0]
-    assert dog.is_registered == True
+    assert dog._dc_is_registered == True
     assert dog == person.dog
 
 
@@ -48,8 +48,8 @@ def test_make_persistent_cycle(client):
     person_2.spouse = person_1
     person_1.make_persistent()
 
-    assert person_1.is_registered == True
-    assert person_2.is_registered == True
+    assert person_1._dc_is_registered == True
+    assert person_2._dc_is_registered == True
     assert person_1 == person_2.spouse
     assert person_2 == person_1.spouse
 
@@ -78,12 +78,12 @@ def test_make_persistent_already_registered(client):
     person = Person("Marc", 24)
 
     person.make_persistent(backend_id=backend_ids[0])
-    person.name
+    person.sync()
     assert person._dc_meta.master_backend_id == backend_ids[0]
 
     person.make_persistent(
         alias="test_make_persistent_already_registered", backend_id=backend_ids[1]
     )
-    person.name
+    person.sync()
     assert person._dc_meta.master_backend_id == backend_ids[1]
     assert "test_make_persistent_already_registered" in person.get_aliases()

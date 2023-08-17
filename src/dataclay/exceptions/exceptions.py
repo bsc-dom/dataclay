@@ -165,7 +165,7 @@ class ObjectAlreadyExistError(ObjectError):
         return f"Object {self.object_id} already exist!"
 
 
-class ObjectWithWrongBackendId(ObjectError):
+class ObjectWithWrongBackendIdError(ObjectError):
     def __init__(self, backend_id, replica_backend_ids):
         self.backend_id = backend_id
         self.replica_backend_ids = replica_backend_ids
@@ -174,9 +174,13 @@ class ObjectWithWrongBackendId(ObjectError):
         return f"Object {self.object_id} with wrong backend_id!"
 
 
-class ObjectIsNotVersion(ObjectError):
+class ObjectIsNotVersionError(ObjectError):
     def __str__(self):
         return f"Object {self.object_id} is not a version!"
+    
+class ObjectIsMasterError(ObjectError):
+    def __str__(self):
+        return f"Object {self.object_id} is the master!"
 
 
 ###########

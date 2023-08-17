@@ -117,7 +117,6 @@ class DataClayObject:
 
     _dc_meta: ObjectMetadata
 
-    # instance variables with default
     _dc_is_local: bool = True
     _dc_is_loaded: bool = True
     _dc_is_registered: bool = False
@@ -144,21 +143,6 @@ class DataClayObject:
         return obj
 
     @property
-    def dataclay_id(self):
-        """ID of the object in the dataClay system."""
-        return self._dc_meta.id
-
-    @property
-    def dataset(self):
-        """Name of the dataset where the object is stored."""
-        return self._dc_meta.dataset_name
-
-    @property
-    def is_registered(self):
-        """Whether the object is registered in the dataClay system or not."""
-        return self._dc_is_registered
-
-    @property
     def _dc_dict(self):
         """Returns __dict__ with only _dc_ attributes"""
         return {k: v for k, v in vars(self).items() if k.startswith("_dc_")}
@@ -169,9 +153,37 @@ class DataClayObject:
         return {k: v for k, v in vars(self).items() if k.startswith(DC_PROPERTY_PREFIX)}
 
     @property
-    def _dc_all_backend_ids(self):
-        """Returns __dict__ with only _dc_property_ attributes"""
+    def _dc_all_backend_ids(self) -> set[UUID]:
+        """Returns a set with all the backend ids where the object is stored"""
+        if self._dc_meta.master_backend_id is None:
+            return set()
         return self._dc_meta.replica_backend_ids | {self._dc_meta.master_backend_id}
+
+    @property
+    def is_persistent(self) -> bool:
+        """Whether the object is registered in the dataClay system or not."""
+        return self._dc_is_registered
+
+    @property
+    def backends(self) -> set[UUID]:
+        """Returns a set with all the backend ids where the object is stored"""
+        return self._dc_all_backend_ids
+
+    def sync(self):
+        """Synchronizes the object metadata
+
+        It will always retrieve the current metadata from the kv database.
+        It won't update local changes to the database.
+
+        Raises:
+            ObjectNotRegisteredError: If the object is not registered.
+            ObjectIsMasterError: If the object is the master.
+        """
+        if not self._dc_is_registered:
+            raise ObjectNotRegisteredError(self._dc_meta.id)
+        if self._dc_is_local and not self._dc_is_replica:
+            raise ObjectIsMasterError(self._dc_meta.id)
+        get_runtime().sync_object_metadata(self)
 
     def _clean_dc_properties(self):
         """
@@ -275,17 +287,6 @@ class DataClayObject:
             DatasetIsNotAccessibleError: If the dataset is not accessible.
         """
         get_runtime().delete_alias(alias, dataset_name=dataset_name)
-
-    @tracer.start_as_current_span("get_backends")
-    def get_backends(self) -> set[UUID]:
-        """Returns the set of backends where the object is stored"""
-        if not self._dc_is_loaded:
-            get_runtime().update_object_metadata(self)
-
-        backends = set()
-        backends.add(self._dc_meta.master_backend_id)
-        backends.update(self._dc_meta.replica_backend_ids)
-        return backends
 
     @tracer.start_as_current_span("move")
     def move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):

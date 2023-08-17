@@ -6,7 +6,7 @@ from dataclay.contrib.modeltest.family import Dog, Family, Person
 def test_dc_put(client):
     person = Person("Marc", 24)
     person.dc_put("test_dc_put")
-    assert person.is_registered == True
+    assert person._dc_is_registered == True
     assert person.name == "Marc"
     assert person.age == 24
     Person.delete_alias("test_dc_put")

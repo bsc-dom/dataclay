@@ -79,13 +79,17 @@ class DataClayRuntime(ABC):
         if instance._dc_is_registered:
             raise ObjectAlreadyRegisteredError(instance._dc_meta.id)
 
-        # Check necessary for BackendAPI.new_object_version
+        # Check necessary for BackendAPI.new_object_version. This allows to set the dataset
+        # before calling make_persistent, which is useful for registering a new verion with
+        # the same dataset as the original object.
         if instance._dc_meta.dataset_name is None:
             instance._dc_meta.dataset_name = self.session.dataset_name
 
         if alias:
             self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_meta.id)
 
+        # If calling make_persistent in a backend, the default is to register the object
+        # in the current backend, unles another backend is specified
         if self.is_backend and (backend_id is None or backend_id == self.backend.id):
             instance._dc_meta.master_backend_id = self.backend_id
             self.metadata_service.upsert_object(instance._dc_meta)
@@ -281,6 +285,12 @@ class DataClayRuntime(ABC):
 
         del self.inmemory_objects[old_object_id]
 
+    def sync_object_metadata(self, instance: DataClayObject):
+        if not instance._dc_is_registered:
+            raise ObjectNotRegisteredError(instance._dc_meta.id)
+        object_md = self.metadata_service.get_object_md_by_id(instance._dc_meta.id)
+        instance._dc_meta = object_md
+
     ##################
     # Active Methods #
     ##################
@@ -325,7 +335,7 @@ class DataClayRuntime(ABC):
                 if serialized_response:
                     response = pickle.loads(serialized_response)
 
-                    if isinstance(response, ObjectWithWrongBackendId):
+                    if isinstance(response, ObjectWithWrongBackendIdError):
                         instance._dc_meta.master_backend_id = response.backend_id
                         instance._dc_meta.replica_backend_ids = response.replica_backend_ids
                         continue
@@ -354,10 +364,6 @@ class DataClayRuntime(ABC):
             dataset_name = self.session.dataset_name
 
         self.metadata_service.delete_alias(alias, dataset_name, self.session.id)
-
-    def update_object_metadata(self, instance: DataClayObject):
-        object_md = self.metadata_service.get_object_md_by_id(instance._dc_meta.id)
-        instance._dc_meta = object_md
 
     def get_all_alias(self, dataset_name: str | None = None, object_id: UUID | None = None):
         return self.metadata_service.get_all_alias(dataset_name, object_id)
@@ -523,7 +529,7 @@ class DataClayRuntime(ABC):
 
     def consolidate_version(self, instance: DataClayObject):
         if instance._dc_meta.original_object_id is None:
-            raise ObjectIsNotVersion(instance._dc_meta.id)
+            raise ObjectIsNotVersionError(instance._dc_meta.id)
 
         original_object_id = instance._dc_meta.original_object_id
 
@@ -617,7 +623,7 @@ class DataClayRuntime(ABC):
         # NOTE ¿It should never happen?
         if hint is None:
             instance = self.inmemory_objects[object_id]
-            self.update_object_metadata(instance)
+            self.sync_object_metadata(instance)
             hint = instance._dc_meta.master_backend_id
 
         dest_backend_id = backend_id
