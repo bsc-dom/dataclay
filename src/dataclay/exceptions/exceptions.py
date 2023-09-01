@@ -177,7 +177,8 @@ class ObjectWithWrongBackendIdError(ObjectError):
 class ObjectIsNotVersionError(ObjectError):
     def __str__(self):
         return f"Object {self.object_id} is not a version!"
-    
+
+
 class ObjectIsMasterError(ObjectError):
     def __str__(self):
         return f"Object {self.object_id} is the master!"
