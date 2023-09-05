@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 
 
 class BackendRuntime(DataClayRuntime):
-
     heap_manager: HeapManager = None
     thread_local_data: threading.local
 
@@ -81,6 +80,9 @@ class BackendRuntime(DataClayRuntime):
                 return
 
             try:
+                logger.debug(
+                    f"({instance._dc_meta.id}) Loading {instance.__class__.__name__} from storage"
+                )
                 path = f"{settings.storage_path}/{instance._dc_meta.id}"
                 object_properties = pickle.load(open(path, "rb"))
                 metrics.dataclay_stored_objects.dec()

@@ -9,8 +9,8 @@ def test_activemethod_argument_make_persistent(client):
     to an activemethod of a persistent object
     """
     family = Family()
-    person = Person("Marc", 24)
     family.make_persistent()
+    person = Person("Marc", 24)
     assert person._dc_is_registered == False
 
     family.add(person)

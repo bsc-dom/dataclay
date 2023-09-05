@@ -9,7 +9,21 @@ from dataclay.runtime import get_runtime
 logger = logging.getLogger(__name__)
 
 
-class RecursiveDataClayObjectPickler(pickle.Pickler):
+class DataClayPickler(pickle.Pickler):
+    def reducer_override(self, obj):
+        if isinstance(obj, DataClayObject):
+            if not obj._dc_is_registered:
+                obj.make_persistent()
+
+            if hasattr(self, "__getstate__"):
+                return obj.get_by_id, (obj._dc_meta.id,), self.__getstate__()
+            else:
+                return obj.get_by_id, (obj._dc_meta.id,)
+        else:
+            return NotImplemented
+
+
+class RecursiveDataClayPickler(DataClayPickler):
     def __init__(
         self,
         file,
@@ -33,7 +47,7 @@ class RecursiveDataClayObjectPickler(pickle.Pickler):
                     f = io.BytesIO()
                     if not obj._dc_is_loaded:
                         get_runtime().load_object_from_db(obj)
-                    RecursiveDataClayObjectPickler(
+                    RecursiveDataClayPickler(
                         f,
                         self.visited_local_objects,
                         self.visited_remote_objects,
@@ -49,7 +63,7 @@ class RecursiveDataClayObjectPickler(pickle.Pickler):
                     self.visited_remote_objects[obj._dc_meta.id] = obj
 
 
-def serialize_dataclay_object(
+def recursive_dcdumps(
     instance: DataClayObject,
     local_objects: dict[UUID, DataClayObject] | None = None,
     remote_objects: dict[UUID, DataClayObject] | None = None,
@@ -65,7 +79,7 @@ def serialize_dataclay_object(
 
     local_objects[instance._dc_meta.id] = instance
 
-    RecursiveDataClayObjectPickler(
+    RecursiveDataClayPickler(
         f, local_objects, remote_objects, serialized_local_dicts, make_persistent
     ).dump(instance._dc_dict)
 
@@ -98,3 +112,9 @@ def unserialize_dataclay_object(
         io.BytesIO(dict_binary), unserialized_objects
     ).load()
     return object_dict
+
+
+def dcdumps(obj):
+    f = io.BytesIO()
+    DataClayPickler(f).dump(obj)
+    return f.getvalue()

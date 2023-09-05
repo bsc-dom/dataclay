@@ -15,7 +15,7 @@ from dataclay.config import settings
 from dataclay.exceptions import *
 from dataclay.runtime import LockManager, set_runtime
 from dataclay.runtime.backend import BackendRuntime
-from dataclay.utils.serialization import unserialize_dataclay_object
+from dataclay.utils.serialization import dcdumps, unserialize_dataclay_object
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -93,6 +93,7 @@ class BackendAPI:
 
     @tracer.start_as_current_span("make_persistent")
     def make_persistent(self, serialized_dicts: Iterable[bytes]):
+        logger.info("Receiving objects to make persistent")
         unserialized_objects: dict[UUID, DataClayObject] = {}
         for serial_dict in serialized_dicts:
             object_dict = unserialize_dataclay_object(serial_dict, unserialized_objects)
@@ -116,6 +117,9 @@ class BackendAPI:
         assert len(serialized_dicts) == len(unserialized_objects)
 
         for proxy_object in unserialized_objects.values():
+            logger.debug(
+                f"({proxy_object._dc_meta.id}) Registering {proxy_object.__class__.__name__}"
+            )
             self.runtime.inmemory_objects[proxy_object._dc_meta.id] = proxy_object
             self.runtime.heap_manager.retain_in_heap(proxy_object)
             self.runtime.metadata_service.upsert_object(proxy_object._dc_meta)
@@ -125,6 +129,8 @@ class BackendAPI:
     def call_active_method(
         self, session_id: UUID, object_id: UUID, method_name: str, args: tuple, kwargs: dict
     ) -> tuple[bytes, bool]:
+        logger.debug(f"({object_id}) Calling remote method {method_name}")
+
         # NOTE: Session (dataset) is needed for make_persistents inside dc_methods.
         self.runtime.set_session_by_id(session_id)
         instance = self.runtime.get_object_by_id(object_id)
@@ -133,7 +139,7 @@ class BackendAPI:
         # for the client to update the backend_id, and call_active_method again
         if not instance._dc_is_local:
             logger.warning(
-                f"Object {object_id} with wrong backend_id. Update to {instance._dc_meta.master_backend_id}"
+                f"({object_id}) Wrong backend. Update to {instance._dc_meta.master_backend_id}"
             )
             # NOTE: We check to the metadata because when consolidating an object
             # it might be that the proxy is pointing to the wrong backend_id which is
@@ -158,7 +164,7 @@ class BackendAPI:
         try:
             value = getattr(instance, method_name)(*args, **kwargs)
             if value is not None:
-                value = pickle.dumps(value)
+                value = dcdumps(value)
             return value, False
         except Exception as e:
             return pickle.dumps(e), True
@@ -176,7 +182,7 @@ class BackendAPI:
         """
         instance = self.runtime.get_object_by_id(object_id)
         object_properties = self.runtime.get_object_properties(instance)
-        return pickle.dumps(object_properties)
+        return dcdumps(object_properties)
 
     @tracer.start_as_current_span("update_object_properties")
     def update_object_properties(self, object_id: UUID, serialized_properties: bytes):

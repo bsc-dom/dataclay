@@ -11,6 +11,7 @@ import psutil
 from dataclay.config import settings
 from dataclay.runtime import LockManager
 from dataclay.utils import metrics
+from dataclay.utils.serialization import DataClayPickler
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -79,7 +80,7 @@ class HeapManager(threading.Thread):
         using weak references. In order to avoid objects to be GC without a flush in DB, HeapManager has hard-references to
         them and is the only one able to release them. This function creates the hard-reference.
         """
-        logger.debug(f"New object retained in heap {dc_obj._dc_meta.id}")
+        logger.debug(f"({dc_obj._dc_meta.id}) Retained in heap ")
         self.loaded_objects[dc_obj._dc_meta.id] = dc_obj
 
     def release_from_heap(self, dc_obj: DataClayObject):
@@ -98,14 +99,14 @@ class HeapManager(threading.Thread):
 
         if LockManager.acquire_write(object_id, timeout) or force:
             try:
-                logger.warning(f"Storing and unloading object {object_id}")
+                logger.warning(f"({object_id}) Unloading {instance.__class__.__name__} to storage")
                 assert instance._dc_is_loaded
                 instance._dc_is_loaded = False
 
                 # NOTE: We do not serialize internal attributes, since these are
                 # obtained from etcd, or are stateless
                 path = f"{settings.storage_path}/{object_id}"
-                pickle.dump(instance._dc_properties, open(path, "wb"))
+                DataClayPickler(open(path, "wb")).dump(instance._dc_properties)
                 metrics.dataclay_stored_objects.inc()
 
                 # TODO: update etcd metadata (since is loaded has changed)

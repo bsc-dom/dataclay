@@ -20,7 +20,7 @@ from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.runtime import LockManager
 from dataclay.utils import metrics
-from dataclay.utils.serialization import serialize_dataclay_object
+from dataclay.utils.serialization import dcdumps, recursive_dcdumps
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -74,7 +74,7 @@ class DataClayRuntime(ABC):
         Returns:
             ID of the backend in which the object was persisted.
         """
-        logger.debug(f"Starting make persistent for object {instance._dc_meta.id}")
+        logger.debug(f"({instance._dc_meta.id}) Starting make_persistent")
 
         if instance._dc_is_registered:
             raise ObjectAlreadyRegisteredError(instance._dc_meta.id)
@@ -117,7 +117,7 @@ class DataClayRuntime(ABC):
         # Serialize instance with Pickle
 
         visited_objects: dict[UUID, DataClayObject] = {}
-        dicts_bytes = serialize_dataclay_object(
+        dicts_bytes = recursive_dcdumps(
             instance, local_objects=visited_objects, make_persistent=True
         )
         backend_client.make_persistent(dicts_bytes)
@@ -154,7 +154,7 @@ class DataClayRuntime(ABC):
         """Get dataclay object from inmemory_objects. If not present, get object metadata
         and create new proxy object.
         """
-        logger.debug(f"Get object {object_id} by id")
+        logger.debug(f"({object_id}) Get object by id")
 
         # Check if object is in heap
         try:
@@ -295,15 +295,19 @@ class DataClayRuntime(ABC):
     # Active Methods #
     ##################
 
-    def call_active_method(self, instance, method_name, args: tuple, kwargs: dict):
-        with tracer.start_as_current_span("call_active_method") as span:
+    def call_remote_method(self, instance, method_name, args: tuple, kwargs: dict):
+        with tracer.start_as_current_span("call_remote_method") as span:
             span.set_attribute("class", str(instance._dc_meta.class_name))
             span.set_attribute("method", str(method_name))
             span.set_attribute("args", str(args))
             span.set_attribute("kwargs", str(kwargs))
 
-            serialized_args = pickle.dumps(args)
-            serialized_kwargs = pickle.dumps(kwargs)
+            logger.debug(
+                f"({instance._dc_meta.id}) Calling remote method {method_name} args={args}, kwargs={kwargs}"
+            )
+
+            serialized_args = dcdumps(args)
+            serialized_kwargs = dcdumps(kwargs)
             # TODO: Add serialized volatile objects to
             # self.volatile_parameters_being_send to avoid race conditon.
             # May be necessary a custom pickle.Pickler
@@ -445,15 +449,15 @@ class DataClayRuntime(ABC):
                 self.load_object_from_db(instance)
                 if recursive:
                     if remotes:
-                        dicts_bytes = serialize_dataclay_object(
+                        dicts_bytes = recursive_dcdumps(
                             instance, visited_local_objects, pending_remote_objects
                         )
                     else:
-                        dicts_bytes = serialize_dataclay_object(instance, visited_local_objects)
+                        dicts_bytes = recursive_dcdumps(instance, visited_local_objects)
 
                     serialized_local_dict.extend(dicts_bytes)
                 else:
-                    dict_bytes = pickle.dumps(instance._dc_dict)
+                    dict_bytes = dcdumps(instance._dc_dict)
                     serialized_local_dict.append(dict_bytes)
             else:
                 pending_remote_objects[instance._dc_meta.id] = instance
@@ -506,9 +510,7 @@ class DataClayRuntime(ABC):
             vars(instance).update(new_properties)
         else:
             backend_client = self.get_backend_client(instance._dc_meta.master_backend_id)
-            backend_client.update_object_properties(
-                instance._dc_meta.id, pickle.dumps(new_properties)
-            )
+            backend_client.update_object_properties(instance._dc_meta.id, dcdumps(new_properties))
 
     def new_object_version(self, instance: DataClayObject, backend_id: UUID | None = None):
         new_version = self.make_object_copy(instance, is_proxy=True)

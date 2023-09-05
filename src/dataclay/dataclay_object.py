@@ -36,7 +36,7 @@ def activemethod(func):
 
     @functools.wraps(func)
     def wrapper_activemethod(self: DataClayObject, *args, **kwargs):
-        logger.debug(f"Calling activemethod {func.__name__} on {self._dc_meta.id}")
+        logger.debug(f"({self._dc_meta.id}) Calling active method {func.__name__}")
         try:
             # If the object is local executes the method locally,
             # else, executes the method in the backend
@@ -46,7 +46,7 @@ def activemethod(func):
                     result = func(self, *args, **kwargs)
                 return result
             else:
-                return get_runtime().call_active_method(self, func.__name__, args, kwargs)
+                return get_runtime().call_remote_method(self, func.__name__, args, kwargs)
         except Exception:
             traceback.print_exc()
             raise
@@ -71,7 +71,7 @@ class DataClayProperty:
         | False    | False   |  B (remote) or C (persistent)
         """
         logger.debug(
-            f"Calling getter for property {instance.__class__.__name__}.{self.property_name} on {instance._dc_meta.id}"
+            f"({instance._dc_meta.id}) Getting property {instance.__class__.__name__}.{self.property_name}"
         )
 
         if instance._dc_is_local:
@@ -84,7 +84,7 @@ class DataClayProperty:
                 e.args = (e.args[0].replace(self.dc_property_name, self.property_name),)
                 raise e
         else:
-            return get_runtime().call_active_method(
+            return get_runtime().call_remote_method(
                 instance, "__getattribute__", (self.property_name,), {}
             )
 
@@ -94,7 +94,7 @@ class DataClayProperty:
         See the __get__ method for the basic behavioural explanation.
         """
         logger.debug(
-            f"Calling setter for property {instance.__class__.__name__}.{self.property_name} on {instance._dc_meta.id}"
+            f"({instance._dc_meta.id}) Setting property {instance.__class__.__name__}.{self.property_name}={value}"
         )
 
         if instance._dc_is_local:
@@ -103,7 +103,7 @@ class DataClayProperty:
 
             setattr(instance, self.dc_property_name, value)
         else:
-            get_runtime().call_active_method(
+            get_runtime().call_remote_method(
                 instance, "__setattr__", (self.property_name, value), {}
             )
 
@@ -129,11 +129,14 @@ class DataClayObject:
                 setattr(cls, property_name, DataClayProperty(property_name))
 
     def __new__(cls, *args, **kwargs):
-        logger.debug(f"Creating new {cls.__name__} instance with args={args}, kwargs={kwargs}")
         obj = super().__new__(cls)
         obj._dc_meta = ObjectMetadata(class_name=cls.__module__ + "." + cls.__name__)
         if get_runtime() and get_runtime().is_backend:
             obj.make_persistent()
+
+        logger.debug(
+            f"({obj._dc_meta.id}) New instance {cls.__name__} args={args}, kwargs={kwargs}"
+        )
         return obj
 
     @classmethod
@@ -489,28 +492,6 @@ class DataClayObject:
             'dear garbage-collector, the current session is not using this object anymore'
         """
         get_runtime().detach_object_from_session(self._dc_meta.id, self._dc_meta.master_backend_id)
-
-    def __reduce__(self):
-        """Support for pickle protocol.
-
-        Take into account that internal Pickle usage should be used with help
-        of PersistentIdPicklerHelper and PersistentLoadPicklerHelper --for
-        further information on the inner working look at the modules
-        [Des|S]erializationLibUtils and both the serialize and deserialize
-        methods of this class.
-
-        This method is left here as a courtesy to end users that may need or
-        want to Pickle DataClayObjects manually or through other extensions.
-        """
-        logger.debug("Proceeding to `__reduce__` (Pickle-related) on a DataClayObject")
-
-        if not self._dc_is_registered:
-            logger.debug("Pickling of object is causing a make_persistent")
-            self.make_persistent()
-
-        # TODO: If its a version, use the original object id.
-
-        return self.get_by_id, (self._dc_meta.id,)
 
     def __repr__(self):
         if self._dc_is_registered:
