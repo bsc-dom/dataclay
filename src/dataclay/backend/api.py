@@ -96,20 +96,7 @@ class BackendAPI:
         logger.info("Receiving objects to make persistent")
         unserialized_objects: dict[UUID, DataClayObject] = {}
         for serial_dict in serialized_dicts:
-            object_dict = unserialize_dataclay_object(serial_dict, unserialized_objects)
-            object_id = object_dict["_dc_meta"].id
-
-            try:
-                # In case it was already unserialized by a reference
-                proxy_object = unserialized_objects[object_id]
-            except KeyError:
-                cls: type[DataClayObject] = utils.get_class_by_name(
-                    object_dict["_dc_meta"].class_name
-                )
-                proxy_object = cls.new_proxy_object()
-                unserialized_objects[object_id] = proxy_object
-
-            vars(proxy_object).update(object_dict)
+            proxy_object = unserialize_dataclay_object(serial_dict, unserialized_objects)
             proxy_object._dc_is_local = True
             proxy_object._dc_is_loaded = True
             proxy_object._dc_meta.master_backend_id = self.backend_id

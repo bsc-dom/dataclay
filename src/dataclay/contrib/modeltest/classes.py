@@ -1,6 +1,7 @@
-from dataclay import DataClayObject, activemethod
-
 # from dataclay.contrib.mqtt import MQTTMixin
+from typing import Any
+
+from dataclay import DataClayObject, activemethod
 
 
 class Dog(DataClayObject):
@@ -109,6 +110,45 @@ class TestPerson(DataClayObject):
         new_person.make_persistent(alias)
         Person.delete_alias(alias)
         print("test_delete_alias OK")
+
+
+class TextReader(DataClayObject):
+    """Print and number lines in a text file."""
+
+    filename: str
+    lineno: int
+
+    def __init__(self, filename):
+        self.filename = filename
+        self.file = "mock_" + filename
+        self.lineno = 0
+
+    @activemethod
+    def readline(self):
+        self.lineno += 1
+        return f"{self.file}:{self.lineno}"
+        # line = self.file.readline()
+        # if not line:
+        #     return None
+        # if line.endswith("\n"):
+        #     line = line[:-1]
+        # return "%i: %s" % (self.lineno, line)
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state["file"]
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        file = "mock_" + self.filename
+        # for _ in range(self.lineno):
+        #     file.readline()
+        self.file = file
+
+
+class Box(DataClayObject):
+    value: Any
 
 
 # class SomeClass(DataClayObject, MQTTMixin):

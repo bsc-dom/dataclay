@@ -156,6 +156,14 @@ class DataClayObject:
         return {k: v for k, v in vars(self).items() if k.startswith(DC_PROPERTY_PREFIX)}
 
     @property
+    def _dc_state(self):
+        """Returns the object state"""
+        state = self._dc_properties | {"_dc_meta": self._dc_meta}
+        if hasattr(self, "__getstate__") and hasattr(self, "__setstate__"):
+            state["_dc_getstate"] = self.__getstate__()
+        return state
+
+    @property
     def _dc_all_backend_ids(self) -> set[UUID]:
         """Returns a set with all the backend ids where the object is stored"""
         if self._dc_meta.master_backend_id is None:
