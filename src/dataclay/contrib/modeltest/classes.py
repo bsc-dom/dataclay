@@ -135,12 +135,14 @@ class TextReader(DataClayObject):
         # return "%i: %s" % (self.lineno, line)
 
     def __getstate__(self):
-        state = self.__dict__.copy()
-        del state["file"]
+        # state = self.__dict__.copy() # Wrong, should no access internal dc fields
+        state = {"lineno": self.lineno, "filename": self.filename}
+        # del state["file"]
         return state
 
     def __setstate__(self, state):
-        self.__dict__.update(state)
+        self.lineno = state["lineno"]
+        self.filename = state["filename"]
         file = "mock_" + self.filename
         # for _ in range(self.lineno):
         #     file.readline()

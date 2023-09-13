@@ -10,26 +10,12 @@ from dataclay.runtime import get_runtime
 logger = logging.getLogger(__name__)
 
 
-# def get_state(obj: DataClayObject):
-#     # If the object has a __getstate__ and __setstate__
-#     # we use it for serialization
-#     object_dict = obj._dc_dict.copy()
-#     if hasattr(obj, "__getstate__") and hasattr(obj, "__setstate__"):
-#         object_dict["_dc_getstate"] = obj.__getstate__()
-
-#     return object_dict
-
-
 class DataClayPickler(pickle.Pickler):
     def reducer_override(self, obj):
         if isinstance(obj, DataClayObject):
             if not obj._dc_is_registered:
                 obj.make_persistent()
-
-            if hasattr(self, "__getstate__"):
-                return obj.get_by_id, (obj._dc_meta.id,), self.__getstate__()
-            else:
-                return obj.get_by_id, (obj._dc_meta.id,)
+            return obj.get_by_id, (obj._dc_meta.id,)
         else:
             return NotImplemented
 
@@ -85,7 +71,7 @@ def recursive_dcdumps(
     make_persistent: bool = False,
 ):
     # Initialize local_objects and remote_objects
-    serialized_local_dicts = []
+    serialized_local_objects = []
     if local_objects is None:
         local_objects = {}
     if remote_objects is None:
@@ -95,11 +81,11 @@ def recursive_dcdumps(
     # Serialize the object state (__dict__ or __getstate__), and its referees
     f = io.BytesIO()
     RecursiveDataClayPickler(
-        f, local_objects, remote_objects, serialized_local_dicts, make_persistent
+        f, local_objects, remote_objects, serialized_local_objects, make_persistent
     ).dump(instance._dc_state)
 
-    serialized_local_dicts.append(f.getvalue())
-    return serialized_local_dicts
+    serialized_local_objects.append(f.getvalue())
+    return serialized_local_objects
 
 
 class RecursiveDataClayObjectUnpickler(pickle.Unpickler):
@@ -118,14 +104,12 @@ class RecursiveDataClayObjectUnpickler(pickle.Unpickler):
                 return proxy_object
 
 
-def unserialize_dataclay_object(
-    dict_binary, unserialized_objects: dict[UUID, DataClayObject] = None
-):
+def recursive_dcloads(object_binary, unserialized_objects: dict[UUID, DataClayObject] = None):
     if unserialized_objects is None:
         unserialized_objects = {}
 
-    object_dict = RecursiveDataClayObjectUnpickler(
-        io.BytesIO(dict_binary), unserialized_objects
+    object_dict, state = RecursiveDataClayObjectUnpickler(
+        io.BytesIO(object_binary), unserialized_objects
     ).load()
 
     object_id = object_dict["_dc_meta"].id
@@ -137,24 +121,13 @@ def unserialize_dataclay_object(
         proxy_object = cls.new_proxy_object()
         unserialized_objects[object_id] = proxy_object
 
-    if "_dc_getstate" in object_dict:
-        state = object_dict["_dc_getstate"]
-        del object_dict["_dc_getstate"]
-        vars(proxy_object).update(object_dict)
+    vars(proxy_object).update(object_dict)
+    if state:
         proxy_object.__setstate__(state)
-    else:
-        vars(proxy_object).update(object_dict)
     return proxy_object
 
 
-def dcdumps(obj, state=False):
-    if state and isinstance(obj, DataClayObject):
-        obj = obj._dc_state
-
+def dcdumps(obj):
     f = io.BytesIO()
     DataClayPickler(f).dump(obj)
     return f.getvalue()
-
-
-def dcloads(binary):
-    return pickle.loads(binary)

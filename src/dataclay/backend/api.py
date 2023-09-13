@@ -15,7 +15,7 @@ from dataclay.config import settings
 from dataclay.exceptions import *
 from dataclay.runtime import LockManager, set_runtime
 from dataclay.runtime.backend import BackendRuntime
-from dataclay.utils.serialization import dcdumps, unserialize_dataclay_object
+from dataclay.utils.serialization import dcdumps, recursive_dcloads
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -59,9 +59,9 @@ class BackendAPI:
         return False
 
     # Object Methods
-    def register_objects(self, serialized_dicts: Iterable[bytes], make_replica: bool):
-        for serial_dict in serialized_dicts:
-            object_dict = pickle.loads(serial_dict)
+    def register_objects(self, serialized_objects: Iterable[bytes], make_replica: bool):
+        for object_bytes in serialized_objects:
+            object_dict, state = pickle.loads(object_bytes)
 
             instance = self.runtime.get_object_by_id(object_dict["_dc_meta"].id)
 
@@ -72,9 +72,11 @@ class BackendAPI:
                     continue
 
             with LockManager.write(instance._dc_meta.id):
+                object_dict["_dc_is_loaded"] = True
+                object_dict["_dc_is_local"] = True
                 vars(instance).update(object_dict)
-                instance._dc_is_local = True
-                instance._dc_is_loaded = True
+                if state:
+                    instance.__setstate__(state)
                 self.runtime.heap_manager.retain_in_heap(instance)
 
                 if make_replica:
@@ -92,16 +94,16 @@ class BackendAPI:
                 self.runtime.metadata_service.upsert_object(instance._dc_meta)
 
     @tracer.start_as_current_span("make_persistent")
-    def make_persistent(self, serialized_dicts: Iterable[bytes]):
+    def make_persistent(self, serialized_objects: Iterable[bytes]):
         logger.info("Receiving objects to make persistent")
         unserialized_objects: dict[UUID, DataClayObject] = {}
-        for serial_dict in serialized_dicts:
-            proxy_object = unserialize_dataclay_object(serial_dict, unserialized_objects)
+        for object_bytes in serialized_objects:
+            proxy_object = recursive_dcloads(object_bytes, unserialized_objects)
             proxy_object._dc_is_local = True
             proxy_object._dc_is_loaded = True
             proxy_object._dc_meta.master_backend_id = self.backend_id
 
-        assert len(serialized_dicts) == len(unserialized_objects)
+        assert len(serialized_objects) == len(unserialized_objects)
 
         for proxy_object in unserialized_objects.values():
             logger.debug(

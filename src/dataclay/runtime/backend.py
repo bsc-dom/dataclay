@@ -79,20 +79,22 @@ class BackendRuntime(DataClayRuntime):
                 # in another thread while waiting for lock
                 return
 
+            logger.debug(
+                f"({instance._dc_meta.id}) Loading {instance.__class__.__name__} from storage"
+            )
             try:
-                logger.debug(
-                    f"({instance._dc_meta.id}) Loading {instance.__class__.__name__} from storage"
-                )
                 path = f"{settings.storage_path}/{instance._dc_meta.id}"
-                object_properties = pickle.load(open(path, "rb"))
+                object_dict, state = pickle.load(open(path, "rb"))
                 metrics.dataclay_stored_objects.dec()
             except Exception as e:
                 raise DataClayException("Object not found in storage") from e
 
-            # NOTE: The object_properties don't contain internal "_dc_" attributes
-            # except "_dc_properties_"
-            object_properties["_dc_is_loaded"] = True
-            vars(instance).update(object_properties)
+            # NOTE: The object_dict don't contain extra data (e.g. _dc_is_loaded)
+            object_dict["_dc_is_loaded"] = True
+            del object_dict["_dc_meta"]
+            vars(instance).update(object_dict)
+            if state:
+                instance.__setstate__(state)
             self.heap_manager.retain_in_heap(instance)
 
     # Shutdown

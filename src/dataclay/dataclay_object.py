@@ -158,10 +158,12 @@ class DataClayObject:
     @property
     def _dc_state(self):
         """Returns the object state"""
-        state = self._dc_properties | {"_dc_meta": self._dc_meta}
+        state = {"_dc_meta": self._dc_meta}
         if hasattr(self, "__getstate__") and hasattr(self, "__setstate__"):
-            state["_dc_getstate"] = self.__getstate__()
-        return state
+            return state, self.__getstate__()
+        else:
+            state.update(self._dc_properties)
+            return state, None
 
     @property
     def _dc_all_backend_ids(self) -> set[UUID]:

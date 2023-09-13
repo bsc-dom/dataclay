@@ -101,18 +101,18 @@ class HeapManager(threading.Thread):
             try:
                 logger.warning(f"({object_id}) Unloading {instance.__class__.__name__} to storage")
                 assert instance._dc_is_loaded
-                instance._dc_is_loaded = False
 
                 # NOTE: We do not serialize internal attributes, since these are
                 # obtained from etcd, or are stateless
                 path = f"{settings.storage_path}/{object_id}"
-                DataClayPickler(open(path, "wb")).dump(instance._dc_properties)
+                state = instance._dc_state
+                DataClayPickler(open(path, "wb")).dump(state)
                 metrics.dataclay_stored_objects.inc()
 
                 # TODO: update etcd metadata (since is loaded has changed)
                 # and store object in file system
                 instance._clean_dc_properties()
-
+                instance._dc_is_loaded = False
                 del self.loaded_objects[object_id]
             finally:
                 LockManager.release_write(object_id)

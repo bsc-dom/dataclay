@@ -117,10 +117,10 @@ class DataClayRuntime(ABC):
         # Serialize instance with Pickle
 
         visited_objects: dict[UUID, DataClayObject] = {}
-        dicts_bytes = recursive_dcdumps(
+        serialized_objects = recursive_dcdumps(
             instance, local_objects=visited_objects, make_persistent=True
         )
-        backend_client.make_persistent(dicts_bytes)
+        backend_client.make_persistent(serialized_objects)
 
         for dc_object in visited_objects.values():
             dc_object._clean_dc_properties()
@@ -434,7 +434,7 @@ class DataClayRuntime(ABC):
 
         visited_local_objects = {}
         pending_remote_objects = {}
-        serialized_local_dict = []
+        serialized_local_objects = []
 
         for instance in instances:
             # NOTE: We cannot make a replica of a replica because we need a global lock
@@ -449,23 +449,23 @@ class DataClayRuntime(ABC):
                 self.load_object_from_db(instance)
                 if recursive:
                     if remotes:
-                        dicts_bytes = recursive_dcdumps(
+                        serialized_objects = recursive_dcdumps(
                             instance, visited_local_objects, pending_remote_objects
                         )
                     else:
-                        dicts_bytes = recursive_dcdumps(instance, visited_local_objects)
+                        serialized_objects = recursive_dcdumps(instance, visited_local_objects)
 
-                    serialized_local_dict.extend(dicts_bytes)
+                    serialized_local_objects.extend(serialized_objects)
                 else:
-                    dict_bytes = dcdumps(instance._dc_dict)
-                    serialized_local_dict.append(dict_bytes)
+                    object_bytes = dcdumps(instance._dc_state)
+                    serialized_local_objects.append(object_bytes)
             else:
                 pending_remote_objects[instance._dc_meta.id] = instance
 
         # Check that the destination backend is not this
         if backend_id != self.backend_id:
             backend_client = self.get_backend_client(backend_id)
-            backend_client.register_objects(serialized_local_dict, make_replica=make_replica)
+            backend_client.register_objects(serialized_local_objects, make_replica=make_replica)
 
             for local_object in visited_local_objects.values():
                 if make_replica:
