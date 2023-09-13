@@ -15,6 +15,7 @@ First load dataclay
 
 ```bash
 module load DATACLAY
+module load COMPSs
 ```
 
 Then call:

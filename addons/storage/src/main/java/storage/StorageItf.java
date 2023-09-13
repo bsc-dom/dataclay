@@ -37,21 +37,24 @@ public final class StorageItf {
 
 	/**
 	 * @brief Gets all the locations of an object.
-	 * @param objectId
+	 * @param objectInfo
 	 *                 object to retrieve its locations.
 	 * @return locations of an object.
 	 * @throws StorageException
 	 *                          if an exception occurs
 	 */
-	public static List<String> getLocations(final String objectId) throws StorageException {
+	public static List<String> getLocations(final String objectInfo) throws StorageException {
 		try {
+      String[] splitObjectInfo = objectInfo.split(":");
+      final String objectId = splitObjectInfo[0];
+
 			ObjectMetadata objectMetadata = metadataAPI.getObjectMetadata(objectId);
 			List<String> replicaBackendIds = objectMetadata.getReplicaBackendIds();
 			String masterBackendId = objectMetadata.getMasterBackendId();
 			replicaBackendIds.add(masterBackendId);
 			return replicaBackendIds;
 		} catch (final Exception e) {
-			throw new StorageException("Error getting locations of object " + objectId, e);
+			throw new StorageException("Error getting locations of object " + objectInfo, e);
 		}
 	}
 
