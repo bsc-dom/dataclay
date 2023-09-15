@@ -31,8 +31,13 @@ def getByID(object_strid):
     :return: The (Persistent) DataClayObject
     """
     try:
-        object_id, backend_id, class_name = object_strid.split(":")
-        object_md = ObjectMetadata(id=object_id, backend_id=backend_id, class_name=class_name)
+        object_id, master_backend_id, class_name = object_strid.split(":")
+        # NOTE: the dataset_name, replica_backend_ids, etc. won't be set to the object. It may fail!
+        # possible solution: dc_obj.getID() could return the serialized ObjectMetadata with all fields.
+        # Another solution would be to obtain metadata from mds, but will be slower
+        object_md = ObjectMetadata(
+            id=object_id, master_backend_id=master_backend_id, class_name=class_name
+        )
         return get_runtime().get_object_by_id(uuid.UUID(object_id), object_md)
     except ValueError:  # this can fail for both [not enough semicolons]|[invalid uuid]
         # Fallback behaviour: no extra fields, the whole string is the ObjectID UUID
