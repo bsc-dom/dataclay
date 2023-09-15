@@ -4,16 +4,16 @@
 #SBATCH --error=job-%A.out
 #SBATCH --nodes=3
 #SBATCH --time=00:03:00
-#SBATCH --exclusive 
+#SBATCH --exclusive
 #SBATCH --qos=debug
 #############################
 
 #################
-# Configuration # 
+# Configuration #
 #################
 
 # Load Dataclay
-module load DATACLAY/DevelMarc
+module load DATACLAY/edge
 
 # Get node hostnames with network suffix
 network_suffix="-ib0"
@@ -48,7 +48,7 @@ dcdeploy-fabric dataclay -H ${hostnames[@]}
 echo "Starting application"
 tracing_prefix=""
 if [ $DATACLAY_TRACING == "true" ]; then
-    tracing_prefix="opentelemetry-instrument"
+	tracing_prefix="opentelemetry-instrument"
 fi
 
 $tracing_prefix python3 -u app/matrix-demo.py 1 0
@@ -56,9 +56,8 @@ $tracing_prefix python3 -u app/matrix-demo.py 1 0
 # For testing
 # dcdeploy-fabric run "python3 -u app/matrix-demo.py 1 0" -p 3 -H ${hostnames[@]}
 
-
 #####################
-# Stopping dataclay # 
+# Stopping dataclay #
 #####################
 
 echo "Stopping dataclay"

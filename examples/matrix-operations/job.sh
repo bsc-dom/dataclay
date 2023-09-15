@@ -9,7 +9,7 @@
 #############################
 
 # Load dataclay
-module load DATACLAY/DevelMarc
+module load DATACLAY/edge
 
 # Save hosts inventory
 hosts_file=hosts-$SLURM_JOB_ID

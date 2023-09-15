@@ -40,7 +40,14 @@
     - ./external_vars.yml
   environment: "{{ common_envs | combine(backend_properties) }}"
   tasks:
-    - name: Start Backend
-      shell: nohup python -u -m dataclay.backend > {{ dataclay_log_path }}/backend{{ num }}.out 2>&1 &
+    - name: Start Backend Socket 0
+      shell: nohup numactl -N 0 -m 0 -- python -u -m dataclay.backend > {{ dataclay_log_path }}/backend{{ num }}-s0.out 2>&1 &
       args:
         chdir: "{{ dataclay_job_path }}"
+    - name: Start Backend Socket 1
+      shell: nohup numactl -N 1 -m 1 -- python -u -m dataclay.backend > {{ dataclay_log_path }}/backend{{ num }}-s1.out 2>&1 &
+      args:
+        chdir: "{{ dataclay_job_path }}"
+      environment:
+        DATACLAY_BACKEND_PORT: "{{ backend_properties.DATACLAY_BACKEND_PORT | int + 1 }}"
+

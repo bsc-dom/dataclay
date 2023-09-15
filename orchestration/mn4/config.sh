@@ -1,3 +1,0 @@
-# TO CHANGE!
-export DATACLAY_VERSION=DevelMarc
-export BSC_USER=bsc25877

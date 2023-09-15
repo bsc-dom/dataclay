@@ -16,10 +16,10 @@
 # PARAMETER 1: exit value
 #=============================================================================
 usage() {
-    local exitValue=$1
-    echo " Usage: $0 <jobId> <masterNode> <storageMasterNode> \"<workerNodes>\" <network> <storageProps>"
-    echo " "
-    exit $exitValue
+	local exitValue=$1
+	echo " Usage: $0 <jobId> <masterNode> <storageMasterNode> \"<workerNodes>\" <network> <storageProps>"
+	echo " "
+	exit $exitValue
 }
 
 #=== FUNCTION ================================================================
@@ -40,18 +40,16 @@ get_args() {
 	master_node=$2
 	storage_master_node=$3
 	# worker_nodes=$4
-    read -r -a worker_nodes <<< $4
+	read -r -a worker_nodes <<<$4
 	network=$5
 	storageProps=$6
 }
-# -------------- 
-
+# --------------
 
 get_args "$@"
 
 # Load dataclay
-module load DATACLAY/DevelMarc
-
+module load DATACLAY/edge
 
 network_suffix=""
 if [ "${network}" == "infiniband" ]; then
@@ -70,19 +68,18 @@ hosts_file=hosts-$SLURM_JOB_ID
 #         HOSTS="$HOSTS ${HOST}${NETWORK_SUFFIX}"
 # done
 
-echo "[metadata]" > $hosts_file
-echo "$master_node""$network_suffix" >> $hosts_file
-echo "[backends]" >> $hosts_file
-printf "%s$network_suffix\n" "${worker_nodes[@]}" >> $hosts_file
+echo "[metadata]" >$hosts_file
+echo "$master_node""$network_suffix" >>$hosts_file
+echo "[backends]" >>$hosts_file
+printf "%s$network_suffix\n" "${worker_nodes[@]}" >>$hosts_file
 
 export DATACLAY_METADATA_HOST=$master_node
 export DATACLAY_KV_HOST=$master_node
 
-
 # Export envs
 if [ ! -f ${storageProps} ]; then
 	# PropsFile doesn't exist
-	echo "ERROR: storage properties file ${storageProps} does not exist" 
+	echo "ERROR: storage properties file ${storageProps} does not exist"
 	exit 1
 fi
 set -a
@@ -92,11 +89,8 @@ set +a
 # Deploy dataclay
 ansible-playbook "$DATACLAY_HOME/config/deploy-playbook.yaml" -i "$hosts_file"
 
-
 #-------------------------------------- COMPSs specifc -------------------------------------------------
 # Get session config
 mkdir -p ~/.COMPSs/${SLURM_JOB_ID}/storage/cfgfiles
 cp $storageProps ~/.COMPSs/${SLURM_JOB_ID}/storage/cfgfiles/storage.properties
-echo "DC_HOST=$DATACLAY_METADATA_HOST" >> ~/.COMPSs/${SLURM_JOB_ID}/storage/cfgfiles/storage.properties
-
-
+echo "DC_HOST=$DATACLAY_METADATA_HOST" >>~/.COMPSs/${SLURM_JOB_ID}/storage/cfgfiles/storage.properties
