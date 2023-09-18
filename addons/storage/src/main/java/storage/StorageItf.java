@@ -37,48 +37,44 @@ public final class StorageItf {
 
 	/**
 	 * @brief Gets all the locations of an object.
-	 * @param objectInfo
+	 * @param objectMdJson
 	 *                 object to retrieve its locations.
 	 * @return locations of an object.
 	 * @throws StorageException
 	 *                          if an exception occurs
 	 */
-	public static List<String> getLocations(final String objectInfo) throws StorageException {
+	public static List<String> getLocations(final String objectMdJson) throws StorageException {
 		try {
-      String[] splitObjectInfo = objectInfo.split(":");
-      final String objectId = splitObjectInfo[0];
-
-			ObjectMetadata objectMetadata = metadataAPI.getObjectMetadata(objectId);
-			List<String> replicaBackendIds = objectMetadata.getReplicaBackendIds();
-			String masterBackendId = objectMetadata.getMasterBackendId();
+      ObjectMetadata objectMd = ObjectMetadata.fromJson(objectMdJson);
+			List<String> replicaBackendIds = objectMd.getReplicaBackendIds();
+			String masterBackendId = objectMd.getMasterBackendId();
 			replicaBackendIds.add(masterBackendId);
 			return replicaBackendIds;
 		} catch (final Exception e) {
-			throw new StorageException("Error getting locations of object " + objectInfo, e);
+			throw new StorageException("Error getting locations of object " + objectMdJson, e);
 		}
 	}
 
 
 	/**
 	 * @brief Create a new replica of the given object.
-	 * @param objectInfo
-	 *            objectInfo to be replicated.
-	 * @param backendId
+	 * @param objectMdJson
+	 *            objectMdJson to be replicated.
+	 * @param newBackendId
 	 *            target backend of the new replica.
 	 * @throws StorageException
 	 *            if an exception occurs
 	 */
-	public static void newReplica(final String objectInfo, final String backendId) throws StorageException {
+	public static void newReplica(final String objectMdJson, final String newBackendId) throws StorageException {
 		try {
-			String[] splitObjectInfo = objectInfo.split(":");
-			final String objectId = splitObjectInfo[0];
-			final String masterBackendId = splitObjectInfo[1];
-			// final String className = splitObjectInfo[2];
+      ObjectMetadata objectMd = ObjectMetadata.fromJson(objectMdJson);
+			final String objectId = objectMd.getId();
+			final String masterBackendId = objectMd.getMasterBackendId();
 
 			BackendClient backendClient = getBackendClient(masterBackendId);
-			backendClient.newObjectReplica(objectId, backendId);
+			backendClient.newObjectReplica(objectId, newBackendId);
 		} catch (final Exception e) {
-			throw new StorageException("Error creating new version of object " + objectInfo, e);
+			throw new StorageException("Error creating new version of object " + objectMdJson, e);
 		}
 	}
 
@@ -87,7 +83,7 @@ public final class StorageItf {
 	 * @brief Create a new version of the object in the specified host. If no
 	 *        destination is specified random one is
 	 *        selected.
-	 * @param objectInfo
+	 * @param objectMdJson
 	 *                       object id to be versioned
 	 * @param preserveSource
 	 *                       whether the source object is preserved or otherwise can
@@ -99,35 +95,32 @@ public final class StorageItf {
 	 * @throws StorageException
 	 *                          if an exception occurs
 	 */
-	public static String newVersion(final String objectInfo, final boolean preserveSource, final String optDestHost)
+	public static String newVersion(final String objectMdJson, final boolean preserveSource, final String optDestHost)
 			throws StorageException {
 		// TODO preserveSource is currently ignored, but we could take advantage of it
 		try {
-			String[] splitObjectInfo = objectInfo.split(":");
-			final String objectId = splitObjectInfo[0];
-			final String masterBackendId = splitObjectInfo[1];
-			// final String className = splitObjectInfo[2];
+      ObjectMetadata objectMd = ObjectMetadata.fromJson(objectMdJson);
+			final String objectId = objectMd.getId();
+			final String masterBackendId = objectMd.getMasterBackendId();
 
 			BackendClient backendClient = getBackendClient(masterBackendId);
 			String newVersionInfo = backendClient.newObjectVersion(objectId);
-
 			return newVersionInfo;
 		} catch (final Exception e) {
-			throw new StorageException("Error creating new version of object " + objectInfo, e);
+			throw new StorageException("Error creating new version of object " + objectMdJson, e);
 		}
 	}
 
-	public static void consolidateVersion(final String objectInfo) throws StorageException {
+	public static void consolidateVersion(final String objectMdJson) throws StorageException {
 		try {
-			String[] splitObjectInfo = objectInfo.split(":");
-			final String objectId = splitObjectInfo[0];
-			final String masterBackendId = splitObjectInfo[1];
-			// final String className = splitObjectInfo[2];
+      ObjectMetadata objectMd = ObjectMetadata.fromJson(objectMdJson);
+			final String objectId = objectMd.getId();
+			final String masterBackendId = objectMd.getMasterBackendId();
 
 			BackendClient backendClient = getBackendClient(masterBackendId);
 			backendClient.consolidateObjectVersion(objectId);
 		} catch (final Exception e) {
-			throw new StorageException("Error consolidating version " + objectInfo, e);
+			throw new StorageException("Error consolidating version " + objectMdJson, e);
 		}
 	}
 

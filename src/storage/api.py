@@ -3,7 +3,6 @@
 import logging
 import os
 import uuid
-from distutils.util import strtobool
 
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
@@ -25,24 +24,17 @@ logger = logging.getLogger("dataclay.storage.api")
 _client: Client = None
 
 
-def getByID(object_strid):
-    """Get a Persistent Object from its OID.
-    :param object_strid: The string identifying object (contains both ObjectID and hint)
-    :return: The (Persistent) DataClayObject
+def getByID(object_md_json: str):
+    """Get a Persistent Object from its JSON-encoded metadata.
+
+    Args:
+        object_md_json: JSON-encoded string of an object metadata
+
+    Returns:
+        The DataClayObject identified by the given object_md_json
     """
-    try:
-        object_id, master_backend_id, class_name = object_strid.split(":")
-        # NOTE: the dataset_name, replica_backend_ids, etc. won't be set to the object. It may fail!
-        # possible solution: dc_obj.getID() could return the serialized ObjectMetadata with all fields.
-        # Another solution would be to obtain metadata from mds, but will be slower
-        object_md = ObjectMetadata(
-            id=object_id, master_backend_id=master_backend_id, class_name=class_name
-        )
-        return get_runtime().get_object_by_id(uuid.UUID(object_id), object_md)
-    except ValueError:  # this can fail for both [not enough semicolons]|[invalid uuid]
-        # Fallback behaviour: no extra fields, the whole string is the ObjectID UUID
-        object_id = object_strid
-        return get_runtime().get_object_by_id(uuid.UUID(object_id))
+    object_md = ObjectMetadata.model_validate_json(object_md_json)
+    return get_runtime().get_object_by_id(object_md.id, object_md)
 
 
 def initWorker(config_file_path, **kwargs):
@@ -179,7 +171,7 @@ class TaskContext(object):
         logger.info("Ending task")
 
 
-if strtobool(os.getenv("DEACTIVATE_STORAGE_LIBRARY", "False")):
+if os.getenv("DEACTIVATE_STORAGE_LIBRARY", "false").lower() == "true":
     from dataclay.contrib.dataclay_dummy import deactivate_storage_library
 
     deactivate_storage_library()

@@ -9,12 +9,9 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.Map;
 
-import com.google.gson.Gson;
-
 public class MetadataAPI {
 
     private Jedis jedis;
-    private Gson gson = new Gson();
 
     public MetadataAPI(final String host, final int port) {
         jedis = new Jedis(host, port);
@@ -26,7 +23,7 @@ public class MetadataAPI {
 
     public ObjectMetadata getObjectMetadata(final String objectID) {
         String value = jedis.get("/object/" + objectID);
-        ObjectMetadata objMD = gson.fromJson(value, ObjectMetadata.class);
+        ObjectMetadata objMD = ObjectMetadata.fromJson(value);
         return objMD;
     }
 
@@ -42,7 +39,7 @@ public class MetadataAPI {
 
             scanResult.getResult().forEach((key) -> {
                 String value = jedis.get(key);
-                BackendMetadata backendMetadata = gson.fromJson(value, BackendMetadata.class);
+                BackendMetadata backendMetadata = BackendMetadata.fromJson(value);
                 backendMetadatas.put(key, backendMetadata);
             });
 

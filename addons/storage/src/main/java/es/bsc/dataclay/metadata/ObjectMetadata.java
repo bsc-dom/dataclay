@@ -1,6 +1,7 @@
 package es.bsc.dataclay.metadata;
 
 import java.util.List;
+import com.google.gson.Gson;
 
 
 public class ObjectMetadata {
@@ -12,6 +13,13 @@ public class ObjectMetadata {
     private boolean is_read_only;
     private String original_object_id;
     private List<String> versions_object_ids;
+
+    private static Gson gson = new Gson();
+
+    public static ObjectMetadata fromJson(String objectMdJson)
+    {
+        return gson.fromJson(objectMdJson, ObjectMetadata.class);
+    }
 
     // Getters
     public String getId() {

@@ -446,24 +446,12 @@ class DataClayObject:
 
     @tracer.start_as_current_span("getID")
     def getID(self) -> str | None:
-        """Return the string representation of the persistent object for COMPSs.
-
-        dataClay specific implementation: The objects are internally represented
-        through ObjectID, which are UUID. In addition to that, some extra fields
-        are added to the representation. Currently, a "COMPSs ID" will be:
-
-            <objectID>:<backendID|empty>:<classID>
-
-        In which all ID are UUID and the "hint" (backendID) can be empty.
+        """Return the JSON-encoded metadata of the persistent object for COMPSs.
 
         If the object is NOT persistent, then this method returns None.
         """
         if self._dc_is_registered:
-            return "%s:%s:%s" % (
-                self._dc_meta.id,
-                self._dc_meta.master_backend_id,
-                self._dc_meta.class_name,
-            )
+            return self._dc_meta.model_dump_json()
         else:
             return None
 

@@ -162,12 +162,13 @@ class BackendAPI:
 
     @tracer.start_as_current_span("get_object_properties")
     def get_object_properties(self, object_id: UUID) -> bytes:
-        """Returns a non-persistent copy of the object with ID provided
+        """Returns the properties of the object with ID provided
 
         Args:
             object_id: ID of the object
+
         Returns:
-            the generated non-persistent objects
+            The pickled properties of the object.
         """
         instance = self.runtime.get_object_by_id(object_id)
         object_properties = self.runtime.get_object_properties(instance)
@@ -180,8 +181,17 @@ class BackendAPI:
         object_properties = pickle.loads(serialized_properties)
         self.runtime.update_object_properties(instance, object_properties)
 
-    def new_object_version(self, object_id: UUID) -> UUID | None:
-        """Creates a new version of the object with ID provided"""
+    def new_object_version(self, object_id: UUID):
+        """Creates a new version of the object with ID provided
+
+        This entrypoint for new_version is solely for COMPSs (called from java).
+
+        Args:
+            object_id: ID of the object to create a new version from.
+
+        Returns:
+            The JSON-encoded metadata of the new DataClayObject version.
+        """
         instance = self.runtime.get_object_by_id(object_id)
 
         # HACK: The dataset is needed to create a new version because

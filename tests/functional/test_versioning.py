@@ -1,5 +1,6 @@
 import pytest
 
+import storage.api
 from dataclay.contrib.modeltest.family import Dog, Family, Person
 
 
@@ -108,10 +109,9 @@ def test_new_object_version(client):
     person.make_persistent()
 
     backend_client = backends[person._dc_meta.master_backend_id]
-    person_v1_info = backend_client.new_object_version(person._dc_meta.id)
-    person_v1_id, _, _ = person_v1_info.split(":")
+    person_v1_md_json = backend_client.new_object_version(person._dc_meta.id)
+    person_v1 = storage.api.getByID(person_v1_md_json)
 
-    person_v1 = Person.get_by_id(person_v1_id)
     assert person_v1.name == "Marc"
 
     person_v1.name = "Alice"
