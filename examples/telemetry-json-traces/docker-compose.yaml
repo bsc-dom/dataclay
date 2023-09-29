@@ -27,7 +27,7 @@ services:
       - DATACLAY_TRACING_HOST=otel-collector
     command: python -m dataclay.metadata
     volumes:
-      - ../../:/pyclay:ro
+      - ../../:/app:ro
 
   backend:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -42,7 +42,7 @@ services:
       - DATACLAY_TRACING_HOST=otel-collector
     command: python -m dataclay.backend
     volumes:
-      - ../../:/pyclay:ro
+      - ../../:/app:ro
 
   otel-collector:
     image: otel/opentelemetry-collector:latest

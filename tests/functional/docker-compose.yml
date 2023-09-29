@@ -25,7 +25,7 @@ services:
       - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.metadata
     volumes:
-      - ../../:/pyclay:ro
+      - ../../:/app:ro
 
   backend_1:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -37,7 +37,7 @@ services:
       - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
-      - ../../:/pyclay:ro
+      - ../../:/app:ro
 
   backend_2:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -49,7 +49,7 @@ services:
       - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
-      - ../../:/pyclay:ro
+      - ../../:/app:ro
 
   backend_3:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -61,4 +61,4 @@ services:
       - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
-      - ../../:/pyclay:ro
+      - ../../:/app:ro

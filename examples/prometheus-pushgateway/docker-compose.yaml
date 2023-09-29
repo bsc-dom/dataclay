@@ -29,7 +29,7 @@ services:
       - DATACLAY_METRICS_PORT=8000
     command: python -m dataclay.metadata
     volumes:
-      - ../../:/pyclay:ro
+      - ../../:/app:ro
 
   backend:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -48,7 +48,7 @@ services:
       - DATACLAY_METRICS_PORT=8000
     command: python -m dataclay.backend
     volumes:
-      - ../../:/pyclay:ro
+      - ../../:/app:ro
 
   prometheus:
     image: prom/prometheus:latest

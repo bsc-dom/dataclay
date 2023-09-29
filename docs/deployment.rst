@@ -106,7 +106,7 @@ This is a list of all environment variables that can be used to configure dataCl
    * - DATACLAY_STORAGE_PATH
      - The backend storage path
      - backend
-     - /dataclay/storage/
+     - /data/storage/
    * - DATACLAY_LISTEN_ADDRESS
      - The listen address
      - metadata, backend

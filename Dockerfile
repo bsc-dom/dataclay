@@ -2,15 +2,15 @@
 
 ARG PYTHON_VERSION=3.10-bullseye
 
-# install pyclay
+# install dataclay
 FROM python:$PYTHON_VERSION
-COPY . /pyclay
+COPY . /app
 RUN python -m pip install --upgrade pip \
-    && python -m pip install /pyclay[telemetry]
+  && python -m pip install /app[telemetry]
 
 # prepare dataclay storage dir
-RUN mkdir -p /dataclay/storage; \
-    mkdir -p /dataclay/metadata
+RUN mkdir -p /data/storage; \
+  mkdir -p /data/metadata
 
 # set workdir and entrypoint
 WORKDIR /workdir

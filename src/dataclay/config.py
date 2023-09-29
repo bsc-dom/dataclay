@@ -70,7 +70,7 @@ class Settings(BaseSettings):
 
     dataclay_id: uuid.UUID | None = Field(default=None, alias="dataclay_id")
 
-    storage_path: str = "/dataclay/storage/"
+    storage_path: str = "/data/storage/"
     thread_pool_workers: int | None = None
     loglevel: constr(to_upper=True) = "WARNING"
 
