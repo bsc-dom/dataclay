@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 class BackendClient:
     def __init__(self, host: str, port: int):
         """Create the stub and the channel at the address passed by the server."""
+        self.host = host
+        self.port = port
         self.address = str(host) + ":" + str(port)
         options = [
             (ChannelArgKey.max_send_message_length, -1),

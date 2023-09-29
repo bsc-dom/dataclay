@@ -127,17 +127,16 @@ class BackendAPI:
         # NOTE: When the object is not local, a custom exception is sent
         # for the client to update the backend_id, and call_active_method again
         if not instance._dc_is_local:
-            logger.warning(
-                f"({object_id}) Wrong backend. Update to {instance._dc_meta.master_backend_id}"
-            )
-            # NOTE: We check to the metadata because when consolidating an object
+            # NOTE: We sync the metadata because when consolidating an object
             # it might be that the proxy is pointing to the wrong backend_id which is
             # the same current backend, creating a infinite loop. This could be solve also
             # by passing the backend_id of the new object to the proxy, but this can create
             # problems with race conditions (e.g. a move before the consolidation). Therefore,
             # we check to the metadata which is more reliable.
-            object_md = self.runtime.metadata_service.get_object_md_by_id(object_id)
-            instance._dc_meta.master_backend_id = object_md.master_backend_id
+            self.runtime.sync_object_metadata(instance)
+            logger.warning(
+                f"({object_id}) Wrong backend. Update to {instance._dc_meta.master_backend_id}"
+            )
             return (
                 pickle.dumps(
                     ObjectWithWrongBackendIdError(

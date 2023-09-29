@@ -100,6 +100,10 @@ class DataClayRuntime(ABC):
 
         elif backend_id is None:
             self.update_backend_clients()
+            if not self.backend_clients:
+                raise RuntimeError(
+                    f"({instance._dc_meta.id}) No backends available to make persistent"
+                )
             backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
 
             # NOTE: Maybe use a quick update to avoid overhead.
@@ -295,7 +299,9 @@ class DataClayRuntime(ABC):
     # Active Methods #
     ##################
 
-    def call_remote_method(self, instance, method_name, args: tuple, kwargs: dict):
+    def call_remote_method(
+        self, instance: DataClayObject, method_name: str, args: tuple, kwargs: dict
+    ):
         with tracer.start_as_current_span("call_remote_method") as span:
             span.set_attribute("class", str(instance._dc_meta.class_name))
             span.set_attribute("method", str(method_name))
@@ -306,50 +312,71 @@ class DataClayRuntime(ABC):
                 f"({instance._dc_meta.id}) Calling remote method {method_name} args={args}, kwargs={kwargs}"
             )
 
+            # Serialize args and kwargs
             serialized_args = dcdumps(args)
             serialized_kwargs = dcdumps(kwargs)
-            # TODO: Add serialized volatile objects to
-            # self.volatile_parameters_being_send to avoid race conditon.
-            # May be necessary a custom pickle.Pickler
-            # TODO: Check if race conditions can happend (chek old call_execute_to_ds)
 
-            # NOTE: Loop to update the backend_id when we have the wrong one, and call again
-            # the active method
+            # Fault tolerance loop
             while True:
-                # TODO: Optimize by doing intersection between available backend clients and
-                # object backends. Update all backend clients beforehand. Keep the list of the
-                # intersection and remove the clients that fail the connection (that failed
-                # between the update all and the call)
-                while True:
-                    try:
-                        backend_id = random.choice(tuple(instance._dc_all_backend_ids))
-                        backend_client = self.get_backend_client(backend_id)
-                        break  # If no KeyError occurs, break out of the loop
-                    except KeyError:
-                        pass  # If KeyError occurs, do nothing and loop again
-
-                serialized_response, is_exception = backend_client.call_active_method(
-                    self.session.id,
-                    instance._dc_meta.id,
-                    method_name,
-                    serialized_args,
-                    serialized_kwargs,
+                # Get the intersection between backend clients and object backends
+                avail_backends = instance._dc_all_backend_ids.intersection(
+                    self.backend_clients.keys()
                 )
+
+                # If the intersection is empty (no backends available), update the list of backend
+                # clients and the object backend locations, and try again
+                if not avail_backends:
+                    logger.warning(f"({instance._dc_meta.id}) No backends available. Syncing..")
+                    self.update_backend_clients()
+                    instance.sync()
+                    avail_backends = instance._dc_all_backend_ids.intersection(
+                        self.backend_clients.keys()
+                    )
+                    if not avail_backends:
+                        raise RuntimeError(
+                            f"({instance._dc_meta.id}) No backends available to call activemethod"
+                        )
+
+                # Choose a random backend from the available ones
+                backend_id = random.choice(tuple(avail_backends))
+                backend_client = self.get_backend_client(backend_id)
+
+                # If the connection fails, update the list of backend clients, and try again
+                try:
+                    serialized_response, is_exception = backend_client.call_active_method(
+                        self.session.id,
+                        instance._dc_meta.id,
+                        method_name,
+                        serialized_args,
+                        serialized_kwargs,
+                    )
+                except DataClayException as e:
+                    if "failed to connect" in str(e):
+                        logger.warning(f"({instance._dc_meta.id}) Failed to connect. Syncing..")
+                        self.update_backend_clients()
+                        continue
+                    else:
+                        raise e
 
                 if serialized_response:
                     response = pickle.loads(serialized_response)
 
+                    # If the response is an ObjectWithWrongBackendIdError, update the object metadata
+                    # and try again
                     if isinstance(response, ObjectWithWrongBackendIdError):
                         instance._dc_meta.master_backend_id = response.backend_id
                         instance._dc_meta.replica_backend_ids = response.replica_backend_ids
                         continue
 
+                    # If the response is and exception, raise it. Correct workflow.
+                    # NOTE: The exception was raised inside the active method
                     if is_exception:
                         raise response
 
                     return response
 
                 else:
+                    # Void active method returns None
                     return None
 
     #########
@@ -389,7 +416,13 @@ class DataClayRuntime(ABC):
 
         def add_backend_client(backend_info: Backend):
             if backend_info.id in self.backend_clients:
-                if self.backend_clients[backend_info.id].is_ready(settings.timeout_channel_ready):
+                if (
+                    backend_info.host == self.backend_clients[backend_info.id].host
+                    and backend_info.port == self.backend_clients[backend_info.id].port
+                    and self.backend_clients[backend_info.id].is_ready(
+                        settings.timeout_channel_ready
+                    )
+                ):
                     new_backend_clients[backend_info.id] = self.backend_clients[backend_info.id]
                     return
 
