@@ -7,7 +7,7 @@ import pickle
 import threading
 from typing import TYPE_CHECKING
 
-from dataclay.backend.heapmanager import HeapManager
+from dataclay.backend.data_manager import DataManager
 from dataclay.config import settings
 from dataclay.exceptions import *
 from dataclay.metadata.api import MetadataAPI
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 class BackendRuntime(DataClayRuntime):
-    heap_manager: HeapManager = None
+    data_manager: DataManager = None
     thread_local_data: threading.local
 
     def __init__(self, kv_host: str, kv_port: int, backend_id: UUID):
@@ -33,9 +33,9 @@ class BackendRuntime(DataClayRuntime):
         metadata_service = MetadataAPI(kv_host, kv_port)
         super().__init__(metadata_service, backend_id)
 
-        self.heap_manager = HeapManager()
+        self.data_manager = DataManager()
         # start heap manager. Invokes run() in a separate thread
-        self.heap_manager.start()
+        self.data_manager.start()
 
         # References hold by sessions. Resource note: Maximum size of this map is maximum number of objects allowed in EE x sessions.
         # Also, important to think what happens if one single session is associated to two client threads? use case?
@@ -65,53 +65,20 @@ class BackendRuntime(DataClayRuntime):
         session = self.metadata_service.get_session(session_id)
         self.session = session
 
-    # Heap
-
-    def add_to_heap(self, instance: DataClayObject):
-        self.inmemory_objects[instance._dc_meta.id] = instance
-        if instance._dc_is_loaded:
-            self.heap_manager.retain_in_heap(instance)
-
-    def load_object_from_db(self, instance: DataClayObject):
-        with LockManager.write(instance._dc_meta.id):
-            if instance._dc_is_loaded or not instance._dc_is_local:
-                # The object is already loaded or not local. It may had been loaded
-                # in another thread while waiting for lock
-                return
-
-            logger.debug(
-                f"({instance._dc_meta.id}) Loading {instance.__class__.__name__} from storage"
-            )
-            try:
-                path = f"{settings.storage_path}/{instance._dc_meta.id}"
-                object_dict, state = pickle.load(open(path, "rb"))
-                metrics.dataclay_stored_objects.dec()
-            except Exception as e:
-                raise DataClayException("Object not found in storage") from e
-
-            # NOTE: The object_dict don't contain extra data (e.g. _dc_is_loaded)
-            object_dict["_dc_is_loaded"] = True
-            del object_dict["_dc_meta"]
-            vars(instance).update(object_dict)
-            if state:
-                instance.__setstate__(state)
-            self.heap_manager.retain_in_heap(instance)
-
     # Shutdown
 
     def stop(self):
         # Remove backend entry from metadata
         self.metadata_service.delete_backend(settings.backend.id)
 
-        # Stop HeapManager
-        logger.debug("Stopping GC. Sending shutdown event.")
-        self.heap_manager.shutdown()
-        logger.debug("Waiting for GC.")
-        self.heap_manager.join()
-        logger.debug("GC stopped.")
+        # Stop DataManager
+        logger.debug("Stopping DataManager")
+        self.data_manager.shutdown()
+        self.data_manager.join()
+        logger.debug("DataManager stopped.")
 
         self.close_backend_clients()
-        self.heap_manager.flush_all()
+        self.data_manager.flush_all()
 
     # Garbage collector
 
@@ -180,7 +147,7 @@ class BackendRuntime(DataClayRuntime):
         retained_refs = set()
 
         """ memory references """
-        for oid in self.heap_manager.keys():
+        for oid in self.data_manager.keys():
             retained_refs.add(oid)
         logger.debug("[==GC==] Session refs: %s" % str(len(self.references_hold_by_sessions)))
         logger.debug(

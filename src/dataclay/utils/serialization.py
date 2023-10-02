@@ -41,7 +41,7 @@ class RecursiveDataClayPickler(DataClayPickler):
                 if obj._dc_meta.id not in self.visited_local_objects:
                     self.visited_local_objects[obj._dc_meta.id] = obj
                     if not obj._dc_is_loaded:
-                        get_runtime().load_object_from_db(obj)
+                        get_runtime().data_manager.load_object(obj)
 
                     f = io.BytesIO()
                     RecursiveDataClayPickler(

@@ -77,7 +77,7 @@ class BackendAPI:
                 vars(instance).update(object_dict)
                 if state:
                     instance.__setstate__(state)
-                self.runtime.heap_manager.retain_in_heap(instance)
+                self.runtime.data_manager.add_hard_reference(instance)
 
                 if make_replica:
                     instance._dc_is_replica = True
@@ -110,7 +110,7 @@ class BackendAPI:
                 f"({proxy_object._dc_meta.id}) Registering {proxy_object.__class__.__name__}"
             )
             self.runtime.inmemory_objects[proxy_object._dc_meta.id] = proxy_object
-            self.runtime.heap_manager.retain_in_heap(proxy_object)
+            self.runtime.data_manager.add_hard_reference(proxy_object)
             self.runtime.metadata_service.upsert_object(proxy_object._dc_meta)
             proxy_object._dc_is_registered = True
 
@@ -237,7 +237,7 @@ class BackendAPI:
 
     @tracer.start_as_current_span("flush_all")
     def flush_all(self):
-        self.runtime.heap_manager.flush_all()
+        self.runtime.data_manager.flush_all()
 
     @tracer.start_as_current_span("move_all_objects")
     def move_all_objects(self):

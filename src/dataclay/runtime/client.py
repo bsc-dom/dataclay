@@ -28,11 +28,8 @@ class ClientRuntime(DataClayRuntime):
         super().__init__(metadata_service)
 
     @property
-    def heap_manager(self):
-        raise DataClayException("Client has no heap manager")
-
-    def add_to_heap(self, instance: DataClayObject):
-        self.inmemory_objects[instance._dc_meta.id] = instance
+    def data_manager(self):
+        raise DataClayException("Client has no data manager")
 
     ############
     # Replicas #

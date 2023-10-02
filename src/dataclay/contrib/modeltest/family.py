@@ -85,7 +85,7 @@ class Family(DataClayObject):
 
         members = self.members
 
-        t = Thread(target=get_runtime().heap_manager.flush_all, args=(0, False))
+        t = Thread(target=get_runtime().data_manager.flush_all, args=(0, False))
         t.start()
         t.join()
 
@@ -105,7 +105,7 @@ class Family(DataClayObject):
         new_family = Family()
         members = new_family.members
 
-        t = Thread(target=get_runtime().heap_manager.flush_all, args=(0, False))
+        t = Thread(target=get_runtime().data_manager.flush_all, args=(0, False))
         t.start()
         t.join()
 

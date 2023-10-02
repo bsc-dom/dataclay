@@ -1,7 +1,6 @@
 import logging
 import socket
 import uuid
-from datetime import datetime
 from typing import Literal
 
 from pydantic import AliasChoices, Field, SecretStr, constr
@@ -48,52 +47,54 @@ class Settings(BaseSettings):
     )
 
     # Other
+    dataclay_id: uuid.UUID | None = Field(default=None, alias="dataclay_id")
+    storage_path: str = "/data/storage/"
+    check_session: bool = False
+    thread_pool_workers: int | None = None
+    loglevel: constr(to_upper=True) = "WARNING"
+
+    # Timeouts
     grpc_check_alive_timeout: int = 60
+    unload_timeout: int = 5
+    timeout_channel_ready: int = 5
+
+    # SSL
     ssl_client_trusted_certificates: str = ""
     ssl_client_certificate: str = ""
     ssl_client_key: str = ""
     ssl_target_authority: str = "proxy"
     ssl_target_ee_alias: str = "6867"
-    unload_timeout: int = 5
-    timeout_channel_ready: int = 5
-    date_format: str = "%Y-%m-%dT%H:%M:%S"
-    check_session: bool = False
-    memmgmt_pressure_fraction: float = 0.75
-    memmgmt_ease_fraction: float = 0.50
-    memmgmt_check_time_interval: int = 5000
-    nocheck_session_expiration: datetime = datetime.strptime("2120-09-10T20:00:04", date_format)
 
-    # root account
+    # Memory
+    memory_threshold_high: float = 0.75
+    memory_threshold_low: float = 0.50
+    memory_check_interval: int = 10
+
+    # Root account
     root_password: SecretStr = Field(default="admin", alias="dataclay_password")
     root_username: str = Field(default="admin", alias="dataclay_username")
     root_dataset: str = Field(default="admin", alias="dataclay_dataset")
 
-    dataclay_id: uuid.UUID | None = Field(default=None, alias="dataclay_id")
-
-    storage_path: str = "/data/storage/"
-    thread_pool_workers: int | None = None
-    loglevel: constr(to_upper=True) = "WARNING"
-
-    # tracing
+    # Tracing
     service_name: str | None = None
     tracing: bool = False
     tracing_exporter: Literal["otlp", "jaeger", "zipkin", "none"] = "otlp"
     tracing_host: str = "localhost"
     tracing_port: int = 4317
 
-    # metrics
+    # Metrics
     metrics: bool = False
     metrics_exporter: Literal["http", "prometheus", "none"] = "http"
     metrics_host: str = "localhost"
     metrics_port: int = 8000  # 9091 for pushgateway
     metrics_push_interval: int = 10
 
-    # services
+    # Services
     backend: BackendSettings | None = None
     metadata: MetadataSettings | None = None
     client: ClientSettings | None = None
 
-    # key/value
+    # key/value database
     kv_host: str | None = None
     kv_port: int = 6379
 
@@ -102,17 +103,10 @@ class Settings(BaseSettings):
     # Destination path for traces
     # TRACES_DEST_PATH = os.getcwd()
 
-    # extrae
+    # Extrae
     # tracing_enabled = False
     # extrae_starting_task_id = 0
     # pyclay_extrae_wrapper_lib = ""
-
-    # TODO: This is a dangerous default, used in Docker but... useless everywhere else.
-    # deploy_path = os.getenv("DEPLOY_PATH", "/dataclay/deploy")
-    # deploy_path = deploy_path
-    # deploy_path_source = os.getenv("DEPLOY_PATH_SRC", os.path.join(deploy_path, "source"))
-
-    # Grace period to wait for and object to relase the lock before forcing to unload.
 
 
 settings = Settings()

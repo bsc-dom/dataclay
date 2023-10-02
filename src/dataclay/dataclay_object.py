@@ -77,7 +77,7 @@ class DataClayProperty:
         if instance._dc_is_local:
             try:
                 if not instance._dc_is_loaded:
-                    get_runtime().load_object_from_db(instance)
+                    get_runtime().data_manager.load_object(instance)
 
                 return getattr(instance, self.dc_property_name)
             except AttributeError as e:
@@ -99,7 +99,7 @@ class DataClayProperty:
 
         if instance._dc_is_local:
             if not instance._dc_is_loaded:
-                get_runtime().load_object_from_db(instance)
+                get_runtime().data_manager.load_object(instance)
 
             setattr(instance, self.dc_property_name, value)
         else:

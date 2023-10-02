@@ -26,7 +26,7 @@ from dataclay.utils.telemetry import trace
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from dataclay.backend.heapmanager import HeapManager
+    from dataclay.backend.data_manager import DataManager
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
     from dataclay.metadata.kvdata import Backend, ObjectMetadata, Session
@@ -95,7 +95,7 @@ class DataClayRuntime(ABC):
             self.metadata_service.upsert_object(instance._dc_meta)
             instance._dc_is_registered = True
             self.inmemory_objects[instance._dc_meta.id] = instance
-            self.heap_manager.retain_in_heap(instance)
+            self.data_manager.add_hard_reference(instance)
             return self.backend_id
 
         elif backend_id is None:
@@ -136,16 +136,9 @@ class DataClayRuntime(ABC):
 
         return instance._dc_meta.master_backend_id
 
-    @abstractmethod
-    def add_to_heap(self, instance: DataClayObject):
-        pass
-
-    def load_object_from_db(self, instance: DataClayObject):
-        pass
-
     @property
     @abstractmethod
-    def heap_manager(self) -> HeapManager:
+    def data_manager(self) -> DataManager:
         pass
 
     ##################
@@ -160,7 +153,6 @@ class DataClayRuntime(ABC):
         """
         logger.debug(f"({object_id}) Get object by id")
 
-        # Check if object is in heap
         try:
             dc_object = self.inmemory_objects[object_id]
             metrics.dataclay_inmemory_hits_total.inc()
@@ -197,7 +189,7 @@ class DataClayRuntime(ABC):
                     proxy_object._dc_is_registered = True
 
                     # Since it is no loaded, we only add it to the inmemory list
-                    # The object will be loaded if needed calling "load_object_from_db"
+                    # The object will be loaded if needed calling `load_object`
                     self.inmemory_objects[proxy_object._dc_meta.id] = proxy_object
                     return proxy_object
 
@@ -212,7 +204,8 @@ class DataClayRuntime(ABC):
 
     def get_object_properties(self, instance: DataClayObject) -> dict[str, Any]:
         if instance._dc_is_local:
-            self.load_object_from_db(instance)
+            if not instance._dc_is_loaded:
+                self.data_manager.load_object(instance)
             return instance._dc_properties
         else:
             backend_client = self.get_backend_client(instance._dc_meta.master_backend_id)
@@ -222,19 +215,11 @@ class DataClayRuntime(ABC):
     def make_object_copy(
         self, instance: DataClayObject, recursive: bool = False, is_proxy: bool = False
     ):
-        # It cannot be called if instance is not persistent, because
-        # the deepcopy from the class will try to serialize the instance
-        # and it will be made persistent in the process
-        # A solution could be to override the __deepcopy__, but I don't see the need...
-        if not instance._dc_is_registered:
-            raise ObjectNotRegisteredError(instance._dc_meta.id)
-
         object_properties = copy.deepcopy(self.get_object_properties(instance))
         if is_proxy:
-            # This is to avoid the object get persistent automatically when called in a backend
+            # Avoid the object get persistent automatically when called in a backend
             # Needed for new_version
             object_copy = instance.__class__.new_proxy_object()
-            self.add_to_heap(object_copy)
         else:
             object_copy = DataClayObject.__new__(instance.__class__)
         vars(object_copy).update(object_properties)
@@ -247,11 +232,11 @@ class DataClayRuntime(ABC):
         if instance._dc_is_local:
             assert self.is_backend
             with LockManager.write(instance._dc_meta.id):
-                self.load_object_from_db(instance)
+                # TODO: remove pickle file if serialized in disk (when not loaded)
                 instance._clean_dc_properties()
                 instance._dc_is_loaded = False
                 instance._dc_is_local = False
-                self.heap_manager.release_from_heap(instance)
+                self.data_manager.remove_hard_reference(instance)
                 # NOTE: There is no need to delete, and it may be good
                 # in case that an object was serialized to disk before a
                 # consolidation. However, it will be deleted also since
@@ -269,15 +254,17 @@ class DataClayRuntime(ABC):
 
         if instance._dc_is_local:
             with LockManager.write(instance._dc_meta.id):
-                self.load_object_from_db(instance)
-                # We need to update the loaded_objects with the new object_id key
-                self.heap_manager.release_from_heap(instance)
+                # loaded since pickle filed is named with the old object_id
+                if not instance._dc_is_loaded:
+                    self.data_manager.load_object(instance)
+
+                # update the loaded_objects with the new object_id
+                self.data_manager.remove_hard_reference(instance)
                 instance._dc_meta.id = new_object_id
-                self.heap_manager.retain_in_heap(instance)
-                # Also update the inmemory_objects with the new object_id key
+                self.data_manager.add_hard_reference(instance)
+
                 self.inmemory_objects[new_object_id] = instance
                 self.metadata_service.change_object_id(old_object_id, new_object_id)
-
                 # HACK: The only use case for change_object_id is to consolidate, therefore:
                 instance._dc_meta.original_object_id = None
                 instance._dc_meta.versions_object_ids = []
@@ -326,7 +313,7 @@ class DataClayRuntime(ABC):
                 # If the intersection is empty (no backends available), update the list of backend
                 # clients and the object backend locations, and try again
                 if not avail_backends:
-                    logger.warning(f"({instance._dc_meta.id}) No backends available. Syncing..")
+                    logger.warning(f"({instance._dc_meta.id}) No backends available. Syncing...")
                     self.update_backend_clients()
                     instance.sync()
                     avail_backends = instance._dc_all_backend_ids.intersection(
@@ -352,7 +339,7 @@ class DataClayRuntime(ABC):
                     )
                 except DataClayException as e:
                     if "failed to connect" in str(e):
-                        logger.warning(f"({instance._dc_meta.id}) Failed to connect. Syncing..")
+                        logger.warning(f"({instance._dc_meta.id}) Failed to connect. Syncing...")
                         self.update_backend_clients()
                         continue
                     else:
@@ -479,7 +466,8 @@ class DataClayRuntime(ABC):
                     continue
                 visited_local_objects[instance._dc_meta.id] = instance
 
-                self.load_object_from_db(instance)
+                if not instance._dc_is_loaded:
+                    self.data_manager.load_object(instance)
                 if recursive:
                     if remotes:
                         serialized_objects = recursive_dcdumps(
@@ -506,7 +494,7 @@ class DataClayRuntime(ABC):
                 else:
                     # Moving object
                     # TODO: Remove pickle file to reduce space
-                    self.heap_manager.release_from_heap(local_object)
+                    self.data_manager.remove_hard_reference(local_object)
                     local_object._clean_dc_properties()
                     local_object._dc_is_local = False
                     local_object._dc_is_loaded = False
@@ -539,8 +527,8 @@ class DataClayRuntime(ABC):
 
     def update_object_properties(self, instance: DataClayObject, new_properties: dict[str, Any]):
         if instance._dc_is_local:
-            self.load_object_from_db(instance)
             vars(instance).update(new_properties)
+            instance._dc_is_loaded = True
         else:
             backend_client = self.get_backend_client(instance._dc_meta.master_backend_id)
             backend_client.update_object_properties(instance._dc_meta.id, dcdumps(new_properties))
@@ -809,24 +797,12 @@ class DataClayRuntime(ABC):
     def stop(self):
         pass
 
-    def stop_gc(self):
-        """Stop GC. useful for shutdown."""
-        # Stop HeapManager
-        logger.debug("Stopping GC. Sending shutdown event.")
-        self.heap_manager.shutdown()
-        logger.debug("Waiting for GC.")
-        self.heap_manager.join()
-        logger.debug("GC stopped.")
-
     def close_backend_clients(self):
         """Stop connections and daemon threads."""
-
         logger.debug("** Stopping runtime **")
-
         for name, client in self.backend_clients.items():
             logger.debug("Closing client connection to %s", name)
             client.close()
-
         self.backend_clients = {}
 
     ################## EXTRAE IGNORED FUNCTIONS ###########################
