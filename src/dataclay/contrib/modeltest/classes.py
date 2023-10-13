@@ -152,6 +152,23 @@ class TextReader(DataClayObject):
 class Box(DataClayObject):
     value: Any
 
+    def __init__(self, value=None):
+        self.value = value
+
+
+class Counter(DataClayObject):
+    count: int
+
+    def __init__(self, count=0):
+        self.count = count
+
+    def inc(self):
+        self.count += 1
+
+    @activemethod
+    def dec(self):
+        self.count -= 1
+
 
 # class SomeClass(DataClayObject, MQTTMixin):
 

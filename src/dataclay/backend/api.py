@@ -118,7 +118,7 @@ class BackendAPI:
     def call_active_method(
         self, session_id: UUID, object_id: UUID, method_name: str, args: tuple, kwargs: dict
     ) -> tuple[bytes, bool]:
-        logger.debug(f"({object_id}) Calling remote method {method_name}")
+        # logger.debug(f"({object_id}) Calling remote method {method_name}") # Critical Performance Hit
 
         # NOTE: Session (dataset) is needed for make_persistents inside dc_methods.
         self.runtime.set_session_by_id(session_id)

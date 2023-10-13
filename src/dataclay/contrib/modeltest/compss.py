@@ -3,10 +3,10 @@ from __future__ import annotations
 import numpy as np
 
 try:
-    from pycompss.api.parameters import INOUT
+    from pycompss.api.parameter import INOUT, CONCURRENT
     from pycompss.api.task import task
 except ImportError:
-    from dataclay.contrib.dummy_pycompss import task, INOUT
+    from dataclay.contrib.dummy_pycompss import task, INOUT, CONCURRENT
 
 from dataclay import DataClayObject, activemethod
 
@@ -95,3 +95,15 @@ class Matrix(DataClayObject):
         # Update the result blocks
         result.blocks = result_blocks
         return result
+
+
+class Counter(DataClayObject):
+    count: int
+
+    def __init__(self):
+        self.count = 0
+
+    @task(target_direction=CONCURRENT)
+    @activemethod
+    def inc(self):
+        self.count += 1

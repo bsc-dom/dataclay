@@ -78,7 +78,7 @@ class DataManager(threading.Thread):
 
                     # TODO: ¿Do we need to call every time gc.collect()?
                     gc.collect()
-                    if self.is_memory_at_ease() or self.flush_all_lock.locked():
+                    if self.is_memory_below_threshold() or self.flush_all_lock.locked():
                         break
                 else:
                     logger.warning("All objects unloaded, but memory is not at ease.")
@@ -133,7 +133,7 @@ class DataManager(threading.Thread):
 
         if LockManager.acquire_write(object_id, timeout) or force:
             try:
-                logger.warning(f"({object_id}) Unloading {instance.__class__.__name__}")
+                logger.info(f"({object_id}) Unloading {instance.__class__.__name__}")
                 assert instance._dc_is_loaded
                 assert object_id in self.loaded_objects
 

@@ -99,11 +99,12 @@ class DataClayRuntime(ABC):
             return self.backend_id
 
         elif backend_id is None:
-            self.update_backend_clients()
             if not self.backend_clients:
-                raise RuntimeError(
-                    f"({instance._dc_meta.id}) No backends available to make persistent"
-                )
+                self.update_backend_clients()
+                if not self.backend_clients:
+                    raise RuntimeError(
+                        f"({instance._dc_meta.id}) No backends available to make persistent"
+                    )
             backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
 
             # NOTE: Maybe use a quick update to avoid overhead.
@@ -151,7 +152,7 @@ class DataClayRuntime(ABC):
         """Get dataclay object from inmemory_objects. If not present, get object metadata
         and create new proxy object.
         """
-        logger.debug(f"({object_id}) Get object by id")
+        # logger.debug(f"({object_id}) Get object by id") # Critical Performance Hit
 
         try:
             dc_object = self.inmemory_objects[object_id]

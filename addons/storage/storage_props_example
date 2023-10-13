@@ -1,5 +1,5 @@
 # Set dataclay configuration
-DATACLAY_LOGLEVEL=DEBUG
+# DATACLAY_LOGLEVEL=DEBUG
 
 # Set admin credentials
 DATACLAY_USERNAME=testuser
