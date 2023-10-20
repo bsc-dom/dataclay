@@ -74,7 +74,7 @@ class DataClayRuntime(ABC):
         Returns:
             ID of the backend in which the object was persisted.
         """
-        logger.debug(f"({instance._dc_meta.id}) Starting make_persistent")
+        logger.debug("(%s) Starting make_persistent", instance._dc_meta.id)
 
         if instance._dc_is_registered:
             raise ObjectAlreadyRegisteredError(instance._dc_meta.id)
@@ -152,7 +152,7 @@ class DataClayRuntime(ABC):
         """Get dataclay object from inmemory_objects. If not present, get object metadata
         and create new proxy object.
         """
-        # logger.debug(f"({object_id}) Get object by id") # Critical Performance Hit
+        logger.debug("(%s) Get object by id", object_id)
 
         try:
             dc_object = self.inmemory_objects[object_id]
@@ -297,7 +297,11 @@ class DataClayRuntime(ABC):
             span.set_attribute("kwargs", str(kwargs))
 
             logger.debug(
-                f"({instance._dc_meta.id}) Calling remote method {method_name} args={args}, kwargs={kwargs}"
+                "(%s) Calling remote method %s args=%s, kwargs=%s",
+                instance._dc_meta.id,
+                method_name,
+                args,
+                kwargs,
             )
 
             # Serialize args and kwargs
@@ -314,7 +318,7 @@ class DataClayRuntime(ABC):
                 # If the intersection is empty (no backends available), update the list of backend
                 # clients and the object backend locations, and try again
                 if not avail_backends:
-                    logger.warning(f"({instance._dc_meta.id}) No backends available. Syncing...")
+                    logger.warning("(%s) No backends available. Syncing...", instance._dc_meta.id)
                     self.update_backend_clients()
                     instance.sync()
                     avail_backends = instance._dc_all_backend_ids.intersection(
@@ -340,7 +344,7 @@ class DataClayRuntime(ABC):
                     )
                 except DataClayException as e:
                     if "failed to connect" in str(e):
-                        logger.warning(f"({instance._dc_meta.id}) Failed to connect. Syncing...")
+                        logger.warning("(%s) Failed to connect. Syncing...", instance._dc_meta.id)
                         self.update_backend_clients()
                         continue
                     else:
@@ -579,7 +583,7 @@ class DataClayRuntime(ABC):
         recursive: bool = False,
         remotes: bool = True,
     ):
-        logger.debug(f"Starting new replica of {instance._dc_meta.id}")
+        logger.debug("Starting new replica of %s", instance._dc_meta.id)
 
         if not instance._dc_is_registered:
             raise ObjectNotRegisteredError(instance._dc_meta.id)
@@ -666,7 +670,7 @@ class DataClayRuntime(ABC):
                         self.dataclay_id
                     )
                     for exec_env_id, exec_env in all_exec_envs.items():
-                        logger.debug(f"Checking if {exec_env_id} is in {obj_locations}")
+                        logger.debug("Checking if %s is in %s", exec_env_id, obj_locations)
                         for obj_location in obj_locations:
                             if str(exec_env_id) != str(obj_location):
                                 dest_backend_id = exec_env_id

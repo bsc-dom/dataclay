@@ -39,8 +39,8 @@ class BackendClient:
                 service_alias = str(port)
                 self.metadata_call.append(("service-alias", service_alias))
                 self.address = f"{host}:443"
-                logger.info(f"SSL configured: changed address {host}:{port} to {host}:443")
-                logger.info("SSL configured: using service-alias  " + service_alias)
+                logger.info("SSL configured: changed address %s:%s to %s:443", host, port, host)
+                logger.info("SSL configured: using service-alias %s", service_alias)
             else:
                 self.metadata_call.append(("service-alias", settings.ssl_target_ee_alias))
 

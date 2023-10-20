@@ -97,7 +97,6 @@ class Client:
         dataset: str | None = None,
         local_backend: str | None = None,
     ):
-
         # Set settings
         settings_kwargs = {}
         if host:
@@ -125,7 +124,7 @@ class Client:
         #             LOCAL = ee_id
         #             break
         #     else:
-        #         logger.warning(f"Backend with name '{settings.LOCAL_BACKEND}' not found, ignoring")
+        #         logger.warning("Backend with name '%s' not found, ignoring", settings.LOCAL_BACKEND)
 
     @tracer.start_as_current_span("start")
     def start(self):
@@ -161,7 +160,7 @@ class Client:
         # Cache the dataclay_id, to avoid later request
         # self.runtime.dataclay_id
 
-        logger.debug(f"Created new session {session.id}")
+        logger.debug("Created new session %s", session.id)
         self.is_active = True
 
     @tracer.start_as_current_span("stop")

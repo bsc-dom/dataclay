@@ -36,7 +36,7 @@ def activemethod(func):
 
     @functools.wraps(func)
     def wrapper_activemethod(self: DataClayObject, *args, **kwargs):
-        logger.debug(f"({self._dc_meta.id}) Calling active method {func.__name__}")
+        logger.debug("(%s) Calling active method %s", self._dc_meta.id, func.__name__)
         try:
             # if func.__name__ == "__init__" and not self._dc_is_registered:
             #     self.make_persistent()
@@ -72,10 +72,12 @@ class DataClayProperty:
         | False    | True    |  -
         | False    | False   |  B (remote) or C (persistent)
         """
-        # Critical Performance Hit
-        # logger.debug(
-        #     f"({instance._dc_meta.id}) Getting property {instance.__class__.__name__}.{self.property_name}"
-        # )
+        logger.debug(
+            "(%s) Getting property %s.%s",
+            instance._dc_meta.id,
+            instance.__class__.__name__,
+            self.property_name,
+        )
 
         if instance._dc_is_local:
             try:
@@ -96,10 +98,13 @@ class DataClayProperty:
 
         See the __get__ method for the basic behavioural explanation.
         """
-        # Critical Performance Hit
-        # logger.debug(
-        #     f"({instance._dc_meta.id}) Setting property {instance.__class__.__name__}.{self.property_name}={value}"
-        # )
+        logger.debug(
+            "(%s) Setting property %s.%s=%s",
+            instance._dc_meta.id,
+            instance.__class__.__name__,
+            self.property_name,
+            value,
+        )
 
         if instance._dc_is_local:
             if not instance._dc_is_loaded:
@@ -139,8 +144,13 @@ class DataClayObject:
             obj.make_persistent()
 
         logger.debug(
-            f"({obj._dc_meta.id}) New instance {cls.__name__} args={args}, kwargs={kwargs}"
+            "(%s) New instance %s args=%s, kwargs=%s",
+            obj._dc_meta.id,
+            cls.__name__,
+            args,
+            kwargs,
         )
+
         return obj
 
     @classmethod

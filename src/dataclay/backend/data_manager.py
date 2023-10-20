@@ -72,7 +72,7 @@ class DataManager(threading.Thread):
         # Enters if memory is over threshold and the lock is not locked
         if self.is_memory_over_threshold() and self.run_task_lock.acquire(blocking=False):
             try:
-                logger.debug(f"Num loaded objects before: {len(self.loaded_objects)}")
+                logger.debug("Num loaded objects before: %d", len(self.loaded_objects))
                 for object_id in list(self.loaded_objects.keys()):
                     self.unload_object(self.loaded_objects[object_id], timeout=0, force=False)
 
@@ -83,18 +83,18 @@ class DataManager(threading.Thread):
                 else:
                     logger.warning("All objects unloaded, but memory is not at ease.")
 
-                logger.debug(f"Num loaded objects after: {len(self.loaded_objects)}")
+                logger.debug("Num loaded objects after: %d", len(self.loaded_objects))
             finally:
                 self.run_task_lock.release()
 
     def add_hard_reference(self, instance: DataClayObject):
         """Add a hard reference to the provided object."""
-        logger.debug(f"({instance._dc_meta.id}) Adding hard reference to heap")
+        logger.debug("(%s) Adding hard reference to heap", instance._dc_meta.id)
         self.loaded_objects[instance._dc_meta.id] = instance
 
     def remove_hard_reference(self, instance: DataClayObject):
         """Remove the hard reference to the provided object."""
-        logger.debug(f"({instance._dc_meta.id}) Removing hard reference from heap")
+        logger.debug("(%s) Removing hard reference from heap", instance._dc_meta.id)
         self.loaded_objects.pop(instance._dc_meta.id, None)
 
     def load_object(self, instance: DataClayObject):
@@ -103,10 +103,10 @@ class DataManager(threading.Thread):
         with LockManager.write(object_id):
             if instance._dc_is_loaded or not instance._dc_is_local:
                 # Object may had been loaded in another thread while waiting for lock
-                logger.warning(f"({object_id}) Object already loaded or not local")
+                logger.warning("(%s) Object already loaded or not local", object_id)
                 return
 
-            logger.debug(f"({object_id}) Loading {instance.__class__.__name__}")
+            logger.debug("(%s) Loading %s", object_id, instance.__class__.__name__)
             assert object_id not in self.loaded_objects
 
             try:
@@ -133,7 +133,7 @@ class DataManager(threading.Thread):
 
         if LockManager.acquire_write(object_id, timeout) or force:
             try:
-                logger.info(f"({object_id}) Unloading {instance.__class__.__name__}")
+                logger.info("(%s) Unloading %s", object_id, instance.__class__.__name__)
                 assert instance._dc_is_loaded
                 assert object_id in self.loaded_objects
 
@@ -178,7 +178,7 @@ class DataManager(threading.Thread):
         if self.flush_all_lock.acquire(blocking=False):
             try:
                 logger.debug(
-                    f"Starting to flush all loaded objects. Num ({len(self.loaded_objects)})"
+                    "Starting to flush all loaded objects. Num (%d)", len(self.loaded_objects)
                 )
 
                 if self.run_task_lock.acquire(timeout=self.MAX_TIME_WAIT_FOR_GC_TO_FINISH):
@@ -189,13 +189,13 @@ class DataManager(threading.Thread):
                         self.loaded_objects[object_id], timeout=unload_timeout, force=force_unload
                     )
 
-                logger.debug(f"Num loaded objects not flushed: {len(self.loaded_objects)}")
+                logger.debug("Num loaded objects not flushed: %d", len(self.loaded_objects))
 
             finally:
                 self.flush_all_lock.release()
 
         else:
-            logger.debug("Flushing already in progress...")
+            logger.warning("Flushing already in progress...")
 
     def shutdown(self):
         """Stop this thread"""

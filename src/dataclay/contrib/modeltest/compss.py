@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 try:
-    from pycompss.api.parameter import INOUT, CONCURRENT
+    from pycompss.api.parameter import CONCURRENT, INOUT
     from pycompss.api.task import task
 except ImportError:
     from dataclay.contrib.dummy_pycompss import task, INOUT, CONCURRENT

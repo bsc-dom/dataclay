@@ -40,7 +40,7 @@ class BackendAPI:
         set_runtime(self.runtime)
 
         # UNDONE: Do not store EE information. If restarted, create new EE uuid.
-        logger.info(f"Initialized backend {self.backend_id}")
+        logger.info("Initialized backend %s", self.backend_id)
 
     def is_ready(self, timeout: float | None = None, pause: float = 0.5):
         ref = time.time()
@@ -68,7 +68,7 @@ class BackendAPI:
             if instance._dc_is_local:
                 assert instance._dc_is_replica
                 if make_replica:
-                    logger.warning(f"There is already a replica for object {instance._dc_meta.id}")
+                    logger.warning("There is already a replica for object %s", instance._dc_meta.id)
                     continue
 
             with LockManager.write(instance._dc_meta.id):
@@ -107,7 +107,9 @@ class BackendAPI:
 
         for proxy_object in unserialized_objects.values():
             logger.debug(
-                f"({proxy_object._dc_meta.id}) Registering {proxy_object.__class__.__name__}"
+                "(%s) Registering %s",
+                proxy_object._dc_meta.id,
+                proxy_object.__class__.__name__,
             )
             self.runtime.inmemory_objects[proxy_object._dc_meta.id] = proxy_object
             self.runtime.data_manager.add_hard_reference(proxy_object)
@@ -118,7 +120,7 @@ class BackendAPI:
     def call_active_method(
         self, session_id: UUID, object_id: UUID, method_name: str, args: tuple, kwargs: dict
     ) -> tuple[bytes, bool]:
-        # logger.debug(f"({object_id}) Calling remote method {method_name}") # Critical Performance Hit
+        logger.debug("(%s) Calling remote method %s", object_id, method_name)
 
         # NOTE: Session (dataset) is needed for make_persistents inside dc_methods.
         self.runtime.set_session_by_id(session_id)
@@ -135,7 +137,9 @@ class BackendAPI:
             # we check to the metadata which is more reliable.
             self.runtime.sync_object_metadata(instance)
             logger.warning(
-                f"({object_id}) Wrong backend. Update to {instance._dc_meta.master_backend_id}"
+                "(%s) Wrong backend. Update to %s",
+                object_id,
+                instance._dc_meta.master_backend_id,
             )
             return (
                 pickle.dumps(
@@ -292,19 +296,23 @@ class BackendAPI:
         raise Exception("To refactor")
         # set field
         logger.debug(
-            f"----> Starting synchronization of {object_id} from calling backend {calling_backend_id}"
+            "----> Starting synchronization of %s from calling backend %s",
+            object_id,
+            calling_backend_id,
         )
 
         self.ds_exec_impl(object_id, implementation_id, serialized_value, session_id)
         instance = self.get_local_instance(object_id, True)
         src_exec_env_id = instance._dc_meta.master_backend_id()
         if src_exec_env_id is not None:
-            logger.debug(f"Found origin location {src_exec_env_id}")
+            logger.debug("Found origin location %s", src_exec_env_id)
             if calling_backend_id is None or src_exec_env_id != calling_backend_id:
                 # do not synchronize to calling source (avoid infinite loops)
                 dest_backend = self.runtime.get_backend_client(src_exec_env_id)
                 logger.debug(
-                    f"----> Propagating synchronization of {object_id} to origin location {src_exec_env_id}"
+                    "----> Propagating synchronization of %s to origin location %s",
+                    object_id,
+                    src_exec_env_id,
                 )
 
                 dest_backend.synchronize(
@@ -317,13 +325,15 @@ class BackendAPI:
 
         replica_locations = instance._dc_meta.replica_backend_ids
         if replica_locations is not None:
-            logger.debug(f"Found replica locations {replica_locations}")
+            logger.debug("Found replica locations %s", replica_locations)
             for replica_location in replica_locations:
                 if calling_backend_id is None or replica_location != calling_backend_id:
                     # do not synchronize to calling source (avoid infinite loops)
                     dest_backend = self.runtime.get_backend_client(replica_location)
                     logger.debug(
-                        f"----> Propagating synchronization of {object_id} to replica location {replica_location}"
+                        "----> Propagating synchronization of %s to replica location %s",
+                        object_id,
+                        replica_location,
                     )
                     dest_backend.synchronize(
                         session_id,
@@ -332,7 +342,7 @@ class BackendAPI:
                         serialized_value,
                         calling_backend_id=self.backend_id,
                     )
-        logger.debug(f"----> Finished synchronization of {object_id}")
+        logger.debug("----> Finished synchronization of %s", object_id)
 
     # Federation
 
@@ -466,23 +476,25 @@ class BackendAPI:
                 instance.set_origin_location(None)
                 try:
                     if instance._dc_alias is not None and instance._dc_alias != "":
-                        logger.debug(f"Removing alias {instance._dc_alias}")
+                        logger.debug("Removing alias %s", instance._dc_alias)
                         self.self.runtime.delete_alias(instance)
 
                 except Exception as ex:
                     traceback.print_exc()
                     logger.debug(
-                        f"Caught exception {type(ex).__name__}, Ignoring if object was not registered yet"
+                        "Caught exception %s, Ignoring if object was not registered yet",
+                        type(ex).__name__,
                     )
                     # ignore if object was not registered yet
                     pass
         except DataClayException as e:
             # TODO: better algorithm to avoid unfederation in wrong backend
             logger.debug(
-                f"Caught exception {type(e).__name__}, Ignoring if object is not in current backend"
+                "Caught exception %s, Ignoring if object is not in current backend",
+                type(e).__name__,
             )
         except Exception as e:
-            logger.debug(f"Caught exception {type(e).__name__}")
+            logger.debug("Caught exception %s", type(e).__name__)
             raise e
         logger.debug("<--- Finished notification of unfederation")
 
@@ -496,10 +508,10 @@ class BackendAPI:
         return self.runtime.get_retained_references()
 
     def detach_object_from_session(self, object_id, session_id):
-        logger.debug(f"--> Detaching object {object_id} from session {session_id}")
+        logger.debug("--> Detaching object %s from session %s", object_id, session_id)
         self.set_local_session(session_id)
         self.runtime.detach_object_from_session(object_id, None)
-        logger.debug(f"<-- Detached object {object_id} from session {session_id}")
+        logger.debug("<-- Detached object %s from session %s", object_id, session_id)
 
     # Tracing
 

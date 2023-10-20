@@ -74,7 +74,7 @@ def start_metadata_service(c, env):
 
 
 def start_backend(c, env, num):
-    logger.info(f"Starting Pyclay {num}")
+    logger.info("Starting Pyclay %s", num)
 
     service_name = f"backend{num}"
     service_folder = f"{env['DATACLAY_JOB_PATH']}/{service_name}"
@@ -125,7 +125,7 @@ def deploy_dataclay(args):
     env["DATACLAY_TRACING"] = os.getenv("DATACLAY_TRACING", "false") == "true"
     if env["DATACLAY_TRACING"]:
         with first_node.cd(os.environ["PWD"]):
-            logger.info(f"Starting Opentelemetry Colector")
+            logger.info("Starting Opentelemetry Colector")
 
             # NOTE: Opentelemetry Colector should always be deployed on the first node (like MDS)
             env["OTEL_EXPORTER_OTLP_ENDPOINT"] = f"http://{first_node.host}:4317"
@@ -147,7 +147,7 @@ def deploy_dataclay(args):
     start_metadata_service(first_node, env)
 
     # Wait for MetadataService to be available (#TODO: This wait should be done inside)
-    logger.info(f"Waiting for MetadataService")
+    logger.info("Waiting for MetadataService")
     grpc.channel_ready_future(
         grpc.insecure_channel(f"{env['DATACLAY_METADATA_HOST']}:{env['DATACLAY_METADATA_PORT']}")
     ).result(timeout=15)
@@ -223,7 +223,7 @@ def run_app(args):
     # Starting client execution (for testing purposes)
     for idx, connection in enumerate(nodes):
         for num_process in range(args.processes):
-            logger.info(f"Running app in client {idx+1} - process {num_process+1}")
+            logger.info("Running app in client %d - process %d", idx + 1, num_process + 1)
             service_name = f"client{idx+1}-{num_process+1}"
 
             with connection.cd(os.environ["PWD"]):

@@ -68,7 +68,7 @@ class MetadataAPI:
         session = Session(id=uuid.uuid4(), username=username, dataset_name=dataset_name)
         self.kv_manager.set(session)
 
-        logger.info(f"Created new session for {username} with id {session.id}")
+        logger.info("Created new session for %s with id %s", username, session.id)
         return session
 
     @tracer.start_as_current_span("get_session")
@@ -110,7 +110,7 @@ class MetadataAPI:
         self.kv_manager.set_new(dataset)
         self.kv_manager.set_new(account)
 
-        logger.info(f"Created new account for {username} with dataset {dataset.name}")
+        logger.info("Created new account for %s with dataset %s", username, dataset.name)
 
     @tracer.start_as_current_span("new_account")
     def new_account(self, username: str, password: str):
@@ -128,7 +128,7 @@ class MetadataAPI:
         account = Account.new(username, password)
         self.kv_manager.set_new(account)
 
-        logger.info(f"Created new account for {username}")
+        logger.info("Created new account for %s", username)
 
     ###########
     # Dataset #
@@ -168,7 +168,7 @@ class MetadataAPI:
             self.kv_manager.set_new(dataset)
             self.kv_manager.update(account)
 
-            logger.info(f"Created {dataset.name} dataset for {username} account")
+            logger.info("Created %s dataset for %s account", dataset.name, username)
 
     ############
     # Dataclay #
@@ -196,7 +196,7 @@ class MetadataAPI:
     def register_backend(self, id: UUID, host: str, port: int, dataclay_id: UUID):
         backend = Backend(id=id, host=host, port=port, dataclay_id=dataclay_id)
         self.kv_manager.set_new(backend)
-        logger.info(f"Registered new backend with id={id}, host={host}, port={port}")
+        logger.info("Registered new backend with id=%s, host=%s, port=%s", id, host, port)
 
     @tracer.start_as_current_span("delete_backend")
     def delete_backend(self, id: UUID):

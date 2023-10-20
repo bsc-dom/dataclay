@@ -3,7 +3,7 @@
 #SBATCH --output=job-%A.out
 #SBATCH --error=job-%A.out
 #SBATCH --nodes=2
-#SBATCH --time=00:05:00
+#SBATCH --time=00:30:00
 #SBATCH --exclusive
 #SBATCH --qos=debug
 #############################

@@ -19,21 +19,21 @@ def new_account(username, password, host, port):
     logger.info(f'Creating "{username}" account')
     mds_client = MetadataClient(host, port)
     mds_client.new_account(username, password)
-    logger.info(f"Created account ({username})")
+    logger.info("Created account (%s)", username)
 
 
 def new_session(username, password, dataset, host, port):
-    logger.info(f"Creating new session")
+    logger.info("Creating new session")
     mds_client = MetadataClient(host, port)
     session = mds_client.new_session(username, password, dataset)
-    logger.info(f"Created new session for {username}, with id {session.id}")
+    logger.info("Created new session for %s, with id %s", username, session.id)
 
 
 def new_dataset(username, password, dataset, host, port):
-    logger.info(f"Creating new dataset")
+    logger.info("Creating new dataset")
     mds_client = MetadataClient(host, port)
     mds_client.new_dataset(username, password, dataset)
-    logger.info(f"Created new dataset {dataset} for {username}")
+    logger.info("Created new dataset %s for %s", dataset, username)
 
 
 def get_backends(host, port):
