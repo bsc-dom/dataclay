@@ -1,17 +1,18 @@
 import time
-from dataclay.contrib.modeltest.classes import Box
+
 from dataclay import Client
+from dataclay.contrib.modeltest.classes import Box
 
-import cProfile
+# import cProfile
 
-pr = cProfile.Profile()
+# pr = cProfile.Profile()
 
-# client = Client(username="testuser", password="s3cret", dataset="testdata")
-client = Client(host="localhost", username="testuser", password="s3cret", dataset="testdata")
+client = Client(username="testuser", password="s3cret", dataset="testdata")
+# client = Client(host="localhost", username="testuser", password="s3cret", dataset="testdata")
 client.start()
 
-iterations = 1000
-pr.enable()
+iterations = 100000
+# pr.enable()
 boxes = []
 start_time = time.perf_counter()
 for i in range(iterations):

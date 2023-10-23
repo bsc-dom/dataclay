@@ -1,19 +1,22 @@
 import time
 
+import numpy as np
 from pycompss.api.api import compss_barrier, compss_wait_on
 from pycompss.api.parameter import CONCURRENT, IN
 from pycompss.api.task import task
 
 from dataclay.contrib.modeltest.classes import Box
 
-iterations = 100000
+# configurations
+iterations = 100
+mb = 1
+num_elements = (mb * 1024 * 1024) // np.dtype(np.int32).itemsize
+array = np.empty(num_elements, dtype=np.int32)
 
 
-@task(i=IN, returns=1)
-def box_maker(i):
-    box = Box(i)
+@task(box=CONCURRENT)
+def make_persistent(box):
     box.make_persistent()
-    return box
 
 
 @task(returns=1)
@@ -38,8 +41,10 @@ if __name__ == "__main__":
     boxes = []
     start_time = time.perf_counter()
     for i in range(iterations):
-        boxes.append(box_maker(i))
-    boxes = compss_wait_on(boxes)
+        box = Box(i)
+        boxes.append(box)
+        make_persistent(box)
+    compss_barrier()
     end_time = time.perf_counter()
     print(f"Time make_persistent: {end_time - start_time:0.5f} seconds")
 

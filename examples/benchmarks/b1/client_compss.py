@@ -1,11 +1,12 @@
 import time
+
+from pycompss.api.api import compss_barrier
+from pycompss.api.parameter import CONCURRENT, INOUT
+from pycompss.api.task import task
+
 from dataclay.contrib.modeltest.classes import Counter
 
 # from dataclay.contrib.modeltest.compss import Counter
-
-from pycompss.api.task import task
-from pycompss.api.parameter import CONCURRENT, INOUT
-from pycompss.api.api import compss_barrier
 
 
 iterations = 1000

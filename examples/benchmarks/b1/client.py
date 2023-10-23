@@ -1,6 +1,7 @@
 import time
-from dataclay.contrib.modeltest.classes import Counter
+
 from dataclay import Client
+from dataclay.contrib.modeltest.classes import Counter
 
 # client = Client(username="testuser", password="s3cret", dataset="testdata")
 client = Client(host="localhost", username="testuser", password="s3cret", dataset="testdata")

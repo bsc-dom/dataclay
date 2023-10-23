@@ -7,8 +7,5 @@ enqueue_compss \
 	--classpath=$DATACLAY_HOME/storage/StorageItf-1.0.jar \
 	--pythonpath=$DATACLAY_PYTHONPATH:$PWD \
 	--qos=debug \
-	--num_nodes=4 \
-	--exec_time=30 \
-	--worker_working_dir=local_disk \
-	--scheduler=es.bsc.compss.scheduler.orderstrict.fifo.FifoTS \
+	--num_nodes=2 \
 	client_compss.py

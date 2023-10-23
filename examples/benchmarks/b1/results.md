@@ -2,7 +2,7 @@
 
 ## latest
 
-### MN4
+### MN4 - only dataclay
 
 - Time basic counter: 0.00039 seconds
 - Time local counter: 0.00052 seconds
@@ -10,4 +10,4 @@
 
 ### MN4 - COMPSs
 
-- Time persistent counter: 38.90498 seconds
+- Time persistent counter: 1.77650 seconds

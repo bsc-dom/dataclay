@@ -1,7 +1,9 @@
 import time
+
 import numpy as np
-from dataclay.contrib.modeltest.classes import Box
+
 from dataclay import Client
+from dataclay.contrib.modeltest.classes import Box
 
 client = Client(host="localhost", username="testuser", password="s3cret", dataset="testdata")
 client.start()
