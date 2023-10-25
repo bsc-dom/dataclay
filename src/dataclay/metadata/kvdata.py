@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Annotated, ClassVar, Literal
+from typing import Annotated, ClassVar, Optional, Union
 from uuid import UUID, uuid4
 
 import bcrypt
@@ -83,12 +83,12 @@ class ObjectMetadata(KeyValue):
     proto_class: ClassVar = common_pb2.ObjectMetadata
 
     id: UUID = Field(default_factory=uuid4)
-    dataset_name: str | None = None
+    dataset_name: Optional[str] = None
     class_name: str
-    master_backend_id: UUID | None = None
+    master_backend_id: Optional[UUID] = None
     replica_backend_ids: set[UUID] = Field(default_factory=set)
     is_read_only: bool = False
-    original_object_id: UUID | EmptyNone = None
+    original_object_id: Union[UUID, EmptyNone] = None
     versions_object_ids: list[UUID] = Field(default_factory=list)
 
     @property

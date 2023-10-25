@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import redis
 
@@ -17,7 +17,7 @@ class RedisManager:
     def __init__(self, host: str, port: int = 6379):
         self.r_client = redis.Redis(host=host, port=port)
 
-    def is_ready(self, timeout: float | None = None, pause: float = 0.5):
+    def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         ref = time.time()
         now = ref
         while timeout is None or (now - ref) < timeout:

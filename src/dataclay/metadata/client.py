@@ -1,5 +1,6 @@
 import atexit
 import logging
+from typing import Optional
 from uuid import UUID
 
 import grpc
@@ -22,7 +23,7 @@ class MetadataClient:
         self.stub = metadata_pb2_grpc.MetadataServiceStub(self.channel)
         # atexit.register(self.close)
 
-    def is_ready(self, timeout: float | None = None):
+    def is_ready(self, timeout: Optional[float] = None):
         try:
             grpc.channel_ready_future(self.channel).result(timeout)
             return True

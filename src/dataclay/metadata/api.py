@@ -1,5 +1,6 @@
 import logging
 import uuid
+from typing import Optional
 from uuid import UUID
 
 from dataclay.exceptions.exceptions import *
@@ -29,7 +30,7 @@ class MetadataAPI:
         self.kv_manager = RedisManager(kv_host, kv_port)
         logger.info("Initialized MetadataService")
 
-    def is_ready(self, timeout: float | None = None, pause: float = 0.5):
+    def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         return self.kv_manager.is_ready(timeout=timeout, pause=pause)
 
     ###########
@@ -237,7 +238,7 @@ class MetadataAPI:
 
     @tracer.start_as_current_span("get_object_md_by_id")
     def get_object_md_by_id(
-        self, object_id: UUID, session_id: UUID | None = None, check_session: bool = False
+        self, object_id: UUID, session_id: Optional[UUID] = None, check_session: bool = False
     ) -> ObjectMetadata:
         if check_session:
             session = self.kv_manager.get_kv(Session, session_id)
@@ -252,7 +253,7 @@ class MetadataAPI:
         self,
         alias_name: str,
         dataset_name: str,
-        session_id: UUID | None = None,
+        session_id: Optional[UUID] = None,
         check_session: bool = False,
     ) -> ObjectMetadata:
         if check_session:
@@ -280,7 +281,7 @@ class MetadataAPI:
         alias_name: str,
         dataset_name: str,
         object_id: UUID,
-        session_id: UUID | None = None,
+        session_id: Optional[UUID] = None,
         check_session: bool = False,
     ):
         alias = Alias(name=alias_name, dataset_name=dataset_name, object_id=object_id)
@@ -288,7 +289,7 @@ class MetadataAPI:
 
     @tracer.start_as_current_span("get_all_alias")
     def get_all_alias(
-        self, dataset_name: str | None = None, object_id: UUID | None = None
+        self, dataset_name: Optional[str] = None, object_id: Optional[UUID] = None
     ) -> dict[str, Alias]:
         prefix = "/alias/"
         if dataset_name:
@@ -302,7 +303,7 @@ class MetadataAPI:
         self,
         alias_name: str,
         dataset_name: str,
-        session_id: UUID | None = None,
+        session_id: Optional[UUID] = None,
         check_session: bool = False,
     ):
         # NOTE: If the session is not checked, we supose the dataset_name is correct

@@ -2,21 +2,21 @@ from __future__ import annotations
 
 import threading
 from contextlib import contextmanager
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from uuid import UUID
 
 if TYPE_CHECKING:
     from dataclay.runtime.backend import BackendRuntime
     from dataclay.runtime.client import ClientRuntime
 
-current_runtime: ClientRuntime | BackendRuntime | None = None
+current_runtime: Union[ClientRuntime, BackendRuntime, None] = None
 
 
-def get_runtime() -> ClientRuntime | BackendRuntime | None:
+def get_runtime() -> Union[ClientRuntime, BackendRuntime, None]:
     return current_runtime
 
 
-def set_runtime(new_runtime: ClientRuntime | BackendRuntime):
+def set_runtime(new_runtime: Union[ClientRuntime, BackendRuntime]):
     global current_runtime
     current_runtime = new_runtime
 

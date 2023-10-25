@@ -4,7 +4,7 @@ import gc
 import logging
 import pickle
 import threading
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import psutil
 
@@ -166,7 +166,7 @@ class DataManager(threading.Thread):
         """
         return psutil.virtual_memory().percent < (settings.memory_threshold_low * 100)
 
-    def flush_all(self, unload_timeout: str | None = None, force_unload: bool = True):
+    def flush_all(self, unload_timeout: Optional[str] = None, force_unload: bool = True):
         """Stores and unloads all loaded objects to disk.
 
         This function is usually called at shutdown of the backend.

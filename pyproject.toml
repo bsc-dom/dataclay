@@ -18,10 +18,13 @@ classifiers = [
     "Topic :: System :: Distributed Computing",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3 :: Only",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies = [
     "grpcio>=1.54.0",
     # "numpy>=1.24.3",
@@ -33,6 +36,7 @@ dependencies = [
     "opentelemetry-api>=1.17.0",
     "prometheus-client>=0.17.0",
     "pydantic-settings>=2.0.2",
+    "get-annotations;python_version<\"3.10\"",
 ]
 dynamic = ["version"]
 

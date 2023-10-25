@@ -9,7 +9,7 @@ import pickle
 import random
 from abc import ABC, abstractmethod
 from builtins import Exception
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 from weakref import WeakValueDictionary
 
@@ -60,7 +60,10 @@ class DataClayRuntime(ABC):
     # Common runtime API
 
     def make_persistent(
-        self, instance: DataClayObject, alias: str | None = None, backend_id: str | None = None
+        self,
+        instance: DataClayObject,
+        alias: Optional[str] = None,
+        backend_id: Optional[str] = None,
     ):
         """This method creates a new Persistent Object using the provided stub
         instance and, if indicated, all its associated objects also Logic module API used for communication
@@ -382,13 +385,13 @@ class DataClayRuntime(ABC):
             raise AttributeError("Alias cannot be None or empty string")
         self.metadata_service.new_alias(alias, instance._dc_meta.dataset_name, instance._dc_meta.id)
 
-    def delete_alias(self, alias: str, dataset_name: str | None = None):
+    def delete_alias(self, alias: str, dataset_name: Optional[str] = None):
         if dataset_name is None:
             dataset_name = self.session.dataset_name
 
         self.metadata_service.delete_alias(alias, dataset_name, self.session.id)
 
-    def get_all_alias(self, dataset_name: str | None = None, object_id: UUID | None = None):
+    def get_all_alias(self, dataset_name: Optional[str] = None, object_id: Optional[UUID] = None):
         return self.metadata_service.get_all_alias(dataset_name, object_id)
 
     ############
@@ -538,7 +541,7 @@ class DataClayRuntime(ABC):
             backend_client = self.get_backend_client(instance._dc_meta.master_backend_id)
             backend_client.update_object_properties(instance._dc_meta.id, dcdumps(new_properties))
 
-    def new_object_version(self, instance: DataClayObject, backend_id: UUID | None = None):
+    def new_object_version(self, instance: DataClayObject, backend_id: Optional[UUID] = None):
         new_version = self.make_object_copy(instance, is_proxy=True)
 
         if instance._dc_meta.original_object_id is None:
@@ -579,7 +582,7 @@ class DataClayRuntime(ABC):
     def new_object_replica(
         self,
         instance: DataClayObject,
-        backend_id: UUID | None = None,
+        backend_id: Optional[UUID] = None,
         recursive: bool = False,
         remotes: bool = True,
     ):

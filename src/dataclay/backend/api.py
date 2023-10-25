@@ -8,7 +8,7 @@ import pickle
 import time
 import traceback
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from dataclay import utils
 from dataclay.config import settings
@@ -42,7 +42,7 @@ class BackendAPI:
         # UNDONE: Do not store EE information. If restarted, create new EE uuid.
         logger.info("Initialized backend %s", self.backend_id)
 
-    def is_ready(self, timeout: float | None = None, pause: float = 0.5):
+    def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         ref = time.time()
         now = ref
         if self.runtime.metadata_service.is_ready(timeout):

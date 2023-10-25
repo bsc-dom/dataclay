@@ -1,7 +1,7 @@
 import logging
 import sys
 import traceback
-from typing import Iterable
+from typing import Iterable, Optional
 from uuid import UUID
 
 import grpc
@@ -99,7 +99,7 @@ class BackendClient:
             self.stub = backend_pb2_grpc.BackendServiceStub(self.channel)
 
     # NOTE: It may be not need if the channel_ready_future is check on __init__
-    def is_ready(self, timeout: float | None = None):
+    def is_ready(self, timeout: Optional[float] = None):
         try:
             grpc.channel_ready_future(self.channel).result(timeout)
             return True

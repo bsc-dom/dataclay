@@ -13,8 +13,15 @@ import functools
 import logging
 import traceback
 from collections import ChainMap
-from inspect import get_annotations
-from typing import TYPE_CHECKING, Annotated, Any, get_origin
+
+try:
+    from inspect import get_annotations
+except ImportError:
+    # This should happen only on Python 3.9, and the package should have been installed
+    # (see dependencies on pyproject.toml)
+    from get_annotations import get_annotations
+
+from typing import TYPE_CHECKING, Optional, Annotated, Any, get_origin
 
 from dataclay.annotated import LocalOnly, PropertyTransformer
 from dataclay.exceptions import *
@@ -256,7 +263,7 @@ class DataClayObject:
     ###########################
 
     @tracer.start_as_current_span("make_persistent")
-    def make_persistent(self, alias: str | None = None, backend_id: UUID | None = None):
+    def make_persistent(self, alias: Optional[str] = None, backend_id: Optional[UUID] = None):
         """Makes the object persistent.
 
         Args:
@@ -489,7 +496,7 @@ class DataClayObject:
         get_runtime().consolidate_version(self)
 
     @tracer.start_as_current_span("getID")
-    def getID(self) -> str | None:
+    def getID(self) -> Optional[str]:
         """Return the JSON-encoded metadata of the persistent object for COMPSs.
 
         If the object is NOT persistent, then this method returns None.

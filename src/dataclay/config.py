@@ -1,7 +1,7 @@
 import logging
 import socket
 import uuid
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import AliasChoices, Field, SecretStr, constr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -12,7 +12,7 @@ class BackendSettings(BaseSettings):
         env_prefix="dataclay_backend_", env_file=".env", secrets_dir="/run/secrets"
     )
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
-    name: str | None = None
+    name: Optional[str] = None
     host: str = socket.gethostbyname(socket.gethostname())
     port: int = 6867
     listen_address: str = "0.0.0.0"
@@ -32,7 +32,7 @@ class ClientSettings(BaseSettings):
     password: SecretStr
     username: str
     dataset: str
-    local_backend: str | None = None
+    local_backend: Optional[str] = None
     dataclay_host: str = Field(
         alias=AliasChoices("dc_host", "dataclay_metadata_host", "dataclay_host")
     )
@@ -47,10 +47,10 @@ class Settings(BaseSettings):
     )
 
     # Other
-    dataclay_id: uuid.UUID | None = Field(default=None, alias="dataclay_id")
+    dataclay_id: Optional[uuid.UUID] = Field(default=None, alias="dataclay_id")
     storage_path: str = "/data/storage/"
     check_session: bool = False
-    thread_pool_workers: int | None = None
+    thread_pool_workers: Optional[int] = None
     loglevel: constr(to_upper=True) = "WARNING"
 
     # Timeouts
@@ -76,7 +76,7 @@ class Settings(BaseSettings):
     root_dataset: str = Field(default="admin", alias="dataclay_dataset")
 
     # Tracing
-    service_name: str | None = None
+    service_name: Optional[str] = None
     tracing: bool = False
     tracing_exporter: Literal["otlp", "jaeger", "zipkin", "none"] = "otlp"
     tracing_host: str = "localhost"
@@ -90,12 +90,12 @@ class Settings(BaseSettings):
     metrics_push_interval: int = 10
 
     # Services
-    backend: BackendSettings | None = None
-    metadata: MetadataSettings | None = None
-    client: ClientSettings | None = None
+    backend: Optional[BackendSettings] = None
+    metadata: Optional[MetadataSettings] = None
+    client: Optional[ClientSettings] = None
 
     # key/value database
-    kv_host: str | None = None
+    kv_host: Optional[str] = None
     kv_port: int = 6379
 
     # TODO: Chech that kv_host is not None when calling from backend or metadata.

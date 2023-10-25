@@ -9,7 +9,7 @@ __all__ = ["init", "finish", "DataClayObject"]
 
 import logging
 import logging.config
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
 import dataclay.utils.metrics
@@ -83,19 +83,19 @@ class Client:
 
     settings: ClientSettings
     runtime: ClientRuntime
-    previous_settings: ClientSettings | None
-    previous_runtime: ClientRuntime | None
+    previous_settings: Optional[ClientSettings]
+    previous_runtime: Optional[ClientRuntime]
 
     is_active: bool = False
 
     def __init__(
         self,
-        host: str | None = None,
-        port: int | None = None,
-        username: str | None = None,
-        password: str | None = None,
-        dataset: str | None = None,
-        local_backend: str | None = None,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        dataset: Optional[str] = None,
+        local_backend: Optional[str] = None,
     ):
         # Set settings
         settings_kwargs = {}
