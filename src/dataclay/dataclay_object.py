@@ -21,7 +21,7 @@ except ImportError:
     # (see dependencies on pyproject.toml)
     from get_annotations import get_annotations
 
-from typing import TYPE_CHECKING, Optional, Annotated, Any, get_origin
+from typing import TYPE_CHECKING, Annotated, Any, Optional, get_origin
 
 from dataclay.annotated import LocalOnly, PropertyTransformer
 from dataclay.exceptions import *

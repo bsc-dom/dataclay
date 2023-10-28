@@ -9,7 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class BackendSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="dataclay_backend_", env_file=".env", secrets_dir="/run/secrets"
+        env_prefix="dataclay_backend_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
     )
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
     name: Optional[str] = None
@@ -20,7 +20,7 @@ class BackendSettings(BaseSettings):
 
 class MetadataSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="dataclay_metadata_", env_file=".env", secrets_dir="/run/secrets"
+        env_prefix="dataclay_metadata_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
     )
     host: str = socket.gethostbyname(socket.gethostname())
     port: int = 16587
@@ -28,7 +28,9 @@ class MetadataSettings(BaseSettings):
 
 
 class ClientSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="dc_", env_file=".env", secrets_dir="/run/secrets")
+    model_config = SettingsConfigDict(
+        env_prefix="dc_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
+    )
     password: SecretStr
     username: str
     dataset: str
@@ -43,7 +45,7 @@ class ClientSettings(BaseSettings):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="dataclay_", env_file=".env", secrets_dir="/run/secrets"
+        env_prefix="dataclay_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
     )
 
     # Other

@@ -9,36 +9,17 @@
 #############################
 
 # Load dataclay
-module load DATACLAY/edge
+module load DATACLAY/marc.dev
 
-# Save hosts inventory
-hosts_file=hosts-$SLURM_JOB_ID
-. dc-hosts-1 >"$hosts_file"
+hostnames=($(scontrol show hostname $SLURM_JOB_NODELIST))
 
-# Set dataclay configuration
-export DATACLAY_LOGLEVEL=DEBUG
-
-# Set tracing configuration
-# export DATACLAY_TRACING=false
-# export OTEL_EXPORTER_OTLP_ENDPOINT=http://${hostnames[0]}:4317 # DO NOT EDIT!
-# export OTEL_TRACES_SAMPLER=traceidratio
-# export OTEL_TRACES_SAMPLER_ARG=0.1
-# export OTEL_SERVICE_NAME=client
-
-# Set admin credentials
-export DATACLAY_USERNAME=testuser
-export DATACLAY_PASSWORD=s3cret
-export DATACLAY_DATASET=testdata
-
-# Set client credentials
-export DC_USERNAME=testuser
-export DC_PASSWORD=s3cret
-export DC_DATASET=testdata
-
-# Deploy dataclay
-ansible-playbook "$DATACLAY_HOME/config/deploy-playbook.yaml" -i "$hosts_file"
+deploy_dataclay \
+    --redis ${hostnames[0]} \
+    --metadata ${hostnames[0]} \
+    --backends ${hostnames[@]:1}
 
 # Run script
+export DC_HOST=${hostnames[0]}
 python3 client.py
 
 sleep 5

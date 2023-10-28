@@ -1,6 +1,5 @@
 #!/bin/bash
 DATACLAY_VERSION=edge
-
 # Internal MareNostrum paths (do not change!)
 # It is necessary a VPN connection in order to use MN0 login (the only login with internet)
 MN0_HOST=mn0.bsc.es

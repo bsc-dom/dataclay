@@ -1,11 +1,15 @@
 # defaults are necessary here since not defined 
 # environment variables will be replaced by empty strings, causing errors
-common_envs:
+global_env:
+
+  # system properties
   PATH: "{{ lookup('env', 'PATH') }}"
-  PYTHONPATH: "{{ lookup('env', 'PYTHONPATH') }}:{{ lookup('env', 'PWD') }}"
+  PYTHONPATH: "{{ lookup('env', 'PYTHONPATH') }}"
   PYTHONHOME: "{{ lookup('env', 'PYTHONHOME') }}"
   LD_LIBRARY_PATH: "{{ lookup('env', 'LD_LIBRARY_PATH') }}"
   DATACLAY_HOME: "{{ lookup('env', 'DATACLAY_HOME') }}"
+
+  # dataclay properties
   DATACLAY_LOGLEVEL: "{{ lookup('env', 'DATACLAY_LOGLEVEL') | default('WARNING', true) }}"
   DATACLAY_TRACING: "{{ lookup('env', 'DATACLAY_TRACING') | default('false', true) }}"
   DATACLAY_TRACING_HOST: "{{ lookup('env', 'DATACLAY_TRACING_HOST') }}"
@@ -34,7 +38,8 @@ client_properties:
   DC_DATASET: "{{ lookup('env', 'DC_DATASET') }}"
 
 ansible_python_interpreter: "{{ ansible_playbook_python }}" # Uses the venv python. Maybe not optimized for HPC (get which python otherwise)
+ansible_pipelining: true
 
-dataclay_job_path: "{{ lookup('env', 'HOME') }}/.dataclay/{{ lookup('env', 'SLURM_JOB_ID') }}"
-dataclay_log_path: "{{ dataclay_job_path }}/logs"
-dataclay_storage_path: "{{ dataclay_job_path }}/storage"
+dataclay_job_path: "{{ lookup('env', 'DATACLAY_JOB_PATH') }}"
+dataclay_log_path: "{{ lookup('env', 'DATACLAY_LOG_PATH') }}"
+dataclay_storage_path: "{{ lookup('env', 'DATACLAY_STORAGE_PATH') }}"

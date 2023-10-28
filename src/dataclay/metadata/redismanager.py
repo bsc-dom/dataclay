@@ -4,6 +4,7 @@ import time
 from typing import TYPE_CHECKING, Optional
 
 import redis
+from redis.cluster import RedisCluster
 
 from dataclay.exceptions.exceptions import *
 
@@ -15,7 +16,10 @@ if TYPE_CHECKING:
 
 class RedisManager:
     def __init__(self, host: str, port: int = 6379):
-        self.r_client = redis.Redis(host=host, port=port)
+        try:
+            self.r_client = RedisCluster(host=host, port=port)
+        except redis.exceptions.RedisClusterException:
+            self.r_client = redis.Redis(host=host, port=port)
 
     def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         ref = time.time()

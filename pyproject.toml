@@ -32,6 +32,7 @@ dependencies = [
     "protobuf>=4.22.3",
     # "protobuf<3.20",
     "redis>=4.5.4",
+    "hiredis>=2.2.3",
     "bcrypt>=4.0.1",
     "opentelemetry-api>=1.17.0",
     "prometheus-client>=0.17.0",
@@ -54,7 +55,7 @@ dev = [
     "black",
     "isort",
 ]
-mn4 = ["ansible"]
+mn4 = ["ansible", "ansible_runner", "python-dotenv"]
 docs = ["furo", "sphinx-copybutton"]
 telemetry = [
     "opentelemetry-sdk",
