@@ -26,9 +26,9 @@ metadata_properties:
   DATACLAY_METADATA_PORT: "{{ lookup('env', 'DATACLAY_METADATA_PORT') | default(16587, true) }}"
   DATACLAY_KV_HOST: "{{ lookup('env', 'DATACLAY_KV_HOST') }}"
   DATACLAY_KV_PORT: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
-  DATACLAY_USERNAME: "{{ lookup('env', 'DATACLAY_USERNAME') | default('testuser', true) }}"
-  DATACLAY_PASSWORD: "{{ lookup('env', 'DATACLAY_PASSWORD') | default('s3cret', true) }}"
-  DATACLAY_DATASET: "{{ lookup('env', 'DATACLAY_DATASET') | default('testdata', true) }}"
+  DATACLAY_USERNAME: "{{ lookup('env', 'DATACLAY_USERNAME') | default('admin', true) }}"
+  DATACLAY_PASSWORD: "{{ lookup('env', 'DATACLAY_PASSWORD') | default('admin', true) }}"
+  DATACLAY_DATASET: "{{ lookup('env', 'DATACLAY_DATASET') | default('admin', true) }}"
 
 client_properties:
   DC_HOST: "{{ lookup('env', 'DC_HOST') }}"

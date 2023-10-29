@@ -3,6 +3,8 @@
 import logging
 import os
 import uuid
+from dotenv import dotenv_values
+
 
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
@@ -56,14 +58,9 @@ def initWorker(config_file_path, **kwargs):
       and/or other Persistent Object Library requirements.
     """
     logger.info("Initialization of worker through storage.api")
-    # parsing config_file_path
 
-    with open(config_file_path, "r") as file:
-        for line in file:
-            line = line.strip()
-            if line and not line.startswith("#"):
-                key, value = line.split("=", 1)
-                os.environ[key] = value
+    env_vars = dotenv_values(config_file_path)
+    os.environ.update(env_vars)
 
     global _client
     _client = Client()

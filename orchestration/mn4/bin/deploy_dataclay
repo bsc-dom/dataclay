@@ -34,13 +34,13 @@ def parse_arguments():
     )
     parser.add_argument(
         "--network",
-        default="infiniband",  # Setting the default value
+        default="-ib0",
         help="Network suffix for all hostnames. Defaults to 'infiniband'.",
     )
     parser.add_argument(
         "--env-file",
-        required=False,
-        help="Path to the file containing environment variables.",
+        default=".env",
+        help="Path to the file containing environment variables. Defaults to '.env'.",
     )
 
     return parser.parse_args()
@@ -54,53 +54,70 @@ def run_ansible_playbook(inventory, env_vars):
         inventory (dict): The in-memory inventory to use.
         env_vars (dict): Dictionary with environment variables.
     """
-    # Get the DATACLAY_HOME environment variable
-    dataclay_home = os.environ.get("DATACLAY_HOME")
-
     # Construct the playbook path
+    dataclay_home = env_vars["DATACLAY_HOME"]
     playbook_path = os.path.join(dataclay_home, "config", "deploy-playbook.yaml")
 
+    print("Running Ansible playbook: ", playbook_path)
+
     # Run the ansible playbook
-    # Run the ansible playbook, including environment variables.
     runner_response = ansible_runner.run(
-        private_data_dir="./",
+        private_data_dir=env_vars["DATACLAY_JOB_PATH"],
         playbook=playbook_path,
         inventory=inventory,
-        envvars=env_vars,  # Pass the environment variables here.
+        envvars=env_vars,
     )
 
     if runner_response.status == "successful":
         print("Ansible playbook executed successfully.")
-        print("Output: ", runner_response.stdout.read())
+        # print("Output: ", runner_response.stdout.read())
     else:
         print(f"Ansible playbook execution failed: {runner_response.status}")
-        print(f"Runner response: {runner_response.stdout.read()}")  # Fetching the stdout details
+        print("Output: ", runner_response.stdout.read())
         exit(1)
 
 
 if __name__ == "__main__":
+    print("Starting dataClay deployment...")
+
     #############
     # HOSTNAMES #
     #############
 
     args = parse_arguments()
 
-    network = args.network
-    suffix = f".{network}" if network != "infiniband" else "-ib0"
+    # if args.network == "infiniband":
+    #     suffix = "-ib0"
+    # elif args.network == "ethernet":
+    #     suffix = "-eth0"
+    # else:
+    #     suffix = args.network
 
-    redis_servers = [f"{server}{suffix}" for server in args.redis]
-    metadata_servers = [f"{server}{suffix}" for server in args.metadata]
-    backend_servers = [f"{server}{suffix}" for server in args.backends]
+    # redis_servers = [f"{server}{suffix}" for server in args.redis]
+    # metadata_servers = [f"{server}{suffix}" for server in args.metadata]
+    # backend_servers = [f"{server}{suffix}" for server in args.backends]
+
+    # Suffix already included in the hostnames
+    redis_servers = args.redis
+    metadata_servers = args.metadata
+    backend_servers = args.backends
+
+    print("\nHostnames:")
+    print("\tRedis servers: ", redis_servers)
+    print("\tMetadata servers: ", metadata_servers)
+    print("\tBackend servers: ", backend_servers)
 
     #########################
     # ENVIRONMENT VARIABLES #
     #########################
 
-    # If --env-file is provided, use it. Otherwise, check for a '.env' file in the current directory.
-    env_file_path = args.env_file if args.env_file else ".env"
+    # Load the environment variables from the file (if it exists)
     env_vars = {}
-    if os.path.exists(env_file_path):
-        env_vars = dotenv_values(env_file_path)
+    if os.path.exists(args.env_file):
+        print("Loading environment variables from ", args.env_file)
+        env_vars = dotenv_values(args.env_file)
+    else:
+        print("Environment variables file not found: ", args.env_file)
 
     # Add the current environment variables to the dictionary
     env_vars.update(os.environ)
@@ -109,11 +126,16 @@ if __name__ == "__main__":
     env_vars["DATACLAY_METADATA_HOST"] = metadata_servers[0]
     env_vars["DATACLAY_KV_HOST"] = redis_servers[0]
     env_vars["PYTHONPATH"] = f"{os.environ.get('PYTHONPATH')}:{os.getcwd()}"
-    env_vars[
-        "DATACLAY_JOB_PATH"
-    ] = f"{os.environ.get('HOME')}/.dataclay/{os.environ.get('SLURM_JOB_ID')}"
+
+    # Create folers
+    env_vars["DATACLAY_JOB_PATH"] = f"{env_vars['HOME']}/.dataclay/{env_vars['SLURM_JOB_ID']}"
     env_vars["DATACLAY_LOG_PATH"] = env_vars["DATACLAY_JOB_PATH"] + "/logs"
     env_vars["DATACLAY_STORAGE_PATH"] = env_vars["DATACLAY_JOB_PATH"] + "/storage"
+
+    for path in [env_vars["DATACLAY_LOG_PATH"], env_vars["DATACLAY_STORAGE_PATH"]]:
+        os.makedirs(path, exist_ok=True)
+
+    print("Created job folder: ", env_vars["DATACLAY_JOB_PATH"])
 
     #############
     # INVENTORY #
@@ -131,8 +153,6 @@ if __name__ == "__main__":
             "hosts": {server: {} for server in backend_servers},
         },
     }
-
-    print("Generated inventory: ", inventory)
 
     ############
     # PLAYBOOK #

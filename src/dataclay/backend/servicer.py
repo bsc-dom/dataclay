@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 def serve():
     stop_event = threading.Event()
 
+    logger.info("Starting backend service")
     backend = BackendAPI(
         settings.backend.name,
         settings.backend.port,
@@ -31,7 +32,7 @@ def serve():
     )
 
     if not backend.is_ready(timeout=10):
-        logger.error("Backend is not ready. Aborting!")
+        logger.error("KV store is not ready. Aborting!")
         raise
 
     server = grpc.server(
@@ -45,8 +46,9 @@ def serve():
     address = f"{settings.backend.listen_address}:{settings.backend.port}"
     server.add_insecure_port(address)
     server.start()
+    logger.info("Backend service listening on %s", address)
 
-    # Autoregister of backend to MetadataService
+    # Autoregister of backend to KV store
     backend.runtime.metadata_service.register_backend(
         settings.backend.id,
         settings.backend.host,
@@ -60,6 +62,7 @@ def serve():
 
     # Wait until stop_event is set. Then, gracefully stop dataclay backend.
     stop_event.wait()
+    logger.info("Stopping backend service")
 
     # TODO: Check if the order can be changed to avoid new calls when shutting down
     backend.shutdown()

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Check if at least two arguments are passed (suffix and at least one hostname)
+if [ "$#" -lt 2 ]; then
+    echo "Usage: $0 network hostname1 [hostname2...]"
+    exit 1
+fi
+
+# Read the suffix from the first argument
+network="${1,,}"  # Convert to lowercase
+
+# Determine the suffix based on the network type
+case $network in
+    infiniband) suffix="-ib0" ;;
+    ethernet) suffix="-eth0" ;;
+    omnipath) suffix="-hfi1_0" ;;
+    myrinet) suffix="-myri0" ;;
+    *) suffix="$1" ;;
+esac
+
+# Shift the positional parameters, so $@ no longer includes the suffix
+shift
+
+# Read array of hostnames from the remaining arguments
+hostnames=("$@")
+
+# New array to store the updated hostnames
+updated_hostnames=()
+
+for item in "${hostnames[@]}"; do
+    # Append the suffix to each hostname, and then store it in the new array
+    updated_hostnames+=("${item}${suffix}")
+done
+
+# Output the modified array, elements separated by a space
+echo "${updated_hostnames[@]}"

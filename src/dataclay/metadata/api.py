@@ -28,7 +28,6 @@ logger = logging.getLogger(__name__)
 class MetadataAPI:
     def __init__(self, kv_host: str, kv_port: int):
         self.kv_manager = RedisManager(kv_host, kv_port)
-        logger.info("Initialized MetadataService")
 
     def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         return self.kv_manager.is_ready(timeout=timeout, pause=pause)
@@ -68,8 +67,9 @@ class MetadataAPI:
         # Creates a new session
         session = Session(id=uuid.uuid4(), username=username, dataset_name=dataset_name)
         self.kv_manager.set(session)
-
-        logger.info("Created new session for %s with id %s", username, session.id)
+        logger.info(
+            "New session with id=%s for user=%s, dataset=%s", session.id, username, dataset_name
+        )
         return session
 
     @tracer.start_as_current_span("get_session")
@@ -110,8 +110,7 @@ class MetadataAPI:
         # Order matters to check that dataset name is not registered
         self.kv_manager.set_new(dataset)
         self.kv_manager.set_new(account)
-
-        logger.info("Created new account for %s with dataset %s", username, dataset.name)
+        logger.info("New superuser with name=%s, dataset=%s", username, dataset.name)
 
     @tracer.start_as_current_span("new_account")
     def new_account(self, username: str, password: str):
@@ -128,8 +127,7 @@ class MetadataAPI:
         # Creates new account and put it to etcd
         account = Account.new(username, password)
         self.kv_manager.set_new(account)
-
-        logger.info("Created new account for %s", username)
+        logger.info("New account with name=%s", username)
 
     ###########
     # Dataset #
@@ -168,8 +166,7 @@ class MetadataAPI:
             # Order matters to check that dataset name is not registered
             self.kv_manager.set_new(dataset)
             self.kv_manager.update(account)
-
-            logger.info("Created %s dataset for %s account", dataset.name, username)
+            logger.info("New dataset with name=%s, owner=%s", dataset_name, username)
 
     ############
     # Dataclay #
@@ -179,6 +176,9 @@ class MetadataAPI:
     def new_dataclay(self, dataclay_id: UUID, host: str, port: int, is_this: bool = False):
         dataclay = Dataclay(id=dataclay_id, host=host, port=port, is_this=is_this)
         self.kv_manager.set_new(dataclay)
+        logger.info(
+            "Registered MetadataService with id=%s, host=%s, port=%s", dataclay_id, host, port
+        )
 
     @tracer.start_as_current_span("get_dataclay")
     def get_dataclay(self, dataclay_id: UUID | str) -> Dataclay:
@@ -197,7 +197,7 @@ class MetadataAPI:
     def register_backend(self, id: UUID, host: str, port: int, dataclay_id: UUID):
         backend = Backend(id=id, host=host, port=port, dataclay_id=dataclay_id)
         self.kv_manager.set_new(backend)
-        logger.info("Registered new backend with id=%s, host=%s, port=%s", id, host, port)
+        logger.info("Registered Backend with id=%s, host=%s, port=%s", id, host, port)
 
     @tracer.start_as_current_span("delete_backend")
     def delete_backend(self, id: UUID):
@@ -286,6 +286,7 @@ class MetadataAPI:
     ):
         alias = Alias(name=alias_name, dataset_name=dataset_name, object_id=object_id)
         self.kv_manager.set_new(alias)
+        logger.info("New alias with name=%s, dataset=%s", alias_name, dataset_name)
 
     @tracer.start_as_current_span("get_all_alias")
     def get_all_alias(
@@ -321,3 +322,4 @@ class MetadataAPI:
                 raise DatasetIsNotAccessibleError(dataset_name, session.username)
 
         self.kv_manager.delete_kv(Alias.path + f"{dataset_name}/{alias_name}")
+        logger.info("Deleted alias with name=%s, dataset=%s", alias_name, dataset_name)

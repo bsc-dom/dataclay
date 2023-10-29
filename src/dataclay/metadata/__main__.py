@@ -4,8 +4,13 @@ import dataclay.utils.metrics
 import dataclay.utils.telemetry
 from dataclay.config import MetadataSettings, settings
 from dataclay.metadata import servicer
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 settings.metadata = MetadataSettings()
+logger.info("MetadataService settings: %s", settings.metadata)
 
 # Start tracing and metrics
 if settings.service_name is None:

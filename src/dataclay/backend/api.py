@@ -39,9 +39,6 @@ class BackendAPI:
         self.runtime = BackendRuntime(kv_host, kv_port, self.backend_id)
         set_runtime(self.runtime)
 
-        # UNDONE: Do not store EE information. If restarted, create new EE uuid.
-        logger.info("Initialized backend %s", self.backend_id)
-
     def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         ref = time.time()
         now = ref
@@ -68,7 +65,7 @@ class BackendAPI:
             if instance._dc_is_local:
                 assert instance._dc_is_replica
                 if make_replica:
-                    logger.warning("There is already a replica for object %s", instance._dc_meta.id)
+                    logger.warning("Replica already exists with id=%s", instance._dc_meta.id)
                     continue
 
             with LockManager.write(instance._dc_meta.id):
@@ -95,7 +92,7 @@ class BackendAPI:
 
     @tracer.start_as_current_span("make_persistent")
     def make_persistent(self, serialized_objects: Iterable[bytes]):
-        logger.info("Receiving objects to make persistent")
+        logger.debug("Receiving objects to make persistent")
         unserialized_objects: dict[UUID, DataClayObject] = {}
         for object_bytes in serialized_objects:
             proxy_object = recursive_dcloads(object_bytes, unserialized_objects)

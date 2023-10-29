@@ -1,19 +1,19 @@
-# Optimized for gpfs shared filesystem
-- name: Set up the DataClay environment on localhost
-  hosts: localhost
-  gather_facts: false
-  connection: local
-  vars_files:
-    - external_vars.yml
-  tasks:
-    - name: Ensure DataClay directories exist
-      file:
-        path: "{{ item }}"
-        state: directory
-      with_items:
-        - "{{ dataclay_job_path }}"
-        - "{{ dataclay_log_path }}"
-        - "{{ dataclay_storage_path }}"
+# Already created deploy_dataclay
+# - name: Set up the DataClay environment on localhost
+#   hosts: localhost
+#   gather_facts: false
+#   connection: local
+#   vars_files:
+#     - external_vars.yml
+#   tasks:
+#     - name: Ensure DataClay directories exist
+#       file:
+#         path: "{{ item }}"
+#         state: directory
+#       with_items:
+#         - "{{ dataclay_job_path }}"
+#         - "{{ dataclay_log_path }}"
+#         - "{{ dataclay_storage_path }}"
 
 - name: Deploy Redis servers or cluster
   hosts: redis

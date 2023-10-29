@@ -24,7 +24,9 @@ logger = logging.getLogger(__name__)
 def serve():
     stop_event = threading.Event()
 
+    logger.info("Starting MetadataService")
     metadata_service = MetadataAPI(settings.kv_host, settings.kv_port)
+
     if not metadata_service.is_ready(timeout=10):
         logger.error("KV store is not ready. Aborting!")
         raise
@@ -41,13 +43,12 @@ def serve():
             is_this=True,
         )
     except AlreadyExistError:
+        logger.info("MetadataService already registered with id %s", settings.dataclay_id)
         settings.dataclay_id = metadata_service.get_dataclay("this").id
     else:
         metadata_service.new_superuser(
             settings.root_username, settings.root_password.get_secret_value(), settings.root_dataset
         )
-
-    logger.info("Metadata service has been registered")
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.thread_pool_workers))
     metadata_pb2_grpc.add_MetadataServiceServicer_to_server(
@@ -57,6 +58,7 @@ def serve():
     address = f"{settings.metadata.listen_address}:{settings.metadata.port}"
     server.add_insecure_port(address)
     server.start()
+    logger.info("MetadataService listening on %s", address)
 
     # Set signal hook for SIGINT and SIGTERM
     signal.signal(signal.SIGINT, lambda sig, frame: stop_event.set())
@@ -64,6 +66,7 @@ def serve():
 
     # Wait until stop_event is set. Then, gracefully stop dataclay backend.
     stop_event.wait()
+    logger.info("Stopping MetadataService")
 
     server.stop(5)
 
@@ -73,7 +76,6 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     def __init__(self, metadata_service: MetadataAPI):
         self.metadata_service = metadata_service
-        logger.debug("Initialized MetadataServiceServicer")
 
     # TODO: define get_exception_info(..) to serialize excpetions
 
