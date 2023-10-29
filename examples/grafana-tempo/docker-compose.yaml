@@ -19,9 +19,6 @@ services:
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
-      - DATACLAY_PASSWORD=s3cret
-      - DATACLAY_USERNAME=testuser
-      - DATACLAY_DATASET=testdata
       - DATACLAY_METADATA_PORT=16587
       - DATACLAY_LOGLEVEL=DEBUG
       - DATACLAY_TRACING=true

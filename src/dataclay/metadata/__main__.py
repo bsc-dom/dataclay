@@ -1,11 +1,11 @@
 """Entry point for standalone dataClay Metadata server."""
 
+import logging
+
 import dataclay.utils.metrics
 import dataclay.utils.telemetry
 from dataclay.config import MetadataSettings, settings
 from dataclay.metadata import servicer
-import logging
-
 
 logger = logging.getLogger(__name__)
 

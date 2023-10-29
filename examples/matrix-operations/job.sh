@@ -8,40 +8,21 @@
 #SBATCH --qos=debug
 #############################
 
-# Load dataclay
+# Load dataClay
 module load DATACLAY/edge
 
-# Save hosts inventory
-hosts_file=hosts-$SLURM_JOB_ID
-. dc-hosts-1 >"$hosts_file"
+# Get hostnames
+hostnames=($(scontrol show hostname $SLURM_JOB_NODELIST))
+hostnames=($(add_network_suffix "-ib0" "${hostnames[@]}"))
 
-# Set dataclay configuration
-export DATACLAY_LOGLEVEL=DEBUG
+# Deploy dataClay
+deploy_dataclay \
+    --redis ${hostnames[0]} \
+    --metadata ${hostnames[0]} \
+    --backends ${hostnames[@]:1}
 
-# Set tracing configuration
-export DATACLAY_TRACING=true
-export DATACLAY_TRACING_HOST=$DATACLAY_METADATA_HOST
-
-# export OTEL_EXPORTER_OTLP_ENDPOINT=http://${hostnames[0]}:4317 # DO NOT EDIT!
-# export OTEL_TRACES_SAMPLER=traceidratio
-# export OTEL_TRACES_SAMPLER_ARG=0.1
-# export OTEL_SERVICE_NAME=client
-
-# Set admin credentials
-export DATACLAY_USERNAME=testuser
-export DATACLAY_PASSWORD=s3cret
-export DATACLAY_DATASET=testdata
-
-# Set client credentials
-export DC_HOST=$DATACLAY_METADATA_HOST
-export DC_USERNAME=testuser
-export DC_PASSWORD=s3cret
-export DC_DATASET=testdata
-
-# Deploy dataclay
-ansible-playbook "$DATACLAY_HOME/config/deploy-playbook.yaml" -i "$hosts_file"
-
-# Run script
+# Run client
+export DC_HOST=${hostnames[0]}
 python3 matrix-generator.py --matrices 5 --size 100 --path ./data/
 # python3 client.py 10 0 --processes 1 --path $PWD/data/
 
@@ -51,7 +32,8 @@ ansible-playbook "$DATACLAY_HOME/config/run-playbook.yaml" \
 	-i "$hosts_file" -f 3 \
 	-e "script='python3 client.py 10 0 --processes 1 --path $PWD/data/'"
 
+# Stop dataClay
+cp "job-$SLURM_JOB_ID.out" "$HOME/.dataclay/$SLURM_JOB_ID"
 sleep 5
 
-# Shutdown
-cp "job-$SLURM_JOB_ID.out" "$HOME/.dataclay/$SLURM_JOB_ID"
+

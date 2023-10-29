@@ -8,30 +8,23 @@
 #SBATCH --qos=debug
 #############################
 
-# Load dataclay
+# Load dataClay
 module load DATACLAY/edge
 
-# Save hosts inventory
-hosts_file=hosts-$SLURM_JOB_ID
-. dc-hosts-1 >"$hosts_file"
+# Get hostnames
+hostnames=($(scontrol show hostname $SLURM_JOB_NODELIST))
+hostnames=($(add_network_suffix "-ib0" "${hostnames[@]}"))
 
-# Set admin credentials
-export DATACLAY_USERNAME=testuser
-export DATACLAY_PASSWORD=s3cret
-export DATACLAY_DATASET=testdata
+# Deploy dataClay
+deploy_dataclay \
+    --redis ${hostnames[0]} \
+    --metadata ${hostnames[0]} \
+    --backends ${hostnames[@]:1}
 
-# Set client credentials
-export DC_USERNAME=testuser
-export DC_PASSWORD=s3cret
-export DC_DATASET=testdata
-
-# Deploy dataclay
-ansible-playbook "$DATACLAY_HOME/config/deploy-playbook.yaml" -i "$hosts_file"
-
-# Run script
+# Run client
+export DC_HOST=${hostnames[0]}
 python3 client.py
 
-sleep 5
-
-# Shutdown
+# Stop dataClay
 cp "job-$SLURM_JOB_ID.out" "$HOME/.dataclay/$SLURM_JOB_ID"
+sleep 5

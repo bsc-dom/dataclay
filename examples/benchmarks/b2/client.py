@@ -7,7 +7,7 @@ from dataclay.contrib.modeltest.classes import Box
 
 # pr = cProfile.Profile()
 
-client = Client(username="testuser", password="s3cret", dataset="testdata")
+client = Client(username="admin", password="admin", dataset="admin")
 # client = Client(host="localhost", username="testuser", password="s3cret", dataset="testdata")
 client.start()
 

@@ -3,8 +3,8 @@
 import logging
 import os
 import uuid
-from dotenv import dotenv_values
 
+from dotenv import dotenv_values
 
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject

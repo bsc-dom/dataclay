@@ -4,7 +4,7 @@ from dataclay.contrib.modeltest.family import Dog, Family, Person
 
 settings.tracing = True
 
-client = Client(host="127.0.0.1", username="testuser", password="s3cret", dataset="testdata")
+client = Client(host="127.0.0.1", username="admin", password="admin", dataset="admin")
 client.start()
 
 family = Family()

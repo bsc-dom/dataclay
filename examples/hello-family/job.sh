@@ -8,21 +8,23 @@
 #SBATCH --qos=debug
 #############################
 
-# Load dataclay
-module load DATACLAY/marc.dev
+# Load dataClay
+module load DATACLAY/edge
 
+# Get hostnames
 hostnames=($(scontrol show hostname $SLURM_JOB_NODELIST))
+hostnames=($(add_network_suffix "-ib0" "${hostnames[@]}"))
 
+# Deploy dataClay
 deploy_dataclay \
     --redis ${hostnames[0]} \
     --metadata ${hostnames[0]} \
     --backends ${hostnames[@]:1}
 
-# Run script
+# Run client
 export DC_HOST=${hostnames[0]}
 python3 client.py
 
-sleep 5
-
-# Shutdown
+# Stop dataClay
 cp "job-$SLURM_JOB_ID.out" "$HOME/.dataclay/$SLURM_JOB_ID"
+sleep 5

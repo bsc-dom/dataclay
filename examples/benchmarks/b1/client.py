@@ -3,8 +3,8 @@ import time
 from dataclay import Client
 from dataclay.contrib.modeltest.classes import Counter
 
-# client = Client(username="testuser", password="s3cret", dataset="testdata")
-client = Client(host="localhost", username="testuser", password="s3cret", dataset="testdata")
+client = Client(username="admin", password="admin", dataset="admin")
+# client = Client(host="localhost", username="admin", password="admin", dataset="admin")
 client.start()
 
 iterations = 1000

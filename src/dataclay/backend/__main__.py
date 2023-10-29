@@ -1,10 +1,11 @@
 """Entry point for standalone dataClay Backend server."""
 
+import logging
+
 import dataclay.utils.metrics
 import dataclay.utils.telemetry
 from dataclay.backend import servicer
 from dataclay.config import BackendSettings, settings
-import logging
 
 logger = logging.getLogger(__name__)
 
