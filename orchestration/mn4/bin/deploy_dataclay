@@ -73,7 +73,7 @@ def run_ansible_playbook(inventory, env_vars):
         # print("Output: ", runner_response.stdout.read())
     else:
         print(f"Ansible playbook execution failed: {runner_response.status}")
-        print("Output: ", runner_response.stdout.read())
+        # print("Output: ", runner_response.stdout.read())
         exit(1)
 
 

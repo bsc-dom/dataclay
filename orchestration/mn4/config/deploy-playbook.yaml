@@ -22,9 +22,14 @@
     - external_vars.yml
   environment: "{{ global_env }}"
   tasks:
-    # - name: Count the number of hosts in the 'redis' group
-    #   set_fact:
-    #     redis_host_count: "{{ groups['redis'] | length }}"
+    - name: Count the number of hosts in the 'redis' group
+      set_fact:
+        redis_host_count: "{{ groups['redis'] | length }}"
+
+    - name: Placeholder for setting up Redis cluster
+      block:
+        - import_tasks: redis-cluster.yaml
+      when: redis_host_count | int >= 3
 
     - name: Start Redis server if there's only one 'redis' host
       shell: |
@@ -32,12 +37,7 @@
       args:
         executable: /bin/bash
         chdir: "{{ dataclay_job_path }}"
-      # when: redis_host_count == 1
-
-    # - name: Placeholder for setting up Redis cluster
-    #   block:
-    #     - import_tasks: redis-cluster.yaml
-    #   when: redis_host_count >= 3
+      when: redis_host_count | int < 3
 
 - name: Deploy Metadata Service
   hosts: metadata

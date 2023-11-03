@@ -1,5 +1,5 @@
 #!/bin/bash
-DATACLAY_VERSION=edge
+DATACLAY_VERSION=$(cat VERSION)
 
 # Internal MareNostrum paths (do not change!)
 MN1_HOST=mn1.bsc.es

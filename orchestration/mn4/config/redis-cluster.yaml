@@ -1,24 +1,19 @@
 # Preparation for setting up Redis cluster
-- name: Configure Redis for cluster
-  blockinfile:
-    path: "{{ dataclay_job_path }}/redis.conf"  # Path to the main Redis configuration file
-    block: |
-      port {{ redis_port }}
-      cluster-enabled {{ cluster_enabled }}
-      cluster-config-file {{ cluster_config_file }}
-      cluster-node-timeout {{ cluster_node_timeout }}
-      cluster-replicas {{ cluster_replicas }}
-      appendonly yes
 - name: Start Redis instances
   shell: |
-    nohup redis-server {{ dataclay_job_path }}/redis.conf --protected-mode no > {{ dataclay_log_path }}/redis-{{ inventory_hostname }}.out 2>&1 &
+    nohup redis-server --protected-mode no \
+      --appendonly yes \
+      --cluster-enabled yes \
+      --cluster-config-file nodes-{{ inventory_hostname }}.conf \
+      --cluster-node-timeout {{ cluster_node_timeout }} \
+      --port {{ redis_port }} \
+      > {{ dataclay_log_path }}/redis-{{ inventory_hostname }}.out 2>&1 &
   args:
     executable: /bin/bash
-- name: Wait for Redis to start
-  pause:
-    seconds: 10  # A short pause to ensure Redis has time to initialize, adjust as needed
+    chdir: "{{ dataclay_job_path }}"
+
 - name: Initialize Redis cluster
   vars:
-    node_addresses: "{{ groups['key-value'] | map('regex_replace', '(.*)', '\\1:' + {{  }}) | join(' ') }}"
-  command: redis-cli --cluster create {{ node_addresses }} --cluster-replicas 1
-  when: inventory_hostname == groups['key-value'][0]  # Only run on the first instance to avoid conflict
+    node_addresses: "{% for host in groups['redis'] %}{{ host }}:{{ redis_port }} {% endfor %}"
+  command: redis-cli --cluster create {{ node_addresses }} --cluster-replicas {{ cluster_replicas }} --cluster-yes
+  when: inventory_hostname == groups['redis'][0]  # Only run on the first instance to avoid conflict

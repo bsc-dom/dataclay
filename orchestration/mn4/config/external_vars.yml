@@ -43,3 +43,9 @@ ansible_pipelining: true
 dataclay_job_path: "{{ lookup('env', 'DATACLAY_JOB_PATH') }}"
 dataclay_log_path: "{{ lookup('env', 'DATACLAY_LOG_PATH') }}"
 dataclay_storage_path: "{{ lookup('env', 'DATACLAY_STORAGE_PATH') }}"
+
+redis_port: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
+cluster_enabled: "{{ lookup('env', 'DATACLAY_KV_CLUSTER_ENABLED') | default('yes', true) }}"
+# cluster_config_file: "{{ lookup('env', 'DATACLAY_KV_CLUSTER_CONFIG_FILE') | default('nodes.conf', true) }}"
+cluster_node_timeout: "{{ lookup('env', 'DATACLAY_KV_CLUSTER_NODE_TIMEOUT') | default(5000, true) }}"
+cluster_replicas: "{{ lookup('env', 'DATACLAY_KV_CLUSTER_REPLICAS') | default(0, true) }}"

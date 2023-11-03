@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import time
 from typing import TYPE_CHECKING, Optional
 
@@ -13,12 +14,15 @@ if TYPE_CHECKING:
 
     from dataclay.metadata.kvdata import KeyValue
 
+logger = logging.getLogger(__name__)
+
 
 class RedisManager:
     def __init__(self, host: str, port: int = 6379):
         try:
             self.r_client = RedisCluster(host=host, port=port)
-        except redis.exceptions.RedisClusterException:
+        except (redis.exceptions.RedisClusterException, IndexError):
+            logger.warning("Redis cluster not found, using single node")
             self.r_client = redis.Redis(host=host, port=port)
 
     def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
