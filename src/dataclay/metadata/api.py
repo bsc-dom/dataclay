@@ -1,6 +1,6 @@
 import logging
 import uuid
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
 
 from dataclay.exceptions.exceptions import *
@@ -181,7 +181,7 @@ class MetadataAPI:
         )
 
     @tracer.start_as_current_span("get_dataclay")
-    def get_dataclay(self, dataclay_id: UUID | str) -> Dataclay:
+    def get_dataclay(self, dataclay_id: Union[UUID, str]) -> Dataclay:
         return self.kv_manager.get_kv(Dataclay, dataclay_id)
 
     ###########

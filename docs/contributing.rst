@@ -48,7 +48,7 @@ Our `tox.ini <https://github.com/bsc-dom/dataclay/blob/main/tox.ini>`_ file hand
 
 .. code-block:: console
 
-   $ tox -e py310
+   $ tox
   
 
 .. _tox: https://tox.wiki/en/stable/

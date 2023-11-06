@@ -13,11 +13,13 @@
 - MANIFEST.in
 - *.iml
 - tox.ini
+- /.tox/
 - /docs/
 - /.idea/
 - /.vscode/
 - /.pyenv*/
 - /venv/
+- /venv*/
 - .dockerignore
 - .pylintrc
 - .git
