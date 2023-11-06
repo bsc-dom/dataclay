@@ -15,10 +15,16 @@ try:
     import npp2nvm
 except ImportError:
     import warnings
-    warnings.warn("npp2nvm package is not installed. InNVM annotation will fail. Install npp2nvm package.")
+
+    warnings.warn(
+        "npp2nvm package is not installed. InNVM annotation will fail. Install npp2nvm package."
+    )
 except KeyError:
     import warnings
-    warnings.warn("npp2nvm had a configuration error. InNVM annotation will fail. Check npp2nvm documentation.")
+
+    warnings.warn(
+        "npp2nvm had a configuration error. InNVM annotation will fail. Check npp2nvm documentation."
+    )
 
 
 class InNVM(PropertyTransformer):
@@ -38,5 +44,6 @@ class InNVM(PropertyTransformer):
         >>> e.make_persistent()
         >>> e.observations = np.array([1,2,3])
     """
+
     def setter(self, value):
         return npp2nvm.np_persist(value)

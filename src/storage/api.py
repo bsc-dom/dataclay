@@ -28,7 +28,7 @@ _client: Client = None
 
 def get_client() -> Client:
     """Get the global (singleton) Client instance.
-    
+
     This can be run in the worker nodes (i.e., inside a task). Given the
     regular initialization flow of the worker (i.e., after it calls initWorker)
     a global Client instane is available and can be used.

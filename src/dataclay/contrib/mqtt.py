@@ -16,7 +16,7 @@ class MQTTMixin:
     """MQTT mechanisms"""
 
     @activemethod
-    def produce_mqtt_msg(self, data: dict[str, Any], topic: str="dataclay"):
+    def produce_mqtt_msg(self, data: dict[str, Any], topic: str = "dataclay"):
         import os
         from json import dumps
 

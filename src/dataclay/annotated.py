@@ -1,6 +1,6 @@
 class PropertyTransformer:
     """Parent class for annotations that transform object attributes.
-    
+
     This class is not intended to be used by itself, but instead inherited and
     implemented. Right now, this class is a trivial implementation, i.e.
     passthrough of getter and setter.
@@ -23,10 +23,11 @@ class PropertyTransformer:
 
 class LocalOnly:
     """Annotation to specify attributes that must no be persisted.
-    
+
     Example::
 
         class ComplexAlgorithm(DataClayObject):
             primes_cache: Annotated[list[int], LocalOnly]
     """
+
     pass
