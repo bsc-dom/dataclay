@@ -1,11 +1,11 @@
-Deployment
-==========
+Docker-based deployment
+=======================
 
 The easiest way to deploy dataClay is using the provided 
 `docker image <https://github.com/bsc-dom/dataclay/pkgs/container/dataclay>`_. 
 You can deploy a minimal dataClay instance with the following ``docker-compose``:
 
-.. literalinclude:: /../examples/quickstart/docker-compose.yml
+.. literalinclude:: /../../examples/quickstart/docker-compose.yml
    :language: yaml
 
 .. note::
