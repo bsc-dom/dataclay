@@ -1,8 +1,7 @@
-Version 3.0.2
+Version 3.1.0
 -------------
 
-Unreleased
-
+Released 2023-06-11
 
 Version 3.0.1
 -------------
