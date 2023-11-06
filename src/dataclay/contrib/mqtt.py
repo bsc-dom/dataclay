@@ -1,16 +1,22 @@
-"""Basic Synchronization mechanisms."""
+"""
+MQTT bridging
+=============
 
-from dataclay import dclayMethod
+Documentation WIP (moreover, the mixin class has yet to be tested in dataClay 3.x).
+"""
+from typing import Any
+
+from dataclay import activemethod
 
 """ Mqtt pool of producers """
 MQTT_PRODUCERS = dict()
 
 
-class MQTTMixin(object):
+class MQTTMixin:
     """MQTT mechanisms"""
 
-    @dclayMethod(data="dict<str, anything>", topic="str")
-    def produce_mqtt_msg(self, data, topic="dataclay"):
+    @activemethod
+    def produce_mqtt_msg(self, data: dict[str, Any], topic: str="dataclay"):
         import os
         from json import dumps
 
@@ -32,7 +38,7 @@ class MQTTMixin(object):
         data_str = dumps(data).encode("utf-8")
         mqtt_producer.publish(topic, data_str, qos=1)
 
-    @dclayMethod()
+    @activemethod
     def send_to_mqtt(self):
         import inspect
 
