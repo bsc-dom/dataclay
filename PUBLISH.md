@@ -27,7 +27,7 @@
         docker login ghcr.io
         ```
     2. Build and publish the docker image. To use `buildx` you may need to `sudo apt install qemu-user-static`:
-        ``` bash
+        ```bash
         # Set the version variable
         VERSION=<VERSION>
 
@@ -66,6 +66,8 @@
    - Update `dataclay.__version__` from `dataclay.__init__` to `<NEW_VERSION>.dev`
    - Add new entry to `CHANGES.rst` with `<NEW_VERSION>`
    - Update orchestration/spack to point the new version in PyPI
+
+8. Update the _active versions_ on ReadTheDocs, i.e. go to the [versions page](https://readthedocs.org/projects/dataclay/versions/) and activate/deactivate versions accordingly. You probably must add the newly added release, and maybe you will need to deactivate patch versions that are irrelevant.
 
 
 ## Publish a development distribution to TestPyPI
