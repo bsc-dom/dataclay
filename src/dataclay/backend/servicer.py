@@ -9,6 +9,11 @@ from concurrent import futures
 from uuid import UUID
 
 import grpc
+
+from grpc_health.v1 import health
+from grpc_health.v1 import health_pb2
+from grpc_health.v1 import health_pb2_grpc
+
 from google.protobuf.empty_pb2 import Empty
 from google.protobuf.wrappers_pb2 import BytesValue
 
@@ -42,6 +47,16 @@ def serve():
     backend_pb2_grpc.add_BackendServiceServicer_to_server(
         BackendServicer(backend, stop_event), server
     )
+
+    if settings.backend.enable_healthcheck:
+        logger.info("Enabling healthcheck for BackendService")
+        health_servicer = health.HealthServicer(
+            experimental_non_blocking=True,
+            experimental_thread_pool=futures.ThreadPoolExecutor(max_workers=settings.thread_pool_workers),
+        )
+        health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
+        health_servicer.set("dataclay.proto.backend.BackendService", 
+                            health_pb2.HealthCheckResponse.SERVING)
 
     address = f"{settings.backend.listen_address}:{settings.backend.port}"
     server.add_insecure_port(address)

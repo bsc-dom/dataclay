@@ -16,6 +16,7 @@ class BackendSettings(BaseSettings):
     host: str = socket.gethostbyname(socket.gethostname())
     port: int = 6867
     listen_address: str = "0.0.0.0"
+    enable_healthcheck: bool = False
 
 
 class MetadataSettings(BaseSettings):
@@ -25,6 +26,7 @@ class MetadataSettings(BaseSettings):
     host: str = socket.gethostbyname(socket.gethostname())
     port: int = 16587
     listen_address: str = "0.0.0.0"
+    enable_healthcheck: bool = False
 
 
 class ClientSettings(BaseSettings):

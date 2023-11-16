@@ -9,6 +9,11 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import grpc
+
+from grpc_health.v1 import health
+from grpc_health.v1 import health_pb2
+from grpc_health.v1 import health_pb2_grpc
+
 from google.protobuf.empty_pb2 import Empty
 
 from dataclay.config import settings
@@ -55,6 +60,16 @@ def serve():
         MetadataServicer(metadata_service), server
     )
 
+    if settings.metadata.enable_healthcheck:
+        logger.info("Enabling healthcheck for MetadataService")
+        health_servicer = health.HealthServicer(
+            experimental_non_blocking=True,
+            experimental_thread_pool=futures.ThreadPoolExecutor(max_workers=settings.thread_pool_workers),
+        )
+        health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
+        health_servicer.set("dataclay.proto.metadata.MetadataService", 
+                            health_pb2.HealthCheckResponse.SERVING)
+
     address = f"{settings.metadata.listen_address}:{settings.metadata.port}"
     server.add_insecure_port(address)
     server.start()
@@ -64,7 +79,7 @@ def serve():
     signal.signal(signal.SIGINT, lambda sig, frame: stop_event.set())
     signal.signal(signal.SIGTERM, lambda sig, frame: stop_event.set())
 
-    # Wait until stop_event is set. Then, gracefully stop dataclay backend.
+    # Wait until stop_event is set. Then, gracefully stop dataclay metadata service.
     stop_event.wait()
     logger.info("Stopping MetadataService")
 
