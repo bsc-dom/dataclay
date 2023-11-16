@@ -2,11 +2,12 @@
 
 import logging
 import pickle
+import os.path
 import signal
 import threading
 import traceback
 from concurrent import futures
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import grpc
 from google.protobuf.empty_pb2 import Empty
@@ -20,13 +21,55 @@ from dataclay.proto.common import common_pb2
 logger = logging.getLogger(__name__)
 
 
+def _get_or_generate_backend_id() -> UUID:
+    """Try to retrieve this backend UUID, or generate a new one.
+    
+    If there is no backend_id defined in the settings, try to get the
+    backend UUID. A file may exist in the storage folder (which means that
+    this backend already has a identifer, so we should reuse it).
+
+    If there is no UUID in persistent storage, then this means that this is
+    the first time this backend has started, so we generate a new one and
+    store it.
+    """
+    backend_id_file = os.path.join(settings.storage_path, "BACKEND_ID")
+
+    if settings.backend.id is None and os.path.exists(backend_id_file):
+        # Seems like we will be using a preexisting UUID
+        with open(backend_id_file, "rt") as f:
+            ret = UUID(f.read())
+            logger.info("Starting backend with recovered UUID: %s", ret)
+            return ret
+
+    if settings.backend.id is None:
+        backend_id = uuid4()
+        logger.info("BackendID randomly generated: %s", backend_id)
+    else:
+        backend_id = settings.backend_id
+        logger.info("BackendID defined in settings: %s", backend_id)
+    
+    # Store the backend_id and return it
+    try:
+        with open(backend_id_file, "wt") as f:
+            f.write(str(backend_id))
+            logger.debug("BackendID has been stored in the following file: %s", backend_id_file)
+    except OSError:
+        logger.warning("Could not write the BackendID in persistent storage. "
+                        "Restarting this backend may result in unreachable/unrecoverable objects.")
+        logger.debug("Exception when trying to access persistent backend id file:", exc_info=True)
+    return backend_id
+
+
 def serve():
     stop_event = threading.Event()
+
+    backend_id = _get_or_generate_backend_id()
 
     logger.info("Starting backend service")
     backend = BackendAPI(
         settings.backend.name,
         settings.backend.port,
+        backend_id,
         settings.kv_host,
         settings.kv_port,
     )
@@ -50,7 +93,7 @@ def serve():
 
     # Autoregister of backend to KV store
     backend.runtime.metadata_service.register_backend(
-        settings.backend.id,
+        backend_id,
         settings.backend.host,
         settings.backend.port,
         settings.dataclay_id,

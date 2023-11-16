@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import concurrent.futures
 import logging
-import os.path
 import pickle
 import time
 import traceback
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Optional
-from uuid import UUID, uuid4
 
 from dataclay import utils
 from dataclay.config import settings
@@ -21,6 +19,7 @@ from dataclay.utils.serialization import dcdumps, recursive_dcloads
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
+    from uuid import UUID
     from dataclay.dataclay_object import DataClayObject
 
 tracer = trace.get_tracer(__name__)
@@ -28,56 +27,16 @@ logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
 class BackendAPI:
-    def __init__(self, name: str, port: int, kv_host: str, kv_port: int):
+    def __init__(self, name: str, port: int, backend_id: UUID, kv_host: str, kv_port: int):
         # NOTE: the port is (atm) exclusively for unique identification of an EE
         # (given that the name is shared between all EE that share a SL, which happens in HPC deployments)
         self.name = name
         self.port = port
 
         # Initialize runtime
-        self.backend_id = self._get_or_generate_backend_id()
+        self.backend_id = backend_id
         self.runtime = BackendRuntime(kv_host, kv_port, self.backend_id)
         set_runtime(self.runtime)
-
-    @staticmethod
-    def _get_or_generate_backend_id() -> UUID:
-        """Try to retrieve this backend UUID, or generate a new one.
-        
-        If there is no backend_id defined in the settings, try to get the
-        backend UUID. A file may exist in the storage folder (which means that
-        this backend already has a identifer, so we should reuse it).
-
-        If there is no UUID in persistent storage, then this means that this is
-        the first time this backend has started, so we generate a new one and
-        store it.
-        """
-        backend_id_file = os.path.join(settings.storage_path, "BACKEND_ID")
-
-        if settings.backend.id is None and os.path.exists(backend_id_file):
-            # Seems like we will be using a preexisting UUID
-            with open(backend_id_file, "rt") as f:
-                ret = UUID(f.read())
-                logger.info("Starting backend with recovered UUID: %s", ret)
-                return ret
-
-        if settings.backend.id is None:
-            backend_id = uuid4()
-            logger.info("BackendID randomly generated: %s", backend_id)
-        else:
-            backend_id = settings.backend_id
-            logger.info("BackendID defined in settings: %s", backend_id)
-        
-        # Store the backend_id and return it
-        try:
-            with open(backend_id_file, "wt") as f:
-                f.write(str(backend_id))
-                logger.debug("BackendID has been stored in the following file: %s", backend_id_file)
-        except OSError:
-            logger.warning("Could not write the BackendID in persistent storage. "
-                           "Restarting this backend may result in unreachable/unrecoverable objects.")
-            logger.debug("Exception when trying to access persistent backend id file:", exc_info=True)
-        return backend_id
-
 
     def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         ref = time.time()
