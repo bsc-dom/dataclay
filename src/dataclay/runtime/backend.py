@@ -51,6 +51,8 @@ class BackendRuntime(DataClayRuntime):
         # Must be thread-safe.
         self.session_expires_dates = {}
 
+        self.backend_id = backend_id
+
         self.thread_local_data = threading.local()
 
     @property
@@ -69,7 +71,7 @@ class BackendRuntime(DataClayRuntime):
 
     def stop(self):
         # Remove backend entry from metadata
-        self.metadata_service.delete_backend(settings.backend.id)
+        self.metadata_service.delete_backend(self.backend_id)
 
         # Stop DataManager
         logger.debug("Stopping DataManager")
