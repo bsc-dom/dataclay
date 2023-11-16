@@ -11,7 +11,7 @@ class BackendSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="dataclay_backend_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
     )
-    id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    id: Optional[uuid.UUID] = None
     name: Optional[str] = None
     host: str = socket.gethostbyname(socket.gethostname())
     port: int = 6867
