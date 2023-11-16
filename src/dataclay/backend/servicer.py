@@ -1,7 +1,6 @@
 """ Class description goes here. """
 
 import logging
-import pickle
 import os.path
 import signal
 import threading
