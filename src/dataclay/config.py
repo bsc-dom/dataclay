@@ -1,9 +1,9 @@
 import logging
 import socket
 import uuid
-from typing import Literal, Optional
+from typing import Literal, Optional, Annotated
 
-from pydantic import AliasChoices, Field, SecretStr, constr
+from pydantic import AliasChoices, Field, SecretStr, StringConstraints
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     storage_path: str = "/data/storage/"
     check_session: bool = False
     thread_pool_workers: Optional[int] = None
-    loglevel: constr(to_upper=True) = "WARNING"
+    loglevel: Annotated[str, StringConstraints(strip_whitespace=True, to_upper=True)] = "INFO"
 
     # Timeouts
     grpc_check_alive_timeout: int = 60
