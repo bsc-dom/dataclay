@@ -32,8 +32,7 @@ def serve():
     )
 
     if not backend.is_ready(timeout=10):
-        logger.error("KV store is not ready. Aborting!")
-        raise
+        raise RuntimeError("KV store is not ready. Aborting!")
 
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers=settings.thread_pool_workers),
