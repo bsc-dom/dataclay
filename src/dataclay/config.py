@@ -29,6 +29,10 @@ class MetadataSettings(BaseSettings):
     enable_healthcheck: bool = True
 
 
+class ProxySettings(BaseSettings):
+    port: int = 8676
+    listen_address: str = "0.0.0.0"
+
 class ClientSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="dc_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
@@ -98,6 +102,7 @@ class Settings(BaseSettings):
     # Services
     backend: Optional[BackendSettings] = None
     metadata: Optional[MetadataSettings] = None
+    proxy: Optional[ProxySettings] = None
     client: Optional[ClientSettings] = None
 
     # key/value database
