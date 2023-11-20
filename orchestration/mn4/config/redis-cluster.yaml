@@ -7,10 +7,10 @@
       --cluster-config-file nodes-{{ inventory_hostname }}.conf \
       --cluster-node-timeout {{ cluster_node_timeout }} \
       --port {{ redis_port }} \
-      > {{ dataclay_log_path }}/redis-{{ inventory_hostname }}.out 2>&1 &
+      > {{ log_path }}/redis-{{ inventory_hostname }}.out 2>&1 &
   args:
     executable: /bin/bash
-    chdir: "{{ dataclay_job_path }}"
+    chdir: "{{ job_path }}"
 
 - name: Initialize Redis cluster
   vars:

@@ -13,13 +13,13 @@ global_env:
   DATACLAY_LOGLEVEL: "{{ lookup('env', 'DATACLAY_LOGLEVEL') | default('WARNING', true) }}"
   DATACLAY_TRACING: "{{ lookup('env', 'DATACLAY_TRACING') | default('false', true) }}"
   DATACLAY_TRACING_HOST: "{{ lookup('env', 'DATACLAY_TRACING_HOST') }}"
-  DATACLAY_JOB_PATH: "{{ dataclay_job_path }}" # Used in otel-json-exporter.yaml
+  DATACLAY_JOB_PATH: "{{ job_path }}" # Used in otel-json-exporter.yaml
 
 backend_properties:
   DATACLAY_BACKEND_PORT: "{{ lookup('env', 'DATACLAY_BACKEND_PORT') | default(6868, true) }}"
   DATACLAY_KV_HOST: "{{ lookup('env', 'DATACLAY_KV_HOST') }}"
   DATACLAY_KV_PORT: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
-  DATACLAY_STORAGE_PATH: "{{ dataclay_storage_path }}"
+  # DATACLAY_STORAGE_PATH: "{{ lookup('env', 'DATACLAY_STORAGE_PATH') }}"
 
 metadata_properties:
   DATACLAY_METADATA_HOST: "{{ lookup('env', 'DATACLAY_METADATA_HOST') }}"
@@ -40,9 +40,8 @@ client_properties:
 ansible_python_interpreter: "{{ ansible_playbook_python }}" # Uses the venv python. Maybe not optimized for HPC (get which python otherwise)
 ansible_pipelining: true
 
-dataclay_job_path: "{{ lookup('env', 'DATACLAY_JOB_PATH') }}"
-dataclay_log_path: "{{ lookup('env', 'DATACLAY_LOG_PATH') }}"
-dataclay_storage_path: "{{ lookup('env', 'DATACLAY_STORAGE_PATH') }}"
+job_path: "{{ lookup('env', 'DATACLAY_JOB_PATH') }}"
+log_path: "{{ job_path }}/logs"
 
 redis_port: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
 cluster_enabled: "{{ lookup('env', 'DATACLAY_KV_CLUSTER_ENABLED') | default('yes', true) }}"

@@ -11,9 +11,8 @@
 #         path: "{{ item }}"
 #         state: directory
 #       with_items:
-#         - "{{ dataclay_job_path }}"
-#         - "{{ dataclay_log_path }}"
-#         - "{{ dataclay_storage_path }}"
+#         - "{{ job_path }}"
+#         - "{{ log_path }}"
 
 - name: Deploy Redis servers or cluster
   hosts: redis
@@ -33,10 +32,10 @@
 
     - name: Start Redis server if there's only one 'redis' host
       shell: |
-        nohup redis-server --protected-mode no > {{ dataclay_log_path }}/redis.out 2>&1 &
+        nohup redis-server --protected-mode no > {{ log_path }}/redis.out 2>&1 &
       args:
         executable: /bin/bash
-        chdir: "{{ dataclay_job_path }}"
+        chdir: "{{ job_path }}"
       when: redis_host_count | int < 3
 
 - name: Deploy Metadata Service
@@ -48,17 +47,17 @@
   environment: "{{ global_env | combine(metadata_properties) }}"
   tasks:
     - name: Start OTEL Collector
-      shell: nohup otelcol --config {{ global_env.DATACLAY_HOME }}/config/otel-json-exporter.yaml > {{ dataclay_log_path }}/otel.out 2>&1 &
+      shell: nohup otelcol --config {{ global_env.DATACLAY_HOME }}/config/otel-json-exporter.yaml > {{ log_path }}/otel.out 2>&1 &
       args:
         executable: /bin/bash
-        chdir: "{{ dataclay_job_path }}"
+        chdir: "{{ job_path }}"
       when: global_env.DATACLAY_TRACING|bool
 
     - name: Start Metadata Service
-      shell: nohup python -u -m dataclay.metadata > {{ dataclay_log_path }}/metadata.out 2>&1 &
+      shell: nohup python -u -m dataclay.metadata > {{ log_path }}/metadata.out 2>&1 &
       args:
         executable: /bin/bash
-        chdir: "{{ dataclay_job_path }}"
+        chdir: "{{ job_path }}"
 
 - name: Deploy Backends
   hosts: backend
@@ -69,16 +68,25 @@
     - ./external_vars.yml
   environment: "{{ global_env | combine(backend_properties) }}"
   tasks:
+    - name: Create backend directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ job_path }}/backend{{ num }}-s0/storage"
+        - "{{ job_path }}/backend{{ num }}-s1/storage"
     - name: Start Backend Socket 0
-      shell: nohup numactl -N 0 -m 0 -- python -u -m dataclay.backend > {{ dataclay_log_path }}/backend{{ num }}-s0.out 2>&1 &
+      shell: nohup numactl -N 0 -m 0 -- python -u -m dataclay.backend > {{ log_path }}/backend{{ num }}-s0.out 2>&1 &
       args:
         executable: /bin/bash
-        chdir: "{{ dataclay_job_path }}"
+        chdir: "{{ job_path }}/backend{{ num }}-s0"
+      environment:
+        DATACLAY_STORAGE_PATH: "{{ job_path }}/backend{{ num }}-s0/storage"
     - name: Start Backend Socket 1
-      shell: nohup numactl -N 1 -m 1 -- python -u -m dataclay.backend > {{ dataclay_log_path }}/backend{{ num }}-s1.out 2>&1 &
+      shell: nohup numactl -N 1 -m 1 -- python -u -m dataclay.backend > {{ log_path }}/backend{{ num }}-s1.out 2>&1 &
       args:
         executable: /bin/bash
-        chdir: "{{ dataclay_job_path }}"
+        chdir: "{{ job_path }}/backend{{ num }}-s1"
       environment:
         DATACLAY_BACKEND_PORT: "{{ backend_properties.DATACLAY_BACKEND_PORT | int + 1 }}"
-
+        DATACLAY_STORAGE_PATH: "{{ job_path }}/backend{{ num }}-s1/storage"

@@ -62,7 +62,7 @@ def run_ansible_playbook(inventory, env_vars):
 
     # Run the ansible playbook
     runner_response = ansible_runner.run(
-        private_data_dir=env_vars["DATACLAY_JOB_PATH"],
+        private_data_dir=f"{env_vars['DATACLAY_JOB_PATH']}/ansible",
         playbook=playbook_path,
         inventory=inventory,
         envvars=env_vars,
@@ -85,17 +85,6 @@ if __name__ == "__main__":
     #############
 
     args = parse_arguments()
-
-    # if args.network == "infiniband":
-    #     suffix = "-ib0"
-    # elif args.network == "ethernet":
-    #     suffix = "-eth0"
-    # else:
-    #     suffix = args.network
-
-    # redis_servers = [f"{server}{suffix}" for server in args.redis]
-    # metadata_servers = [f"{server}{suffix}" for server in args.metadata]
-    # backend_servers = [f"{server}{suffix}" for server in args.backends]
 
     # Suffix already included in the hostnames
     redis_servers = args.redis
@@ -129,11 +118,9 @@ if __name__ == "__main__":
 
     # Create folers
     env_vars["DATACLAY_JOB_PATH"] = f"{env_vars['HOME']}/.dataclay/{env_vars['SLURM_JOB_ID']}"
-    env_vars["DATACLAY_LOG_PATH"] = env_vars["DATACLAY_JOB_PATH"] + "/logs"
-    env_vars["DATACLAY_STORAGE_PATH"] = env_vars["DATACLAY_JOB_PATH"] + "/storage"
 
-    for path in [env_vars["DATACLAY_LOG_PATH"], env_vars["DATACLAY_STORAGE_PATH"]]:
-        os.makedirs(path, exist_ok=True)
+    os.makedirs(f"{env_vars['DATACLAY_JOB_PATH']}/logs", exist_ok=True)
+    os.makedirs(f"{env_vars['DATACLAY_JOB_PATH']}/ansible", exist_ok=True)
 
     print("Created job folder: ", env_vars["DATACLAY_JOB_PATH"])
 
