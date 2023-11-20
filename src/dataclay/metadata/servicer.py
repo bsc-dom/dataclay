@@ -29,8 +29,7 @@ def serve():
     metadata_service = MetadataAPI(settings.kv_host, settings.kv_port)
 
     if not metadata_service.is_ready(timeout=10):
-        logger.error("KV store is not ready. Aborting!")
-        raise
+        raise RuntimeError("KV store is not ready. Aborting!")
 
     # Try to set the dataclay id if don't exists yet
     try:
