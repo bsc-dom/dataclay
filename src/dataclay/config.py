@@ -54,7 +54,8 @@ class Settings(BaseSettings):
     dataclay_id: Optional[uuid.UUID] = Field(default=None, alias="dataclay_id")
     storage_path: str = "/data/storage/"
     check_session: bool = False
-    thread_pool_workers: Optional[int] = None
+    thread_pool_max_workers: Optional[int] = None
+    healthcheck_max_workers: Optional[int] = None
     loglevel: constr(to_upper=True) = "WARNING"
 
     # Timeouts

@@ -55,7 +55,7 @@ def serve():
             settings.root_username, settings.root_password.get_secret_value(), settings.root_dataset
         )
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.thread_pool_workers))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers))
     metadata_pb2_grpc.add_MetadataServiceServicer_to_server(
         MetadataServicer(metadata_service), server
     )
@@ -64,11 +64,14 @@ def serve():
         logger.info("Enabling healthcheck for MetadataService")
         health_servicer = health.HealthServicer(
             experimental_non_blocking=True,
-            experimental_thread_pool=futures.ThreadPoolExecutor(max_workers=settings.thread_pool_workers),
+            experimental_thread_pool=futures.ThreadPoolExecutor(
+                max_workers=settings.healthcheck_max_workers
+            ),
         )
         health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
-        health_servicer.set("dataclay.proto.metadata.MetadataService", 
-                            health_pb2.HealthCheckResponse.SERVING)
+        health_servicer.set(
+            "dataclay.proto.metadata.MetadataService", health_pb2.HealthCheckResponse.SERVING
+        )
 
     address = f"{settings.metadata.listen_address}:{settings.metadata.port}"
     server.add_insecure_port(address)
