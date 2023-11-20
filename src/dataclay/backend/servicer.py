@@ -122,7 +122,7 @@ def serve():
     logger.info("Stopping backend service")
 
     # TODO: Check if the order can be changed to avoid new calls when shutting down
-    backend.shutdown()
+    backend.stop()
     server.stop(5)
 
 
@@ -293,7 +293,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def Shutdown(self, request, context):
+    def Stop(self, request, context):
         self._check_backend(context)
         try:
             self.stop_event.set()

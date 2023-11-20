@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 
 
 class BackendClient:
-    def __init__(self, host: str, port: int, backend_id: Optional[UUID]=None):
+    def __init__(self, host: str, port: int, backend_id: Optional[UUID] = None):
         """Create the stub and the channel at the address passed by the server.
-        
+
         Optionally, the BackendID will be included in the metadata. It is not
         strictly needed, but it can be beneficial for sanity checking and also
         it is used for reverse proxy configurations.
@@ -48,9 +48,7 @@ class BackendClient:
             self.channel = grpc.insecure_channel(self.address, options)
             logger.info("SSL not configured")
 
-        grpc.channel_ready_future(self.channel).result(
-            timeout=settings.grpc_check_alive_timeout
-        )
+        grpc.channel_ready_future(self.channel).result(timeout=settings.grpc_check_alive_timeout)
         self.stub = backend_pb2_grpc.BackendServiceStub(self.channel)
 
     def _configure_ssl(self, options):
@@ -60,7 +58,9 @@ class BackendClient:
             service_alias = str(self.port)
             self.metadata_call.append(("service-alias", service_alias))
             self.address = f"{self.host}:443"
-            logger.info("SSL configured: changed address %s:%s to %s:443", self.host, self.port, self.host)
+            logger.info(
+                "SSL configured: changed address %s:%s to %s:443", self.host, self.port, self.host
+            )
             logger.info("SSL configured: using service-alias %s", service_alias)
         else:
             self.metadata_call.append(("service-alias", settings.ssl_target_ee_alias))
@@ -77,8 +77,10 @@ class BackendClient:
                 with open(settings.ssl_client_key, "rb") as f:
                     client_key = f.read()
         except IOError:
-            logger.error("Not using client trusted certificates because I was unable to read cert keys", 
-                         exc_info=True)
+            logger.error(
+                "Not using client trusted certificates because I was unable to read cert keys",
+                exc_info=True,
+            )
 
         # create credentials
         if trusted_certs is not None:
@@ -96,17 +98,14 @@ class BackendClient:
 
         logger.info(
             "SSL configured: using SSL_CLIENT_TRUSTED_CERTIFICATES located at %s",
-            settings.ssl_client_trusted_certificates
+            settings.ssl_client_trusted_certificates,
         )
         logger.info(
             "SSL configured: using SSL_CLIENT_CERTIFICATE located at %s",
-            settings.ssl_client_certificate
+            settings.ssl_client_certificate,
         )
-        logger.info(
-            "SSL configured: using SSL_CLIENT_KEY located at %s", settings.ssl_client_key
-        )
+        logger.info("SSL configured: using SSL_CLIENT_KEY located at %s", settings.ssl_client_key)
         logger.info("SSL configured: using authority %s", settings.ssl_target_authority)
-
 
     # NOTE: It may be not need if the channel_ready_future is check on __init__
     def is_ready(self, timeout: Optional[float] = None):
@@ -225,8 +224,8 @@ class BackendClient:
         self.stub.FlushAll(Empty())
 
     @grpc_error_handler
-    def shutdown(self):
-        self.stub.Shutdown(Empty())
+    def stop(self):
+        self.stub.Stop(Empty())
 
     @grpc_error_handler
     def drain(self):

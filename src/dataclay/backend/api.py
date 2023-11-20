@@ -231,8 +231,8 @@ class BackendAPI:
 
     # Shutdown
 
-    @tracer.start_as_current_span("shutdown")
-    def shutdown(self):
+    @tracer.start_as_current_span("stop")
+    def stop(self):
         self.runtime.stop()
 
     @tracer.start_as_current_span("flush_all")

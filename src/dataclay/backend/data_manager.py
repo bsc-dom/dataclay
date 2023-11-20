@@ -197,7 +197,7 @@ class DataManager(threading.Thread):
         else:
             logger.warning("Flushing already in progress...")
 
-    def shutdown(self):
+    def stop(self):
         """Stop this thread"""
         logger.debug("Shutdown request received")
         self._finished.set()

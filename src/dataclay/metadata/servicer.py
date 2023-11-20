@@ -52,7 +52,7 @@ def serve():
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers))
     metadata_pb2_grpc.add_MetadataServiceServicer_to_server(
-        MetadataServicer(metadata_service), server
+        MetadataServicer(metadata_service, stop_event), server
     )
 
     if settings.metadata.enable_healthcheck:
@@ -87,8 +87,9 @@ def serve():
 class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
     """Provides methods that implement functionality of metadata server"""
 
-    def __init__(self, metadata_service: MetadataAPI):
+    def __init__(self, metadata_service: MetadataAPI, stop_event: threading.Event):
         self.metadata_service = metadata_service
+        self.stop_event = stop_event
 
     # TODO: define get_exception_info(..) to serialize excpetions
 
@@ -249,4 +250,13 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
             return Empty()
+        return Empty()
+
+    def Stop(self, request, context):
+        try:
+            self.stop_event.set()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
         return Empty()

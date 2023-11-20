@@ -23,7 +23,7 @@ def healthcheck(host, port, service):
         resp = health_stub.Check(request)
 
         if resp.status != health_pb2.HealthCheckResponse.SERVING:
-            exit(1)
+            raise ConnectionError("Service %s not available" % service)
 
 
 def new_account(username, password, host, port):
@@ -58,10 +58,19 @@ def new_backend(args):
     pass
 
 
-def shutdown_backend(host, port):
+def stop_backend(host, port):
     backend_client = BackendClient(host, port)
-    backend_client.shutdown()
+    backend_client.stop()
     pass
+
+
+def stop_dataclay(host, port):
+    metadata_client = MetadataClient(host, port)
+    backend_infos = metadata_client.get_all_backends()
+    for v in backend_infos.values():
+        stop_backend(v.host, v.port)
+
+    metadata_client.stop()
 
 
 def rebalance(host, port):
@@ -185,17 +194,10 @@ def main():
         "--port", type=int, default=16587, help="Specify the port (default: 16587)"
     )
 
-    # Create the parser for the "shutdown_backend" command
-    parser_shutdown_backend = subparsers.add_parser("shutdown_backend")
-    parser_shutdown_backend.add_argument("host", type=str, help="Specify the backend host")
-    parser_shutdown_backend.add_argument(
-        "port", nargs="?", type=int, default=6867, help="Specify the backend port (default: 6867)"
-    )
-
-    # Create the parser for the "shutdown_backend" command
-    parser_shutdown_backend = subparsers.add_parser("shutdown_backend")
-    parser_shutdown_backend.add_argument("host", type=str, help="Specify the backend host")
-    parser_shutdown_backend.add_argument(
+    # Create the parser for the "stop_backend" command
+    parser_stop_backend = subparsers.add_parser("stop_backend")
+    parser_stop_backend.add_argument("host", type=str, help="Specify the backend host")
+    parser_stop_backend.add_argument(
         "port", nargs="?", type=int, default=6867, help="Specify the backend port (default: 6867)"
     )
 
@@ -205,6 +207,15 @@ def main():
         "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
     )
     parser_rebalance.add_argument(
+        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
+    )
+
+    # Create the parser for the "stop_dataclay" command
+    parser_stop_dataclay = subparsers.add_parser("stop_dataclay")
+    parser_stop_dataclay.add_argument(
+        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
+    )
+    parser_stop_dataclay.add_argument(
         "--port", type=int, default=16587, help="Specify the port (default: 16587)"
     )
 
@@ -238,8 +249,11 @@ def main():
     elif args.function == "new_dataset":
         new_dataset(args.username, args.password, args.dataset, args.host, args.port)
 
-    elif args.function == "shutdown_backend":
-        shutdown_backend(args.host, args.port)
+    elif args.function == "stop_backend":
+        stop_backend(args.host, args.port)
+
+    elif args.function == "stop_dataclay":
+        stop_dataclay(args.host, args.port)
 
     elif args.function == "rebalance":
         rebalance(args.host, args.port)

@@ -155,3 +155,7 @@ class MetadataClient:
             session_id=str(session_id), alias_name=alias_name, dataset_name=dataset_name
         )
         self.stub.DeleteAlias(request)
+
+    @grpc_error_handler
+    def stop(self):
+        self.stub.Stop(Empty())

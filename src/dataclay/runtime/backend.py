@@ -68,14 +68,13 @@ class BackendRuntime(DataClayRuntime):
         self.session = session
 
     # Shutdown
-
     def stop(self):
         # Remove backend entry from metadata
         self.metadata_service.delete_backend(self.backend_id)
 
         # Stop DataManager
         logger.debug("Stopping DataManager")
-        self.data_manager.shutdown()
+        self.data_manager.stop()
         self.data_manager.join()
         logger.debug("DataManager stopped.")
 
