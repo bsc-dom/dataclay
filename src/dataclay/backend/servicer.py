@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 def _get_or_generate_backend_id() -> UUID:
     """Try to retrieve this backend UUID, or generate a new one.
-    
+
     If there is no backend_id defined in the settings, try to get the
     backend UUID. A file may exist in the storage folder (which means that
     this backend already has a identifer, so we should reuse it).
@@ -47,15 +47,17 @@ def _get_or_generate_backend_id() -> UUID:
     else:
         backend_id = settings.backend_id
         logger.info("BackendID defined in settings: %s", backend_id)
-    
+
     # Store the backend_id and return it
     try:
         with open(backend_id_file, "wt") as f:
             f.write(str(backend_id))
             logger.debug("BackendID has been stored in the following file: %s", backend_id_file)
     except OSError:
-        logger.warning("Could not write the BackendID in persistent storage. "
-                        "Restarting this backend may result in unreachable/unrecoverable objects.")
+        logger.warning(
+            "Could not write the BackendID in persistent storage. "
+            "Restarting this backend may result in unreachable/unrecoverable objects."
+        )
         logger.debug("Exception when trying to access persistent backend id file:", exc_info=True)
     return backend_id
 
@@ -132,7 +134,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
 
     def _check_backend(self, context):
         """Check if the backend-id metadata field matches this backend.
-        
+
         There are scenarios in which backend-id will not be set, and that
         is not an issue. However, a mismatch is a strange scenario, which
         warrants at least an error log.
@@ -141,10 +143,13 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
 
         for key, value in metadata:
             if key == "backend-id":
-                if value != self.backend.backend_id:
-                    logger.error("The gRPC call was intended for backend_id=%s. We are %s. "
-                                 "Ignoring it and proceeding (may fail).",
-                                 value, self.backend.backend_id)
+                if value != str(self.backend.backend_id):
+                    logger.error(
+                        "The gRPC call was intended for backend_id=%s. We are %s. "
+                        "Ignoring it and proceeding (may fail).",
+                        value,
+                        self.backend.backend_id,
+                    )
                 break
         else:
             logger.debug("No backend-id metadata header in the call.")
