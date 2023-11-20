@@ -11,6 +11,7 @@ from uuid import UUID, uuid4
 import grpc
 from google.protobuf.empty_pb2 import Empty
 from google.protobuf.wrappers_pb2 import BytesValue
+from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
 from dataclay.backend.api import BackendAPI
 from dataclay.config import settings
@@ -77,12 +78,25 @@ def serve():
         raise RuntimeError("KV store is not ready. Aborting!")
 
     server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=settings.thread_pool_workers),
+        futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers),
         options=[("grpc.max_send_message_length", -1), ("grpc.max_receive_message_length", -1)],
     )
     backend_pb2_grpc.add_BackendServiceServicer_to_server(
         BackendServicer(backend, stop_event), server
     )
+
+    if settings.backend.enable_healthcheck:
+        logger.info("Enabling healthcheck for BackendService")
+        health_servicer = health.HealthServicer(
+            experimental_non_blocking=True,
+            experimental_thread_pool=futures.ThreadPoolExecutor(
+                max_workers=settings.healthcheck_max_workers
+            ),
+        )
+        health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
+        health_servicer.set(
+            "dataclay.proto.backend.BackendService", health_pb2.HealthCheckResponse.SERVING
+        )
 
     address = f"{settings.backend.listen_address}:{settings.backend.port}"
     server.add_insecure_port(address)

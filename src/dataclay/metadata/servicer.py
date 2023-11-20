@@ -10,6 +10,7 @@ from uuid import UUID, uuid4
 
 import grpc
 from google.protobuf.empty_pb2 import Empty
+from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
 from dataclay.config import settings
 from dataclay.exceptions.exceptions import AlreadyExistError
@@ -49,10 +50,23 @@ def serve():
             settings.root_username, settings.root_password.get_secret_value(), settings.root_dataset
         )
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.thread_pool_workers))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers))
     metadata_pb2_grpc.add_MetadataServiceServicer_to_server(
         MetadataServicer(metadata_service), server
     )
+
+    if settings.metadata.enable_healthcheck:
+        logger.info("Enabling healthcheck for MetadataService")
+        health_servicer = health.HealthServicer(
+            experimental_non_blocking=True,
+            experimental_thread_pool=futures.ThreadPoolExecutor(
+                max_workers=settings.healthcheck_max_workers
+            ),
+        )
+        health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
+        health_servicer.set(
+            "dataclay.proto.metadata.MetadataService", health_pb2.HealthCheckResponse.SERVING
+        )
 
     address = f"{settings.metadata.listen_address}:{settings.metadata.port}"
     server.add_insecure_port(address)
@@ -63,7 +77,7 @@ def serve():
     signal.signal(signal.SIGINT, lambda sig, frame: stop_event.set())
     signal.signal(signal.SIGTERM, lambda sig, frame: stop_event.set())
 
-    # Wait until stop_event is set. Then, gracefully stop dataclay backend.
+    # Wait until stop_event is set. Then, gracefully stop dataclay metadata service.
     stop_event.wait()
     logger.info("Stopping MetadataService")
 

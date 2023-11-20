@@ -16,6 +16,7 @@ class BackendSettings(BaseSettings):
     host: str = socket.gethostbyname(socket.gethostname())
     port: int = 6867
     listen_address: str = "0.0.0.0"
+    enable_healthcheck: bool = False
 
 
 class MetadataSettings(BaseSettings):
@@ -25,6 +26,7 @@ class MetadataSettings(BaseSettings):
     host: str = socket.gethostbyname(socket.gethostname())
     port: int = 16587
     listen_address: str = "0.0.0.0"
+    enable_healthcheck: bool = False
 
 
 class ClientSettings(BaseSettings):
@@ -52,7 +54,8 @@ class Settings(BaseSettings):
     dataclay_id: Optional[uuid.UUID] = Field(default=None, alias="dataclay_id")
     storage_path: str = "/data/storage/"
     check_session: bool = False
-    thread_pool_workers: Optional[int] = None
+    thread_pool_max_workers: Optional[int] = None
+    healthcheck_max_workers: Optional[int] = None
     loglevel: Annotated[str, StringConstraints(strip_whitespace=True, to_upper=True)] = "INFO"
 
     # Timeouts
