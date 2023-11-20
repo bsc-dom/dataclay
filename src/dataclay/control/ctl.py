@@ -5,8 +5,7 @@ import os
 import pprint
 
 import grpc
-from grpc_health.v1 import health_pb2
-from grpc_health.v1 import health_pb2_grpc
+from grpc_health.v1 import health_pb2, health_pb2_grpc
 
 from dataclay.backend.client import BackendClient
 from dataclay.metadata.client import MetadataClient

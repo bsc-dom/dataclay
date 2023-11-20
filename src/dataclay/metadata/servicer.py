@@ -9,12 +9,8 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import grpc
-
-from grpc_health.v1 import health
-from grpc_health.v1 import health_pb2
-from grpc_health.v1 import health_pb2_grpc
-
 from google.protobuf.empty_pb2 import Empty
+from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
 from dataclay.config import settings
 from dataclay.exceptions.exceptions import AlreadyExistError

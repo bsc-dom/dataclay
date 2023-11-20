@@ -9,13 +9,9 @@ from concurrent import futures
 from uuid import UUID
 
 import grpc
-
-from grpc_health.v1 import health
-from grpc_health.v1 import health_pb2
-from grpc_health.v1 import health_pb2_grpc
-
 from google.protobuf.empty_pb2 import Empty
 from google.protobuf.wrappers_pb2 import BytesValue
+from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
 from dataclay.backend.api import BackendAPI
 from dataclay.config import settings
