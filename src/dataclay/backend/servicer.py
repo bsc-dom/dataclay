@@ -130,7 +130,27 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
         self.backend = backend
         self.stop_event = stop_event
 
+    def _check_backend(self, context):
+        """Check if the backend-id metadata field matches this backend.
+        
+        There are scenarios in which backend-id will not be set, and that
+        is not an issue. However, a mismatch is a strange scenario, which
+        warrants at least an error log.
+        """
+        metadata = context.invocation_metadata()
+
+        for key, value in metadata:
+            if key == "backend-id":
+                if value != self.backend.backend_id:
+                    logger.error("The gRPC call was intended for backend_id=%s. We are %s. "
+                                 "Ignoring it and proceeding (may fail).",
+                                 value, self.backend.backend_id)
+                break
+        else:
+            logger.debug("No backend-id metadata header in the call.")
+
     def RegisterObjects(self, request, context):
+        self._check_backend(context)
         try:
             self.backend.register_objects(request.dict_bytes, request.make_replica)
         except Exception as e:
@@ -141,6 +161,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
         return Empty()
 
     def MakePersistent(self, request, context):
+        self._check_backend(context)
         try:
             self.backend.make_persistent(request.pickled_obj)
         except Exception as e:
@@ -151,6 +172,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
         return Empty()
 
     def CallActiveMethod(self, request, context):
+        self._check_backend(context)
         try:
             value, is_exception = self.backend.call_active_method(
                 UUID(request.session_id),
@@ -171,6 +193,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     #################
 
     def GetObjectProperties(self, request, context):
+        self._check_backend(context)
         try:
             result = self.backend.get_object_properties(UUID(request.object_id))
             return BytesValue(value=result)
@@ -181,6 +204,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return BytesValue()
 
     def UpdateObjectProperties(self, request, context):
+        self._check_backend(context)
         try:
             self.backend.update_object_properties(
                 UUID(request.object_id), request.serialized_properties
@@ -193,6 +217,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def NewObjectVersion(self, request, context):
+        self._check_backend(context)
         try:
             result = self.backend.new_object_version(UUID(request.object_id))
             return backend_pb2.NewObjectVersionResponse(object_info=result)
@@ -203,6 +228,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return backend_pb2.NewObjectVersionResponse()
 
     def ConsolidateObjectVersion(self, request, context):
+        self._check_backend(context)
         try:
             self.backend.consolidate_object_version(UUID(request.object_id))
             return Empty()
@@ -213,6 +239,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def ProxifyObject(self, request, context):
+        self._check_backend(context)
         try:
             self.backend.proxify_object(UUID(request.object_id), UUID(request.new_object_id))
             return Empty()
@@ -223,6 +250,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def ChangeObjectId(self, request, context):
+        self._check_backend(context)
         try:
             self.backend.change_object_id(UUID(request.object_id), UUID(request.new_object_id))
             return Empty()
@@ -233,6 +261,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def SendObjects(self, request, context):
+        self._check_backend(context)
         try:
             self.backend.send_objects(
                 map(UUID, request.object_ids),
@@ -249,6 +278,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def FlushAll(self, request, context):
+        self._check_backend(context)
         try:
             self.backend.flush_all()
             return Empty()
@@ -259,6 +289,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def Shutdown(self, request, context):
+        self._check_backend(context)
         try:
             self.stop_event.set()
             return Empty()
@@ -269,6 +300,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def Drain(self, request, context):
+        self._check_backend(context)
         try:
             self.backend.move_all_objects()
             self.stop_event.set()
@@ -280,6 +312,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def NewObjectReplica(self, request, context):
+        self._check_backend(context)
         try:
             self.backend.new_object_replica(
                 UUID(request.object_id),
