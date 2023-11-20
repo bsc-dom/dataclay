@@ -133,7 +133,10 @@ def main():
         "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
     )
     parser_healthcheck.add_argument(
-        "--service", choices=["backend", "metadata"], required=True, help="Specify the kind of service"
+        "--service",
+        choices=["backend", "metadata"],
+        required=True,
+        help="Specify the kind of service",
     )
     parser_healthcheck.add_argument(
         "--port", type=int, default=0, help="Specify the port (default: inferred from service)"
@@ -219,28 +222,34 @@ def main():
 
     args = parser.parse_args()
 
-    match args.function:
-        case "healthcheck":
-            if args.service == "backend":
-                port = args.port or 6867
-                healthcheck(args.host, port, "dataclay.proto.backend.BackendService")
-            elif args.service == "metadata":
-                port = args.port or 16587
-                healthcheck(args.host, port, "dataclay.proto.metadata.MetadataService")
-        case "new_account":
-            new_account(args.username, args.password, args.host, args.port)
-        case "new_session":
-            new_session(args.username, args.password, args.dataset, args.host, args.port)
-        case "new_dataset":
-            new_dataset(args.username, args.password, args.dataset, args.host, args.port)
-        case "shutdown_backend":
-            shutdown_backend(args.host, args.port)
-        case "rebalance":
-            rebalance(args.host, args.port)
-        case "get_backends":
-            get_backends(args.host, args.port)
-        case "get_objects":
-            get_objects(args.host, args.port)
+    if args.function == "healthcheck":
+        if args.service == "backend":
+            port = args.port or 6867
+            healthcheck(args.host, port, "dataclay.proto.backend.BackendService")
+        elif args.service == "metadata":
+            port = args.port or 16587
+            healthcheck(args.host, port, "dataclay.proto.metadata.MetadataService")
+
+    elif args.function == "new_account":
+        new_account(args.username, args.password, args.host, args.port)
+
+    elif args.function == "new_session":
+        new_session(args.username, args.password, args.dataset, args.host, args.port)
+
+    elif args.function == "new_dataset":
+        new_dataset(args.username, args.password, args.dataset, args.host, args.port)
+
+    elif args.function == "shutdown_backend":
+        shutdown_backend(args.host, args.port)
+
+    elif args.function == "rebalance":
+        rebalance(args.host, args.port)
+
+    elif args.function == "get_backends":
+        get_backends(args.host, args.port)
+
+    elif args.function == "get_objects":
+        get_objects(args.host, args.port)
 
     # args.func(args)
 
