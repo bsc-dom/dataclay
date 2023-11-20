@@ -1,9 +1,9 @@
 import logging
 import socket
 import uuid
-from typing import Literal, Optional
+from typing import Literal, Optional, Annotated
 
-from pydantic import AliasChoices, Field, SecretStr, constr
+from pydantic import AliasChoices, Field, SecretStr, StringConstraints
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,7 +11,7 @@ class BackendSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="dataclay_backend_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
     )
-    id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    id: Optional[uuid.UUID] = None
     name: Optional[str] = None
     host: str = socket.gethostbyname(socket.gethostname())
     port: int = 6867
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     storage_path: str = "/data/storage/"
     check_session: bool = False
     thread_pool_workers: Optional[int] = None
-    loglevel: constr(to_upper=True) = "WARNING"
+    loglevel: Annotated[str, StringConstraints(strip_whitespace=True, to_upper=True)] = "INFO"
 
     # Timeouts
     grpc_check_alive_timeout: int = 60

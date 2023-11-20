@@ -20,7 +20,6 @@ from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
     from uuid import UUID
-
     from dataclay.dataclay_object import DataClayObject
 
 tracer = trace.get_tracer(__name__)
@@ -28,14 +27,14 @@ logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
 class BackendAPI:
-    def __init__(self, name: str, port: int, kv_host: str, kv_port: int):
+    def __init__(self, name: str, port: int, backend_id: UUID, kv_host: str, kv_port: int):
         # NOTE: the port is (atm) exclusively for unique identification of an EE
         # (given that the name is shared between all EE that share a SL, which happens in HPC deployments)
         self.name = name
         self.port = port
 
         # Initialize runtime
-        self.backend_id = settings.backend.id
+        self.backend_id = backend_id
         self.runtime = BackendRuntime(kv_host, kv_port, self.backend_id)
         set_runtime(self.runtime)
 
