@@ -410,20 +410,29 @@ class DataClayRuntime(ABC):
         new_backend_clients = {}
 
         def add_backend_client(backend_info: Backend):
-            if backend_info.id in self.backend_clients:
-                if (
-                    backend_info.host == self.backend_clients[backend_info.id].host
-                    and backend_info.port == self.backend_clients[backend_info.id].port
-                    and self.backend_clients[backend_info.id].is_ready(
+            if (
+                backend_info.id in self.backend_clients
+                and self.backend_clients[backend_info.id].is_ready(
                         settings.timeout_channel_ready
                     )
-                ):
+                and (
+                    settings.client.proxy_enabled 
+                    or (
+                        backend_info.host == self.backend_clients[backend_info.id].host
+                        and backend_info.port == self.backend_clients[backend_info.id].port
+                    )
+            )):
                     new_backend_clients[backend_info.id] = self.backend_clients[backend_info.id]
                     return
 
-            backend_client = BackendClient(
-                backend_info.host, backend_info.port, backend_id=backend_info.id
-            )
+            if settings.client.proxy_enabled:
+                backend_client = BackendClient(settings.client.proxy_host, 
+                                               settings.client.proxy_port, 
+                                               backend_id=backend_info.id)
+            else:
+                backend_client = BackendClient(
+                    backend_info.host, backend_info.port, backend_id=backend_info.id)
+
             if backend_client.is_ready(settings.timeout_channel_ready):
                 new_backend_clients[backend_info.id] = backend_client
             else:

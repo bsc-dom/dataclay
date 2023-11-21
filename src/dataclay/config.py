@@ -30,8 +30,15 @@ class MetadataSettings(BaseSettings):
 
 
 class ProxySettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="dataclay_proxy_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
+    )
     port: int = 8676
     listen_address: str = "0.0.0.0"
+    mds_host: str
+    mds_port: int = 16587
+    config_module: str = "proxy_config"  # Could use ImportString, but ATM default values are not imported
+
 
 class ClientSettings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -48,6 +55,9 @@ class ClientSettings(BaseSettings):
     dataclay_port: int = Field(
         default=16587, alias=AliasChoices("dc_port", "dataclay_metadata_port", "dataclay_port")
     )
+    proxy_enabled: bool = False
+    proxy_host: str = "127.0.0.1"
+    proxy_port: int = 8676
 
 
 class Settings(BaseSettings):

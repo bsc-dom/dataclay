@@ -96,6 +96,8 @@ class Client:
         password: Optional[str] = None,
         dataset: Optional[str] = None,
         local_backend: Optional[str] = None,
+        proxy_host: Optional[str] = None,
+        proxy_port: Optional[int] = None,
     ):
         # Set settings
         settings_kwargs = {}
@@ -111,6 +113,12 @@ class Client:
             settings_kwargs["dataset"] = dataset
         if local_backend:
             settings_kwargs["local_backend"] = local_backend
+        if proxy_host:
+            settings_kwargs["proxy_host"] = proxy_host
+            settings_kwargs["proxy_enabled"] = True
+        if proxy_port:
+            settings_kwargs["proxy_port"] = proxy_port
+            settings_kwargs["proxy_enabled"] = True
 
         self.settings = ClientSettings(**settings_kwargs)
 
@@ -142,7 +150,14 @@ class Client:
 
         # Create and replace runtime
         self.previous_runtime = get_runtime()
-        self.runtime = ClientRuntime(settings.client.dataclay_host, settings.client.dataclay_port)
+
+        if settings.client.proxy_enabled:
+            logger.debug("Using proxy connection to %s:%s", 
+                        settings.client.proxy_host, settings.client.proxy_port)
+            self.runtime = ClientRuntime(settings.client.proxy_host, settings.client.proxy_port)
+        else:
+            self.runtime = ClientRuntime(settings.client.dataclay_host, settings.client.dataclay_port)
+
         set_runtime(self.runtime)
 
         # Create a new session

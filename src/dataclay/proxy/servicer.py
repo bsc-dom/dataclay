@@ -2,6 +2,7 @@
 
 import logging
 import threading
+from functools import wraps
 from uuid import UUID
 from concurrent import futures
 
@@ -15,21 +16,43 @@ from dataclay.metadata.api import MetadataAPI
 logger = logging.getLogger(__name__)
 
 
-def serve():
+def apply_middleware(f):
+    """Decorator for methods in the proxy classes.
+    
+    This can be applied to methods of both classes BackendProxyServicer and
+    MetadataProxyServicer classes. Note that this decorator relies on two
+    specific idiosincrasies:
+    - The method name matches the gRPC method.
+    - The class has a middleware attribute (list of middleware to apply).
+    """
+    @wraps(f)
+    def wrapper(self, request, context):
+        logger.debug("Entrypoint for method %s", f.__name__)
+        for mid in self.middleware:
+            mid(f.__name__, request, context)
+        logger.info("Ready to proxy method %s", f.__name__)
+        return f(self, request,context)        
+    return wrapper
+
+
+def serve(md_api: MetadataAPI, interceptors: list[grpc.ServerInterceptor], middleware_metadata: list, middleware_backend: list):
     stop_event = threading.Event()
 
     server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=settings.thread_pool_workers),
+        futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers),
         options=[("grpc.max_send_message_length", -1), ("grpc.max_receive_message_length", -1)],
+        interceptors=interceptors
     )
     
-    md_api = MetadataAPI(settings.kv_host, settings.kv_port)
-
     backend_pb2_grpc.add_BackendServiceServicer_to_server(
-        BackendProxyServicer(md_api), server
+        BackendProxyServicer(md_api, *middleware_backend), server
     )
+    
+    # TODO: Something something SSL check (maybe not always will be an insecure channel)
+    ch = grpc.insecure_channel(f'{settings.proxy.mds_host}:{settings.proxy.mds_port}')
+    mds_stub = metadata_pb2_grpc.MetadataServiceStub(ch)
     metadata_pb2_grpc.add_MetadataServiceServicer_to_server(
-        MetadataProxyServicer(), server
+        MetadataProxyServicer(mds_stub, *middleware_metadata), server
     )
 
     address = f"{settings.proxy.listen_address}:{settings.proxy.port}"
@@ -48,12 +71,12 @@ def serve():
 class BackendProxyServicer(backend_pb2_grpc.BackendServiceServicer):
     metadata_client: MetadataAPI
     backend_stubs: dict[UUID, backend_pb2_grpc.BackendServiceStub]
-    interceptors: list[grpc.UnaryUnaryClientInterceptor]
+    middleware: list
 
-    def __init__(self, metadata_client, *interceptors):
+    def __init__(self, metadata_client, *middleware):
         self.backend_stubs = dict()
         self.metadata_client = metadata_client
-        self.interceptors = interceptors
+        self.middleware = middleware
 
     def _refresh_backends(self):
         for k, v in self.metadata_client.get_all_backends().items():
@@ -87,10 +110,33 @@ class BackendProxyServicer(backend_pb2_grpc.BackendServiceServicer):
         except KeyError:
             context.abort(grpc.StatusCode.NOT_FOUND, "Backend %s does not exist" % backend_id)
 
+    @apply_middleware
     def RegisterObjects(self, request, context):
         stub = self._get_stub(context)
         return stub.RegisterObjects(request)
 
+    @apply_middleware
+    def MakePersistent(self, request, context):
+        stub = self._get_stub(context)
+        return stub.MakePersistent(request)
+
+    @apply_middleware
+    def CallActiveMethod(self, request, context):
+        stub = self._get_stub(context)
+        return stub.CallActiveMethod(request)
+
 
 class MetadataProxyServicer(metadata_pb2_grpc.MetadataServiceServicer):
-    pass
+    middleware: list
+    # stub: Stub??
+    def __init__(self, stub, *middleware):
+        self.middleware = middleware
+        self.stub = stub
+
+    @apply_middleware
+    def NewSession(self, request, context):
+        return self.stub.NewSession(request)
+    
+    @apply_middleware
+    def GetAllBackends(self, request, context):
+        return self.stub.GetAllBackends(request)
