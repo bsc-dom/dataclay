@@ -152,11 +152,16 @@ class Client:
         self.previous_runtime = get_runtime()
 
         if settings.client.proxy_enabled:
-            logger.debug("Using proxy connection to %s:%s", 
-                        settings.client.proxy_host, settings.client.proxy_port)
+            logger.debug(
+                "Using proxy connection to %s:%s",
+                settings.client.proxy_host,
+                settings.client.proxy_port,
+            )
             self.runtime = ClientRuntime(settings.client.proxy_host, settings.client.proxy_port)
         else:
-            self.runtime = ClientRuntime(settings.client.dataclay_host, settings.client.dataclay_port)
+            self.runtime = ClientRuntime(
+                settings.client.dataclay_host, settings.client.dataclay_port
+            )
 
         set_runtime(self.runtime)
 

@@ -5,9 +5,9 @@ import logging
 
 import dataclay.utils.metrics
 import dataclay.utils.telemetry
-from dataclay.proxy import servicer
 from dataclay.config import ProxySettings, settings
 from dataclay.metadata.api import MetadataAPI
+from dataclay.proxy import servicer
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +45,10 @@ middleware_metadata = list()
 try:
     config_module = importlib.import_module(settings.proxy.config_module)
 except ImportError:
-    logger.info("Could not import %s, proceeding with default proxy configuration", 
-                settings.proxy.config_module)
+    logger.info(
+        "Could not import %s, proceeding with default proxy configuration",
+        settings.proxy.config_module,
+    )
 else:
     # At this point, there *is* a config_module but it may or may not contain
     # any of the following configuration entries:
@@ -58,7 +60,7 @@ else:
     try:
         middleware_metadata = config_module.middleware_metadata
     except AttributeError:
-        pass    
+        pass
     try:
         middleware_backend = config_module.middleware_backend
     except AttributeError:

@@ -37,7 +37,9 @@ class ProxySettings(BaseSettings):
     listen_address: str = "0.0.0.0"
     mds_host: str
     mds_port: int = 16587
-    config_module: str = "proxy_config"  # Could use ImportString, but ATM default values are not imported
+    config_module: str = (
+        "proxy_config"  # Could use ImportString, but ATM default values are not imported
+    )
 
 
 class ClientSettings(BaseSettings):
