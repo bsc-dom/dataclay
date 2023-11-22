@@ -123,7 +123,12 @@ class BackendProxyServicer(backend_pb2_grpc.BackendServiceServicer):
     def RegisterObjects(self, request, context):
         stub = self._get_stub(context)
         return stub.RegisterObjects(request)
-
+    
+    @apply_middleware
+    def SendObjects(self, request, context):
+        stub = self._get_stub(context)
+        return stub.SendObjects(request)
+    
     @apply_middleware
     def MakePersistent(self, request, context):
         stub = self._get_stub(context)
@@ -145,6 +150,10 @@ class MetadataProxyServicer(metadata_pb2_grpc.MetadataServiceServicer):
     @apply_middleware
     def NewSession(self, request, context):
         return self.stub.NewSession(request)
+
+    @apply_middleware
+    def CloseSession(self, request, context):
+        return self.stub.CloseSession(request)
 
     @apply_middleware
     def GetAllBackends(self, request, context):

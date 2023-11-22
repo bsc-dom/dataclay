@@ -1,0 +1,55 @@
+version: '3.9'
+services:
+
+  redis:
+    image: redis:latest
+
+  proxy:
+    image: dataclay
+    ports:
+      - 8676:8676
+    depends_on:
+      - metadata-service
+      - backend1
+      - backend2
+    environment:
+      - DATACLAY_PROXY_MDS_HOST=metadata-service
+      - DATACLAY_KV_HOST=redis
+    command: python -m dataclay.proxy
+
+  metadata-service:
+    image: dataclay
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_PASSWORD=s3cret
+      - DATACLAY_USERNAME=testuser
+      - DATACLAY_DATASET=testdata
+      - DATACLAY_METADATA_ENABLE_HEALTHCHECK=True
+      - DATACLAY_LOGLEVEL=info
+    command: python -m dataclay.metadata
+
+  backend1:
+    image: dataclay
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_BACKEND_ENABLE_HEALTHCHECK=true
+      - DATACLAY_LOGLEVEL=debug
+    command: python -m dataclay.backend
+    volumes:
+      - ./model:/workdir/model:ro
+
+  backend2:
+    image: dataclay
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_BACKEND_ENABLE_HEALTHCHECK=true
+      - DATACLAY_LOGLEVEL=debug
+    command: python -m dataclay.backend
+    volumes:
+      - ./model:/workdir/model:ro
