@@ -1,18 +1,17 @@
 import argparse
 import json
 import logging
-import os
 import time
 
 import grpc
 from grpc_health.v1 import health_pb2, health_pb2_grpc
 
+import dataclay
 from dataclay.backend.client import BackendClient
+from dataclay.config import ClientSettings, settings
 from dataclay.metadata.client import MetadataClient
-from dataclay.utils.uuid import UUIDEncoder, uuid_parser
+from dataclay.utils.uuid import UUIDEncoder
 
-DATACLAY_LOGLEVEL = os.getenv("DATACLAY_LOGLEVEL", default="INFO").upper()
-logging.basicConfig(level=DATACLAY_LOGLEVEL)
 logger = logging.getLogger(__name__)
 
 
@@ -40,27 +39,25 @@ def healthcheck(host, port, service, retries=1, retry_interval=1.0):
 
 
 def new_account(username, password, host, port):
-    logger.info(f'Creating "{username}" account')
+    logger.info("Creating new account %s at %s:%s", username, host, port)
     mds_client = MetadataClient(host, port)
     mds_client.new_account(username, password)
-    logger.info("Created account (%s)", username)
 
 
 def new_session(username, password, dataset, host, port):
-    logger.info("Creating new session")
+    logger.info("Creating new session %s/%s at %s:%s", username, dataset, host, port)
     mds_client = MetadataClient(host, port)
     session = mds_client.new_session(username, password, dataset)
-    logger.info("Created new session for %s, with id %s", username, session.id)
 
 
 def new_dataset(username, password, dataset, host, port):
-    logger.info("Creating new dataset")
+    logger.info("Creating new dataset %s/%s at %s:%s", username, dataset, host, port)
     mds_client = MetadataClient(host, port)
     mds_client.new_dataset(username, password, dataset)
-    logger.info("Created new dataset %s for %s", dataset, username)
 
 
 def get_backends(host, port):
+    logger.info("Getting backends from %s:%s", host, port)
     metadata_client = MetadataClient(host, port)
     backend_infos = metadata_client.get_all_backends()
     for v in backend_infos.values():
@@ -72,12 +69,13 @@ def new_backend(args):
 
 
 def stop_backend(host, port):
+    logger.info("Stopping backend at %s:%s", host, port)
     backend_client = BackendClient(host, port)
     backend_client.stop()
-    pass
 
 
 def stop_dataclay(host, port):
+    logger.info("Stopping dataclay at %s:%s", host, port)
     metadata_client = MetadataClient(host, port)
     backend_infos = metadata_client.get_all_backends()
     for v in backend_infos.values():
@@ -87,6 +85,7 @@ def stop_dataclay(host, port):
 
 
 def rebalance(host, port):
+    logger.info("Rebalancing dataclay at %s:%s", host, port)
     metadata_client = MetadataClient(host, port)
     backend_infos = metadata_client.get_all_backends()
 
@@ -135,20 +134,37 @@ def rebalance(host, port):
 
 
 def get_objects(host, port):
+    logger.info("Getting objects from %s:%s", host, port)
     metadata_client = MetadataClient(host, port)
     object_mds = metadata_client.get_all_objects()
     for v in object_mds.values():
         print(json.dumps(v.__dict__, cls=UUIDEncoder, indent=2))
 
 
-def main():
+def parse_arguments():
     # Create the top-level parser
     parser = argparse.ArgumentParser(description="Dataclay tool")
-    subparsers = parser.add_subparsers(dest="function", required=True)
-    # parser.add_argument("--host", type=str, default="localhost", help="Specify the host (default: localhost)")
-    # parser.add_argument("--port", type=int, default=16587, help="Specify the port (default: 16587)")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {dataclay.__version__}")
+    subparsers = parser.add_subparsers(dest="function", required=True, help="Function to execute")
 
-    # Create the parser for the "healthcheck" command
+    # Common arguments for host and port
+    common_args = argparse.ArgumentParser(add_help=False)
+    common_args.add_argument(
+        "--host",
+        type=str,
+        default=settings.client.dataclay_host,
+        help="Specify the dataclay host (default: DC_HOST or localhost)",
+    )
+    common_args.add_argument(
+        "--port",
+        type=int,
+        default=settings.client.dataclay_port,
+        help="Specify the dataclay port (default: DC_PORT or 16587)",
+    )
+
+    ###############
+    # healthcheck #
+    ###############
     parser_healthcheck = subparsers.add_parser("healthcheck")
     parser_healthcheck.add_argument(
         "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
@@ -163,88 +179,100 @@ def main():
         "--port", type=int, default=0, help="Specify the port (default: inferred from service)"
     )
 
-    # Create the parser for the "new_account" command
-    parser_new_account = subparsers.add_parser("new_account")
-    parser_new_account.add_argument("username", type=str)
-    parser_new_account.add_argument("password", type=str)
-    parser_new_account.add_argument(
-        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
-    )
-    parser_new_account.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
-    )
+    ###############
+    # new_account #
+    ###############
+    parser_new_account = subparsers.add_parser("new_account", parents=[common_args])
+    parser_new_account.add_argument("username", type=str, help="Specify the username")
+    parser_new_account.add_argument("password", type=str, help="Specify the password")
 
-    # Create the parser for the "new_session" command
-    parser_new_session = subparsers.add_parser("new_session")
-    parser_new_session.add_argument("username", type=str)
-    parser_new_session.add_argument("password", type=str)
-    parser_new_session.add_argument("dataset", type=str)
+    ###############
+    # new_session #
+    ###############
+    parser_new_session = subparsers.add_parser("new_session", parents=[common_args])
     parser_new_session.add_argument(
-        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
+        "--username",
+        type=str,
+        default=settings.client.username,
+        help="Specify the username (default: DC_USERNAME or admin)",
     )
     parser_new_session.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
+        "--password",
+        type=str,
+        default=settings.client.password,
+        help="Specify the password (default: DC_PASSWORD or admin)",
+    )
+    parser_new_session.add_argument(
+        "--dataset",
+        type=str,
+        default=settings.client.dataset,
+        help="Specify the dataset (default: DC_DATASET or admin)",
     )
 
-    # Create the parser for the "new_dataset" command
-    parser_new_dataset = subparsers.add_parser("new_dataset")
-    parser_new_dataset.add_argument("username", type=str)
-    parser_new_dataset.add_argument("password", type=str)
-    parser_new_dataset.add_argument("dataset", type=str)
+    ###############
+    # new_dataset #
+    ###############
+    parser_new_dataset = subparsers.add_parser("new_dataset", parents=[common_args])
     parser_new_dataset.add_argument(
-        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
+        "--username",
+        type=str,
+        default=settings.client.username,
+        help="Specify the username (default: DC_USERNAME or admin)",
     )
     parser_new_dataset.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
+        "--password",
+        type=str,
+        default=settings.client.password,
+        help="Specify the password (default: DC_PASSWORD or admin)",
+    )
+    parser_new_dataset.add_argument(
+        "--dataset",
+        type=str,
+        default=settings.client.dataset,
+        help="Specify the dataset (default: DC_DATASET or admin)",
     )
 
-    # Create the parser for the "get_backends" command
-    parser_get_backends = subparsers.add_parser("get_backends")
-    parser_get_backends.add_argument(
-        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
-    )
-    parser_get_backends.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
-    )
+    ################
+    # get_backends #
+    ################
+    parser_get_backends = subparsers.add_parser("get_backends", parents=[common_args])
 
-    # Create the parser for the "stop_backend" command
+    #############
+    # rebalance #
+    #############
+    parser_rebalance = subparsers.add_parser("rebalance", parents=[common_args])
+
+    ################
+    # stop_backend #
+    ################
+    # TODO: Improve this?
     parser_stop_backend = subparsers.add_parser("stop_backend")
-    parser_stop_backend.add_argument("host", type=str, help="Specify the backend host")
+    parser_stop_backend.add_argument("--host", type=str, help="Specify the backend host")
     parser_stop_backend.add_argument(
-        "port", nargs="?", type=int, default=6867, help="Specify the backend port (default: 6867)"
+        "--port", type=int, default=6867, help="Specify the backend port (default: 6867)"
     )
 
-    # Create the parser for the "rebalance" command
-    parser_rebalance = subparsers.add_parser("rebalance")
-    parser_rebalance.add_argument(
-        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
-    )
-    parser_rebalance.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
-    )
+    #################
+    # stop_dataclay #
+    #################
+    parser_stop_dataclay = subparsers.add_parser("stop_dataclay", parents=[common_args])
 
-    # Create the parser for the "stop_dataclay" command
-    parser_stop_dataclay = subparsers.add_parser("stop_dataclay")
-    parser_stop_dataclay.add_argument(
-        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
-    )
-    parser_stop_dataclay.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
-    )
+    ###############
+    # get_objects #
+    ###############
+    parser_get_objects = subparsers.add_parser("get_objects", parents=[common_args])
 
-    # Create the parser for the "get_objects" command
-    parser_get_objects = subparsers.add_parser("get_objects")
-    parser_get_objects.add_argument(
-        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
-    )
-    parser_get_objects.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
-    )
+    return parser.parse_args()
 
-    # TODO: Create the parser for the other commands
 
-    args = parser.parse_args()
+def main():
+    # Set client settings
+    settings.client = ClientSettings()
 
+    # Parse arguments
+    args = parse_arguments()
+
+    # Run the function
     if args.function == "healthcheck":
         if args.service == "backend":
             port = args.port or 6867
@@ -276,8 +304,6 @@ def main():
 
     elif args.function == "get_objects":
         get_objects(args.host, args.port)
-
-    # args.func(args)
 
 
 if __name__ == "__main__":

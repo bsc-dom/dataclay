@@ -2,7 +2,7 @@
 #SBATCH --job-name=b1
 #SBATCH --output=job-%A.out
 #SBATCH --error=job-%A.out
-#SBATCH --nodes=2
+#SBATCH --nodes=3
 #SBATCH --time=00:30:00
 #SBATCH --exclusive
 #SBATCH --qos=debug
@@ -22,9 +22,9 @@ deploy_dataclay \
     --backends ${hostnames[@]:1}
 
 # Run client
-export DC_HOST=${hostnames[0]}
+export DC_HOST=${hostnames[0]} # Used by client.py and ctl.stop_dataclay
 python3 client.py
 
 # Stop dataClay
+python3 -m dataclay.control.ctl stop_dataclay
 cp "job-$SLURM_JOB_ID.out" "$HOME/.dataclay/$SLURM_JOB_ID"
-sleep 5

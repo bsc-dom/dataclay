@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 
 import argparse
+import logging
 import os
 
 import ansible_runner
 from dotenv import dotenv_values
+
 from dataclay.control import ctl
+
+logger = logging.getLogger(__name__)
 
 
 def parse_arguments():
@@ -59,7 +63,7 @@ def run_ansible_playbook(inventory, env_vars):
     dataclay_home = env_vars["DATACLAY_HOME"]
     playbook_path = os.path.join(dataclay_home, "config", "deploy-playbook.yaml")
 
-    print("Running Ansible playbook: ", playbook_path)
+    logger.info("Running Ansible playbook: %s", playbook_path)
 
     # Run the ansible playbook
     runner_response = ansible_runner.run(
@@ -70,16 +74,14 @@ def run_ansible_playbook(inventory, env_vars):
     )
 
     if runner_response.status == "successful":
-        print("Ansible playbook executed successfully.")
-        # print("Output: ", runner_response.stdout.read())
+        logger.info("Ansible playbook executed successfully.")
     else:
-        print(f"Ansible playbook execution failed: {runner_response.status}")
-        # print("Output: ", runner_response.stdout.read())
+        logger.error("Ansible playbook execution failed: %s", runner_response.status)
         exit(1)
 
 
 if __name__ == "__main__":
-    print("Starting dataClay deployment...")
+    logger.info("Starting dataClay deployment...")
 
     #############
     # HOSTNAMES #
@@ -104,10 +106,10 @@ if __name__ == "__main__":
     # Load the environment variables from the file (if it exists)
     env_vars = {}
     if os.path.exists(args.env_file):
-        print("Loading environment variables from ", args.env_file)
+        logger.info("Loading environment variables from %s", args.env_file)
         env_vars = dotenv_values(args.env_file)
     else:
-        print("Environment variables file not found: ", args.env_file)
+        logger.info("Environment variables file not found: %s", args.env_file)
 
     # Add the current environment variables to the dictionary
     env_vars.update(os.environ)
@@ -123,7 +125,7 @@ if __name__ == "__main__":
     os.makedirs(f"{env_vars['DATACLAY_JOB_PATH']}/logs", exist_ok=True)
     os.makedirs(f"{env_vars['DATACLAY_JOB_PATH']}/ansible", exist_ok=True)
 
-    print("Created job folder: ", env_vars["DATACLAY_JOB_PATH"])
+    logger.info("Created job folder: %s", env_vars["DATACLAY_JOB_PATH"])
 
     #############
     # INVENTORY #
@@ -152,17 +154,18 @@ if __name__ == "__main__":
     # HEALTHCHECK #
     ###############
 
+    # TODO: Use dataclay.config.settings to get the ports?
     # check healtchcheck of all metadata servers
-    print("Checking healthcheck of metadata servers...")
+    logger.info("Checking healthcheck of metadata servers...")
     for server in metadata_servers:
         port = int(os.environ.get("DATACLAY_METADATA_PORT", 16587))
-        ctl.healthcheck(server, port, "dataclay.proto.metadata.MetadataService", retries=10)
+        ctl.healthcheck(server, port, "dataclay.proto.metadata.MetadataService", retries=30)
 
     # check healtchcheck of all backend servers
-    print("Checking healthcheck of backend servers...")
+    logger.info("Checking healthcheck of backend servers...")
     for server in backend_servers:
         port = int(os.environ.get("DATACLAY_BACKEND_PORT", 6867))
         # Socket 1
-        ctl.healthcheck(server, port, "dataclay.proto.backend.BackendService", retries=10)
+        ctl.healthcheck(server, port, "dataclay.proto.backend.BackendService", retries=30)
         # Socket 2
-        ctl.healthcheck(server, port + 1, "dataclay.proto.backend.BackendService", retries=10)
+        ctl.healthcheck(server, port + 1, "dataclay.proto.backend.BackendService", retries=30)

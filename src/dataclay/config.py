@@ -1,7 +1,7 @@
 import logging
 import socket
 import uuid
-from typing import Literal, Optional, Annotated
+from typing import Annotated, Literal, Optional
 
 from pydantic import AliasChoices, Field, StringConstraints
 from pydantic_settings import BaseSettings, SettingsConfigDict

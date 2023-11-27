@@ -421,7 +421,9 @@ class DataClayRuntime(ABC):
                     new_backend_clients[backend_info.id] = self.backend_clients[backend_info.id]
                     return
 
-            backend_client = BackendClient(backend_info.host, backend_info.port, backend_id=backend_info.id)
+            backend_client = BackendClient(
+                backend_info.host, backend_info.port, backend_id=backend_info.id
+            )
             if backend_client.is_ready(settings.timeout_channel_ready):
                 new_backend_clients[backend_info.id] = backend_client
             else:

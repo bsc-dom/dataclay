@@ -20,6 +20,7 @@ from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
     from uuid import UUID
+
     from dataclay.dataclay_object import DataClayObject
 
 tracer = trace.get_tracer(__name__)
