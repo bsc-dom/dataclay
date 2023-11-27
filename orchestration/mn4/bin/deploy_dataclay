@@ -5,6 +5,7 @@ import os
 
 import ansible_runner
 from dotenv import dotenv_values
+from dataclay.control import ctl
 
 
 def parse_arguments():
@@ -146,3 +147,22 @@ if __name__ == "__main__":
     ############
 
     run_ansible_playbook(inventory, env_vars)
+
+    ###############
+    # HEALTHCHECK #
+    ###############
+
+    # check healtchcheck of all metadata servers
+    print("Checking healthcheck of metadata servers...")
+    for server in metadata_servers:
+        port = int(os.environ.get("DATACLAY_METADATA_PORT", 16587))
+        ctl.healthcheck(server, port, "dataclay.proto.metadata.MetadataService", retries=10)
+
+    # check healtchcheck of all backend servers
+    print("Checking healthcheck of backend servers...")
+    for server in backend_servers:
+        port = int(os.environ.get("DATACLAY_BACKEND_PORT", 6867))
+        # Socket 1
+        ctl.healthcheck(server, port, "dataclay.proto.backend.BackendService", retries=10)
+        # Socket 2
+        ctl.healthcheck(server, port + 1, "dataclay.proto.backend.BackendService", retries=10)
