@@ -16,7 +16,7 @@ global_env:
   DATACLAY_JOB_PATH: "{{ job_path }}" # Used in otel-json-exporter.yaml
 
 backend_properties:
-  DATACLAY_BACKEND_PORT: "{{ lookup('env', 'DATACLAY_BACKEND_PORT') | default(6868, true) }}"
+  DATACLAY_BACKEND_PORT: "{{ lookup('env', 'DATACLAY_BACKEND_PORT') | default(6867, true) }}"
   DATACLAY_KV_HOST: "{{ lookup('env', 'DATACLAY_KV_HOST') }}"
   DATACLAY_KV_PORT: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
   # DATACLAY_STORAGE_PATH: "{{ lookup('env', 'DATACLAY_STORAGE_PATH') }}"

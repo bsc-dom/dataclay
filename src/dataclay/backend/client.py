@@ -107,7 +107,7 @@ class BackendClient:
         logger.info("SSL configured: using SSL_CLIENT_KEY located at %s", settings.ssl_client_key)
         logger.info("SSL configured: using authority %s", settings.ssl_target_authority)
 
-    # NOTE: It may be not need if the channel_ready_future is check on __init__
+    # NOTE: It may not be necessary if the channel_ready_future is check on __init__
     def is_ready(self, timeout: Optional[float] = None):
         try:
             grpc.channel_ready_future(self.channel).result(timeout)

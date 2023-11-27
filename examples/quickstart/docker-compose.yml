@@ -17,7 +17,6 @@ services:
       - DATACLAY_PASSWORD=s3cret
       - DATACLAY_USERNAME=testuser
       - DATACLAY_DATASET=testdata
-      - DATACLAY_METADATA_ENABLE_HEALTHCHECK=True
       - DATACLAY_LOGLEVEL=info
     command: python -m dataclay.metadata
 
@@ -27,7 +26,6 @@ services:
       - redis
     environment:
       - DATACLAY_KV_HOST=redis
-      - DATACLAY_BACKEND_ENABLE_HEALTHCHECK=true
       - DATACLAY_LOGLEVEL=info
     command: python -m dataclay.backend
     volumes:
