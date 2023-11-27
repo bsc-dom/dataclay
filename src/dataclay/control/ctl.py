@@ -2,7 +2,7 @@ import argparse
 import json
 import logging
 import os
-import pprint
+import time
 
 import grpc
 from grpc_health.v1 import health_pb2, health_pb2_grpc
@@ -16,14 +16,27 @@ logging.basicConfig(level=DATACLAY_LOGLEVEL)
 logger = logging.getLogger(__name__)
 
 
-def healthcheck(host, port, service):
+def healthcheck(host, port, service, retries=1, retry_interval=1.0):
     with grpc.insecure_channel("%s:%s" % (host, port)) as channel:
-        health_stub = health_pb2_grpc.HealthStub(channel)
-        request = health_pb2.HealthCheckRequest(service=service)
-        resp = health_stub.Check(request)
+        for attempt in range(retries):
+            try:
+                health_stub = health_pb2_grpc.HealthStub(channel)
+                request = health_pb2.HealthCheckRequest(service=service)
+                resp = health_stub.Check(request)
+                if resp.status == health_pb2.HealthCheckResponse.SERVING:
+                    logger.info("Service %s at %s:%s is serving", service, host, port)
+                    return
+            except grpc.RpcError as e:
+                if attempt == retries - 1:  # Last attempt
+                    raise ConnectionError(
+                        f"Service {service} at {host}:{port} not available after {retries} retries: {e}"
+                    )
 
-        if resp.status != health_pb2.HealthCheckResponse.SERVING:
-            raise ConnectionError("Service %s not available" % service)
+            # Wait before the next retry
+            time.sleep(retry_interval)
+        raise ConnectionError(
+            f"Service {service} at {host}:{port} is not serving after {retries} retries"
+        )
 
 
 def new_account(username, password, host, port):
