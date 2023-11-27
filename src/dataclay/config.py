@@ -3,7 +3,7 @@ import socket
 import uuid
 from typing import Literal, Optional, Annotated
 
-from pydantic import AliasChoices, Field, SecretStr, StringConstraints
+from pydantic import AliasChoices, Field, StringConstraints
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,12 +33,13 @@ class ClientSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="dc_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
     )
-    password: SecretStr
-    username: str
-    dataset: str
+    password: str = "admin"
+    username: str = "admin"
+    dataset: str = "admin"
     local_backend: Optional[str] = None
     dataclay_host: str = Field(
-        alias=AliasChoices("dc_host", "dataclay_metadata_host", "dataclay_host")
+        default="localhost",
+        alias=AliasChoices("dc_host", "dataclay_metadata_host", "dataclay_host"),
     )
     dataclay_port: int = Field(
         default=16587, alias=AliasChoices("dc_port", "dataclay_metadata_port", "dataclay_port")
@@ -76,7 +77,7 @@ class Settings(BaseSettings):
     memory_check_interval: int = 10
 
     # Root account
-    root_password: SecretStr = Field(default="admin", alias="dataclay_password")
+    root_password: str = Field(default="admin", alias="dataclay_password")
     root_username: str = Field(default="admin", alias="dataclay_username")
     root_dataset: str = Field(default="admin", alias="dataclay_dataset")
 

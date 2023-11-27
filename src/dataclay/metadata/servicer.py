@@ -47,7 +47,7 @@ def serve():
         settings.dataclay_id = metadata_service.get_dataclay("this").id
     else:
         metadata_service.new_superuser(
-            settings.root_username, settings.root_password.get_secret_value(), settings.root_dataset
+            settings.root_username, settings.root_password, settings.root_dataset
         )
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers))

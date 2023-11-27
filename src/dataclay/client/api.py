@@ -148,7 +148,7 @@ class Client:
         # Create a new session
         session = self.runtime.metadata_service.new_session(
             settings.client.username,
-            settings.client.password.get_secret_value(),
+            settings.client.password,
             settings.client.dataset,
         )
         self.runtime.session = session
