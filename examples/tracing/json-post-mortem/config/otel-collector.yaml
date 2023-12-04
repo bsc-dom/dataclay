@@ -1,7 +1,7 @@
 receivers:
   otlpjsonfile:
     include:
-      - "./traces/otel-traces.json"
+      - "/tmp/traces/otel-traces.json"
     start_at: beginning
 exporters:
   otlp:
