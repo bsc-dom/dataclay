@@ -5,7 +5,7 @@ services:
     image: redis:latest
 
   proxy:
-    image: dataclay
+    image: "ghcr.io/bsc-dom/dataclay:edge"
     ports:
       - 8676:8676
     depends_on:
@@ -18,7 +18,7 @@ services:
     command: python -m dataclay.proxy
 
   metadata-service:
-    image: dataclay
+    image: "ghcr.io/bsc-dom/dataclay:edge"
     depends_on:
       - redis
     environment:
@@ -31,7 +31,7 @@ services:
     command: python -m dataclay.metadata
 
   backend1:
-    image: dataclay
+    image: "ghcr.io/bsc-dom/dataclay:edge"
     depends_on:
       - redis
     environment:
@@ -43,7 +43,7 @@ services:
       - ./model:/workdir/model:ro
 
   backend2:
-    image: dataclay
+    image: "ghcr.io/bsc-dom/dataclay:edge"
     depends_on:
       - redis
     environment:
