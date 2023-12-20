@@ -168,6 +168,27 @@ class MetadataAPI:
             self.kv_manager.update(account)
             logger.info("New dataset with name=%s, owner=%s", dataset_name, username)
 
+    @tracer.start_as_current_span("add_account_to_dataset")
+    def add_account_to_dataset(self, username: str, password: str, dataset_name: str, account_name: str):
+        """Allow a certain account to access a certain dataset.
+        
+        The owner of a dataset can call this and add access to an arbitrary account.
+        """
+        with self.kv_manager.lock(Account.path + account_name):
+            operating_acc = self.kv_manager.get_kv(Account, username)
+            if not operating_acc.verify(password):
+                raise AccountInvalidCredentialsError(username)
+            
+            dataset = self.kv_manager.get_kv(Dataset, dataset_name)
+            if dataset.owner != username:
+                raise AccountError(username)
+
+            account = self.kv_manager.get_kv(Account, account_name)
+            account.datasets.append(dataset_name)
+            self.kv_manager.update(account)
+            logger.info("Added dataset %s to account %s", dataset_name, account_name)
+
+
     ############
     # Dataclay #
     ############
