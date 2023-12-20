@@ -21,7 +21,7 @@ except ImportError:
     # (see dependencies on pyproject.toml)
     from get_annotations import get_annotations
 
-from typing import TYPE_CHECKING, Annotated, Any, Optional, get_origin
+from typing import TYPE_CHECKING, Annotated, Any, Optional, get_origin, TypeVar, Type
 
 from dataclay.annotated import LocalOnly, PropertyTransformer
 from dataclay.exceptions import *
@@ -37,6 +37,8 @@ Sentinel = object()
 
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
+
+T = TypeVar('T')
 
 
 def activemethod(func):
@@ -300,7 +302,7 @@ class DataClayObject:
 
     @classmethod
     @tracer.start_as_current_span("get_by_alias")
-    def get_by_alias(cls, alias: str, dataset_name: str = None) -> DataClayObject:
+    def get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
         """Returns the object with the given alias.
 
         Args:
