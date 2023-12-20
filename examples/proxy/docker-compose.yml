@@ -15,6 +15,7 @@ services:
     environment:
       - DATACLAY_PROXY_MDS_HOST=metadata-service
       - DATACLAY_KV_HOST=redis
+      - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.proxy
 
   metadata-service:
@@ -27,7 +28,7 @@ services:
       - DATACLAY_USERNAME=testuser
       - DATACLAY_DATASET=testdata
       - DATACLAY_METADATA_ENABLE_HEALTHCHECK=True
-      - DATACLAY_LOGLEVEL=info
+      - DATACLAY_LOGLEVEL=INFO
     command: python -m dataclay.metadata
 
   backend1:
@@ -37,7 +38,7 @@ services:
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_BACKEND_ENABLE_HEALTHCHECK=true
-      - DATACLAY_LOGLEVEL=debug
+      - DATACLAY_LOGLEVEL=INFO
     command: python -m dataclay.backend
     volumes:
       - ./model:/workdir/model:ro
@@ -49,7 +50,7 @@ services:
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_BACKEND_ENABLE_HEALTHCHECK=true
-      - DATACLAY_LOGLEVEL=debug
+      - DATACLAY_LOGLEVEL=INFO
     command: python -m dataclay.backend
     volumes:
       - ./model:/workdir/model:ro
