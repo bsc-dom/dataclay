@@ -1,0 +1,49 @@
+version: '3.9'
+services:
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+
+  proxy:
+    image: "ghcr.io/bsc-dom/dataclay:edge"
+    ports:
+      - 8676:8676
+    depends_on:
+      - metadata-service
+      - backend
+    environment:
+      - DATACLAY_PROXY_MDS_HOST=metadata-service
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_LOGLEVEL=DEBUG
+      #- DATACLAY_PROXY_CONFIG_MODULE=config  # already the default
+    command: python -m dataclay.proxy
+    volumes:
+      - ./proxy_config.py:/workdir/proxy_config.py
+      - ./middleware.py:/workdir/middleware.py
+
+  metadata-service:
+    image: "ghcr.io/bsc-dom/dataclay:edge"
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_PASSWORD=s3cret
+      - DATACLAY_USERNAME=testuser
+      - DATACLAY_DATASET=testdata
+      - DATACLAY_METADATA_ENABLE_HEALTHCHECK=True
+      - DATACLAY_LOGLEVEL=INFO
+    command: python -m dataclay.metadata
+
+  backend:
+    image: "ghcr.io/bsc-dom/dataclay:edge"
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_BACKEND_ENABLE_HEALTHCHECK=true
+      - DATACLAY_LOGLEVEL=INFO
+    command: python -m dataclay.backend
+    volumes:
+      - ./model:/workdir/model:ro
