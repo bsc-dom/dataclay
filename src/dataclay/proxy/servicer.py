@@ -7,6 +7,10 @@ from concurrent import futures
 import grpc
 
 from dataclay.config import settings
+from dataclay.metadata.api import MetadataAPI
+from dataclay.proto.backend import backend_pb2_grpc
+from dataclay.proto.metadata import metadata_pb2_grpc
+
 
 from .base_classes import BackendProxyBase, MetadataProxyBase
 
