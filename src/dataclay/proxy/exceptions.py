@@ -1,2 +1,2 @@
 class MiddlewareException(Exception):
-    status_code: None
+    status_code = None
