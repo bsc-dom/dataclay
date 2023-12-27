@@ -416,6 +416,7 @@ class DataClayRuntime(ABC):
             return self.backend_clients[backend_id]
 
     def reload_backend_clients(self):
+        """Same as update_backend_clients, but to be used when not wanting to check channel readdinnes"""
         backend_infos = self.metadata_service.get_all_backends(from_backend=self.is_backend)
         new_backend_clients = {}
 
