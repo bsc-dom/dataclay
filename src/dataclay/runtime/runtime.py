@@ -42,13 +42,13 @@ class BackendClientsMonitor(threading.Thread):
     """Thread that periodically updates the backend clients."""
 
     def __init__(self, runtime: DataClayRuntime):
-        threading.Thread.__init__(self, name="backend-clients-manager")
+        threading.Thread.__init__(self, name="backend-clients-monitor")
         self.daemon = True
         self.runtime = runtime
 
     def run(self):
         while True:
-            logger.warning("Updating backend clients")
+            logger.debug("Updating backend clients")
             self.runtime.update_backend_clients()
             time.sleep(settings.backend_clients_check_interval)
 
@@ -122,6 +122,7 @@ class DataClayRuntime(ABC):
             return self.backend_id
 
         elif backend_id is None:
+            # If there is no backend client, update the list of backend clients
             if not self.backend_clients:
                 self.update_backend_clients()
                 if not self.backend_clients:
@@ -129,21 +130,10 @@ class DataClayRuntime(ABC):
                         f"({instance._dc_meta.id}) No backends available to make persistent"
                     )
             backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
-
-            # NOTE: Maybe use a quick update to avoid overhead.
-            # Quiack_update only updates ee_infos, but don't check clients readiness
-            # self.quick_update_backend_clients()
-            # backend_id = random.choice(tuple(self.ee_infos.keys()))
-            # backend_client = self.backend_clients[backend_id]
         else:
             backend_client = self.get_backend_client(backend_id)
 
-        # TODO: Avoid some race-conditions in communication
-        # (make persistent + execute where execute arrives before).
-        # add_volatiles_under_deserialization and remove_volatiles_under_deserialization
-
         # Serialize instance with Pickle
-
         visited_objects: dict[UUID, DataClayObject] = {}
         serialized_objects = recursive_dcdumps(
             instance, local_objects=visited_objects, make_persistent=True
@@ -639,21 +629,36 @@ class DataClayRuntime(ABC):
             raise ObjectNotRegisteredError(instance._dc_meta.id)
 
         if backend_id is None:
-            self.update_backend_clients()
-            candidate_backend_ids = set(self.backend_clients.keys()) - instance._dc_all_backend_ids
-            if not candidate_backend_ids:
-                logger.warning("All available backends have a replica")
-                if not recursive:
-                    return
-                else:
-                    backend_id = random.choice(tuple(self.backend_clients.keys()))
-            else:
-                backend_id = random.choice(tuple(candidate_backend_ids))
+            # Get the backends that do not have a replica of the object
+            avail_backends = set(self.backend_clients.keys()) - instance._dc_all_backend_ids
+
+            # If there is no backend without a replica, update the list of backend clients,
+            # sync the object metadata, and try again
+            if not avail_backends:
+                self.update_backend_clients()
+                instance.sync()
+                avail_backends = set(self.backend_clients.keys()) - instance._dc_all_backend_ids
+
+                if not avail_backends:
+                    logger.warning("All available backends have a replica")
+                    if not recursive:
+                        # If not recursive, no need to continue
+                        return
+                    else:
+                        # If recursive, we still continue in order to send the instance referees
+                        avail_backends = self.backend_clients.keys()
+
+            # Choose a random backend from the available ones
+            backend_id = random.choice(tuple(avail_backends))
 
         elif backend_id in instance._dc_meta.replica_backend_ids:
-            logger.warning("The backend already have a replica")
-            if not recursive:
-                return
+            # If the backend already have a replica, sync the instnace metadata, and try again
+            instance.sync()
+            if backend_id in instance._dc_meta.replica_backend_ids:
+                logger.warning("The backend already have a replica")
+                # If not recursive, no need to continue
+                if not recursive:
+                    return
 
         self.send_objects([instance], backend_id, True, recursive, remotes)
 
