@@ -20,10 +20,17 @@
 
 **100000 iterations**:
 
-- Time make_persistent: 157.54590 seconds
-- Time read all values: 90.13104 seconds
-- Time flush_all: 34.98280 seconds
-- Time load and read all values: 283.70292 seconds
+- Time make_persistent: 164.41901 seconds
+- Time read all values: 120.31077 seconds
+- Time flush_all: 39.86417 seconds
+- Time load and read all values: 323.71481 seconds
+
+**100000 iterations (REDIS CLUSTER)**:
+
+- Time make_persistent: 549.42915 seconds
+- Time read all values: 101.78536 seconds
+- Time flush_all: 44.86119 seconds
+- Time load and read all values: 325.89406 seconds
 
 ### MN4 - COMPSs
 
