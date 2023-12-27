@@ -12,6 +12,8 @@ from builtins import Exception
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 from weakref import WeakValueDictionary
+import threading
+import time
 
 from dataclay import utils
 from dataclay.backend.client import BackendClient
@@ -36,13 +38,31 @@ tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 
+class BackendClientsMonitor(threading.Thread):
+    """Thread that periodically updates the backend clients."""
+
+    def __init__(self, runtime: DataClayRuntime):
+        threading.Thread.__init__(self, name="backend-clients-manager")
+        self.daemon = True
+        self.runtime = runtime
+
+    def run(self):
+        while True:
+            logger.warning("Updating backend clients")
+            self.runtime.update_backend_clients()
+            time.sleep(settings.backend_clients_check_interval)
+
+
 class DataClayRuntime(ABC):
     def __init__(self, metadata_service: MetadataAPI | MetadataClient, backend_id: UUID = None):
-        self.backend_clients: dict[UUID, BackendClient] = {}
         # self._dataclay_id = None
         self.backend_id = backend_id
         self.is_backend = bool(backend_id)
         self.metadata_service = metadata_service
+
+        self.backend_clients: dict[UUID, BackendClient] = {}
+        self.backend_clients_monitor = BackendClientsMonitor(self)
+        self.backend_clients_monitor.start()
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
         self.inmemory_objects: WeakValueDictionary[UUID, DataClayObject] = WeakValueDictionary()
@@ -405,6 +425,31 @@ class DataClayRuntime(ABC):
             self.update_backend_clients()
             return self.backend_clients[backend_id]
 
+    def reload_backend_clients(self):
+        backend_infos = self.metadata_service.get_all_backends(from_backend=self.is_backend)
+        new_backend_clients = {}
+
+        for backend_id, backend_info in backend_infos.items():
+            # Check if the backend is already in the backend_clients
+            if backend_id in self.backend_clients:
+                # Check if the backend location is the same
+                # Don't check if the backend is ready, since the metadata has already check it
+                if (
+                    backend_info.host == self.backend_clients[backend_id].host
+                    and backend_info.port == self.backend_clients[backend_id].port
+                ):
+                    # If backend has not changed, keep the same backend_client
+                    new_backend_clients[backend_id] = self.backend_clients[backend_id]
+                    continue
+
+            # If the backend is new, or has changed, create a new backend_client
+            backend_client = BackendClient(
+                backend_info.host, backend_info.port, backend_id=backend_info.id
+            )
+            new_backend_clients[backend_info.id] = backend_client
+
+        self.backend_clients = new_backend_clients
+
     def update_backend_clients(self):
         backend_infos = self.metadata_service.get_all_backends(from_backend=self.is_backend)
         new_backend_clients = {}
@@ -426,8 +471,8 @@ class DataClayRuntime(ABC):
             )
             if backend_client.is_ready(settings.timeout_channel_ready):
                 new_backend_clients[backend_info.id] = backend_client
-            else:
-                del backend_infos[backend_info.id]
+            # else:
+            #     del backend_infos[backend_info.id]
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = [
