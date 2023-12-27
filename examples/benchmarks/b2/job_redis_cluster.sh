@@ -1,9 +1,9 @@
 #!/bin/bash -e
-#SBATCH --job-name=shrink
+#SBATCH --job-name=b2-redis-cluster
 #SBATCH --output=job-%A.out
 #SBATCH --error=job-%A.out
 #SBATCH --nodes=3
-#SBATCH --time=00:10:00
+#SBATCH --time=00:30:00
 #SBATCH --exclusive
 #SBATCH --qos=debug
 #############################
@@ -17,21 +17,14 @@ hostnames=($(add_network_suffix "-ib0" "${hostnames[@]}"))
 
 # Deploy dataClay
 deploy_dataclay \
-    --redis ${hostnames[0]} \
+    --redis ${hostnames[@]::3} \
     --metadata ${hostnames[0]} \
     --backends ${hostnames[@]:1}
 
 # Run client
-export DC_HOST=${hostnames[0]} # Need by client.py and ctl.stop_dataclay
-python3 client.py
-
-# Remove backend
-python3 -m dataclay.control.ctl stop_backend --host ${hostnames[2]} --port 6867
-python3 -m dataclay.control.ctl stop_backend --host ${hostnames[2]} --port 6868
-
-# Run client again
+export DC_HOST=${hostnames[0]}
 python3 client.py
 
 # Stop dataClay
-python3 -m dataclay.control.ctl stop_dataclay
 cp "job-$SLURM_JOB_ID.out" "$HOME/.dataclay/$SLURM_JOB_ID"
+sleep 5

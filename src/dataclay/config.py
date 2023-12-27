@@ -79,6 +79,7 @@ class Settings(BaseSettings):
     grpc_check_alive_timeout: int = 60
     unload_timeout: int = 5
     timeout_channel_ready: int = 5
+    backend_clients_check_interval: int = 10
 
     # SSL
     ssl_client_trusted_certificates: str = ""
