@@ -26,7 +26,7 @@ export DC_HOST=${hostnames[0]} # Need by client.py and ctl.stop_dataclay
 python3 client.py
 
 # Remove backend
-python3 -m dataclay.control.ctl stop_backend --host ${hostnames[2]}
+python3 -m dataclay.control.ctl stop_backend --host ${hostnames[2]} --port 6867
 python3 -m dataclay.control.ctl stop_backend --host ${hostnames[2]} --port 6868
 
 # Run client again
