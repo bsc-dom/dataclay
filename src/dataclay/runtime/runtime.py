@@ -412,8 +412,10 @@ class DataClayRuntime(ABC):
         try:
             return self.backend_clients[backend_id]
         except KeyError:
-            self.update_backend_clients()
-            return self.backend_clients[backend_id]
+            pass
+
+        self.update_backend_clients()
+        return self.backend_clients[backend_id]
 
     def reload_backend_clients(self):
         """Same as update_backend_clients, but to be used when not wanting to check channel readdinnes"""
@@ -443,27 +445,49 @@ class DataClayRuntime(ABC):
 
     def update_backend_clients(self):
         backend_infos = self.metadata_service.get_all_backends(from_backend=self.is_backend)
+        logger.debug("Updating backend clients. Metadata reports #%d", len(backend_infos))
         new_backend_clients = {}
 
-        def add_backend_client(backend_info: Backend):
-            if backend_info.id in self.backend_clients:
-                if (
-                    backend_info.host == self.backend_clients[backend_info.id].host
-                    and backend_info.port == self.backend_clients[backend_info.id].port
-                    and self.backend_clients[backend_info.id].is_ready(
-                        settings.timeout_channel_ready
-                    )
-                ):
-                    new_backend_clients[backend_info.id] = self.backend_clients[backend_info.id]
-                    return
+        # This only applies to the client, or at least, when client settings are set
+        use_proxy = settings.client is not None and settings.client.proxy_enabled
+        # (Backends will have settings.client = None by default)
 
-            backend_client = BackendClient(
-                backend_info.host, backend_info.port, backend_id=backend_info.id
-            )
+        def add_backend_client(backend_info: Backend):
+            if (
+                backend_info.id in self.backend_clients
+                and (
+                    use_proxy
+                    or (
+                        backend_info.host == self.backend_clients[backend_info.id].host
+                        and backend_info.port == self.backend_clients[backend_info.id].port
+                    )
+                )
+                and self.backend_clients[backend_info.id].is_ready(settings.timeout_channel_ready)
+            ):
+                logger.debug("Existing backend already available: %s", backend_info.id)
+                new_backend_clients[backend_info.id] = self.backend_clients[backend_info.id]
+                return
+
+            if use_proxy:
+                logger.debug("New backend %s, connecting through proxy", backend_info.id)
+                backend_client = BackendClient(
+                    settings.client.proxy_host,
+                    settings.client.proxy_port,
+                    backend_id=backend_info.id,
+                )
+            else:
+                logger.debug(
+                    "New backend %s at %s:%s", backend_info.id, backend_info.host, backend_info.port
+                )
+                backend_client = BackendClient(
+                    backend_info.host, backend_info.port, backend_id=backend_info.id
+                )
+
             if backend_client.is_ready(settings.timeout_channel_ready):
                 new_backend_clients[backend_info.id] = backend_client
-            # else:
-            #     del backend_infos[backend_info.id]
+            else:
+                logger.info("Backend %s gave a timeout, removing it from list", backend_info.id)
+                del backend_infos[backend_info.id]
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = [
@@ -473,6 +497,7 @@ class DataClayRuntime(ABC):
             concurrent.futures.wait(futures)
             # results = [future.result() for future in futures]
 
+        logger.debug("Current list of backends: %s", new_backend_clients)
         self.backend_clients = new_backend_clients
 
     #################
