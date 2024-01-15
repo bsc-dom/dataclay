@@ -44,7 +44,7 @@ def serve():
         settings.dataclay_id = metadata_service.get_dataclay("this").id
     else:
         metadata_service.new_superuser(
-            settings.root_username, settings.root_password.get_secret_value(), settings.root_dataset
+            settings.username, settings.password.get_secret_value(), settings.dataset
         )
 
     logger.info("Metadata service has been registered")

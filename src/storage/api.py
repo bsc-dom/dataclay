@@ -33,7 +33,7 @@ def getByID(object_md_json: str):
     Returns:
         The DataClayObject identified by the given object_md_json
     """
-    object_md = ObjectMetadata.model_validate_json(object_md_json)
+    object_md = ObjectMetadata.parse_raw(object_md_json)
     return get_runtime().get_object_by_id(object_md.id, object_md)
 
 

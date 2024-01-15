@@ -4,14 +4,15 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
-from pydantic import AliasChoices, Field, SecretStr, constr
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseSettings, Field, SecretStr, constr
 
 
 class BackendSettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="dataclay_backend_", env_file=".env", secrets_dir="/run/secrets"
-    )
+    class Config:
+        env_prefix = "dataclay_backend_"
+        env_file = ".env"
+        secrets_dir = "/run/secrets"
+
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
     name: str | None = None
     host: str = socket.gethostbyname(socket.gethostname())
@@ -20,32 +21,35 @@ class BackendSettings(BaseSettings):
 
 
 class MetadataSettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="dataclay_metadata_", env_file=".env", secrets_dir="/run/secrets"
-    )
+    class Config:
+        env_prefix = "dataclay_metadata_"
+        env_file = ".env"
+        secrets_dir = "/run/secrets"
+
     host: str = socket.gethostbyname(socket.gethostname())
     port: int = 16587
     listen_address: str = "0.0.0.0"
 
 
 class ClientSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="dc_", env_file=".env", secrets_dir="/run/secrets")
+    class Config:
+        env_prefix = "dc_"
+        env_file = ".env"
+        secrets_dir = "/run/secrets"
+
     password: SecretStr
     username: str
     dataset: str
     local_backend: str | None = None
-    dataclay_host: str = Field(
-        alias=AliasChoices("dc_host", "dataclay_metadata_host", "dataclay_host")
-    )
-    dataclay_port: int = Field(
-        default=16587, alias=AliasChoices("dc_port", "dataclay_metadata_port", "dataclay_port")
-    )
+    dataclay_host: str = Field(alias="dc_host")
+    dataclay_port: int = Field(default=16587, alias="dc_port")
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="dataclay_", env_file=".env", secrets_dir="/run/secrets"
-    )
+    class Config:
+        env_prefix = "dataclay_"
+        env_file = ".env"
+        secrets_dir = "/run/secrets"
 
     # Other
     grpc_check_alive_timeout: int = 60
@@ -64,9 +68,9 @@ class Settings(BaseSettings):
     nocheck_session_expiration: datetime = datetime.strptime("2120-09-10T20:00:04", date_format)
 
     # root account
-    root_password: SecretStr = Field(default="admin", alias="dataclay_password")
-    root_username: str = Field(default="admin", alias="dataclay_username")
-    root_dataset: str = Field(default="admin", alias="dataclay_dataset")
+    password: SecretStr = Field(default="admin")
+    username: str = Field(default="admin")
+    dataset: str = Field(default="admin")
 
     dataclay_id: uuid.UUID | None = Field(default=None, alias="dataclay_id")
 

@@ -1,3 +1,4 @@
+import json
 import logging
 from abc import ABC, abstractmethod
 from typing import Annotated, ClassVar, Literal
@@ -5,17 +6,12 @@ from uuid import UUID, uuid4
 
 import bcrypt
 from google.protobuf.json_format import MessageToDict, ParseDict
-from pydantic import BaseModel, BeforeValidator, Field
+from pydantic import BaseModel, Field
 
 from dataclay.exceptions import *
 from dataclay.proto.common import common_pb2
 
 logger = logging.getLogger(__name__)
-
-EmptyNone = Annotated[
-    None,
-    BeforeValidator(lambda x: x if x else None),
-]
 
 
 class KeyValue(BaseModel, ABC):
@@ -26,7 +22,7 @@ class KeyValue(BaseModel, ABC):
 
     @property
     def value(self):
-        return self.model_dump_json()
+        return self.json()
 
     @property
     @abstractmethod
@@ -40,14 +36,15 @@ class KeyValue(BaseModel, ABC):
 
     @classmethod
     def from_json(cls, s):
-        return cls.model_validate_json(s)
+        return cls.parse_raw(s)
 
     @classmethod
     def from_proto(cls, proto):
-        return cls.model_validate(MessageToDict(proto, preserving_proto_field_name=True))
+        return cls.parse_obj(MessageToDict(proto, preserving_proto_field_name=True))
 
     def get_proto(self):
-        return self.proto_class(**self.model_dump(mode="json"))
+        # Converting to json and back to dict to ensure UUID are bytes (and not UUID instances)
+        return self.proto_class(**json.loads(self.json()))
 
 
 class Dataclay(KeyValue):
@@ -88,7 +85,7 @@ class ObjectMetadata(KeyValue):
     master_backend_id: UUID | None = None
     replica_backend_ids: set[UUID] = Field(default_factory=set)
     is_read_only: bool = False
-    original_object_id: UUID | EmptyNone = None
+    original_object_id: UUID | None = None
     versions_object_ids: list[UUID] = Field(default_factory=list)
 
     @property
@@ -128,7 +125,7 @@ class Account(KeyValue):
     proto_class: ClassVar = None
 
     username: str
-    hashed_password: str = None
+    hashed_password: str | None = None
     role: str = "NORMAL"
     datasets: list = Field(default_factory=list)
 
