@@ -348,13 +348,27 @@ class DataClayRuntime(ABC):
 
                 # If the connection fails, update the list of backend clients, and try again
                 try:
-                    serialized_response, is_exception = backend_client.call_active_method(
-                        self.session.id,
-                        instance._dc_meta.id,
-                        method_name,
-                        serialized_args,
-                        serialized_kwargs,
-                    )
+                    if method_name == "__getattribute__":
+                        serialized_response, is_exception = backend_client.get_object_attribute(
+                            instance._dc_meta.id,
+                            args[0], # attribute name
+                        )
+                    elif method_name == "__setattr__":
+                        backend_client.set_object_attribute(
+                            instance._dc_meta.id,
+                            args[0], # attribute name
+                            dcdumps(args[1]), # attribute value
+                        )
+                        serialized_response =None
+                        is_exception = False
+                    else:
+                        serialized_response, is_exception = backend_client.call_active_method(
+                            self.session.id,
+                            instance._dc_meta.id,
+                            method_name,
+                            serialized_args,
+                            serialized_kwargs,
+                        )
                 except DataClayException as e:
                     if "failed to connect" in str(e):
                         logger.warning("(%s) Failed to connect. Syncing...", instance._dc_meta.id)

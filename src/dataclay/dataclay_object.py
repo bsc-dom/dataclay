@@ -97,6 +97,9 @@ class DataClayProperty:
         )
 
         if instance._dc_is_local:
+            logger.debug(
+                "Local"
+            )
             if not instance._dc_is_loaded:
                 get_runtime().data_manager.load_object(instance)
             try:
@@ -111,6 +114,9 @@ class DataClayProperty:
             else:
                 return self.transformer.getter(attr)
         else:
+            logger.debug(
+                "Remote"
+            )
             return get_runtime().call_remote_method(instance, "__getattribute__", (self.name,), {})
 
     def __set__(self, instance: DataClayObject, value):
@@ -127,12 +133,18 @@ class DataClayProperty:
         )
 
         if instance._dc_is_local:
+            logger.debug(
+                "Local"
+            )
             if not instance._dc_is_loaded:
                 get_runtime().data_manager.load_object(instance)
             if self.transformer is not None:
                 value = self.transformer.setter(value)
             setattr(instance, self.dc_property_name, value)
         else:
+            logger.debug(
+                "Remote"
+            )
             get_runtime().call_remote_method(instance, "__setattr__", (self.name, value), {})
 
 

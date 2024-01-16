@@ -154,6 +154,26 @@ class BackendClient:
     #################
 
     @grpc_error_handler
+    def get_object_attribute(self, object_id: UUID, attribute: str) -> bytes:
+        request = backend_pb2.GetObjectAttributeRequest(
+            object_id=str(object_id),
+            attribute=attribute,
+        )
+        response = self.stub.GetObjectAttribute(request, metadata=self.metadata_call)
+        return response.value, False
+    
+
+    @grpc_error_handler
+    def set_object_attribute(self, object_id: UUID, attribute: str ,serialized_attribute: bytes):
+        logger.info(serialized_attribute)
+        request = backend_pb2.SetObjectAttributeRequest(
+            object_id=str(object_id),
+            attribute=attribute,
+            serialized_attribute=serialized_attribute,
+        )
+        self.stub.SetObjectAttribute(request, metadata=self.metadata_call)
+
+    @grpc_error_handler
     def get_object_properties(self, object_id: UUID) -> bytes:
         request = backend_pb2.GetObjectPropertiesRequest(
             object_id=str(object_id),

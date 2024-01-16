@@ -160,6 +160,26 @@ class BackendAPI:
 
     # Store Methods
 
+    @tracer.start_as_current_span("get_object_attribute")
+    def get_object_attribute(self, object_id: UUID, attribute: str) -> bytes:
+        """Returns value of the object attibute with ID provided
+        Args:
+            object_id: ID of the object
+            attribute: Name of the attibute
+        Returns:
+            The pickled value of the object attibute.
+        """
+        instance = self.runtime.get_object_by_id(object_id)
+        value = getattr(instance, attribute)
+        return dcdumps(value)
+    
+    @tracer.start_as_current_span("set_object_attribute")
+    def set_object_attribute(self, object_id: UUID, attribute: str ,serialized_attribute: bytes):
+        """Updates an object attibute with ID provided"""
+        instance = self.runtime.get_object_by_id(object_id)
+        object_attribute = pickle.loads(serialized_attribute)
+        setattr(instance, attribute, object_attribute)
+
     @tracer.start_as_current_span("get_object_properties")
     def get_object_properties(self, object_id: UUID) -> bytes:
         """Returns the properties of the object with ID provided
