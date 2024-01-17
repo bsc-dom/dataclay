@@ -45,7 +45,7 @@ def _get_or_generate_backend_id() -> UUID:
         backend_id = uuid4()
         logger.info("BackendID randomly generated: %s", backend_id)
     else:
-        backend_id = settings.backend_id
+        backend_id = settings.backend.id
         logger.info("BackendID defined in settings: %s", backend_id)
 
     # Store the backend_id and return it
