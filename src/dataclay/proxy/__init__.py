@@ -2,14 +2,11 @@ from uuid import UUID
 
 from dataclay.metadata.kvdata import Session
 
+from . import servicer
 from .base_classes import MiddlewareBase
 from .exceptions import MiddlewareException
 
-from . import servicer
-
-__all__ = [
-    "MiddlewareBase", "MiddlewareException"
-]
+__all__ = ["MiddlewareBase", "MiddlewareException"]
 
 
 def get_session(request) -> Session:

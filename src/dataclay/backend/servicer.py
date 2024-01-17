@@ -215,7 +215,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
         self._check_backend(context)
         try:
             self.backend.set_object_attribute(
-                UUID(request.object_id), 
+                UUID(request.object_id),
                 request.attribute,
                 request.serialized_attribute,
             )

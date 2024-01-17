@@ -48,3 +48,11 @@ def test_dc_update_by_alias(client):
     assert person.name == new_person.name
     assert person.age == new_person.age
     Person.delete_alias("test_dc_update_by_alias")
+
+
+def test_dc_set(client):
+    person = Person("Marc", 24)
+    person.dc_put("test_dc_set")
+    person.name = "David"
+    assert person.name == "David"
+    Person.delete_alias("test_dc_set")

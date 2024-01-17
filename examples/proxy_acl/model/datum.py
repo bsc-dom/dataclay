@@ -1,5 +1,6 @@
 from dataclay import DataClayObject, activemethod
 
+
 class SensorValues(DataClayObject):
     values: list
 

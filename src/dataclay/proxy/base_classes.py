@@ -48,10 +48,11 @@ logger = logging.getLogger(__name__)
 
 class MiddlewareBase:
     """Base class to be used for middlewares.
-    
+
     To implement a middleware, create a new class by deriving this
     MiddlewareBase and implement the methods that you need.
     """
+
     def __call__(self, method_name, request, context):
         try:
             m = getattr(self, method_name)
@@ -64,6 +65,7 @@ class MiddlewareBase:
 class BackendMeta(type):
     def __init__(cls, name, bases, dct):
         for method_name in BACKEND_METHODS:
+
             def dynamic_method(self, request, context, *, method_name=method_name):
                 logger.info("Ready to proxy backend method %s", method_name)
                 try:
@@ -82,6 +84,7 @@ class BackendMeta(type):
                     stub = self._get_stub(context)
                     method_to_call = getattr(stub, method_name)
                     return method_to_call(request)
+
             setattr(cls, method_name, dynamic_method)
         super().__init__(name, bases, dct)
 
@@ -89,6 +92,7 @@ class BackendMeta(type):
 class MetadataMeta(type):
     def __init__(cls, name, bases, dct):
         for method_name in METADATA_METHODS:
+
             def dynamic_method(self, request, context, *, method_name=method_name):
                 logger.info("Ready to proxy metadata method %s", method_name)
                 try:
@@ -106,6 +110,7 @@ class MetadataMeta(type):
                 else:
                     method_to_call = getattr(self.stub, method_name)
                     return method_to_call(request)
+
             setattr(cls, method_name, dynamic_method)
         super().__init__(name, bases, dct)
 

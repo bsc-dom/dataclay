@@ -161,10 +161,9 @@ class BackendClient:
         )
         response = self.stub.GetObjectAttribute(request, metadata=self.metadata_call)
         return response.value, False
-    
 
     @grpc_error_handler
-    def set_object_attribute(self, object_id: UUID, attribute: str ,serialized_attribute: bytes):
+    def set_object_attribute(self, object_id: UUID, attribute: str, serialized_attribute: bytes):
         request = backend_pb2.SetObjectAttributeRequest(
             object_id=str(object_id),
             attribute=attribute,
