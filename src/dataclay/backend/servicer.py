@@ -197,6 +197,35 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     # Store Methods #
     #################
 
+    def GetObjectAttribute(self, request, context):
+        self._check_backend(context)
+        try:
+            result = self.backend.get_object_attribute(
+                UUID(request.object_id),
+                request.attribute,
+            )
+            return BytesValue(value=result)
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return BytesValue()
+
+    def SetObjectAttribute(self, request, context):
+        self._check_backend(context)
+        try:
+            self.backend.set_object_attribute(
+                UUID(request.object_id),
+                request.attribute,
+                request.serialized_attribute,
+            )
+            return Empty()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
+
     def GetObjectProperties(self, request, context):
         self._check_backend(context)
         try:

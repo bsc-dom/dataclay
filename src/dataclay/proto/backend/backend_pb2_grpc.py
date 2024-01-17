@@ -26,6 +26,16 @@ class BackendServiceStub(object):
                 request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.CallActiveMethodRequest.SerializeToString,
                 response_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.CallActiveMethodResponse.FromString,
                 )
+        self.GetObjectAttribute = channel.unary_unary(
+                '/dataclay.proto.backend.BackendService/GetObjectAttribute',
+                request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BytesValue.FromString,
+                )
+        self.SetObjectAttribute = channel.unary_unary(
+                '/dataclay.proto.backend.BackendService/SetObjectAttribute',
+                request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
         self.GetObjectProperties = channel.unary_unary(
                 '/dataclay.proto.backend.BackendService/GetObjectProperties',
                 request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectPropertiesRequest.SerializeToString,
@@ -98,6 +108,18 @@ class BackendServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def CallActiveMethod(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetObjectAttribute(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SetObjectAttribute(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -187,6 +209,16 @@ def add_BackendServiceServicer_to_server(servicer, server):
                     servicer.CallActiveMethod,
                     request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.CallActiveMethodRequest.FromString,
                     response_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.CallActiveMethodResponse.SerializeToString,
+            ),
+            'GetObjectAttribute': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetObjectAttribute,
+                    request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_wrappers__pb2.BytesValue.SerializeToString,
+            ),
+            'SetObjectAttribute': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetObjectAttribute,
+                    request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'GetObjectProperties': grpc.unary_unary_rpc_method_handler(
                     servicer.GetObjectProperties,
@@ -289,6 +321,40 @@ class BackendService(object):
         return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/CallActiveMethod',
             dataclay_dot_proto_dot_backend_dot_backend__pb2.CallActiveMethodRequest.SerializeToString,
             dataclay_dot_proto_dot_backend_dot_backend__pb2.CallActiveMethodResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetObjectAttribute(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/GetObjectAttribute',
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeRequest.SerializeToString,
+            google_dot_protobuf_dot_wrappers__pb2.BytesValue.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SetObjectAttribute(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/SetObjectAttribute',
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

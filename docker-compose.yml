@@ -17,7 +17,7 @@ services:
       - 16587:16587
     environment:
       - DATACLAY_KV_HOST=redis
-      # - DATACLAY_LOGLEVEL=DEBUG
+      - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.metadata
     volumes:
       - .:/app:ro
@@ -28,7 +28,7 @@ services:
       - redis
     environment:
       - DATACLAY_KV_HOST=redis
-      # - DATACLAY_LOGLEVEL=DEBUG
+      - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
       - .:/app:ro
@@ -39,7 +39,7 @@ services:
       - redis
     environment:
       - DATACLAY_KV_HOST=redis
-      # - DATACLAY_LOGLEVEL=DEBUG
+      - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
       - .:/app:ro
@@ -50,7 +50,7 @@ services:
       - redis
     environment:
       - DATACLAY_KV_HOST=redis
-      # - DATACLAY_LOGLEVEL=DEBUG
+      - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
       - .:/app:ro

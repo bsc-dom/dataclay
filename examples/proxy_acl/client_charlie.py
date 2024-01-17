@@ -12,4 +12,3 @@ print("**************************")
 print("The following should fail:")
 print("**************************")
 print("Average: %f" % values.public_data())
-

@@ -11,7 +11,6 @@ from dataclay.metadata.api import MetadataAPI
 from dataclay.proto.backend import backend_pb2_grpc
 from dataclay.proto.metadata import metadata_pb2_grpc
 
-
 from .base_classes import BackendProxyBase, MetadataProxyBase
 
 logger = logging.getLogger(__name__)
@@ -25,9 +24,9 @@ def serve(
     middleware_metadata: list,
     middleware_backend: list,
 ):
-    global global_metadata_api 
+    global global_metadata_api
     global_metadata_api = md_api
-    
+
     stop_event = threading.Event()
 
     server = grpc.server(
