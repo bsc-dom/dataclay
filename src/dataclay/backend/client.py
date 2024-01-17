@@ -165,7 +165,6 @@ class BackendClient:
 
     @grpc_error_handler
     def set_object_attribute(self, object_id: UUID, attribute: str ,serialized_attribute: bytes):
-        logger.info(serialized_attribute)
         request = backend_pb2.SetObjectAttributeRequest(
             object_id=str(object_id),
             attribute=attribute,
