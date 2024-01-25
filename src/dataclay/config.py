@@ -74,6 +74,7 @@ class Settings(BaseSettings):
     thread_pool_max_workers: Optional[int] = None
     healthcheck_max_workers: Optional[int] = None
     loglevel: Annotated[str, StringConstraints(strip_whitespace=True, to_upper=True)] = "INFO"
+    ephemeral: bool = False
 
     # Timeouts
     grpc_check_alive_timeout: int = 60
