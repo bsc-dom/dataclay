@@ -13,7 +13,6 @@ from dataclay.exceptions import *
 from dataclay.metadata.api import MetadataAPI
 from dataclay.runtime import LockManager
 from dataclay.runtime.runtime import DataClayRuntime
-from dataclay.utils import metrics
 
 if TYPE_CHECKING:
     from uuid import UUID

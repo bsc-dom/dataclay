@@ -2,8 +2,6 @@
 
 import logging
 
-import dataclay.utils.metrics
-import dataclay.utils.telemetry
 from dataclay.backend import servicer
 from dataclay.config import BackendSettings, settings
 
@@ -17,6 +15,9 @@ if settings.service_name is None:
     settings.service_name = "backend"
 
 if settings.tracing:
+    # pylint: disable=import-outside-toplevel
+    import dataclay.utils.telemetry
+
     dataclay.utils.telemetry.set_tracing(
         settings.service_name,
         settings.tracing_host,
@@ -25,6 +26,9 @@ if settings.tracing:
     )
 
 if settings.metrics:
+    # pylint: disable=import-outside-toplevel
+    import dataclay.utils.metrics
+
     dataclay.utils.metrics.set_metrics(
         settings.metrics_host,
         settings.metrics_port,

@@ -12,8 +12,6 @@ import logging.config
 from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
-import dataclay.utils.metrics
-import dataclay.utils.telemetry
 from dataclay.backend.client import BackendClient
 from dataclay.config import ClientSettings, settings
 from dataclay.dataclay_object import DataClayObject
@@ -44,6 +42,9 @@ def start_telemetry():
         settings.service_name = "client"
 
     if settings.tracing:
+        # pylint: disable=import-outside-toplevel
+        import dataclay.utils.telemetry
+
         dataclay.utils.telemetry.set_tracing(
             settings.service_name,
             settings.tracing_host,
@@ -52,6 +53,9 @@ def start_telemetry():
         )
 
     if settings.metrics:
+        # pylint: disable=import-outside-toplevel
+        import dataclay.utils.metrics
+
         dataclay.utils.metrics.set_metrics(
             settings.metrics_host,
             settings.metrics_port,

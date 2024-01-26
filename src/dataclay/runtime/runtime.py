@@ -38,6 +38,12 @@ tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 
+class _DummyInmemoryHitsTotal:
+    def inc(self):
+        """Dummy function"""
+        pass
+
+
 class BackendClientsMonitor(threading.Thread):
     """Thread that periodically updates the backend clients."""
 
@@ -66,7 +72,15 @@ class DataClayRuntime(ABC):
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
         self.inmemory_objects: WeakValueDictionary[UUID, DataClayObject] = WeakValueDictionary()
-        metrics.dataclay_inmemory_objects.set_function(lambda: len(self.inmemory_objects))
+
+        if settings.metrics:
+            # pylint: disable=import-outside-toplevel
+            from dataclay.utils import metrics
+
+            metrics.dataclay_inmemory_objects.set_function(lambda: len(self.inmemory_objects))
+            self.dataclay_inmemory_hits_total = metrics.dataclay_inmemory_hits_total
+        else:
+            self.dataclay_inmemory_hits_total = _DummyInmemoryHitsTotal()
 
     ##############
     # Properties #
@@ -158,9 +172,6 @@ class DataClayRuntime(ABC):
     ##################
     # Object methods #
     ##################
-
-    # TODO: Check if is taking the metrics from KeyError, if not put inside
-    @metrics.dataclay_inmemory_misses_total.count_exceptions(KeyError)
     def get_object_by_id(self, object_id: UUID, object_md: ObjectMetadata = None) -> DataClayObject:
         """Get dataclay object from inmemory_objects. If not present, get object metadata
         and create new proxy object.
@@ -169,13 +180,13 @@ class DataClayRuntime(ABC):
 
         try:
             dc_object = self.inmemory_objects[object_id]
-            metrics.dataclay_inmemory_hits_total.inc()
+            self.dataclay_inmemory_hits_total.inc()
             return dc_object
         except KeyError:
             with LockManager.write(object_id):
                 try:
                     dc_object = self.inmemory_objects[object_id]
-                    metrics.dataclay_inmemory_hits_total.inc()
+                    self.dataclay_inmemory_hits_total.inc()
                     return dc_object
                 except KeyError:
                     # NOTE: When the object is not in the inmemory_objects,
