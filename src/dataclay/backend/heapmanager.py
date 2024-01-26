@@ -10,7 +10,6 @@ import psutil
 
 from dataclay.config import settings
 from dataclay.runtime import LockManager
-from dataclay.utils import metrics
 from dataclay.utils.serialization import DataClayPickler
 
 if TYPE_CHECKING:
@@ -20,6 +19,16 @@ if TYPE_CHECKING:
 
 # logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))
 logger = logging.getLogger(__name__)
+
+
+class _DummyStoredObjects:
+    def inc(self):
+        """Dummy function"""
+        pass
+
+    def dec(self):
+        """Dummy function"""
+        pass
 
 
 class HeapManager(threading.Thread):
@@ -42,7 +51,15 @@ class HeapManager(threading.Thread):
         # objects deserialized later. Second ones cannot be GC if first ones are not cleaned.
         # During GC,we should know that somehow. It's a hint but improves GC a lot.
         self.loaded_objects: dict[UUID, DataClayObject] = {}
-        metrics.dataclay_loaded_objects.set_function(lambda: len(self.loaded_objects))
+
+        if settings.metrics:
+            # pylint: disable=import-outside-toplevel
+            from dataclay.utils import metrics
+
+            metrics.dataclay_loaded_objects.set_function(lambda: len(self.loaded_objects))
+            self.dataclay_stored_objects = metrics.dataclay_stored_objects
+        else:
+            self.dataclay_stored_objects = _DummyStoredObjects()
 
         # Locks for run_task and flush_all
         self.run_task_lock = threading.Lock()
@@ -107,7 +124,7 @@ class HeapManager(threading.Thread):
                 path = f"{settings.storage_path}/{object_id}"
                 state = instance._dc_state
                 DataClayPickler(open(path, "wb")).dump(state)
-                metrics.dataclay_stored_objects.inc()
+                self.dataclay_stored_objects.inc()
 
                 # TODO: update etcd metadata (since is loaded has changed)
                 # and store object in file system
