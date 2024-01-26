@@ -21,7 +21,6 @@ from dataclay.config import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
 from dataclay.runtime import LockManager
-from dataclay.utils import metrics
 from dataclay.utils.serialization import dcdumps, recursive_dcdumps
 from dataclay.utils.telemetry import trace
 

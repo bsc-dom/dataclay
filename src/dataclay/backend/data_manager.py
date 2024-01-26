@@ -11,7 +11,6 @@ import psutil
 from dataclay.config import settings
 from dataclay.exceptions import *
 from dataclay.runtime import LockManager
-from dataclay.utils import metrics
 from dataclay.utils.serialization import DataClayPickler
 
 if TYPE_CHECKING:
