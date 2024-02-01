@@ -53,7 +53,6 @@ class BackendClientsMonitor(threading.Thread):
 
     def run(self):
         while True:
-            logger.debug("Updating backend clients")
             self.runtime.update_backend_clients()
             time.sleep(settings.backend_clients_check_interval)
 

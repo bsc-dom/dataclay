@@ -62,33 +62,36 @@ class DataManager(threading.Thread):
         else:
             self.dataclay_stored_objects = _DummyStoredObjects()
 
-        # Locks for run_task and flush_all
-        self.run_task_lock = threading.Lock()
+        # Locks for check_memory and flush_all
+        self.check_memory_lock = threading.Lock()
         self.flush_all_lock = threading.Lock()
 
     def run(self):
         """Overrides run function"""
         gc_check_time_interval_seconds = settings.memory_check_interval
         while True:
-            logger.debug("Thread is awake")
             if self._finished.is_set():
                 break
-            self.run_task()
+            self.check_memory()
 
             # sleep for interval or until shutdown
-            logger.debug("Thread is going to sleep")
             self._finished.wait(gc_check_time_interval_seconds)
 
         logger.debug("Thread stoped")
 
-    def run_task(self):
+    def check_memory(self):
+        """Check memory and flush objects if needed."""
+
+        logger.debug("Checking memory usage")
+
         if self.flush_all_lock.locked():
             logger.debug("Already flushing all objects")
             return
 
         # Enters if memory is over threshold and the lock is not locked
-        if self.is_memory_over_threshold() and self.run_task_lock.acquire(blocking=False):
+        if self.is_memory_over_threshold() and self.check_memory_lock.acquire(blocking=False):
             try:
+                logger.info("Memory is over threshold")
                 logger.debug("Num loaded objects before: %d", len(self.loaded_objects))
                 for object_id in list(self.loaded_objects.keys()):
                     self.unload_object(self.loaded_objects[object_id], timeout=0, force=False)
@@ -102,7 +105,9 @@ class DataManager(threading.Thread):
 
                 logger.debug("Num loaded objects after: %d", len(self.loaded_objects))
             finally:
-                self.run_task_lock.release()
+                self.check_memory_lock.release()
+        else:
+            logger.debug("Memory is below threshold")
 
     def add_hard_reference(self, instance: DataClayObject):
         """Add a hard reference to the provided object."""
@@ -198,8 +203,8 @@ class DataManager(threading.Thread):
                     "Starting to flush all loaded objects. Num (%d)", len(self.loaded_objects)
                 )
 
-                if self.run_task_lock.acquire(timeout=self.MAX_TIME_WAIT_FOR_GC_TO_FINISH):
-                    self.run_task_lock.release()
+                if self.check_memory_lock.acquire(timeout=self.MAX_TIME_WAIT_FOR_GC_TO_FINISH):
+                    self.check_memory_lock.release()
 
                 for object_id in list(self.loaded_objects.keys()):
                     self.unload_object(
