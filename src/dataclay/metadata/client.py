@@ -85,8 +85,10 @@ class MetadataClient:
     #####################
 
     @grpc_error_handler
-    def get_all_backends(self, from_backend: bool = False) -> dict[UUID, Backend]:
-        request = metadata_pb2.GetAllBackendsRequest(from_backend=from_backend)
+    def get_all_backends(
+        self, from_backend: bool = False, force: bool = True
+    ) -> dict[UUID, Backend]:
+        request = metadata_pb2.GetAllBackendsRequest(from_backend=from_backend, force=force)
         response = self.stub.GetAllBackends(request)
 
         result = {}

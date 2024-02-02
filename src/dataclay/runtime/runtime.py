@@ -53,7 +53,7 @@ class BackendClientsMonitor(threading.Thread):
 
     def run(self):
         while True:
-            self.runtime.update_backend_clients()
+            self.runtime.update_backend_clients(force=False)
             time.sleep(settings.backend_clients_check_interval)
 
 
@@ -469,8 +469,13 @@ class DataClayRuntime(ABC):
 
         self.backend_clients = new_backend_clients
 
-    def update_backend_clients(self):
-        backend_infos = self.metadata_service.get_all_backends(from_backend=self.is_backend)
+    def update_backend_clients(self, force: bool = True):
+        # The force is only used in the client, to force the access to kvstore
+        # otherwise, the metadata service will use the backend clients cache
+        # For the backend, the access to kvstore is always forced
+        backend_infos = self.metadata_service.get_all_backends(
+            from_backend=self.is_backend, force=force
+        )
         logger.debug("Updating backend clients. Metadata reports #%d", len(backend_infos))
         new_backend_clients = {}
 
@@ -483,6 +488,7 @@ class DataClayRuntime(ABC):
                 backend_info.id in self.backend_clients
                 and (
                     use_proxy
+                    # The host and port could change, but the id be the same
                     or (
                         backend_info.host == self.backend_clients[backend_info.id].host
                         and backend_info.port == self.backend_clients[backend_info.id].port

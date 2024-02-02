@@ -211,7 +211,8 @@ class MetadataAPI:
     ###########
 
     @tracer.start_as_current_span("get_all_backends")
-    def get_all_backends(self, from_backend: bool = False) -> dict[UUID, Backend]:
+    def get_all_backends(self, from_backend: bool = False, **kwargs) -> dict[UUID, Backend]:
+        logger.debug("Getting all backends from kv store")
         result = self.kv_manager.getprefix(Backend, "/backend/")
         return {UUID(k): v for k, v in result.items()}
 
