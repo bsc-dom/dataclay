@@ -222,9 +222,16 @@ class MetadataAPI:
         self.kv_manager.set_new(backend)
         logger.info("Registered Backend with id=%s, host=%s, port=%s", id, host, port)
 
+        # Publishes a message to the channel "new-backend-client"
+        self.kv_manager.r_client.publish("new-backend-client", backend.value)
+
     @tracer.start_as_current_span("delete_backend")
     def delete_backend(self, id: UUID):
         self.kv_manager.delete_kv(Backend.path + str(id))
+        logger.info("Deleted Backend with id=%s", id)
+
+        # Publishes a message to the channel "del-backend-clients"
+        self.kv_manager.r_client.publish("del-backend-client", str(id))
 
     ###################
     # Dataclay Object #

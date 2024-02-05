@@ -16,9 +16,10 @@ from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 from dataclay.config import settings
 from dataclay.exceptions.exceptions import AlreadyExistError
 from dataclay.metadata.api import MetadataAPI
+from dataclay.metadata.kvdata import Backend
 from dataclay.proto.common import common_pb2
 from dataclay.proto.metadata import metadata_pb2, metadata_pb2_grpc
-from dataclay.utils.uuid import str_to_uuid, uuid_to_str
+from dataclay.utils.uuid import str_to_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +100,19 @@ class BackendClientsMonitor(threading.Thread):
             self.backend_clients = self.metadata_api.get_all_backends()
             time.sleep(settings.backend_clients_check_interval)
 
+    def new_backend_handler(self, message):
+        backend = Backend.from_json(message["data"])
+        self.backend_clients[backend.id] = backend
+        logger.debug("pub/sub new-backend-client: %s", backend.id)
+        logger.debug("backend-clients: %s", self.backend_clients.keys())
+
+    def del_backend_handler(self, message):
+        backend_id = UUID(message["data"].decode())
+        if backend_id in self.backend_clients:
+            del self.backend_clients[backend_id]
+        logger.debug("pub/sub del-backend-client: %s", backend_id)
+        logger.debug("backend-clients: %s", self.backend_clients.keys())
+
 
 class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
     """Provides methods that implement functionality of metadata server"""
@@ -106,8 +120,20 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
     def __init__(self, metadata_api: MetadataAPI, stop_event: threading.Event):
         self.metadata_api = metadata_api
         self.stop_event = stop_event
+
+        # Start the backend clients monitor
         self.backend_clients_monitor = BackendClientsMonitor(metadata_api)
         self.backend_clients_monitor.start()
+
+        # Start the backend clients pub/sub
+        self.pubsub = metadata_api.kv_manager.r_client.pubsub()
+        self.pubsub.subscribe(
+            **{
+                "new-backend-client": self.backend_clients_monitor.new_backend_handler,
+                "del-backend-client": self.backend_clients_monitor.del_backend_handler,
+            }
+        )
+        self.pubsub_thread = self.pubsub.run_in_thread(sleep_time=0.001, daemon=True)
 
     # TODO: define get_exception_info(..) to serialize excpetions
 

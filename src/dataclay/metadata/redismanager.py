@@ -37,14 +37,15 @@ class RedisManager:
         return False
 
     def set_new(self, kv_object: KeyValue):
-        """Creates a new dataset. Checks that the dataset doesn't exists.
+        """Sets a new key, failing if already exists.
 
-        Use "set" if the key is using a UUID, in order to optimize for etcd (if used)
+        Use "set" if the key is using a UUID (should avoid conflict), in order to optimize for etcd (if used)
         """
         if not self.r_client.set(kv_object.key, kv_object.value, nx=True):
             raise AlreadyExistError(kv_object.key)
 
     def set(self, kv_object: KeyValue):
+        """Sets a key, overwriting if already exists."""
         self.r_client.set(kv_object.key, kv_object.value)
 
     def update(self, kv_object: KeyValue):
