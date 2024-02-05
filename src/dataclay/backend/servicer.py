@@ -200,45 +200,45 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     def GetObjectAttribute(self, request, context):
         self._check_backend(context)
         try:
-            result = self.backend.get_object_attribute(
+            value, is_exception = self.backend.get_object_attribute(
                 UUID(request.object_id),
                 request.attribute,
             )
-            return BytesValue(value=result)
+            return backend_pb2.GetObjectAttributeResponse(value=value, is_exception=is_exception)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return BytesValue()
+            return backend_pb2.GetObjectAttributeResponse()
 
     def SetObjectAttribute(self, request, context):
         self._check_backend(context)
         try:
-            self.backend.set_object_attribute(
+            value, is_exception = self.backend.set_object_attribute(
                 UUID(request.object_id),
                 request.attribute,
                 request.serialized_attribute,
             )
-            return Empty()
+            return backend_pb2.SetObjectAttributeResponse(value=value, is_exception=is_exception)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return Empty()
+            return backend_pb2.SetObjectAttributeResponse()
         
     def DelObjectAttribute(self,request,context):
         self._check_backend(context)
         try:
-            self.backend.del_object_attribute(
+            value, is_exception = self.backend.del_object_attribute(
                 UUID(request.object_id),
                 request.attribute,
             )
-            return Empty()
+            return backend_pb2.DelObjectAttributeResponse(value=value, is_exception=is_exception)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            return Empty()
+            return backend_pb2.DelObjectAttributeResponse()
 
     def GetObjectProperties(self, request, context):
         self._check_backend(context)

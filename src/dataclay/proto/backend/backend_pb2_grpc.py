@@ -29,17 +29,17 @@ class BackendServiceStub(object):
         self.GetObjectAttribute = channel.unary_unary(
                 '/dataclay.proto.backend.BackendService/GetObjectAttribute',
                 request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BytesValue.FromString,
+                response_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeResponse.FromString,
                 )
         self.SetObjectAttribute = channel.unary_unary(
                 '/dataclay.proto.backend.BackendService/SetObjectAttribute',
                 request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                response_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeResponse.FromString,
                 )
         self.DelObjectAttribute = channel.unary_unary(
                 '/dataclay.proto.backend.BackendService/DelObjectAttribute',
                 request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                response_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeResponse.FromString,
                 )
         self.GetObjectProperties = channel.unary_unary(
                 '/dataclay.proto.backend.BackendService/GetObjectProperties',
@@ -224,17 +224,17 @@ def add_BackendServiceServicer_to_server(servicer, server):
             'GetObjectAttribute': grpc.unary_unary_rpc_method_handler(
                     servicer.GetObjectAttribute,
                     request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_wrappers__pb2.BytesValue.SerializeToString,
+                    response_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeResponse.SerializeToString,
             ),
             'SetObjectAttribute': grpc.unary_unary_rpc_method_handler(
                     servicer.SetObjectAttribute,
                     request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                    response_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeResponse.SerializeToString,
             ),
             'DelObjectAttribute': grpc.unary_unary_rpc_method_handler(
                     servicer.DelObjectAttribute,
                     request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                    response_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeResponse.SerializeToString,
             ),
             'GetObjectProperties': grpc.unary_unary_rpc_method_handler(
                     servicer.GetObjectProperties,
@@ -353,7 +353,7 @@ class BackendService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/GetObjectAttribute',
             dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeRequest.SerializeToString,
-            google_dot_protobuf_dot_wrappers__pb2.BytesValue.FromString,
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -370,7 +370,7 @@ class BackendService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/SetObjectAttribute',
             dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeRequest.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -387,7 +387,7 @@ class BackendService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/DelObjectAttribute',
             dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeRequest.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

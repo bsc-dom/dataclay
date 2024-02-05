@@ -354,20 +354,18 @@ class DataClayRuntime(ABC):
                             args[0],  # attribute name
                         )
                     elif method_name == "__setattr__":
-                        backend_client.set_object_attribute(
+                        serialized_response, is_exception = backend_client.set_object_attribute(
                             instance._dc_meta.id,
                             args[0],  # attribute name
                             dcdumps(args[1]),  # attribute value
                         )
-                        serialized_response = None
-                        is_exception = False
+                        if (not is_exception): serialized_response = None
                     elif method_name == "__delattr__":
-                        backend_client.del_object_attribute(
+                        serialized_response, is_exception = backend_client.del_object_attribute(
                             instance._dc_meta.id,
                             args[0],  # attribute name
                         )
-                        serialized_response = None
-                        is_exception = False
+                        if (not is_exception): serialized_response = None
                     else:
                         serialized_response, is_exception = backend_client.call_active_method(
                             self.session.id,
