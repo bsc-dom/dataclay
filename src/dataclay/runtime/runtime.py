@@ -359,13 +359,15 @@ class DataClayRuntime(ABC):
                             args[0],  # attribute name
                             dcdumps(args[1]),  # attribute value
                         )
-                        if (not is_exception): serialized_response = None
+                        if not is_exception:
+                            serialized_response = None
                     elif method_name == "__delattr__":
                         serialized_response, is_exception = backend_client.del_object_attribute(
                             instance._dc_meta.id,
                             args[0],  # attribute name
                         )
-                        if (not is_exception): serialized_response = None
+                        if not is_exception:
+                            serialized_response = None
                     else:
                         serialized_response, is_exception = backend_client.call_active_method(
                             self.session.id,

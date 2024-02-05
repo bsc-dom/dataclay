@@ -163,7 +163,9 @@ class BackendClient:
         return response.value, response.is_exception
 
     @grpc_error_handler
-    def set_object_attribute(self, object_id: UUID, attribute: str, serialized_attribute: bytes)->tuple[bytes,bool]:
+    def set_object_attribute(
+        self, object_id: UUID, attribute: str, serialized_attribute: bytes
+    ) -> tuple[bytes, bool]:
         request = backend_pb2.SetObjectAttributeRequest(
             object_id=str(object_id),
             attribute=attribute,
@@ -173,7 +175,7 @@ class BackendClient:
         return response.value, response.is_exception
 
     @grpc_error_handler
-    def del_object_attribute(self, object_id: UUID, attribute: str)->tuple[bytes,bool]:
+    def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         request = backend_pb2.DelObjectAttributeRequest(
             object_id=str(object_id),
             attribute=attribute,

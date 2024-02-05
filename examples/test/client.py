@@ -6,6 +6,6 @@ client.start()
 
 # person = Person.get_by_alias("Alice")
 person = Person(name="Alice", age=33)
-person1 = Person(name="David",age=2)
+person1 = Person(name="David", age=2)
 
-#person.make_persistent("Alice")
+# person.make_persistent("Alice")

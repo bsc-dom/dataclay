@@ -186,10 +186,13 @@ class BackendAPI:
                 object_id,
                 instance._dc_meta.master_backend_id,
             )
-            return pickle.dumps(
-                ObjectWithWrongBackendIdError(
-                    instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
-                )
+            return (
+                pickle.dumps(
+                    ObjectWithWrongBackendIdError(
+                        instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
+                    )
+                ),
+                False,
             )
         try:
             value = getattr(instance, attribute)
@@ -198,7 +201,9 @@ class BackendAPI:
             return pickle.dumps(e), True
 
     @tracer.start_as_current_span("set_object_attribute")
-    def set_object_attribute(self, object_id: UUID, attribute: str, serialized_attribute: bytes)-> tuple[bytes, bool]:
+    def set_object_attribute(
+        self, object_id: UUID, attribute: str, serialized_attribute: bytes
+    ) -> tuple[bytes, bool]:
         """Updates an object attibute with ID provided"""
         instance = self.runtime.get_object_by_id(object_id)
         # NOTE: When the object is not local, a custom exception is sent
@@ -217,8 +222,13 @@ class BackendAPI:
                 instance._dc_meta.master_backend_id,
             )
 
-            ObjectWithWrongBackendIdError(
-                instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
+            return (
+                pickle.dumps(
+                    ObjectWithWrongBackendIdError(
+                        instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
+                    )
+                ),
+                False,
             )
         try:
             object_attribute = pickle.loads(serialized_attribute)
@@ -228,7 +238,7 @@ class BackendAPI:
             return pickle.dumps(e), True
 
     @tracer.start_as_current_span("set_object_attribute")
-    def del_object_attribute(self, object_id: UUID, attribute: str)-> tuple[bytes, bool]:
+    def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         """Deletes an object attibute with ID provided"""
         instance = self.runtime.get_object_by_id(object_id)
         # NOTE: When the object is not local, a custom exception is sent
@@ -247,8 +257,13 @@ class BackendAPI:
                 instance._dc_meta.master_backend_id,
             )
 
-            ObjectWithWrongBackendIdError(
-                instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
+            return (
+                pickle.dumps(
+                    ObjectWithWrongBackendIdError(
+                        instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
+                    )
+                ),
+                False,
             )
         try:
             delattr(instance, attribute)

@@ -225,8 +225,8 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
             return backend_pb2.SetObjectAttributeResponse()
-        
-    def DelObjectAttribute(self,request,context):
+
+    def DelObjectAttribute(self, request, context):
         self._check_backend(context)
         try:
             value, is_exception = self.backend.del_object_attribute(
