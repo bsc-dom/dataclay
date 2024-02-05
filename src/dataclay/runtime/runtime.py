@@ -349,9 +349,6 @@ class DataClayRuntime(ABC):
                 # If the connection fails, update the list of backend clients, and try again
                 try:
                     if method_name == "__getattribute__":
-                        logger.debug(
-                            "The backend is %s with backend client %s", backend_id, backend_client
-                        )
                         serialized_response, is_exception = backend_client.get_object_attribute(
                             instance._dc_meta.id,
                             args[0],  # attribute name
@@ -361,6 +358,13 @@ class DataClayRuntime(ABC):
                             instance._dc_meta.id,
                             args[0],  # attribute name
                             dcdumps(args[1]),  # attribute value
+                        )
+                        serialized_response = None
+                        is_exception = False
+                    elif method_name == "__delattr__":
+                        backend_client.del_object_attribute(
+                            instance._dc_meta.id,
+                            args[0],  # attribute name
                         )
                         serialized_response = None
                         is_exception = False

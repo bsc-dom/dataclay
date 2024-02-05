@@ -172,6 +172,14 @@ class BackendClient:
         self.stub.SetObjectAttribute(request, metadata=self.metadata_call)
 
     @grpc_error_handler
+    def del_object_attribute(self, object_id: UUID, attribute: str):
+        request = backend_pb2.DelObjectAttributeRequest(
+            object_id=str(object_id),
+            attribute=attribute,
+        )
+        self.stub.DelObjectAttribute(request, metadata=self.metadata_call)
+
+    @grpc_error_handler
     def get_object_properties(self, object_id: UUID) -> bytes:
         request = backend_pb2.GetObjectPropertiesRequest(
             object_id=str(object_id),

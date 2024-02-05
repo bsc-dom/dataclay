@@ -225,6 +225,20 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
             return Empty()
+        
+    def DelObjectAttribute(self,request,context):
+        self._check_backend(context)
+        try:
+            self.backend.del_object_attribute(
+                UUID(request.object_id),
+                request.attribute,
+            )
+            return Empty()
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return Empty()
 
     def GetObjectProperties(self, request, context):
         self._check_backend(context)

@@ -36,6 +36,11 @@ class BackendServiceStub(object):
                 request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.DelObjectAttribute = channel.unary_unary(
+                '/dataclay.proto.backend.BackendService/DelObjectAttribute',
+                request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
         self.GetObjectProperties = channel.unary_unary(
                 '/dataclay.proto.backend.BackendService/GetObjectProperties',
                 request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectPropertiesRequest.SerializeToString,
@@ -120,6 +125,12 @@ class BackendServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def SetObjectAttribute(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DelObjectAttribute(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -218,6 +229,11 @@ def add_BackendServiceServicer_to_server(servicer, server):
             'SetObjectAttribute': grpc.unary_unary_rpc_method_handler(
                     servicer.SetObjectAttribute,
                     request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DelObjectAttribute': grpc.unary_unary_rpc_method_handler(
+                    servicer.DelObjectAttribute,
+                    request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'GetObjectProperties': grpc.unary_unary_rpc_method_handler(
@@ -354,6 +370,23 @@ class BackendService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/SetObjectAttribute',
             dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DelObjectAttribute(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/DelObjectAttribute',
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

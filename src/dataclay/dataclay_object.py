@@ -139,6 +139,23 @@ class DataClayProperty:
             logger.debug("Remote")
             get_runtime().call_remote_method(instance, "__setattr__", (self.name, value), {})
 
+    def __delete__(self, instance: DataClayObject):
+        '''Deleter for the dataClay property'''
+        logger.debug(
+            "(%s) Deleting property %s.%s",
+            instance._dc_meta.id,
+            instance.__class__.__name__,
+            self.name,
+        )
+
+        if instance._dc_is_local:
+            logger.debug("Local")
+            delattr(instance,self.dc_property_name)
+        else:
+            logger.debug("Remote")
+            get_runtime().call_remote_method(instance, "__delattr__", (self.name,), {})
+
+            
 
 class DataClayObject:
     """Main class for Persistent Objects.

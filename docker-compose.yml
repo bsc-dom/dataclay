@@ -17,7 +17,10 @@ services:
       - 16587:16587
     environment:
       - DATACLAY_KV_HOST=redis
-      - DATACLAY_LOGLEVEL=DEBUG
+      - DATACLAY_PASSWORD=s3cret
+      - DATACLAY_USERNAME=testuser
+      - DATACLAY_DATASET=testdata
+      #- DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.metadata
     volumes:
       - .:/app:ro
@@ -28,7 +31,7 @@ services:
       - redis
     environment:
       - DATACLAY_KV_HOST=redis
-      - DATACLAY_LOGLEVEL=DEBUG
+      #- DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
       - .:/app:ro
@@ -39,7 +42,7 @@ services:
       - redis
     environment:
       - DATACLAY_KV_HOST=redis
-      - DATACLAY_LOGLEVEL=DEBUG
+      #- DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
       - .:/app:ro
@@ -50,7 +53,7 @@ services:
       - redis
     environment:
       - DATACLAY_KV_HOST=redis
-      - DATACLAY_LOGLEVEL=DEBUG
+      #- DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
       - .:/app:ro
