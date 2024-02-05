@@ -1,4 +1,5 @@
 """ BackendRuntime """
+
 from __future__ import annotations
 
 import datetime
@@ -78,7 +79,7 @@ class BackendRuntime(DataClayRuntime):
         logger.debug("DataManager stopped.")
 
         self.close_backend_clients()
-        if not settings.backend.ephemeral:
+        if not settings.ephemeral:
             self.data_manager.flush_all()
 
     # Garbage collector
