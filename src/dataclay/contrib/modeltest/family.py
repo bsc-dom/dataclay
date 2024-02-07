@@ -121,7 +121,7 @@ class TestActivemethod(DataClayObject):
         from dataclay.runtime import get_runtime
 
         person = Person("Marc", 24)
-        get_runtime().update_backend_clients()
+        get_runtime().backend_clients.update()
         backend_ids = list(get_runtime().backend_clients)
         person.move(backend_ids[0])
         assert person._dc_meta.master_backend_id == backend_ids[0]

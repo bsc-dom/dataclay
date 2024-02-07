@@ -26,6 +26,7 @@ class BackendClient:
         strictly needed, but it can be beneficial for sanity checking and also
         it is used for reverse proxy configurations.
         """
+        self.id = backend_id
         self.host = host
         self.port = port
         self.address = str(host) + ":" + str(port)

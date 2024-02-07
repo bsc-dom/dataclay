@@ -304,7 +304,7 @@ class BackendAPI:
     @tracer.start_as_current_span("move_all_objects")
     def move_all_objects(self):
         dc_objects = self.runtime.metadata_service.get_all_objects()
-        self.runtime.update_backend_clients()
+        self.runtime.backend_clients.update()
         backends = self.runtime.backend_clients
 
         if len(backends) <= 1:

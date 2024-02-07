@@ -19,6 +19,7 @@ from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.kvdata import Backend
 from dataclay.proto.common import common_pb2
 from dataclay.proto.metadata import metadata_pb2, metadata_pb2_grpc
+from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.uuid import str_to_uuid
 
 logger = logging.getLogger(__name__)
@@ -86,34 +87,6 @@ def serve():
     server.stop(5)
 
 
-class BackendClientsMonitor(threading.Thread):
-    """Thread that periodically updates the backend clients."""
-
-    def __init__(self, metadata_api: MetadataAPI):
-        threading.Thread.__init__(self, name="backend-clients-monitor")
-        self.daemon = True
-        self.metadata_api = metadata_api
-        self.backend_clients = {}
-
-    def run(self):
-        while True:
-            self.backend_clients = self.metadata_api.get_all_backends()
-            time.sleep(settings.backend_clients_check_interval)
-
-    def new_backend_handler(self, message):
-        backend = Backend.from_json(message["data"])
-        self.backend_clients[backend.id] = backend
-        logger.debug("pub/sub new-backend-client: %s", backend.id)
-        logger.debug("backend-clients: %s", self.backend_clients.keys())
-
-    def del_backend_handler(self, message):
-        backend_id = UUID(message["data"].decode())
-        if backend_id in self.backend_clients:
-            del self.backend_clients[backend_id]
-        logger.debug("pub/sub del-backend-client: %s", backend_id)
-        logger.debug("backend-clients: %s", self.backend_clients.keys())
-
-
 class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
     """Provides methods that implement functionality of metadata server"""
 
@@ -121,19 +94,10 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
         self.metadata_api = metadata_api
         self.stop_event = stop_event
 
-        # Start the backend clients monitor
-        self.backend_clients_monitor = BackendClientsMonitor(metadata_api)
-        self.backend_clients_monitor.start()
-
-        # Start the backend clients pub/sub
-        self.pubsub = metadata_api.kv_manager.r_client.pubsub()
-        self.pubsub.subscribe(
-            **{
-                "new-backend-client": self.backend_clients_monitor.new_backend_handler,
-                "del-backend-client": self.backend_clients_monitor.del_backend_handler,
-            }
-        )
-        self.pubsub_thread = self.pubsub.run_in_thread(sleep_time=0.001, daemon=True)
+        # Start the backend clients manager
+        self.backend_clients = BackendClientsManager(metadata_api)
+        self.backend_clients.start_update()
+        self.backend_clients.start_subscribe()
 
     # TODO: define get_exception_info(..) to serialize excpetions
 
@@ -191,14 +155,21 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     def GetAllBackends(self, request, context):
         try:
+            response = {}
             if request.force:
                 backends = self.metadata_api.get_all_backends(request.from_backend)
+                for id, backend in backends.items():
+                    response[str(id)] = backend.get_proto()
             else:
                 # Using a cached version of the backends to avoid querying the KV store for each client request
-                backends = self.backend_clients_monitor.backend_clients
-            response = {}
-            for id, backend in backends.items():
-                response[str(id)] = backend.get_proto()
+                for id, backend_client in self.backend_clients.items():
+                    backend = Backend(
+                        id=id,
+                        host=backend_client.host,
+                        port=backend_client.port,
+                        dataclay_id=id,  # wrong: to change or remove completely
+                    )
+                    response[str(id)] = backend.get_proto()
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)

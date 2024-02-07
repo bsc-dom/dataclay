@@ -178,9 +178,6 @@ class Client:
         self.runtime.session = session
         self.runtime.metadata_service.session = session
 
-        # Cache the backends clients
-        self.runtime.update_backend_clients()
-
         # Cache the dataclay_id, to avoid later request
         # self.runtime.dataclay_id
 
@@ -212,7 +209,7 @@ class Client:
 
     @tracer.start_as_current_span("get_backends")
     def get_backends(self) -> dict[UUID, BackendClient]:
-        self.runtime.update_backend_clients()
+        self.runtime.backend_clients.update()
         return self.runtime.backend_clients
 
 
