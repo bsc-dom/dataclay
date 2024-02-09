@@ -29,9 +29,7 @@ BACKEND_METHODS = [
 
 METADATA_METHODS = [
     "NewAccount",
-    "NewSession",
     "NewDataset",
-    "CloseSession",
     "GetDataclay",
     "GetAllBackends",
     "GetAllObjects",

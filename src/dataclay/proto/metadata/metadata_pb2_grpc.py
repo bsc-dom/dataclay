@@ -26,16 +26,6 @@ class MetadataServiceStub(object):
                 request_serializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.GetAccountRequest.SerializeToString,
                 response_deserializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.GetAccountResponse.FromString,
                 )
-        self.NewSession = channel.unary_unary(
-                '/dataclay.proto.metadata.MetadataService/NewSession',
-                request_serializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.NewSessionRequest.SerializeToString,
-                response_deserializer=dataclay_dot_proto_dot_common_dot_common__pb2.Session.FromString,
-                )
-        self.CloseSession = channel.unary_unary(
-                '/dataclay.proto.metadata.MetadataService/CloseSession',
-                request_serializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.CloseSessionRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                )
         self.NewDataset = channel.unary_unary(
                 '/dataclay.proto.metadata.MetadataService/NewDataset',
                 request_serializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.NewDatasetRequest.SerializeToString,
@@ -99,19 +89,6 @@ class MetadataServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def GetAccount(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def NewSession(self, request, context):
-        """Session Manager
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def CloseSession(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -194,16 +171,6 @@ def add_MetadataServiceServicer_to_server(servicer, server):
                     servicer.GetAccount,
                     request_deserializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.GetAccountRequest.FromString,
                     response_serializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.GetAccountResponse.SerializeToString,
-            ),
-            'NewSession': grpc.unary_unary_rpc_method_handler(
-                    servicer.NewSession,
-                    request_deserializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.NewSessionRequest.FromString,
-                    response_serializer=dataclay_dot_proto_dot_common_dot_common__pb2.Session.SerializeToString,
-            ),
-            'CloseSession': grpc.unary_unary_rpc_method_handler(
-                    servicer.CloseSession,
-                    request_deserializer=dataclay_dot_proto_dot_metadata_dot_metadata__pb2.CloseSessionRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'NewDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.NewDataset,
@@ -296,40 +263,6 @@ class MetadataService(object):
         return grpc.experimental.unary_unary(request, target, '/dataclay.proto.metadata.MetadataService/GetAccount',
             dataclay_dot_proto_dot_metadata_dot_metadata__pb2.GetAccountRequest.SerializeToString,
             dataclay_dot_proto_dot_metadata_dot_metadata__pb2.GetAccountResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def NewSession(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.metadata.MetadataService/NewSession',
-            dataclay_dot_proto_dot_metadata_dot_metadata__pb2.NewSessionRequest.SerializeToString,
-            dataclay_dot_proto_dot_common_dot_common__pb2.Session.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def CloseSession(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.metadata.MetadataService/CloseSession',
-            dataclay_dot_proto_dot_metadata_dot_metadata__pb2.CloseSessionRequest.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

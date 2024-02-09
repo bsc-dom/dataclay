@@ -90,31 +90,6 @@ class DatasetIsNotAccessibleError(DatasetError):
 
 
 ###########
-# Session #
-###########
-
-
-class SessionError(DataClayException):
-    def __init__(self, session_id):
-        self.session_id = session_id
-
-
-class SessionDoesNotExistError(SessionError):
-    def __str__(self):
-        return f"Session {self.session_id} does not exist"
-
-
-class SessionAlreadyExistError(SessionError):
-    def __str__(self):
-        return f"Session {self.session_id} already exist"
-
-
-class SessionIsNotActiveError(SessionError):
-    def __str__(self):
-        return f"Session {self.session_id} is not active"
-
-
-###########
 # Alias #
 ###########
 

@@ -115,12 +115,10 @@ class BackendAPI:
 
     @tracer.start_as_current_span("call_active_method")
     def call_active_method(
-        self, session_id: UUID, object_id: UUID, method_name: str, args: tuple, kwargs: dict
+        self, object_id: UUID, method_name: str, args: tuple, kwargs: dict
     ) -> tuple[bytes, bool]:
         logger.debug("(%s) Calling remote method %s", object_id, method_name)
 
-        # NOTE: Session (dataset) is needed for make_persistents inside dc_methods.
-        self.runtime.set_session_by_id(session_id)
         instance = self.runtime.get_object_by_id(object_id)
 
         # NOTE: When the object is not local, a custom exception is sent
@@ -254,11 +252,6 @@ class BackendAPI:
             The JSON-encoded metadata of the new DataClayObject version.
         """
         instance = self.runtime.get_object_by_id(object_id)
-
-        # HACK: The dataset is needed to create a new version because
-        # a new dataclay object is created and registered instantly in __new__
-        # dataset_name = instance._dc_meta.dataset_name
-        # self.runtime.session = Session(None, None, dataset_name)
 
         new_version = self.runtime.new_object_version(instance)
         return new_version.getID()
@@ -555,21 +548,6 @@ class BackendAPI:
             logger.debug("Caught exception %s", type(e).__name__)
             raise e
         logger.debug("<--- Finished notification of unfederation")
-
-    # Update Object
-
-    def update_refs(self, ref_counting):
-        """forward to SL"""
-        self.runtime.backend_clients["@STORAGE"].update_refs(ref_counting)
-
-    def get_retained_references(self):
-        return self.runtime.get_retained_references()
-
-    def detach_object_from_session(self, object_id, session_id):
-        logger.debug("--> Detaching object %s from session %s", object_id, session_id)
-        self.set_local_session(session_id)
-        self.runtime.detach_object_from_session(object_id, None)
-        logger.debug("<-- Detached object %s from session %s", object_id, session_id)
 
     # Tracing
 

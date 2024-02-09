@@ -9,6 +9,8 @@ if TYPE_CHECKING:
     from dataclay.runtime.backend import BackendRuntime
     from dataclay.runtime.client import ClientRuntime
 
+thread_local_data = threading.local()  # Use for thread-local data (username, dataset, jwt, etc.)
+
 current_runtime: Union[ClientRuntime, BackendRuntime, None] = None
 
 
