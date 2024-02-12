@@ -109,20 +109,6 @@ class Alias(KeyValue):
         return self.path + f"{self.dataset_name}/{self.name}"
 
 
-class Session(KeyValue):
-    path: ClassVar = "/session/"
-    proto_class: ClassVar = common_pb2.Session
-
-    id: UUID
-    username: str
-    dataset_name: str
-    is_active: bool = True
-
-    @property
-    def key(self):
-        return self.path + str(self.id)
-
-
 class Account(KeyValue):
     path: ClassVar = "/account/"
     proto_class: ClassVar = None

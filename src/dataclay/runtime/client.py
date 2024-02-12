@@ -1,28 +1,20 @@
 """ ClientRuntime """
+
 from __future__ import annotations
 
 import logging
-import random
 import traceback
-from typing import TYPE_CHECKING
 
 from dataclay.exceptions import *
 from dataclay.metadata.client import MetadataClient
 from dataclay.runtime.runtime import DataClayRuntime
 from dataclay.utils.telemetry import trace
 
-if TYPE_CHECKING:
-    from dataclay.dataclay_object import DataClayObject
-    from dataclay.metadata.kvdata import Session
-
-
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 
 class ClientRuntime(DataClayRuntime):
-    session: Session = None
-
     def __init__(self, metadata_service_host: str, metadata_service_port: int):
         metadata_service = MetadataClient(metadata_service_host, metadata_service_port)
         super().__init__(metadata_service)
@@ -55,27 +47,13 @@ class ClientRuntime(DataClayRuntime):
             self.session.id, instance._dc_meta.id, implementation_id, serialized_params
         )
 
-    #####################
-    # Garbage collector #
-    #####################
-
-    def detach_object_from_session(self, object_id, hint):
-        try:
-            if hint is None:
-                instance = self.inmemory_objects[object_id]
-                self.sync_object_metadata(instance)
-                hint = instance._dc_meta.master_backend_id
-
-            ee_client = self.get_backend_client(hint)
-            ee_client.detach_object_from_session(object_id, self.session.id)
-        except:
-            traceback.print_exc()
-
     ##############
     # Federation #
     ##############
 
     def federate_to_backend(self, instance, external_execution_environment_id, recursive):
+        raise Exception("To refactor")
+
         hint = instance._dc_meta.master_backend_id
         if hint is None:
             self.sync_object_metadata(instance)
@@ -95,6 +73,9 @@ class ClientRuntime(DataClayRuntime):
         )
 
     def unfederate_from_backend(self, instance, external_execution_environment_id, recursive):
+
+        raise Exception("To refactor")
+
         logger.debug(
             "[==UnfederateObject==] Starting unfederation of object %s with ext backend %s, and session %s",
             instance._dc_meta.id,
@@ -116,6 +97,5 @@ class ClientRuntime(DataClayRuntime):
     ############
 
     def stop(self):
-        self.metadata_service.close_session(self.session.id)
         self.close_backend_clients()
         self.metadata_service.close()

@@ -111,31 +111,9 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
             return Empty()
         return Empty()
 
-    def NewSession(self, request, context):
-        try:
-            session = self.metadata_api.new_session(
-                request.username, request.password, request.dataset_name
-            )
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return common_pb2.Session()
-        return session.get_proto()
-
     def NewDataset(self, request, context):
         try:
             self.metadata_api.new_dataset(request.username, request.password, request.dataset)
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
-        return Empty()
-
-    def CloseSession(self, request, context):
-        try:
-            self.metadata_api.close_session(UUID(request.id))
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -196,11 +174,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     def GetObjectMDById(self, request, context):
         try:
-            object_md = self.metadata_api.get_object_md_by_id(
-                UUID(request.object_id),
-                UUID(request.session_id),
-                check_session=True,
-            )
+            object_md = self.metadata_api.get_object_md_by_id(UUID(request.object_id))
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -211,10 +185,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
     def GetObjectMDByAlias(self, request, context):
         try:
             object_md = self.metadata_api.get_object_md_by_alias(
-                request.alias_name,
-                request.dataset_name,
-                UUID(request.session_id),
-                check_session=True,
+                request.alias_name, request.dataset_name
             )
         except Exception as e:
             traceback.print_exc()
@@ -228,11 +199,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
     def NewAlias(self, request, context):
         try:
             self.metadata_api.new_alias(
-                request.alias_name,
-                request.dataset_name,
-                UUID(request.object_id),
-                UUID(request.session_id),
-                check_session=True,
+                request.alias_name, request.dataset_name, UUID(request.object_id)
             )
         except Exception as e:
             context.set_details(str(e))
@@ -258,12 +225,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     def DeleteAlias(self, request, context):
         try:
-            self.metadata_api.delete_alias(
-                request.alias_name,
-                request.dataset_name,
-                UUID(request.session_id),
-                check_session=True,
-            )
+            self.metadata_api.delete_alias(request.alias_name, request.dataset_name)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)

@@ -15,7 +15,7 @@ from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from dataclay.proto.common import common_pb2 as dataclay_dot_proto_dot_common_dot_common__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n&dataclay/proto/metadata/metadata.proto\x12\x17\x64\x61taclay.proto.metadata\x1a\x1bgoogle/protobuf/empty.proto\x1a\"dataclay/proto/common/common.proto\"7\n\x11NewAccountRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"%\n\x11GetAccountRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"\x14\n\x12GetAccountResponse\"M\n\x11NewSessionRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61taset_name\x18\x03 \x01(\t\"!\n\x13\x43loseSessionRequest\x12\n\n\x02id\x18\x01 \x01(\t\"H\n\x11NewDatasetRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x0f\n\x07\x64\x61taset\x18\x03 \x01(\t\"<\n\x15GetAllBackendsRequest\x12\x14\n\x0c\x66rom_backend\x18\x01 \x01(\x08\x12\r\n\x05\x66orce\x18\x02 \x01(\x08\"\xba\x01\n\x16GetAllBackendsResponse\x12O\n\x08\x62\x61\x63kends\x18\x01 \x03(\x0b\x32=.dataclay.proto.metadata.GetAllBackendsResponse.BackendsEntry\x1aO\n\rBackendsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x1e.dataclay.proto.common.Backend:\x02\x38\x01\")\n\x12GetDataclayRequest\x12\x13\n\x0b\x64\x61taclay_id\x18\x01 \x01(\t\"?\n\x16GetObjectMDByIdRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x11\n\tobject_id\x18\x02 \x01(\t\"Y\n\x19GetObjectMDByAliasRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x12\n\nalias_name\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61taset_name\x18\x03 \x01(\t\"\xbc\x01\n\x15GetAllObjectsResponse\x12L\n\x07objects\x18\x01 \x03(\x0b\x32;.dataclay.proto.metadata.GetAllObjectsResponse.ObjectsEntry\x1aU\n\x0cObjectsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x34\n\x05value\x18\x02 \x01(\x0b\x32%.dataclay.proto.common.ObjectMetadata:\x02\x38\x01\"R\n\x12\x44\x65leteAliasRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x12\n\nalias_name\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61taset_name\x18\x03 \x01(\t\"=\n\x12GetAllAliasRequest\x12\x14\n\x0c\x64\x61taset_name\x18\x01 \x01(\t\x12\x11\n\tobject_id\x18\x02 \x01(\t\"\xaf\x01\n\x13GetAllAliasResponse\x12J\n\x07\x61liases\x18\x01 \x03(\x0b\x32\x39.dataclay.proto.metadata.GetAllAliasResponse.AliasesEntry\x1aL\n\x0c\x41liasesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.dataclay.proto.common.Alias:\x02\x38\x01\"b\n\x0fNewAliasRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x12\n\nalias_name\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61taset_name\x18\x03 \x01(\t\x12\x11\n\tobject_id\x18\x04 \x01(\t2\xb1\n\n\x0fMetadataService\x12R\n\nNewAccount\x12*.dataclay.proto.metadata.NewAccountRequest\x1a\x16.google.protobuf.Empty\"\x00\x12g\n\nGetAccount\x12*.dataclay.proto.metadata.GetAccountRequest\x1a+.dataclay.proto.metadata.GetAccountResponse\"\x00\x12Z\n\nNewSession\x12*.dataclay.proto.metadata.NewSessionRequest\x1a\x1e.dataclay.proto.common.Session\"\x00\x12V\n\x0c\x43loseSession\x12,.dataclay.proto.metadata.CloseSessionRequest\x1a\x16.google.protobuf.Empty\"\x00\x12R\n\nNewDataset\x12*.dataclay.proto.metadata.NewDatasetRequest\x1a\x16.google.protobuf.Empty\"\x00\x12s\n\x0eGetAllBackends\x12..dataclay.proto.metadata.GetAllBackendsRequest\x1a/.dataclay.proto.metadata.GetAllBackendsResponse\"\x00\x12]\n\x0bGetDataclay\x12+.dataclay.proto.metadata.GetDataclayRequest\x1a\x1f.dataclay.proto.common.Dataclay\"\x00\x12k\n\x0fGetObjectMDById\x12/.dataclay.proto.metadata.GetObjectMDByIdRequest\x1a%.dataclay.proto.common.ObjectMetadata\"\x00\x12q\n\x12GetObjectMDByAlias\x12\x32.dataclay.proto.metadata.GetObjectMDByAliasRequest\x1a%.dataclay.proto.common.ObjectMetadata\"\x00\x12Y\n\rGetAllObjects\x12\x16.google.protobuf.Empty\x1a..dataclay.proto.metadata.GetAllObjectsResponse\"\x00\x12T\n\x0b\x44\x65leteAlias\x12+.dataclay.proto.metadata.DeleteAliasRequest\x1a\x16.google.protobuf.Empty\"\x00\x12N\n\x08NewAlias\x12(.dataclay.proto.metadata.NewAliasRequest\x1a\x16.google.protobuf.Empty\"\x00\x12j\n\x0bGetAllAlias\x12+.dataclay.proto.metadata.GetAllAliasRequest\x1a,.dataclay.proto.metadata.GetAllAliasResponse\"\x00\x12\x38\n\x04Stop\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x00\x42\"\n\x1e\x65s.bsc.dataclay.proto.metadataP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n&dataclay/proto/metadata/metadata.proto\x12\x17\x64\x61taclay.proto.metadata\x1a\x1bgoogle/protobuf/empty.proto\x1a\"dataclay/proto/common/common.proto\"7\n\x11NewAccountRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"%\n\x11GetAccountRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"\x14\n\x12GetAccountResponse\"H\n\x11NewDatasetRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x0f\n\x07\x64\x61taset\x18\x03 \x01(\t\"<\n\x15GetAllBackendsRequest\x12\x14\n\x0c\x66rom_backend\x18\x01 \x01(\x08\x12\r\n\x05\x66orce\x18\x02 \x01(\x08\"\xba\x01\n\x16GetAllBackendsResponse\x12O\n\x08\x62\x61\x63kends\x18\x01 \x03(\x0b\x32=.dataclay.proto.metadata.GetAllBackendsResponse.BackendsEntry\x1aO\n\rBackendsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x1e.dataclay.proto.common.Backend:\x02\x38\x01\")\n\x12GetDataclayRequest\x12\x13\n\x0b\x64\x61taclay_id\x18\x01 \x01(\t\"+\n\x16GetObjectMDByIdRequest\x12\x11\n\tobject_id\x18\x01 \x01(\t\"E\n\x19GetObjectMDByAliasRequest\x12\x12\n\nalias_name\x18\x01 \x01(\t\x12\x14\n\x0c\x64\x61taset_name\x18\x02 \x01(\t\"\xbc\x01\n\x15GetAllObjectsResponse\x12L\n\x07objects\x18\x01 \x03(\x0b\x32;.dataclay.proto.metadata.GetAllObjectsResponse.ObjectsEntry\x1aU\n\x0cObjectsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x34\n\x05value\x18\x02 \x01(\x0b\x32%.dataclay.proto.common.ObjectMetadata:\x02\x38\x01\">\n\x12\x44\x65leteAliasRequest\x12\x12\n\nalias_name\x18\x01 \x01(\t\x12\x14\n\x0c\x64\x61taset_name\x18\x02 \x01(\t\"=\n\x12GetAllAliasRequest\x12\x14\n\x0c\x64\x61taset_name\x18\x01 \x01(\t\x12\x11\n\tobject_id\x18\x02 \x01(\t\"\xaf\x01\n\x13GetAllAliasResponse\x12J\n\x07\x61liases\x18\x01 \x03(\x0b\x32\x39.dataclay.proto.metadata.GetAllAliasResponse.AliasesEntry\x1aL\n\x0c\x41liasesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.dataclay.proto.common.Alias:\x02\x38\x01\"N\n\x0fNewAliasRequest\x12\x12\n\nalias_name\x18\x01 \x01(\t\x12\x14\n\x0c\x64\x61taset_name\x18\x02 \x01(\t\x12\x11\n\tobject_id\x18\x03 \x01(\t2\xfd\x08\n\x0fMetadataService\x12R\n\nNewAccount\x12*.dataclay.proto.metadata.NewAccountRequest\x1a\x16.google.protobuf.Empty\"\x00\x12g\n\nGetAccount\x12*.dataclay.proto.metadata.GetAccountRequest\x1a+.dataclay.proto.metadata.GetAccountResponse\"\x00\x12R\n\nNewDataset\x12*.dataclay.proto.metadata.NewDatasetRequest\x1a\x16.google.protobuf.Empty\"\x00\x12s\n\x0eGetAllBackends\x12..dataclay.proto.metadata.GetAllBackendsRequest\x1a/.dataclay.proto.metadata.GetAllBackendsResponse\"\x00\x12]\n\x0bGetDataclay\x12+.dataclay.proto.metadata.GetDataclayRequest\x1a\x1f.dataclay.proto.common.Dataclay\"\x00\x12k\n\x0fGetObjectMDById\x12/.dataclay.proto.metadata.GetObjectMDByIdRequest\x1a%.dataclay.proto.common.ObjectMetadata\"\x00\x12q\n\x12GetObjectMDByAlias\x12\x32.dataclay.proto.metadata.GetObjectMDByAliasRequest\x1a%.dataclay.proto.common.ObjectMetadata\"\x00\x12Y\n\rGetAllObjects\x12\x16.google.protobuf.Empty\x1a..dataclay.proto.metadata.GetAllObjectsResponse\"\x00\x12T\n\x0b\x44\x65leteAlias\x12+.dataclay.proto.metadata.DeleteAliasRequest\x1a\x16.google.protobuf.Empty\"\x00\x12N\n\x08NewAlias\x12(.dataclay.proto.metadata.NewAliasRequest\x1a\x16.google.protobuf.Empty\"\x00\x12j\n\x0bGetAllAlias\x12+.dataclay.proto.metadata.GetAllAliasRequest\x1a,.dataclay.proto.metadata.GetAllAliasResponse\"\x00\x12\x38\n\x04Stop\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x00\x42\"\n\x1e\x65s.bsc.dataclay.proto.metadataP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,38 +35,34 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_GETACCOUNTREQUEST']._serialized_end=226
   _globals['_GETACCOUNTRESPONSE']._serialized_start=228
   _globals['_GETACCOUNTRESPONSE']._serialized_end=248
-  _globals['_NEWSESSIONREQUEST']._serialized_start=250
-  _globals['_NEWSESSIONREQUEST']._serialized_end=327
-  _globals['_CLOSESESSIONREQUEST']._serialized_start=329
-  _globals['_CLOSESESSIONREQUEST']._serialized_end=362
-  _globals['_NEWDATASETREQUEST']._serialized_start=364
-  _globals['_NEWDATASETREQUEST']._serialized_end=436
-  _globals['_GETALLBACKENDSREQUEST']._serialized_start=438
-  _globals['_GETALLBACKENDSREQUEST']._serialized_end=498
-  _globals['_GETALLBACKENDSRESPONSE']._serialized_start=501
-  _globals['_GETALLBACKENDSRESPONSE']._serialized_end=687
-  _globals['_GETALLBACKENDSRESPONSE_BACKENDSENTRY']._serialized_start=608
-  _globals['_GETALLBACKENDSRESPONSE_BACKENDSENTRY']._serialized_end=687
-  _globals['_GETDATACLAYREQUEST']._serialized_start=689
-  _globals['_GETDATACLAYREQUEST']._serialized_end=730
-  _globals['_GETOBJECTMDBYIDREQUEST']._serialized_start=732
-  _globals['_GETOBJECTMDBYIDREQUEST']._serialized_end=795
-  _globals['_GETOBJECTMDBYALIASREQUEST']._serialized_start=797
-  _globals['_GETOBJECTMDBYALIASREQUEST']._serialized_end=886
-  _globals['_GETALLOBJECTSRESPONSE']._serialized_start=889
-  _globals['_GETALLOBJECTSRESPONSE']._serialized_end=1077
-  _globals['_GETALLOBJECTSRESPONSE_OBJECTSENTRY']._serialized_start=992
-  _globals['_GETALLOBJECTSRESPONSE_OBJECTSENTRY']._serialized_end=1077
-  _globals['_DELETEALIASREQUEST']._serialized_start=1079
-  _globals['_DELETEALIASREQUEST']._serialized_end=1161
-  _globals['_GETALLALIASREQUEST']._serialized_start=1163
-  _globals['_GETALLALIASREQUEST']._serialized_end=1224
-  _globals['_GETALLALIASRESPONSE']._serialized_start=1227
-  _globals['_GETALLALIASRESPONSE']._serialized_end=1402
-  _globals['_GETALLALIASRESPONSE_ALIASESENTRY']._serialized_start=1326
-  _globals['_GETALLALIASRESPONSE_ALIASESENTRY']._serialized_end=1402
-  _globals['_NEWALIASREQUEST']._serialized_start=1404
-  _globals['_NEWALIASREQUEST']._serialized_end=1502
-  _globals['_METADATASERVICE']._serialized_start=1505
-  _globals['_METADATASERVICE']._serialized_end=2834
+  _globals['_NEWDATASETREQUEST']._serialized_start=250
+  _globals['_NEWDATASETREQUEST']._serialized_end=322
+  _globals['_GETALLBACKENDSREQUEST']._serialized_start=324
+  _globals['_GETALLBACKENDSREQUEST']._serialized_end=384
+  _globals['_GETALLBACKENDSRESPONSE']._serialized_start=387
+  _globals['_GETALLBACKENDSRESPONSE']._serialized_end=573
+  _globals['_GETALLBACKENDSRESPONSE_BACKENDSENTRY']._serialized_start=494
+  _globals['_GETALLBACKENDSRESPONSE_BACKENDSENTRY']._serialized_end=573
+  _globals['_GETDATACLAYREQUEST']._serialized_start=575
+  _globals['_GETDATACLAYREQUEST']._serialized_end=616
+  _globals['_GETOBJECTMDBYIDREQUEST']._serialized_start=618
+  _globals['_GETOBJECTMDBYIDREQUEST']._serialized_end=661
+  _globals['_GETOBJECTMDBYALIASREQUEST']._serialized_start=663
+  _globals['_GETOBJECTMDBYALIASREQUEST']._serialized_end=732
+  _globals['_GETALLOBJECTSRESPONSE']._serialized_start=735
+  _globals['_GETALLOBJECTSRESPONSE']._serialized_end=923
+  _globals['_GETALLOBJECTSRESPONSE_OBJECTSENTRY']._serialized_start=838
+  _globals['_GETALLOBJECTSRESPONSE_OBJECTSENTRY']._serialized_end=923
+  _globals['_DELETEALIASREQUEST']._serialized_start=925
+  _globals['_DELETEALIASREQUEST']._serialized_end=987
+  _globals['_GETALLALIASREQUEST']._serialized_start=989
+  _globals['_GETALLALIASREQUEST']._serialized_end=1050
+  _globals['_GETALLALIASRESPONSE']._serialized_start=1053
+  _globals['_GETALLALIASRESPONSE']._serialized_end=1228
+  _globals['_GETALLALIASRESPONSE_ALIASESENTRY']._serialized_start=1152
+  _globals['_GETALLALIASRESPONSE_ALIASESENTRY']._serialized_end=1228
+  _globals['_NEWALIASREQUEST']._serialized_start=1230
+  _globals['_NEWALIASREQUEST']._serialized_end=1308
+  _globals['_METADATASERVICE']._serialized_start=1311
+  _globals['_METADATASERVICE']._serialized_end=2460
 # @@protoc_insertion_point(module_scope)

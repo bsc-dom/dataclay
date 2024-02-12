@@ -3,13 +3,10 @@
 from __future__ import annotations
 
 import collections
-import concurrent.futures
 import copy
 import logging
 import pickle
 import random
-import threading
-import time
 from abc import ABC, abstractmethod
 from builtins import Exception
 from typing import TYPE_CHECKING, Any, Optional
@@ -21,7 +18,7 @@ from dataclay.backend.client import BackendClient
 from dataclay.config import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
-from dataclay.runtime import LockManager
+from dataclay.runtime import LockManager, thread_local_data
 from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.serialization import dcdumps, recursive_dcdumps
 from dataclay.utils.telemetry import trace
@@ -32,7 +29,7 @@ if TYPE_CHECKING:
     from dataclay.backend.data_manager import DataManager
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
-    from dataclay.metadata.kvdata import Backend, ObjectMetadata, Session
+    from dataclay.metadata.kvdata import ObjectMetadata
 
 
 tracer = trace.get_tracer(__name__)
@@ -74,11 +71,6 @@ class DataClayRuntime(ABC):
     # Properties #
     ##############
 
-    @property
-    @abstractmethod
-    def session(self) -> Session:
-        pass
-
     # Common runtime API
 
     def make_persistent(
@@ -108,10 +100,12 @@ class DataClayRuntime(ABC):
         # before calling make_persistent, which is useful for registering a new verion with
         # the same dataset as the original object.
         if instance._dc_meta.dataset_name is None:
-            instance._dc_meta.dataset_name = self.session.dataset_name
+            instance._dc_meta.dataset_name = thread_local_data.dataset_name
 
         if alias:
-            self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_meta.id)
+            self.metadata_service.new_alias(
+                alias, thread_local_data.dataset_name, instance._dc_meta.id
+            )
 
         # If calling make_persistent in a backend, the default is to register the object
         # in the current backend, unles another backend is specified
@@ -209,7 +203,7 @@ class DataClayRuntime(ABC):
     def get_object_by_alias(self, alias: str, dataset_name: str = None) -> DataClayObject:
         """Get object instance from alias"""
         if dataset_name is None:
-            dataset_name = self.session.dataset_name
+            dataset_name = thread_local_data.dataset_name
 
         object_md = self.metadata_service.get_object_md_by_alias(alias, dataset_name)
 
@@ -365,7 +359,6 @@ class DataClayRuntime(ABC):
                         is_exception = False
                     else:
                         serialized_response, is_exception = backend_client.call_active_method(
-                            self.session.id,
                             instance._dc_meta.id,
                             method_name,
                             serialized_args,
@@ -413,9 +406,9 @@ class DataClayRuntime(ABC):
 
     def delete_alias(self, alias: str, dataset_name: Optional[str] = None):
         if dataset_name is None:
-            dataset_name = self.session.dataset_name
+            dataset_name = thread_local_data.dataset_name
 
-        self.metadata_service.delete_alias(alias, dataset_name, self.session.id)
+        self.metadata_service.delete_alias(alias, dataset_name)
 
     def get_all_alias(self, dataset_name: Optional[str] = None, object_id: Optional[UUID] = None):
         return self.metadata_service.get_all_alias(dataset_name, object_id)
@@ -607,25 +600,6 @@ class DataClayRuntime(ABC):
                     return
 
         self.send_objects([instance], backend_id, True, recursive, remotes)
-
-    #####################
-    # Garbage collector #
-    #####################
-
-    @abstractmethod
-    def detach_object_from_session(self, object_id: UUID, hint):
-        """Detach object from current session in use, i.e. remove reference from current session provided to object,
-
-        'Dear garbage-collector, current session is not using the object anymore'
-        """
-        pass
-
-    def add_session_reference(self, object_id: UUID):
-        """reference associated to thread session
-
-        Only implemented in BackendRuntime
-        """
-        pass
 
     ######################
 

@@ -311,7 +311,7 @@ class DataClayObject:
 
         Args:
             alias: Alias of the object.
-            dataset_name: Name of the dataset where the alias is stored. If None, the session's dataset is used.
+            dataset_name: Name of the dataset where the alias is stored. If None, the active dataset is used.
 
         Returns:
             The object with the given alias.
@@ -350,7 +350,7 @@ class DataClayObject:
 
         Args:
             alias: Alias to be removed.
-            dataset_name: Name of the dataset where the alias is stored. If None, the session's dataset is used.
+            dataset_name: Name of the dataset where the alias is stored. If None, the active dataset is used.
 
         Raises:
             DoesNotExistError: If the alias does not exist.
@@ -538,15 +538,8 @@ class DataClayObject:
 
     def synchronize(self, field_name, value):
         # from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
-        raise ("Synchronize need refactor")
+        raise Exception("Synchronize need refactor")
         return get_runtime().synchronize(self, DCLAY_SETTER_PREFIX + field_name, value)
-
-    def session_detach(self):
-        """
-        Detach object from session, i.e. remove reference from current session provided to current object,
-            'dear garbage-collector, the current session is not using this object anymore'
-        """
-        get_runtime().detach_object_from_session(self._dc_meta.id, self._dc_meta.master_backend_id)
 
     def __repr__(self):
         if self._dc_is_registered:
