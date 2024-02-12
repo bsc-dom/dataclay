@@ -18,7 +18,7 @@ from dataclay.backend.client import BackendClient
 from dataclay.config import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
-from dataclay.runtime import LockManager, thread_local_data
+from dataclay.runtime import LockManager, context_var
 from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.serialization import dcdumps, recursive_dcdumps
 from dataclay.utils.telemetry import trace
@@ -100,11 +100,11 @@ class DataClayRuntime(ABC):
         # before calling make_persistent, which is useful for registering a new verion with
         # the same dataset as the original object.
         if instance._dc_meta.dataset_name is None:
-            instance._dc_meta.dataset_name = thread_local_data.dataset_name
+            instance._dc_meta.dataset_name = context_var.get()["dataset_name"]
 
         if alias:
             self.metadata_service.new_alias(
-                alias, thread_local_data.dataset_name, instance._dc_meta.id
+                alias, instance._dc_meta.dataset_name, instance._dc_meta.id
             )
 
         # If calling make_persistent in a backend, the default is to register the object
@@ -203,7 +203,7 @@ class DataClayRuntime(ABC):
     def get_object_by_alias(self, alias: str, dataset_name: str = None) -> DataClayObject:
         """Get object instance from alias"""
         if dataset_name is None:
-            dataset_name = thread_local_data.dataset_name
+            dataset_name = context_var.get()["dataset_name"]
 
         object_md = self.metadata_service.get_object_md_by_alias(alias, dataset_name)
 
@@ -406,7 +406,7 @@ class DataClayRuntime(ABC):
 
     def delete_alias(self, alias: str, dataset_name: Optional[str] = None):
         if dataset_name is None:
-            dataset_name = thread_local_data.dataset_name
+            dataset_name = context_var.get()["dataset_name"]
 
         self.metadata_service.delete_alias(alias, dataset_name)
 

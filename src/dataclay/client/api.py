@@ -15,7 +15,7 @@ from uuid import UUID
 from dataclay.backend.client import BackendClient
 from dataclay.config import ClientSettings, settings
 from dataclay.dataclay_object import DataClayObject
-from dataclay.runtime import get_runtime, set_runtime, thread_local_data
+from dataclay.runtime import context_var, get_runtime, set_runtime
 from dataclay.runtime.client import ClientRuntime
 from dataclay.utils.telemetry import trace
 
@@ -169,8 +169,9 @@ class Client:
 
         set_runtime(self.runtime)
 
-        thread_local_data.dataset_name = settings.client.dataset
-        thread_local_data.username = settings.client.username
+        context_var.set(
+            {"dataset_name": settings.client.dataset, "username": settings.client.username}
+        )
 
         # Cache the dataclay_id, to avoid later request
         # self.runtime.dataclay_id

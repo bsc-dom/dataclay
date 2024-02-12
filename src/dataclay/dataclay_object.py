@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 DC_PROPERTY_PREFIX = "_dc_property_"
 Sentinel = object()
 
+
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 

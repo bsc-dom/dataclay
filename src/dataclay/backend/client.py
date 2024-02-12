@@ -13,7 +13,7 @@ from dataclay.config import settings
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
-from dataclay.runtime import thread_local_data
+from dataclay.runtime import context_var
 from dataclay.utils.decorators import grpc_error_handler
 
 logger = logging.getLogger(__name__)
@@ -147,10 +147,11 @@ class BackendClient:
             kwargs=kwargs,
         )
 
-        # TODO: Maybe make it a private method for all the calls
+        current_context = context_var.get()
+
         metadata = self.metadata_call + [
-            ("dataset-name", thread_local_data.dataset_name),
-            ("username", thread_local_data.username),
+            ("dataset-name", current_context["dataset_name"]),
+            ("username", current_context["username"]),
         ]
 
         response = self.stub.CallActiveMethod(request, metadata=metadata)

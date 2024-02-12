@@ -1,19 +1,24 @@
+import contextvars
+from concurrent.futures import ThreadPoolExecutor
+
 from dataclay import Client
-from dataclay.contrib.modeltest.family import Person
+from dataclay.contrib.modeltest.family import Dog, Family, Person
 from dataclay.runtime import get_runtime
 
 client = Client(host="127.0.0.1")
 client.start()
 
-runtime = get_runtime()
-backend_clients = runtime.backend_clients
-
-for backend_client in backend_clients:
-    print(backend_client)
+current_context = contextvars.copy_context()
 
 
-# person = Person.get_by_alias("Alice")
-person = Person(name="Alice", age=33)
-person.make_persistent()
+def job(name, age):
+    person = Person(name, age)
+    person.make_persistent()
 
-person.add_year()
+
+with ThreadPoolExecutor() as executor:
+    for i in range(10):
+        future = executor.submit(current_context.run, job, f"Name{i}", i)
+        print(future.result())
+
+# person.add_year()

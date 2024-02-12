@@ -17,7 +17,7 @@ from dataclay.backend.api import BackendAPI
 from dataclay.config import settings
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
-from dataclay.runtime import thread_local_data
+from dataclay.runtime import context_var
 
 logger = logging.getLogger(__name__)
 
@@ -151,11 +151,11 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
         else:
             logger.debug("No backend-id metadata header in the call.")
 
-        # set the thread_local_data
-        if "dataset-name" in metadata:
-            thread_local_data.dataset_name = metadata["dataset-name"]
-        if "username" in metadata:
-            thread_local_data.username = metadata["username"]
+        # set the current_context
+        if "dataset-name" in metadata and "username" in metadata:
+            context_var.set(
+                {"dataset_name": metadata["dataset-name"], "username": metadata["username"]}
+            )
 
     def RegisterObjects(self, request, context):
         self._check_context(context)
