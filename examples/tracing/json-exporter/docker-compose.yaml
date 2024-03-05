@@ -18,9 +18,6 @@ services:
       - 16587:16587
     environment:
       - DATACLAY_KV_HOST=redis
-      - DATACLAY_PASSWORD=s3cret
-      - DATACLAY_USERNAME=testuser
-      - DATACLAY_DATASET=testdata
       - DATACLAY_TRACING=true
       - DATACLAY_TRACING_EXPORTER=otlp
       - DATACLAY_SERVICE_NAME=metadata

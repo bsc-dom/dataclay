@@ -11,7 +11,6 @@ import psutil
 from dataclay.config import settings
 from dataclay.exceptions import *
 from dataclay.runtime import LockManager
-from dataclay.utils import metrics
 from dataclay.utils.serialization import DataClayPickler
 
 if TYPE_CHECKING:
@@ -21,6 +20,16 @@ if TYPE_CHECKING:
 
 # logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))
 logger = logging.getLogger(__name__)
+
+
+class _DummyStoredObjects:
+    def inc(self):
+        """Dummy function"""
+        pass
+
+    def dec(self):
+        """Dummy function"""
+        pass
 
 
 class DataManager(threading.Thread):
@@ -43,35 +52,46 @@ class DataManager(threading.Thread):
         # objects deserialized later. Second ones cannot be GC if first ones are not cleaned.
         # During GC,we should know that somehow. It's a hint but improves GC a lot.
         self.loaded_objects: dict[UUID, DataClayObject] = {}
-        metrics.dataclay_loaded_objects.set_function(lambda: len(self.loaded_objects))
 
-        # Locks for run_task and flush_all
-        self.run_task_lock = threading.Lock()
+        if settings.metrics:
+            # pylint: disable=import-outside-toplevel
+            from dataclay.utils import metrics
+
+            metrics.dataclay_loaded_objects.set_function(lambda: len(self.loaded_objects))
+            self.dataclay_stored_objects = metrics.dataclay_stored_objects
+        else:
+            self.dataclay_stored_objects = _DummyStoredObjects()
+
+        # Locks for check_memory and flush_all
+        self.check_memory_lock = threading.Lock()
         self.flush_all_lock = threading.Lock()
 
     def run(self):
         """Overrides run function"""
         gc_check_time_interval_seconds = settings.memory_check_interval
         while True:
-            logger.debug("Thread is awake")
             if self._finished.is_set():
                 break
-            self.run_task()
+            self.check_memory()
 
             # sleep for interval or until shutdown
-            logger.debug("Thread is going to sleep")
             self._finished.wait(gc_check_time_interval_seconds)
 
         logger.debug("Thread stoped")
 
-    def run_task(self):
+    def check_memory(self):
+        """Check memory and flush objects if needed."""
+
+        logger.debug("Checking memory usage")
+
         if self.flush_all_lock.locked():
             logger.debug("Already flushing all objects")
             return
 
         # Enters if memory is over threshold and the lock is not locked
-        if self.is_memory_over_threshold() and self.run_task_lock.acquire(blocking=False):
+        if self.is_memory_over_threshold() and self.check_memory_lock.acquire(blocking=False):
             try:
+                logger.info("Memory is over threshold")
                 logger.debug("Num loaded objects before: %d", len(self.loaded_objects))
                 for object_id in list(self.loaded_objects.keys()):
                     self.unload_object(self.loaded_objects[object_id], timeout=0, force=False)
@@ -85,7 +105,9 @@ class DataManager(threading.Thread):
 
                 logger.debug("Num loaded objects after: %d", len(self.loaded_objects))
             finally:
-                self.run_task_lock.release()
+                self.check_memory_lock.release()
+        else:
+            logger.debug("Memory is below threshold")
 
     def add_hard_reference(self, instance: DataClayObject):
         """Add a hard reference to the provided object."""
@@ -112,7 +134,7 @@ class DataManager(threading.Thread):
             try:
                 path = f"{settings.storage_path}/{object_id}"
                 object_dict, state = pickle.load(open(path, "rb"))
-                metrics.dataclay_stored_objects.dec()
+                self.dataclay_stored_objects.dec()
             except Exception as e:
                 raise DataClayException("Object not found.") from e
 
@@ -141,7 +163,7 @@ class DataManager(threading.Thread):
                 path = f"{settings.storage_path}/{object_id}"
                 state = instance._dc_state
                 DataClayPickler(open(path, "wb")).dump(state)
-                metrics.dataclay_stored_objects.inc()
+                self.dataclay_stored_objects.inc()
 
                 # TODO: Maybe update Redis (since is loaded has changed). For access optimization.
                 instance._clean_dc_properties()
@@ -181,8 +203,8 @@ class DataManager(threading.Thread):
                     "Starting to flush all loaded objects. Num (%d)", len(self.loaded_objects)
                 )
 
-                if self.run_task_lock.acquire(timeout=self.MAX_TIME_WAIT_FOR_GC_TO_FINISH):
-                    self.run_task_lock.release()
+                if self.check_memory_lock.acquire(timeout=self.MAX_TIME_WAIT_FOR_GC_TO_FINISH):
+                    self.check_memory_lock.release()
 
                 for object_id in list(self.loaded_objects.keys()):
                     self.unload_object(

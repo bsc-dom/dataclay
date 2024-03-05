@@ -12,12 +12,10 @@ import logging.config
 from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
-import dataclay.utils.metrics
-import dataclay.utils.telemetry
 from dataclay.backend.client import BackendClient
 from dataclay.config import ClientSettings, settings
 from dataclay.dataclay_object import DataClayObject
-from dataclay.runtime import get_runtime, set_runtime
+from dataclay.runtime import context_var, get_runtime, set_runtime
 from dataclay.runtime.client import ClientRuntime
 from dataclay.utils.telemetry import trace
 
@@ -44,6 +42,9 @@ def start_telemetry():
         settings.service_name = "client"
 
     if settings.tracing:
+        # pylint: disable=import-outside-toplevel
+        import dataclay.utils.telemetry
+
         dataclay.utils.telemetry.set_tracing(
             settings.service_name,
             settings.tracing_host,
@@ -52,6 +53,9 @@ def start_telemetry():
         )
 
     if settings.metrics:
+        # pylint: disable=import-outside-toplevel
+        import dataclay.utils.metrics
+
         dataclay.utils.metrics.set_metrics(
             settings.metrics_host,
             settings.metrics_port,
@@ -165,22 +169,13 @@ class Client:
 
         set_runtime(self.runtime)
 
-        # Create a new session
-        session = self.runtime.metadata_service.new_session(
-            settings.client.username,
-            settings.client.password,
-            settings.client.dataset,
+        context_var.set(
+            {"dataset_name": settings.client.dataset, "username": settings.client.username}
         )
-        self.runtime.session = session
-        self.runtime.metadata_service.session = session
-
-        # Cache the backends clients
-        self.runtime.update_backend_clients()
 
         # Cache the dataclay_id, to avoid later request
         # self.runtime.dataclay_id
 
-        logger.debug("Created new session %s", session.id)
         self.is_active = True
 
     @tracer.start_as_current_span("stop")
@@ -208,7 +203,7 @@ class Client:
 
     @tracer.start_as_current_span("get_backends")
     def get_backends(self) -> dict[UUID, BackendClient]:
-        self.runtime.update_backend_clients()
+        self.runtime.backend_clients.update()
         return self.runtime.backend_clients
 
 

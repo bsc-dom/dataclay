@@ -13,6 +13,7 @@ from dataclay.config import settings
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
+from dataclay.runtime import context_var
 from dataclay.utils.decorators import grpc_error_handler
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ class BackendClient:
         strictly needed, but it can be beneficial for sanity checking and also
         it is used for reverse proxy configurations.
         """
+        self.id = backend_id
         self.host = host
         self.port = port
         self.address = str(host) + ":" + str(port)
@@ -136,17 +138,23 @@ class BackendClient:
 
     @grpc_error_handler
     def call_active_method(
-        self, session_id: UUID, object_id: UUID, method_name: str, args: bytes, kwargs: bytes
+        self, object_id: UUID, method_name: str, args: bytes, kwargs: bytes
     ) -> tuple[bytes, bool]:
         request = backend_pb2.CallActiveMethodRequest(
-            session_id=str(session_id),
             object_id=str(object_id),
             method_name=method_name,
             args=args,
             kwargs=kwargs,
         )
 
-        response = self.stub.CallActiveMethod(request, metadata=self.metadata_call)
+        current_context = context_var.get()
+
+        metadata = self.metadata_call + [
+            ("dataset-name", current_context["dataset_name"]),
+            ("username", current_context["username"]),
+        ]
+
+        response = self.stub.CallActiveMethod(request, metadata=metadata)
         return response.value, response.is_exception
 
     #################
@@ -404,18 +412,6 @@ class BackendClient:
         t = (result, non_migrated)
 
         return t
-
-    def detach_object_from_session(self, object_id, session_id):
-        raise Exception("To refactor")
-        request = dataservice_messages_pb2.DetachObjectFromSessionRequest(
-            objectID=str(object_id), sessionID=str(session_id)
-        )
-        try:
-            response = self.stub.detachObjectFromSession(request, metadata=self.metadata_call)
-        except RuntimeError as e:
-            raise e
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
 
     def activate_tracing(self, task_id):
         raise Exception("To refactor")

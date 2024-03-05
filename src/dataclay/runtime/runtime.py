@@ -1,14 +1,12 @@
 """ Class description goes here. """
+
 from __future__ import annotations
 
 import collections
-import concurrent.futures
 import copy
 import logging
 import pickle
 import random
-import threading
-import time
 from abc import ABC, abstractmethod
 from builtins import Exception
 from typing import TYPE_CHECKING, Any, Optional
@@ -20,8 +18,8 @@ from dataclay.backend.client import BackendClient
 from dataclay.config import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
-from dataclay.runtime import LockManager
-from dataclay.utils import metrics
+from dataclay.runtime import LockManager, context_var
+from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.serialization import dcdumps, recursive_dcdumps
 from dataclay.utils.telemetry import trace
 
@@ -31,26 +29,17 @@ if TYPE_CHECKING:
     from dataclay.backend.data_manager import DataManager
     from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
-    from dataclay.metadata.kvdata import Backend, ObjectMetadata, Session
+    from dataclay.metadata.kvdata import ObjectMetadata
 
 
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 
-class BackendClientsMonitor(threading.Thread):
-    """Thread that periodically updates the backend clients."""
-
-    def __init__(self, runtime: DataClayRuntime):
-        threading.Thread.__init__(self, name="backend-clients-monitor")
-        self.daemon = True
-        self.runtime = runtime
-
-    def run(self):
-        while True:
-            logger.debug("Updating backend clients")
-            self.runtime.update_backend_clients()
-            time.sleep(settings.backend_clients_check_interval)
+class _DummyInmemoryHitsTotal:
+    def inc(self):
+        """Dummy function"""
+        pass
 
 
 class DataClayRuntime(ABC):
@@ -60,22 +49,27 @@ class DataClayRuntime(ABC):
         self.is_backend = bool(backend_id)
         self.metadata_service = metadata_service
 
-        self.backend_clients: dict[UUID, BackendClient] = {}
-        self.backend_clients_monitor = BackendClientsMonitor(self)
-        self.backend_clients_monitor.start()
+        # Backend clients manager
+        self.backend_clients = BackendClientsManager(metadata_service)
+        self.backend_clients.start_update()
+        if self.is_backend:
+            self.backend_clients.start_subscribe()
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
         self.inmemory_objects: WeakValueDictionary[UUID, DataClayObject] = WeakValueDictionary()
-        metrics.dataclay_inmemory_objects.set_function(lambda: len(self.inmemory_objects))
+
+        if settings.metrics:
+            # pylint: disable=import-outside-toplevel
+            from dataclay.utils import metrics
+
+            metrics.dataclay_inmemory_objects.set_function(lambda: len(self.inmemory_objects))
+            self.dataclay_inmemory_hits_total = metrics.dataclay_inmemory_hits_total
+        else:
+            self.dataclay_inmemory_hits_total = _DummyInmemoryHitsTotal()
 
     ##############
     # Properties #
     ##############
-
-    @property
-    @abstractmethod
-    def session(self) -> Session:
-        pass
 
     # Common runtime API
 
@@ -106,10 +100,12 @@ class DataClayRuntime(ABC):
         # before calling make_persistent, which is useful for registering a new verion with
         # the same dataset as the original object.
         if instance._dc_meta.dataset_name is None:
-            instance._dc_meta.dataset_name = self.session.dataset_name
+            instance._dc_meta.dataset_name = context_var.get()["dataset_name"]
 
         if alias:
-            self.metadata_service.new_alias(alias, self.session.dataset_name, instance._dc_meta.id)
+            self.metadata_service.new_alias(
+                alias, instance._dc_meta.dataset_name, instance._dc_meta.id
+            )
 
         # If calling make_persistent in a backend, the default is to register the object
         # in the current backend, unles another backend is specified
@@ -124,14 +120,14 @@ class DataClayRuntime(ABC):
         elif backend_id is None:
             # If there is no backend client, update the list of backend clients
             if not self.backend_clients:
-                self.update_backend_clients()
+                self.backend_clients.update()
                 if not self.backend_clients:
                     raise RuntimeError(
                         f"({instance._dc_meta.id}) No backends available to make persistent"
                     )
             backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
         else:
-            backend_client = self.get_backend_client(backend_id)
+            backend_client = self.backend_clients[backend_id]
 
         # Serialize instance with Pickle
         visited_objects: dict[UUID, DataClayObject] = {}
@@ -158,9 +154,6 @@ class DataClayRuntime(ABC):
     ##################
     # Object methods #
     ##################
-
-    # TODO: Check if is taking the metrics from KeyError, if not put inside
-    @metrics.dataclay_inmemory_misses_total.count_exceptions(KeyError)
     def get_object_by_id(self, object_id: UUID, object_md: ObjectMetadata = None) -> DataClayObject:
         """Get dataclay object from inmemory_objects. If not present, get object metadata
         and create new proxy object.
@@ -169,13 +162,13 @@ class DataClayRuntime(ABC):
 
         try:
             dc_object = self.inmemory_objects[object_id]
-            metrics.dataclay_inmemory_hits_total.inc()
+            self.dataclay_inmemory_hits_total.inc()
             return dc_object
         except KeyError:
             with LockManager.write(object_id):
                 try:
                     dc_object = self.inmemory_objects[object_id]
-                    metrics.dataclay_inmemory_hits_total.inc()
+                    self.dataclay_inmemory_hits_total.inc()
                     return dc_object
                 except KeyError:
                     # NOTE: When the object is not in the inmemory_objects,
@@ -210,7 +203,7 @@ class DataClayRuntime(ABC):
     def get_object_by_alias(self, alias: str, dataset_name: str = None) -> DataClayObject:
         """Get object instance from alias"""
         if dataset_name is None:
-            dataset_name = self.session.dataset_name
+            dataset_name = context_var.get()["dataset_name"]
 
         object_md = self.metadata_service.get_object_md_by_alias(alias, dataset_name)
 
@@ -222,7 +215,7 @@ class DataClayRuntime(ABC):
                 self.data_manager.load_object(instance)
             return instance._dc_properties
         else:
-            backend_client = self.get_backend_client(instance._dc_meta.master_backend_id)
+            backend_client = self.backend_clients[instance._dc_meta.master_backend_id]
             serialized_properties = backend_client.get_object_properties(instance._dc_meta.id)
             return pickle.loads(serialized_properties)
 
@@ -258,7 +251,7 @@ class DataClayRuntime(ABC):
                 # del self.inmemory_objects[instance._dc_meta.id]
                 self.metadata_service.delete_object(instance._dc_meta.id)
         else:
-            backend_client = self.get_backend_client(instance._dc_meta.master_backend_id)
+            backend_client = self.backend_clients[instance._dc_meta.master_backend_id]
             backend_client.proxify_object(instance._dc_meta.id, new_object_id)
 
         instance._dc_meta.id = new_object_id
@@ -284,7 +277,7 @@ class DataClayRuntime(ABC):
                 instance._dc_meta.versions_object_ids = []
                 self.metadata_service.upsert_object(instance._dc_meta)
         else:
-            backend_client = self.get_backend_client(instance._dc_meta.master_backend_id)
+            backend_client = self.backend_clients[instance._dc_meta.master_backend_id]
             backend_client.change_object_id(instance._dc_meta.id, new_object_id)
             instance._dc_meta.id = new_object_id
 
@@ -332,7 +325,7 @@ class DataClayRuntime(ABC):
                 # clients and the object backend locations, and try again
                 if not avail_backends:
                     logger.warning("(%s) No backends available. Syncing...", instance._dc_meta.id)
-                    self.update_backend_clients()
+                    self.backend_clients.update()
                     instance.sync()
                     avail_backends = instance._dc_all_backend_ids.intersection(
                         self.backend_clients.keys()
@@ -344,7 +337,7 @@ class DataClayRuntime(ABC):
 
                 # Choose a random backend from the available ones
                 backend_id = random.choice(tuple(avail_backends))
-                backend_client = self.get_backend_client(backend_id)
+                backend_client = self.backend_clients[backend_id]
 
                 # If the connection fails, update the list of backend clients, and try again
                 try:
@@ -370,7 +363,6 @@ class DataClayRuntime(ABC):
                             serialized_response = None
                     else:
                         serialized_response, is_exception = backend_client.call_active_method(
-                            self.session.id,
                             instance._dc_meta.id,
                             method_name,
                             serialized_args,
@@ -379,7 +371,7 @@ class DataClayRuntime(ABC):
                 except DataClayException as e:
                     if "failed to connect" in str(e):
                         logger.warning("(%s) Failed to connect. Syncing...", instance._dc_meta.id)
-                        self.update_backend_clients()
+                        self.backend_clients.update()
                         continue
                     else:
                         raise e
@@ -418,108 +410,12 @@ class DataClayRuntime(ABC):
 
     def delete_alias(self, alias: str, dataset_name: Optional[str] = None):
         if dataset_name is None:
-            dataset_name = self.session.dataset_name
+            dataset_name = context_var.get()["dataset_name"]
 
-        self.metadata_service.delete_alias(alias, dataset_name, self.session.id)
+        self.metadata_service.delete_alias(alias, dataset_name)
 
     def get_all_alias(self, dataset_name: Optional[str] = None, object_id: Optional[UUID] = None):
         return self.metadata_service.get_all_alias(dataset_name, object_id)
-
-    ############
-    # Backends #
-    ############
-
-    def get_backend_client(self, backend_id: UUID) -> BackendClient:
-        try:
-            return self.backend_clients[backend_id]
-        except KeyError:
-            pass
-
-        self.update_backend_clients()
-        return self.backend_clients[backend_id]
-
-    def reload_backend_clients(self):
-        """Same as update_backend_clients, but to be used when not wanting to check channel readdinnes"""
-        backend_infos = self.metadata_service.get_all_backends(from_backend=self.is_backend)
-        new_backend_clients = {}
-
-        for backend_id, backend_info in backend_infos.items():
-            # Check if the backend is already in the backend_clients
-            if backend_id in self.backend_clients:
-                # Check if the backend location is the same
-                # Don't check if the backend is ready, since the metadata has already check it
-                if (
-                    backend_info.host == self.backend_clients[backend_id].host
-                    and backend_info.port == self.backend_clients[backend_id].port
-                ):
-                    # If backend has not changed, keep the same backend_client
-                    new_backend_clients[backend_id] = self.backend_clients[backend_id]
-                    continue
-
-            # If the backend is new, or has changed, create a new backend_client
-            backend_client = BackendClient(
-                backend_info.host, backend_info.port, backend_id=backend_info.id
-            )
-            new_backend_clients[backend_info.id] = backend_client
-
-        self.backend_clients = new_backend_clients
-
-    def update_backend_clients(self):
-        backend_infos = self.metadata_service.get_all_backends(from_backend=self.is_backend)
-        logger.debug("Updating backend clients. Metadata reports #%d", len(backend_infos))
-        new_backend_clients = {}
-
-        # This only applies to the client, or at least, when client settings are set
-        use_proxy = settings.client is not None and settings.client.proxy_enabled
-        # (Backends will have settings.client = None by default)
-
-        def add_backend_client(backend_info: Backend):
-            if (
-                backend_info.id in self.backend_clients
-                and (
-                    use_proxy
-                    or (
-                        backend_info.host == self.backend_clients[backend_info.id].host
-                        and backend_info.port == self.backend_clients[backend_info.id].port
-                    )
-                )
-                and self.backend_clients[backend_info.id].is_ready(settings.timeout_channel_ready)
-            ):
-                logger.debug("Existing backend already available: %s", backend_info.id)
-                new_backend_clients[backend_info.id] = self.backend_clients[backend_info.id]
-                return
-
-            if use_proxy:
-                logger.debug("New backend %s, connecting through proxy", backend_info.id)
-                backend_client = BackendClient(
-                    settings.client.proxy_host,
-                    settings.client.proxy_port,
-                    backend_id=backend_info.id,
-                )
-            else:
-                logger.debug(
-                    "New backend %s at %s:%s", backend_info.id, backend_info.host, backend_info.port
-                )
-                backend_client = BackendClient(
-                    backend_info.host, backend_info.port, backend_id=backend_info.id
-                )
-
-            if backend_client.is_ready(settings.timeout_channel_ready):
-                new_backend_clients[backend_info.id] = backend_client
-            else:
-                logger.info("Backend %s gave a timeout, removing it from list", backend_info.id)
-                del backend_infos[backend_info.id]
-
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures = [
-                executor.submit(add_backend_client, backend_info)
-                for backend_info in backend_infos.values()
-            ]
-            concurrent.futures.wait(futures)
-            # results = [future.result() for future in futures]
-
-        logger.debug("Current list of backends: %s", new_backend_clients)
-        self.backend_clients = new_backend_clients
 
     #################
     # Store Methods #
@@ -577,7 +473,7 @@ class DataClayRuntime(ABC):
 
         # Check that the destination backend is not this
         if backend_id != self.backend_id:
-            backend_client = self.get_backend_client(backend_id)
+            backend_client = self.backend_clients[backend_id]
             backend_client.register_objects(serialized_local_objects, make_replica=make_replica)
 
             for local_object in visited_local_objects.values():
@@ -608,7 +504,7 @@ class DataClayRuntime(ABC):
 
         if len(counter) > 0:
             remote_backend_id = counter.most_common(1)[0][0]
-            remote_backend_client = self.get_backend_client(remote_backend_id)
+            remote_backend_client = self.backend_clients[remote_backend_id]
             remote_backend_client.send_objects(
                 pending_remote_objects.keys(), backend_id, make_replica, recursive, remotes
             )
@@ -622,7 +518,7 @@ class DataClayRuntime(ABC):
             vars(instance).update(new_properties)
             instance._dc_is_loaded = True
         else:
-            backend_client = self.get_backend_client(instance._dc_meta.master_backend_id)
+            backend_client = self.backend_clients[instance._dc_meta.master_backend_id]
             backend_client.update_object_properties(instance._dc_meta.id, dcdumps(new_properties))
 
     def new_object_version(self, instance: DataClayObject, backend_id: Optional[UUID] = None):
@@ -682,7 +578,7 @@ class DataClayRuntime(ABC):
             # If there is no backend without a replica, update the list of backend clients,
             # sync the object metadata, and try again
             if not avail_backends:
-                self.update_backend_clients()
+                self.backend_clients.update()
                 instance.sync()
                 avail_backends = set(self.backend_clients.keys()) - instance._dc_all_backend_ids
 
@@ -708,25 +604,6 @@ class DataClayRuntime(ABC):
                     return
 
         self.send_objects([instance], backend_id, True, recursive, remotes)
-
-    #####################
-    # Garbage collector #
-    #####################
-
-    @abstractmethod
-    def detach_object_from_session(self, object_id: UUID, hint):
-        """Detach object from current session in use, i.e. remove reference from current session provided to object,
-
-        'Dear garbage-collector, current session is not using the object anymore'
-        """
-        pass
-
-    def add_session_reference(self, object_id: UUID):
-        """reference associated to thread session
-
-        Only implemented in BackendRuntime
-        """
-        pass
 
     ######################
 
@@ -910,7 +787,7 @@ class DataClayRuntime(ABC):
         for name, client in self.backend_clients.items():
             logger.debug("Closing client connection to %s", name)
             client.close()
-        self.backend_clients = {}
+        self.backend_clients.stop_update()
 
     ################## EXTRAE IGNORED FUNCTIONS ###########################
     deactivate_tracing.do_not_trace = True

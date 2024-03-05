@@ -44,12 +44,6 @@ def new_account(username, password, host, port):
     mds_client.new_account(username, password)
 
 
-def new_session(username, password, dataset, host, port):
-    logger.info("Creating new session %s/%s at %s:%s", username, dataset, host, port)
-    mds_client = MetadataClient(host, port)
-    session = mds_client.new_session(username, password, dataset)
-
-
 def new_dataset(username, password, dataset, host, port):
     logger.info("Creating new dataset %s/%s at %s:%s", username, dataset, host, port)
     mds_client = MetadataClient(host, port)
@@ -187,29 +181,6 @@ def parse_arguments():
     parser_new_account.add_argument("password", type=str, help="Specify the password")
 
     ###############
-    # new_session #
-    ###############
-    parser_new_session = subparsers.add_parser("new_session", parents=[common_args])
-    parser_new_session.add_argument(
-        "--username",
-        type=str,
-        default=settings.client.username,
-        help="Specify the username (default: DC_USERNAME or admin)",
-    )
-    parser_new_session.add_argument(
-        "--password",
-        type=str,
-        default=settings.client.password,
-        help="Specify the password (default: DC_PASSWORD or admin)",
-    )
-    parser_new_session.add_argument(
-        "--dataset",
-        type=str,
-        default=settings.client.dataset,
-        help="Specify the dataset (default: DC_DATASET or admin)",
-    )
-
-    ###############
     # new_dataset #
     ###############
     parser_new_dataset = subparsers.add_parser("new_dataset", parents=[common_args])
@@ -283,9 +254,6 @@ def main():
 
     elif args.function == "new_account":
         new_account(args.username, args.password, args.host, args.port)
-
-    elif args.function == "new_session":
-        new_session(args.username, args.password, args.dataset, args.host, args.port)
 
     elif args.function == "new_dataset":
         new_dataset(args.username, args.password, args.dataset, args.host, args.port)
