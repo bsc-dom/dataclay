@@ -18,19 +18,25 @@ classifiers = [
     "Topic :: System :: Distributed Computing",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3 :: Only",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies = [
-    "grpcio>=1.48.2",
+    "grpcio~=1.48.2",
+    "grpcio-health-checking~=1.48.2",
     "numpy",
-    "psutil>=5.9.5",
+    "psutil>=5.9.6",
     "protobuf<3.20",
-    "redis>=4.5.4",
+    "redis>=5.0.1",
+    "hiredis>=2.2.3",
     "bcrypt>=4.0.1",
     "opentelemetry-api>=1.14.0",
     "pydantic<2",
+    "get-annotations;python_version<\"3.10\"",
 ]
 dynamic = ["version"]
 
@@ -48,7 +54,7 @@ dev = [
     "black",
     "isort",
 ]
-mn4 = ["ansible"]
+mn4 = ["ansible", "ansible_runner", "python-dotenv"]
 docs = ["furo", "sphinx-copybutton"]
 metrics = ["prometheus-client"]
 telemetry = [

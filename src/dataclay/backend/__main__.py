@@ -1,9 +1,14 @@
 """Entry point for standalone dataClay Backend server."""
 
+import logging
+
 from dataclay.backend import servicer
 from dataclay.config import BackendSettings, settings
 
+logger = logging.getLogger(__name__)
+
 settings.backend = BackendSettings()
+logger.info("Backend settings: %s", settings.backend)
 
 # Start tracing and metrics
 if settings.service_name is None:

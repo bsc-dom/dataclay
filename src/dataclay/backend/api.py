@@ -8,7 +8,7 @@ import pickle
 import time
 import traceback
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from dataclay import utils
 from dataclay.config import settings
@@ -28,21 +28,18 @@ logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
 class BackendAPI:
-    def __init__(self, name: str, port: int, kv_host: str, kv_port: int):
+    def __init__(self, name: str, port: int, backend_id: UUID, kv_host: str, kv_port: int):
         # NOTE: the port is (atm) exclusively for unique identification of an EE
         # (given that the name is shared between all EE that share a SL, which happens in HPC deployments)
         self.name = name
         self.port = port
 
         # Initialize runtime
-        self.backend_id = settings.backend.id
+        self.backend_id = backend_id
         self.runtime = BackendRuntime(kv_host, kv_port, self.backend_id)
         set_runtime(self.runtime)
 
-        # UNDONE: Do not store EE information. If restarted, create new EE uuid.
-        logger.info(f"Initialized backend {self.backend_id}")
-
-    def is_ready(self, timeout: float | None = None, pause: float = 0.5):
+    def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         ref = time.time()
         now = ref
         if self.runtime.metadata_service.is_ready(timeout):
@@ -68,7 +65,7 @@ class BackendAPI:
             if instance._dc_is_local:
                 assert instance._dc_is_replica
                 if make_replica:
-                    logger.warning(f"There is already a replica for object {instance._dc_meta.id}")
+                    logger.warning("Replica already exists with id=%s", instance._dc_meta.id)
                     continue
 
             with LockManager.write(instance._dc_meta.id):
@@ -77,7 +74,7 @@ class BackendAPI:
                 vars(instance).update(object_dict)
                 if state:
                     instance.__setstate__(state)
-                self.runtime.heap_manager.retain_in_heap(instance)
+                self.runtime.data_manager.add_hard_reference(instance)
 
                 if make_replica:
                     instance._dc_is_replica = True
@@ -95,7 +92,7 @@ class BackendAPI:
 
     @tracer.start_as_current_span("make_persistent")
     def make_persistent(self, serialized_objects: Iterable[bytes]):
-        logger.info("Receiving objects to make persistent")
+        logger.debug("Receiving objects to make persistent")
         unserialized_objects: dict[UUID, DataClayObject] = {}
         for object_bytes in serialized_objects:
             proxy_object = recursive_dcloads(object_bytes, unserialized_objects)
@@ -107,37 +104,38 @@ class BackendAPI:
 
         for proxy_object in unserialized_objects.values():
             logger.debug(
-                f"({proxy_object._dc_meta.id}) Registering {proxy_object.__class__.__name__}"
+                "(%s) Registering %s",
+                proxy_object._dc_meta.id,
+                proxy_object.__class__.__name__,
             )
             self.runtime.inmemory_objects[proxy_object._dc_meta.id] = proxy_object
-            self.runtime.heap_manager.retain_in_heap(proxy_object)
+            self.runtime.data_manager.add_hard_reference(proxy_object)
             self.runtime.metadata_service.upsert_object(proxy_object._dc_meta)
             proxy_object._dc_is_registered = True
 
     @tracer.start_as_current_span("call_active_method")
     def call_active_method(
-        self, session_id: UUID, object_id: UUID, method_name: str, args: tuple, kwargs: dict
+        self, object_id: UUID, method_name: str, args: tuple, kwargs: dict
     ) -> tuple[bytes, bool]:
-        logger.debug(f"({object_id}) Calling remote method {method_name}")
+        logger.debug("(%s) Calling remote method %s", object_id, method_name)
 
-        # NOTE: Session (dataset) is needed for make_persistents inside dc_methods.
-        self.runtime.set_session_by_id(session_id)
         instance = self.runtime.get_object_by_id(object_id)
 
         # NOTE: When the object is not local, a custom exception is sent
         # for the client to update the backend_id, and call_active_method again
         if not instance._dc_is_local:
-            logger.warning(
-                f"({object_id}) Wrong backend. Update to {instance._dc_meta.master_backend_id}"
-            )
-            # NOTE: We check to the metadata because when consolidating an object
+            # NOTE: We sync the metadata because when consolidating an object
             # it might be that the proxy is pointing to the wrong backend_id which is
             # the same current backend, creating a infinite loop. This could be solve also
             # by passing the backend_id of the new object to the proxy, but this can create
             # problems with race conditions (e.g. a move before the consolidation). Therefore,
             # we check to the metadata which is more reliable.
-            object_md = self.runtime.metadata_service.get_object_md_by_id(object_id)
-            instance._dc_meta.master_backend_id = object_md.master_backend_id
+            self.runtime.sync_object_metadata(instance)
+            logger.warning(
+                "(%s) Wrong backend. Update to %s",
+                object_id,
+                instance._dc_meta.master_backend_id,
+            )
             return (
                 pickle.dumps(
                     ObjectWithWrongBackendIdError(
@@ -159,6 +157,117 @@ class BackendAPI:
             return pickle.dumps(e), True
 
     # Store Methods
+
+    @tracer.start_as_current_span("get_object_attribute")
+    def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
+        """Returns value of the object attibute with ID provided
+        Args:
+            object_id: ID of the object
+            attribute: Name of the attibute
+        Returns:
+            The pickled value of the object attibute.
+            If it's an exception or not
+        """
+        instance = self.runtime.get_object_by_id(object_id)
+        # NOTE: When the object is not local, a custom exception is sent
+        # for the client to update the backend_id, and call_active_method again
+        if not instance._dc_is_local:
+            # NOTE: We sync the metadata because when consolidating an object
+            # it might be that the proxy is pointing to the wrong backend_id which is
+            # the same current backend, creating a infinite loop. This could be solve also
+            # by passing the backend_id of the new object to the proxy, but this can create
+            # problems with race conditions (e.g. a move before the consolidation). Therefore,
+            # we check to the metadata which is more reliable.
+            self.runtime.sync_object_metadata(instance)
+            logger.warning(
+                "(%s) Wrong backend. Update to %s",
+                object_id,
+                instance._dc_meta.master_backend_id,
+            )
+            return (
+                pickle.dumps(
+                    ObjectWithWrongBackendIdError(
+                        instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
+                    )
+                ),
+                False,
+            )
+        try:
+            value = getattr(instance, attribute)
+            return dcdumps(value), False
+        except Exception as e:
+            return pickle.dumps(e), True
+
+    @tracer.start_as_current_span("set_object_attribute")
+    def set_object_attribute(
+        self, object_id: UUID, attribute: str, serialized_attribute: bytes
+    ) -> tuple[bytes, bool]:
+        """Updates an object attibute with ID provided"""
+        instance = self.runtime.get_object_by_id(object_id)
+        # NOTE: When the object is not local, a custom exception is sent
+        # for the client to update the backend_id, and call_active_method again
+        if not instance._dc_is_local:
+            # NOTE: We sync the metadata because when consolidating an object
+            # it might be that the proxy is pointing to the wrong backend_id which is
+            # the same current backend, creating a infinite loop. This could be solve also
+            # by passing the backend_id of the new object to the proxy, but this can create
+            # problems with race conditions (e.g. a move before the consolidation). Therefore,
+            # we check to the metadata which is more reliable.
+            self.runtime.sync_object_metadata(instance)
+            logger.warning(
+                "(%s) Wrong backend. Update to %s",
+                object_id,
+                instance._dc_meta.master_backend_id,
+            )
+
+            return (
+                pickle.dumps(
+                    ObjectWithWrongBackendIdError(
+                        instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
+                    )
+                ),
+                False,
+            )
+        try:
+            object_attribute = pickle.loads(serialized_attribute)
+            setattr(instance, attribute, object_attribute)
+            return pickle.dumps("placeholder"), False
+        except Exception as e:
+            return pickle.dumps(e), True
+
+    @tracer.start_as_current_span("set_object_attribute")
+    def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
+        """Deletes an object attibute with ID provided"""
+        instance = self.runtime.get_object_by_id(object_id)
+        # NOTE: When the object is not local, a custom exception is sent
+        # for the client to update the backend_id, and call_active_method again
+        if not instance._dc_is_local:
+            # NOTE: We sync the metadata because when consolidating an object
+            # it might be that the proxy is pointing to the wrong backend_id which is
+            # the same current backend, creating a infinite loop. This could be solve also
+            # by passing the backend_id of the new object to the proxy, but this can create
+            # problems with race conditions (e.g. a move before the consolidation). Therefore,
+            # we check to the metadata which is more reliable.
+            self.runtime.sync_object_metadata(instance)
+            logger.warning(
+                "(%s) Wrong backend. Update to %s",
+                object_id,
+                instance._dc_meta.master_backend_id,
+            )
+
+            return (
+                pickle.dumps(
+                    ObjectWithWrongBackendIdError(
+                        instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
+                    )
+                ),
+                False,
+            )
+        try:
+            delattr(instance, attribute)
+            return pickle.dumps("placeholder"), False
+        except Exception as e:
+            return pickle.dumps(e), True
 
     @tracer.start_as_current_span("get_object_properties")
     def get_object_properties(self, object_id: UUID) -> bytes:
@@ -194,11 +303,6 @@ class BackendAPI:
         """
         instance = self.runtime.get_object_by_id(object_id)
 
-        # HACK: The dataset is needed to create a new version because
-        # a new dataclay object is created and registered instantly in __new__
-        # dataset_name = instance._dc_meta.dataset_name
-        # self.runtime.session = Session(None, None, dataset_name)
-
         new_version = self.runtime.new_object_version(instance)
         return new_version.getID()
 
@@ -232,18 +336,18 @@ class BackendAPI:
 
     # Shutdown
 
-    @tracer.start_as_current_span("shutdown")
-    def shutdown(self):
+    @tracer.start_as_current_span("stop")
+    def stop(self):
         self.runtime.stop()
 
     @tracer.start_as_current_span("flush_all")
     def flush_all(self):
-        self.runtime.heap_manager.flush_all()
+        self.runtime.data_manager.flush_all()
 
     @tracer.start_as_current_span("move_all_objects")
     def move_all_objects(self):
         dc_objects = self.runtime.metadata_service.get_all_objects()
-        self.runtime.update_backend_clients()
+        self.runtime.backend_clients.update()
         backends = self.runtime.backend_clients
 
         if len(backends) <= 1:
@@ -293,19 +397,23 @@ class BackendAPI:
         raise Exception("To refactor")
         # set field
         logger.debug(
-            f"----> Starting synchronization of {object_id} from calling backend {calling_backend_id}"
+            "----> Starting synchronization of %s from calling backend %s",
+            object_id,
+            calling_backend_id,
         )
 
         self.ds_exec_impl(object_id, implementation_id, serialized_value, session_id)
         instance = self.get_local_instance(object_id, True)
         src_exec_env_id = instance._dc_meta.master_backend_id()
         if src_exec_env_id is not None:
-            logger.debug(f"Found origin location {src_exec_env_id}")
+            logger.debug("Found origin location %s", src_exec_env_id)
             if calling_backend_id is None or src_exec_env_id != calling_backend_id:
                 # do not synchronize to calling source (avoid infinite loops)
                 dest_backend = self.runtime.get_backend_client(src_exec_env_id)
                 logger.debug(
-                    f"----> Propagating synchronization of {object_id} to origin location {src_exec_env_id}"
+                    "----> Propagating synchronization of %s to origin location %s",
+                    object_id,
+                    src_exec_env_id,
                 )
 
                 dest_backend.synchronize(
@@ -318,13 +426,15 @@ class BackendAPI:
 
         replica_locations = instance._dc_meta.replica_backend_ids
         if replica_locations is not None:
-            logger.debug(f"Found replica locations {replica_locations}")
+            logger.debug("Found replica locations %s", replica_locations)
             for replica_location in replica_locations:
                 if calling_backend_id is None or replica_location != calling_backend_id:
                     # do not synchronize to calling source (avoid infinite loops)
                     dest_backend = self.runtime.get_backend_client(replica_location)
                     logger.debug(
-                        f"----> Propagating synchronization of {object_id} to replica location {replica_location}"
+                        "----> Propagating synchronization of %s to replica location %s",
+                        object_id,
+                        replica_location,
                     )
                     dest_backend.synchronize(
                         session_id,
@@ -333,7 +443,7 @@ class BackendAPI:
                         serialized_value,
                         calling_backend_id=self.backend_id,
                     )
-        logger.debug(f"----> Finished synchronization of {object_id}")
+        logger.debug("----> Finished synchronization of %s", object_id)
 
     # Federation
 
@@ -467,40 +577,27 @@ class BackendAPI:
                 instance.set_origin_location(None)
                 try:
                     if instance._dc_alias is not None and instance._dc_alias != "":
-                        logger.debug(f"Removing alias {instance._dc_alias}")
+                        logger.debug("Removing alias %s", instance._dc_alias)
                         self.self.runtime.delete_alias(instance)
 
                 except Exception as ex:
                     traceback.print_exc()
                     logger.debug(
-                        f"Caught exception {type(ex).__name__}, Ignoring if object was not registered yet"
+                        "Caught exception %s, Ignoring if object was not registered yet",
+                        type(ex).__name__,
                     )
                     # ignore if object was not registered yet
                     pass
         except DataClayException as e:
             # TODO: better algorithm to avoid unfederation in wrong backend
             logger.debug(
-                f"Caught exception {type(e).__name__}, Ignoring if object is not in current backend"
+                "Caught exception %s, Ignoring if object is not in current backend",
+                type(e).__name__,
             )
         except Exception as e:
-            logger.debug(f"Caught exception {type(e).__name__}")
+            logger.debug("Caught exception %s", type(e).__name__)
             raise e
         logger.debug("<--- Finished notification of unfederation")
-
-    # Update Object
-
-    def update_refs(self, ref_counting):
-        """forward to SL"""
-        self.runtime.backend_clients["@STORAGE"].update_refs(ref_counting)
-
-    def get_retained_references(self):
-        return self.runtime.get_retained_references()
-
-    def detach_object_from_session(self, object_id, session_id):
-        logger.debug(f"--> Detaching object {object_id} from session {session_id}")
-        self.set_local_session(session_id)
-        self.runtime.detach_object_from_session(object_id, None)
-        logger.debug(f"<-- Detached object {object_id} from session {session_id}")
 
     # Tracing
 

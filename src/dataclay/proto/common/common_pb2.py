@@ -14,13 +14,12 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"dataclay/proto/common/common.proto\x12\x15\x64\x61taclay.proto.common\"F\n\x07\x42\x61\x63kend\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04host\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\x05\x12\x13\n\x0b\x64\x61taclay_id\x18\x04 \x01(\t\"\xcd\x01\n\x0eObjectMetadata\x12\n\n\x02id\x18\x01 \x01(\t\x12\x14\n\x0c\x64\x61taset_name\x18\x02 \x01(\t\x12\x12\n\nclass_name\x18\x03 \x01(\t\x12\x19\n\x11master_backend_id\x18\x04 \x01(\t\x12\x1b\n\x13replica_backend_ids\x18\x05 \x03(\t\x12\x14\n\x0cis_read_only\x18\x06 \x01(\x08\x12\x1a\n\x12original_object_id\x18\x07 \x01(\t\x12\x1b\n\x13versions_object_ids\x18\x08 \x03(\t\"P\n\x07Session\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61taset_name\x18\x03 \x01(\t\x12\x11\n\tis_active\x18\x04 \x01(\x08\"C\n\x08\x44\x61taclay\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04host\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\x05\x12\x0f\n\x07is_this\x18\x04 \x01(\x08\">\n\x05\x41lias\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x64\x61taset_name\x18\x02 \x01(\t\x12\x11\n\tobject_id\x18\x03 \x01(\tB \n\x1c\x65s.bsc.dataclay.proto.commonP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"dataclay/proto/common/common.proto\x12\x15\x64\x61taclay.proto.common\"F\n\x07\x42\x61\x63kend\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04host\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\x05\x12\x13\n\x0b\x64\x61taclay_id\x18\x04 \x01(\t\"\xcd\x01\n\x0eObjectMetadata\x12\n\n\x02id\x18\x01 \x01(\t\x12\x14\n\x0c\x64\x61taset_name\x18\x02 \x01(\t\x12\x12\n\nclass_name\x18\x03 \x01(\t\x12\x19\n\x11master_backend_id\x18\x04 \x01(\t\x12\x1b\n\x13replica_backend_ids\x18\x05 \x03(\t\x12\x14\n\x0cis_read_only\x18\x06 \x01(\x08\x12\x1a\n\x12original_object_id\x18\x07 \x01(\t\x12\x1b\n\x13versions_object_ids\x18\x08 \x03(\t\"C\n\x08\x44\x61taclay\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04host\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\x05\x12\x0f\n\x07is_this\x18\x04 \x01(\x08\">\n\x05\x41lias\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x64\x61taset_name\x18\x02 \x01(\t\x12\x11\n\tobject_id\x18\x03 \x01(\tB \n\x1c\x65s.bsc.dataclay.proto.commonP\x01\x62\x06proto3')
 
 
 
 _BACKEND = DESCRIPTOR.message_types_by_name['Backend']
 _OBJECTMETADATA = DESCRIPTOR.message_types_by_name['ObjectMetadata']
-_SESSION = DESCRIPTOR.message_types_by_name['Session']
 _DATACLAY = DESCRIPTOR.message_types_by_name['Dataclay']
 _ALIAS = DESCRIPTOR.message_types_by_name['Alias']
 Backend = _reflection.GeneratedProtocolMessageType('Backend', (_message.Message,), {
@@ -36,13 +35,6 @@ ObjectMetadata = _reflection.GeneratedProtocolMessageType('ObjectMetadata', (_me
   # @@protoc_insertion_point(class_scope:dataclay.proto.common.ObjectMetadata)
   })
 _sym_db.RegisterMessage(ObjectMetadata)
-
-Session = _reflection.GeneratedProtocolMessageType('Session', (_message.Message,), {
-  'DESCRIPTOR' : _SESSION,
-  '__module__' : 'dataclay.proto.common.common_pb2'
-  # @@protoc_insertion_point(class_scope:dataclay.proto.common.Session)
-  })
-_sym_db.RegisterMessage(Session)
 
 Dataclay = _reflection.GeneratedProtocolMessageType('Dataclay', (_message.Message,), {
   'DESCRIPTOR' : _DATACLAY,
@@ -66,10 +58,8 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _BACKEND._serialized_end=131
   _OBJECTMETADATA._serialized_start=134
   _OBJECTMETADATA._serialized_end=339
-  _SESSION._serialized_start=341
-  _SESSION._serialized_end=421
-  _DATACLAY._serialized_start=423
-  _DATACLAY._serialized_end=490
-  _ALIAS._serialized_start=492
-  _ALIAS._serialized_end=554
+  _DATACLAY._serialized_start=341
+  _DATACLAY._serialized_end=408
+  _ALIAS._serialized_start=410
+  _ALIAS._serialized_end=472
 # @@protoc_insertion_point(module_scope)

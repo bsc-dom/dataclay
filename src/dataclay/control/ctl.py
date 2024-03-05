@@ -1,42 +1,57 @@
 import argparse
 import json
 import logging
-import os
-import pprint
+import time
 
 import grpc
+from grpc_health.v1 import health_pb2, health_pb2_grpc
 
+import dataclay
 from dataclay.backend.client import BackendClient
+from dataclay.config import ClientSettings, settings
 from dataclay.metadata.client import MetadataClient
-from dataclay.utils.uuid import UUIDEncoder, uuid_parser
+from dataclay.utils.uuid import UUIDEncoder
 
-DATACLAY_LOGLEVEL = os.getenv("DATACLAY_LOGLEVEL", default="INFO").upper()
-logging.basicConfig(level=DATACLAY_LOGLEVEL)
 logger = logging.getLogger(__name__)
 
 
+def healthcheck(host, port, service, retries=1, retry_interval=1.0):
+    with grpc.insecure_channel("%s:%s" % (host, port)) as channel:
+        for attempt in range(retries):
+            try:
+                health_stub = health_pb2_grpc.HealthStub(channel)
+                request = health_pb2.HealthCheckRequest(service=service)
+                resp = health_stub.Check(request)
+                if resp.status == health_pb2.HealthCheckResponse.SERVING:
+                    logger.info("Service %s at %s:%s is serving", service, host, port)
+                    return
+            except grpc.RpcError as e:
+                if attempt == retries - 1:  # Last attempt
+                    raise ConnectionError(
+                        f"Service {service} at {host}:{port} not available after {retries} retries: {e}"
+                    )
+
+            # Wait before the next retry
+            time.sleep(retry_interval)
+        raise ConnectionError(
+            f"Service {service} at {host}:{port} is not serving after {retries} retries"
+        )
+
+
 def new_account(username, password, host, port):
-    logger.info(f'Creating "{username}" account')
+    logger.info("Creating new account %s at %s:%s", username, host, port)
     mds_client = MetadataClient(host, port)
     mds_client.new_account(username, password)
-    logger.info(f"Created account ({username})")
-
-
-def new_session(username, password, dataset, host, port):
-    logger.info(f"Creating new session")
-    mds_client = MetadataClient(host, port)
-    session = mds_client.new_session(username, password, dataset)
-    logger.info(f"Created new session for {username}, with id {session.id}")
 
 
 def new_dataset(username, password, dataset, host, port):
-    logger.info(f"Creating new dataset")
+    logger.info("Creating new dataset %s/%s at %s:%s", username, dataset, host, port)
     mds_client = MetadataClient(host, port)
     mds_client.new_dataset(username, password, dataset)
-    logger.info(f"Created new dataset {dataset} for {username}")
 
 
 def get_backends(host, port):
+    logger.info("Getting backends from %s:%s", host, port)
     metadata_client = MetadataClient(host, port)
     backend_infos = metadata_client.get_all_backends()
     for v in backend_infos.values():
@@ -47,13 +62,24 @@ def new_backend(args):
     pass
 
 
-def shutdown_backend(host, port):
+def stop_backend(host, port):
+    logger.info("Stopping backend at %s:%s", host, port)
     backend_client = BackendClient(host, port)
-    backend_client.shutdown()
-    pass
+    backend_client.stop()
+
+
+def stop_dataclay(host, port):
+    logger.info("Stopping dataclay at %s:%s", host, port)
+    metadata_client = MetadataClient(host, port)
+    backend_infos = metadata_client.get_all_backends()
+    for v in backend_infos.values():
+        stop_backend(v.host, v.port)
+
+    metadata_client.stop()
 
 
 def rebalance(host, port):
+    logger.info("Rebalancing dataclay at %s:%s", host, port)
     metadata_client = MetadataClient(host, port)
     backend_infos = metadata_client.get_all_backends()
 
@@ -102,116 +128,150 @@ def rebalance(host, port):
 
 
 def get_objects(host, port):
+    logger.info("Getting objects from %s:%s", host, port)
     metadata_client = MetadataClient(host, port)
     object_mds = metadata_client.get_all_objects()
     for v in object_mds.values():
         print(json.dumps(v.__dict__, cls=UUIDEncoder, indent=2))
 
 
-def main():
+def parse_arguments():
     # Create the top-level parser
     parser = argparse.ArgumentParser(description="Dataclay tool")
-    subparsers = parser.add_subparsers(dest="function", required=True)
-    # parser.add_argument("--host", type=str, default="localhost", help="Specify the host (default: localhost)")
-    # parser.add_argument("--port", type=int, default=16587, help="Specify the port (default: 16587)")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {dataclay.__version__}")
+    subparsers = parser.add_subparsers(dest="function", required=True, help="Function to execute")
 
-    # Create the parser for the "new_account" command
-    parser_new_account = subparsers.add_parser("new_account")
-    parser_new_account.add_argument("username", type=str)
-    parser_new_account.add_argument("password", type=str)
-    parser_new_account.add_argument(
+    # Common arguments for host and port
+    common_args = argparse.ArgumentParser(add_help=False)
+    common_args.add_argument(
+        "--host",
+        type=str,
+        default=settings.client.dataclay_host,
+        help="Specify the dataclay host (default: DC_HOST or localhost)",
+    )
+    common_args.add_argument(
+        "--port",
+        type=int,
+        default=settings.client.dataclay_port,
+        help="Specify the dataclay port (default: DC_PORT or 16587)",
+    )
+
+    ###############
+    # healthcheck #
+    ###############
+    parser_healthcheck = subparsers.add_parser("healthcheck")
+    parser_healthcheck.add_argument(
         "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
     )
-    parser_new_account.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
+    parser_healthcheck.add_argument(
+        "--service",
+        choices=["backend", "metadata"],
+        required=True,
+        help="Specify the kind of service",
+    )
+    parser_healthcheck.add_argument(
+        "--port", type=int, default=0, help="Specify the port (default: inferred from service)"
     )
 
-    # Create the parser for the "new_session" command
-    parser_new_session = subparsers.add_parser("new_session")
-    parser_new_session.add_argument("username", type=str)
-    parser_new_session.add_argument("password", type=str)
-    parser_new_session.add_argument("dataset", type=str)
-    parser_new_session.add_argument(
-        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
-    )
-    parser_new_session.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
-    )
+    ###############
+    # new_account #
+    ###############
+    parser_new_account = subparsers.add_parser("new_account", parents=[common_args])
+    parser_new_account.add_argument("username", type=str, help="Specify the username")
+    parser_new_account.add_argument("password", type=str, help="Specify the password")
 
-    # Create the parser for the "new_dataset" command
-    parser_new_dataset = subparsers.add_parser("new_dataset")
-    parser_new_dataset.add_argument("username", type=str)
-    parser_new_dataset.add_argument("password", type=str)
-    parser_new_dataset.add_argument("dataset", type=str)
+    ###############
+    # new_dataset #
+    ###############
+    parser_new_dataset = subparsers.add_parser("new_dataset", parents=[common_args])
     parser_new_dataset.add_argument(
-        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
+        "--username",
+        type=str,
+        default=settings.client.username,
+        help="Specify the username (default: DC_USERNAME or admin)",
     )
     parser_new_dataset.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
+        "--password",
+        type=str,
+        default=settings.client.password,
+        help="Specify the password (default: DC_PASSWORD or admin)",
+    )
+    parser_new_dataset.add_argument(
+        "--dataset",
+        type=str,
+        default=settings.client.dataset,
+        help="Specify the dataset (default: DC_DATASET or admin)",
     )
 
-    # Create the parser for the "get_backends" command
-    parser_get_backends = subparsers.add_parser("get_backends")
-    parser_get_backends.add_argument(
-        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
-    )
-    parser_get_backends.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
-    )
+    ################
+    # get_backends #
+    ################
+    parser_get_backends = subparsers.add_parser("get_backends", parents=[common_args])
 
-    # Create the parser for the "shutdown_backend" command
-    parser_shutdown_backend = subparsers.add_parser("shutdown_backend")
-    parser_shutdown_backend.add_argument("host", type=str, help="Specify the backend host")
-    parser_shutdown_backend.add_argument(
-        "port", nargs="?", type=int, default=6867, help="Specify the backend port (default: 6867)"
-    )
+    #############
+    # rebalance #
+    #############
+    parser_rebalance = subparsers.add_parser("rebalance", parents=[common_args])
 
-    # Create the parser for the "shutdown_backend" command
-    parser_shutdown_backend = subparsers.add_parser("shutdown_backend")
-    parser_shutdown_backend.add_argument("host", type=str, help="Specify the backend host")
-    parser_shutdown_backend.add_argument(
-        "port", nargs="?", type=int, default=6867, help="Specify the backend port (default: 6867)"
+    ################
+    # stop_backend #
+    ################
+    # TODO: Improve this?
+    parser_stop_backend = subparsers.add_parser("stop_backend")
+    parser_stop_backend.add_argument("--host", type=str, help="Specify the backend host")
+    parser_stop_backend.add_argument(
+        "--port", type=int, default=6867, help="Specify the backend port (default: 6867)"
     )
 
-    # Create the parser for the "rebalance" command
-    parser_rebalance = subparsers.add_parser("rebalance")
-    parser_rebalance.add_argument(
-        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
-    )
-    parser_rebalance.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
-    )
+    #################
+    # stop_dataclay #
+    #################
+    parser_stop_dataclay = subparsers.add_parser("stop_dataclay", parents=[common_args])
 
-    # Create the parser for the "get_objects" command
-    parser_get_objects = subparsers.add_parser("get_objects")
-    parser_get_objects.add_argument(
-        "--host", type=str, default="localhost", help="Specify the host (default: localhost)"
-    )
-    parser_get_objects.add_argument(
-        "--port", type=int, default=16587, help="Specify the port (default: 16587)"
-    )
+    ###############
+    # get_objects #
+    ###############
+    parser_get_objects = subparsers.add_parser("get_objects", parents=[common_args])
 
-    # TODO: Create the parser for the other commands
+    return parser.parse_args()
 
-    args = parser.parse_args()
 
-    match args.function:
-        case "new_account":
-            new_account(args.username, args.password, args.host, args.port)
-        case "new_session":
-            new_session(args.username, args.password, args.dataset, args.host, args.port)
-        case "new_dataset":
-            new_dataset(args.username, args.password, args.dataset, args.host, args.port)
-        case "shutdown_backend":
-            shutdown_backend(args.host, args.port)
-        case "rebalance":
-            rebalance(args.host, args.port)
-        case "get_backends":
-            get_backends(args.host, args.port)
-        case "get_objects":
-            get_objects(args.host, args.port)
+def main():
+    # Set client settings
+    settings.client = ClientSettings()
 
-    # args.func(args)
+    # Parse arguments
+    args = parse_arguments()
+
+    # Run the function
+    if args.function == "healthcheck":
+        if args.service == "backend":
+            port = args.port or 6867
+            healthcheck(args.host, port, "dataclay.proto.backend.BackendService")
+        elif args.service == "metadata":
+            port = args.port or 16587
+            healthcheck(args.host, port, "dataclay.proto.metadata.MetadataService")
+
+    elif args.function == "new_account":
+        new_account(args.username, args.password, args.host, args.port)
+
+    elif args.function == "new_dataset":
+        new_dataset(args.username, args.password, args.dataset, args.host, args.port)
+
+    elif args.function == "stop_backend":
+        stop_backend(args.host, args.port)
+
+    elif args.function == "stop_dataclay":
+        stop_dataclay(args.host, args.port)
+
+    elif args.function == "rebalance":
+        rebalance(args.host, args.port)
+
+    elif args.function == "get_backends":
+        get_backends(args.host, args.port)
+
+    elif args.function == "get_objects":
+        get_objects(args.host, args.port)
 
 
 if __name__ == "__main__":

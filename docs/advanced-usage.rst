@@ -110,3 +110,28 @@ It is also possible to create versions from other versions::
 
 
 .. example with compss @task
+
+
+Multithreading
+--------------
+
+When using dataClay in a multithreaded environment, it is important to ensure that the
+correct context is used for each thread. This can be achieved by using the
+:mod:`contextvars` module to get the current context and pass it to the thread.
+The context contains the active username and dataset for the current thread.
+This is important because each rpc call to a backend will contain the username and dataset
+from the client.
+
+    import contextvars
+
+    current_context = contextvars.copy_context()
+
+    def job(name, age):
+        person = Person(name, age)
+        person.make_persistent()
+
+
+    with ThreadPoolExecutor() as executor:
+        for i in range(10):
+            future = executor.submit(current_context.run, job, f"Name{i}", i)
+            print(future.result())

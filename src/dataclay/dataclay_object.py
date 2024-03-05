@@ -13,9 +13,17 @@ import functools
 import logging
 import traceback
 from collections import ChainMap
-from inspect import get_annotations
-from typing import TYPE_CHECKING
 
+try:
+    from inspect import get_annotations
+except ImportError:
+    # This should happen only on Python 3.9, and the package should have been installed
+    # (see dependencies on pyproject.toml)
+    from get_annotations import get_annotations
+
+from typing import TYPE_CHECKING, Annotated, Any, Optional, Type, TypeVar, get_origin
+
+from dataclay.annotated import LocalOnly, PropertyTransformer
 from dataclay.exceptions import *
 from dataclay.metadata.kvdata import ObjectMetadata
 from dataclay.runtime import LockManager, get_runtime
@@ -25,10 +33,13 @@ if TYPE_CHECKING:
     from uuid import UUID
 
 DC_PROPERTY_PREFIX = "_dc_property_"
+Sentinel = object()
 
 
 tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
+
+T = TypeVar("T")
 
 
 def activemethod(func):
@@ -36,8 +47,10 @@ def activemethod(func):
 
     @functools.wraps(func)
     def wrapper_activemethod(self: DataClayObject, *args, **kwargs):
-        logger.debug(f"({self._dc_meta.id}) Calling active method {func.__name__}")
+        logger.debug("(%s) Calling active method %s", self._dc_meta.id, func.__name__)
         try:
+            # if func.__name__ == "__init__" and not self._dc_is_registered:
+            #     self.make_persistent()
             # If the object is local executes the method locally,
             # else, executes the method in the backend
             if self._dc_is_local:
@@ -56,11 +69,18 @@ def activemethod(func):
 
 
 class DataClayProperty:
-    __slots__ = "property_name", "dc_property_name"
+    __slots__ = "name", "dc_property_name", "default_value", "transformer"
 
-    def __init__(self, property_name: str):
-        self.property_name = property_name
-        self.dc_property_name = DC_PROPERTY_PREFIX + property_name
+    def __init__(
+        self,
+        name: str,
+        default_value: Any = Sentinel,
+        transformer: PropertyTransformer = None,
+    ):
+        self.name = name
+        self.dc_property_name = DC_PROPERTY_PREFIX + name
+        self.default_value = default_value
+        self.transformer = transformer
 
     def __get__(self, instance: DataClayObject, owner):
         """
@@ -71,22 +91,30 @@ class DataClayProperty:
         | False    | False   |  B (remote) or C (persistent)
         """
         logger.debug(
-            f"({instance._dc_meta.id}) Getting property {instance.__class__.__name__}.{self.property_name}"
+            "(%s) Getting property %s.%s",
+            instance._dc_meta.id,
+            instance.__class__.__name__,
+            self.name,
         )
 
         if instance._dc_is_local:
+            logger.debug("Local")
+            if not instance._dc_is_loaded:
+                get_runtime().data_manager.load_object(instance)
             try:
-                if not instance._dc_is_loaded:
-                    get_runtime().load_object_from_db(instance)
-
-                return getattr(instance, self.dc_property_name)
+                attr = getattr(instance, self.dc_property_name)
             except AttributeError as e:
-                e.args = (e.args[0].replace(self.dc_property_name, self.property_name),)
-                raise e
+                if self.default_value is Sentinel:
+                    e.args = (e.args[0].replace(self.dc_property_name, self.name),)
+                    raise e
+                return self.default_value
+            if self.transformer is None:
+                return attr
+            else:
+                return self.transformer.getter(attr)
         else:
-            return get_runtime().call_remote_method(
-                instance, "__getattribute__", (self.property_name,), {}
-            )
+            logger.debug("Remote")
+            return get_runtime().call_remote_method(instance, "__getattribute__", (self.name,), {})
 
     def __set__(self, instance: DataClayObject, value):
         """Setter for the dataClay property
@@ -94,18 +122,39 @@ class DataClayProperty:
         See the __get__ method for the basic behavioural explanation.
         """
         logger.debug(
-            f"({instance._dc_meta.id}) Setting property {instance.__class__.__name__}.{self.property_name}={value}"
+            "(%s) Setting property %s.%s=%s",
+            instance._dc_meta.id,
+            instance.__class__.__name__,
+            self.name,
+            value,
         )
 
         if instance._dc_is_local:
+            logger.debug("Local")
             if not instance._dc_is_loaded:
-                get_runtime().load_object_from_db(instance)
-
+                get_runtime().data_manager.load_object(instance)
+            if self.transformer is not None:
+                value = self.transformer.setter(value)
             setattr(instance, self.dc_property_name, value)
         else:
-            get_runtime().call_remote_method(
-                instance, "__setattr__", (self.property_name, value), {}
-            )
+            logger.debug("Remote")
+            get_runtime().call_remote_method(instance, "__setattr__", (self.name, value), {})
+
+    def __delete__(self, instance: DataClayObject):
+        """Deleter for the dataClay property"""
+        logger.debug(
+            "(%s) Deleting property %s.%s",
+            instance._dc_meta.id,
+            instance.__class__.__name__,
+            self.name,
+        )
+
+        if instance._dc_is_local:
+            logger.debug("Local")
+            delattr(instance, self.dc_property_name)
+        else:
+            logger.debug("Remote")
+            get_runtime().call_remote_method(instance, "__delattr__", (self.name,), {})
 
 
 class DataClayObject:
@@ -124,9 +173,29 @@ class DataClayObject:
 
     def __init_subclass__(cls) -> None:
         """Defines a @property for each annotatted attribute"""
-        for property_name in ChainMap(*(get_annotations(c) for c in cls.__mro__)):
-            if not property_name.startswith("_dc_"):
-                setattr(cls, property_name, DataClayProperty(property_name))
+        all_annotations = ChainMap(*(get_annotations(c) for c in cls.__mro__))
+
+        for property_name, property_type in all_annotations.items():
+            is_local_only = False
+            transformer = None
+
+            if property_name.startswith("_dc_"):
+                continue
+            if get_origin(property_type) is Annotated:
+                for annotation in property_type.__metadata__:
+                    if isinstance(annotation, PropertyTransformer):
+                        transformer = annotation
+                    if isinstance(annotation, LocalOnly):
+                        is_local_only = True
+
+            if is_local_only:
+                continue
+            if hasattr(cls, property_name):
+                default_value = getattr(cls, property_name)
+                dataclay_property = DataClayProperty(property_name, default_value, transformer)
+            else:
+                dataclay_property = DataClayProperty(property_name, transformer=transformer)
+            setattr(cls, property_name, dataclay_property)
 
     def __new__(cls, *args, **kwargs):
         obj = super().__new__(cls)
@@ -135,8 +204,13 @@ class DataClayObject:
             obj.make_persistent()
 
         logger.debug(
-            f"({obj._dc_meta.id}) New instance {cls.__name__} args={args}, kwargs={kwargs}"
+            "(%s) New instance %s args=%s, kwargs=%s",
+            obj._dc_meta.id,
+            cls.__name__,
+            args,
+            kwargs,
         )
+
         return obj
 
     @classmethod
@@ -212,7 +286,7 @@ class DataClayObject:
     ###########################
 
     @tracer.start_as_current_span("make_persistent")
-    def make_persistent(self, alias: str | None = None, backend_id: UUID | None = None):
+    def make_persistent(self, alias: Optional[str] = None, backend_id: Optional[UUID] = None):
         """Makes the object persistent.
 
         Args:
@@ -249,12 +323,12 @@ class DataClayObject:
 
     @classmethod
     @tracer.start_as_current_span("get_by_alias")
-    def get_by_alias(cls, alias: str, dataset_name: str = None) -> DataClayObject:
+    def get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
         """Returns the object with the given alias.
 
         Args:
             alias: Alias of the object.
-            dataset_name: Name of the dataset where the alias is stored. If None, the session's dataset is used.
+            dataset_name: Name of the dataset where the alias is stored. If None, the active dataset is used.
 
         Returns:
             The object with the given alias.
@@ -293,7 +367,7 @@ class DataClayObject:
 
         Args:
             alias: Alias to be removed.
-            dataset_name: Name of the dataset where the alias is stored. If None, the session's dataset is used.
+            dataset_name: Name of the dataset where the alias is stored. If None, the active dataset is used.
 
         Raises:
             DoesNotExistError: If the alias does not exist.
@@ -445,7 +519,7 @@ class DataClayObject:
         get_runtime().consolidate_version(self)
 
     @tracer.start_as_current_span("getID")
-    def getID(self) -> str | None:
+    def getID(self) -> Optional[str]:
         """Return the JSON-encoded metadata of the persistent object for COMPSs.
 
         If the object is NOT persistent, then this method returns None.
@@ -481,15 +555,8 @@ class DataClayObject:
 
     def synchronize(self, field_name, value):
         # from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
-        raise ("Synchronize need refactor")
+        raise Exception("Synchronize need refactor")
         return get_runtime().synchronize(self, DCLAY_SETTER_PREFIX + field_name, value)
-
-    def session_detach(self):
-        """
-        Detach object from session, i.e. remove reference from current session provided to current object,
-            'dear garbage-collector, the current session is not using this object anymore'
-        """
-        get_runtime().detach_object_from_session(self._dc_meta.id, self._dc_meta.master_backend_id)
 
     def __repr__(self):
         if self._dc_is_registered:

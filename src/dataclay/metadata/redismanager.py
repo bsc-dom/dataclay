@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import logging
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import redis
+from redis.cluster import RedisCluster
 
 from dataclay.exceptions.exceptions import *
 
@@ -12,12 +14,18 @@ if TYPE_CHECKING:
 
     from dataclay.metadata.kvdata import KeyValue
 
+logger = logging.getLogger(__name__)
+
 
 class RedisManager:
     def __init__(self, host: str, port: int = 6379):
-        self.r_client = redis.Redis(host=host, port=port)
+        try:
+            self.r_client = RedisCluster(host=host, port=port)
+        except (redis.exceptions.RedisClusterException, IndexError):
+            logger.warning("Redis cluster not found, using single node")
+            self.r_client = redis.Redis(host=host, port=port)
 
-    def is_ready(self, timeout: float | None = None, pause: float = 0.5):
+    def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         ref = time.time()
         now = ref
         while timeout is None or (now - ref) < timeout:
@@ -29,14 +37,15 @@ class RedisManager:
         return False
 
     def set_new(self, kv_object: KeyValue):
-        """Creates a new dataset. Checks that the dataset doesn't exists.
+        """Sets a new key, failing if already exists.
 
-        Use "set" if the key is using a UUID, in order to optimize for etcd (if used)
+        Use "set" if the key is using a UUID (should avoid conflict), in order to optimize for etcd (if used)
         """
         if not self.r_client.set(kv_object.key, kv_object.value, nx=True):
             raise AlreadyExistError(kv_object.key)
 
     def set(self, kv_object: KeyValue):
+        """Sets a key, overwriting if already exists."""
         self.r_client.set(kv_object.key, kv_object.value)
 
     def update(self, kv_object: KeyValue):

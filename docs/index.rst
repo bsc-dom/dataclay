@@ -7,23 +7,32 @@ dataClay
    :caption: Getting Started
 
    user-guide
-   deployment
    main-concepts
    advanced-usage 
    examples/index
 
 .. toctree::
    :hidden:
+   :caption: Deployment
+
+   deployment/envvars
+   deployment/management
+   deployment/docker-deployment
+   deployment/hpc-manual-deployment
+   deployment/compile-redis
+
+.. toctree::
+   :hidden:
    :caption: API
 
    reference/index
+   contrib/index
 
 .. toctree::
    :hidden:
    :caption: Developers
 
    contributing
-   .. compile-redis
 
 
 dataClay is a distributed data store that enables applications to store and access objects
@@ -60,7 +69,8 @@ The :doc:`reference/index` documentation provides API-level documentation.
 Deployment
 ----------
 
-The :doc:`deployment` guide offers information on how to deploy dataClay in different scenarios.
+The **DEPLOYMENT** section includes multiple scenarios. If you are not sure, you may want to start
+with the :doc:`deployment/docker-deployment`.
 
 License
 -------

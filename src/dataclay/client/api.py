@@ -9,13 +9,13 @@ __all__ = ["init", "finish", "DataClayObject"]
 
 import logging
 import logging.config
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
 from dataclay.backend.client import BackendClient
 from dataclay.config import ClientSettings, settings
 from dataclay.dataclay_object import DataClayObject
-from dataclay.runtime import get_runtime, set_runtime
+from dataclay.runtime import context_var, get_runtime, set_runtime
 from dataclay.runtime.client import ClientRuntime
 from dataclay.utils.telemetry import trace
 
@@ -87,19 +87,21 @@ class Client:
 
     settings: ClientSettings
     runtime: ClientRuntime
-    previous_settings: ClientSettings | None
-    previous_runtime: ClientRuntime | None
+    previous_settings: Optional[ClientSettings]
+    previous_runtime: Optional[ClientRuntime]
 
     is_active: bool = False
 
     def __init__(
         self,
-        host: str | None = None,
-        port: int | None = None,
-        username: str | None = None,
-        password: str | None = None,
-        dataset: str | None = None,
-        local_backend: str | None = None,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        dataset: Optional[str] = None,
+        local_backend: Optional[str] = None,
+        proxy_host: Optional[str] = None,
+        proxy_port: Optional[int] = None,
     ):
         # Set settings
         settings_kwargs = {}
@@ -115,6 +117,12 @@ class Client:
             settings_kwargs["dataset"] = dataset
         if local_backend:
             settings_kwargs["local_backend"] = local_backend
+        if proxy_host:
+            settings_kwargs["proxy_host"] = proxy_host
+            settings_kwargs["proxy_enabled"] = True
+        if proxy_port:
+            settings_kwargs["proxy_port"] = proxy_port
+            settings_kwargs["proxy_enabled"] = True
 
         self.settings = ClientSettings(**settings_kwargs)
 
@@ -128,7 +136,7 @@ class Client:
         #             LOCAL = ee_id
         #             break
         #     else:
-        #         logger.warning(f"Backend with name '{settings.LOCAL_BACKEND}' not found, ignoring")
+        #         logger.warning("Backend with name '%s' not found, ignoring", settings.LOCAL_BACKEND)
 
     @tracer.start_as_current_span("start")
     def start(self):
@@ -146,25 +154,28 @@ class Client:
 
         # Create and replace runtime
         self.previous_runtime = get_runtime()
-        self.runtime = ClientRuntime(settings.client.dataclay_host, settings.client.dataclay_port)
+
+        if settings.client.proxy_enabled:
+            logger.debug(
+                "Using proxy connection to %s:%s",
+                settings.client.proxy_host,
+                settings.client.proxy_port,
+            )
+            self.runtime = ClientRuntime(settings.client.proxy_host, settings.client.proxy_port)
+        else:
+            self.runtime = ClientRuntime(
+                settings.client.dataclay_host, settings.client.dataclay_port
+            )
+
         set_runtime(self.runtime)
 
-        # Create a new session
-        session = self.runtime.metadata_service.new_session(
-            settings.client.username,
-            settings.client.password.get_secret_value(),
-            settings.client.dataset,
+        context_var.set(
+            {"dataset_name": settings.client.dataset, "username": settings.client.username}
         )
-        self.runtime.session = session
-        self.runtime.metadata_service.session = session
-
-        # Cache the backends clients
-        self.runtime.update_backend_clients()
 
         # Cache the dataclay_id, to avoid later request
         # self.runtime.dataclay_id
 
-        logger.debug(f"Created new session {session.id}")
         self.is_active = True
 
     @tracer.start_as_current_span("stop")
@@ -192,7 +203,7 @@ class Client:
 
     @tracer.start_as_current_span("get_backends")
     def get_backends(self) -> dict[UUID, BackendClient]:
-        self.runtime.update_backend_clients()
+        self.runtime.backend_clients.update()
         return self.runtime.backend_clients
 
 

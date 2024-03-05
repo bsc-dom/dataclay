@@ -1,9 +1,14 @@
 """Entry point for standalone dataClay Metadata server."""
 
+import logging
+
 from dataclay.config import MetadataSettings, settings
 from dataclay.metadata import servicer
 
+logger = logging.getLogger(__name__)
+
 settings.metadata = MetadataSettings()
+logger.info("MetadataService settings: %s", settings.metadata)
 
 # Start tracing and metrics
 if settings.service_name is None:

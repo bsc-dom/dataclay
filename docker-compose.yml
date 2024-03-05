@@ -20,10 +20,10 @@ services:
       - DATACLAY_PASSWORD=s3cret
       - DATACLAY_USERNAME=testuser
       - DATACLAY_DATASET=testdata
-      - DATACLAY_LOGLEVEL=DEBUG
+      #- DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.metadata
     volumes:
-      - .:/pyclay:ro
+      - .:/app:ro
 
   backend:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -31,10 +31,10 @@ services:
       - redis
     environment:
       - DATACLAY_KV_HOST=redis
-      - DATACLAY_LOGLEVEL=DEBUG
+      #- DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
-      - .:/pyclay:ro
+      - .:/app:ro
 
   backend_2:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -42,10 +42,10 @@ services:
       - redis
     environment:
       - DATACLAY_KV_HOST=redis
-      - DATACLAY_LOGLEVEL=DEBUG
+      #- DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
-      - .:/pyclay:ro
+      - .:/app:ro
 
   backend_3:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -53,7 +53,7 @@ services:
       - redis
     environment:
       - DATACLAY_KV_HOST=redis
-      - DATACLAY_LOGLEVEL=DEBUG
+      #- DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
-      - .:/pyclay:ro
+      - .:/app:ro

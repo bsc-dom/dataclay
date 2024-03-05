@@ -28,7 +28,6 @@ class ReferenceCounting(object):
         self.external_references = 0
 
     def increment_reference_counting(self, oid, hint):
-
         if not hint in self.reference_counting:
             references_per_hint = dict()
             self.reference_counting[hint] = references_per_hint
@@ -69,8 +68,10 @@ class ReferenceCounting(object):
                     self.external_references = self.external_references + 1
                     break
         logger.trace(
-            f"Serializing reference counting external references = {self.external_references}"
+            "Serializing reference counting external references = %s",
+            self.external_references,
         )
+
         IntegerWrapper().write(io_file, self.external_references)
         IntegerWrapper().write(io_file, len(self.reference_counting))
         for location, ref_counting_in_loc in self.reference_counting.items():

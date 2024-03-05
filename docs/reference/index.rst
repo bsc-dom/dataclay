@@ -6,4 +6,4 @@ API Reference
    dataclay.dataclay_object
    dataclay.client
    dataclay.backend
-
+   annotations

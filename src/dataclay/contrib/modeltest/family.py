@@ -85,7 +85,7 @@ class Family(DataClayObject):
 
         members = self.members
 
-        t = Thread(target=get_runtime().heap_manager.flush_all, args=(0, False))
+        t = Thread(target=get_runtime().data_manager.flush_all, args=(0, False))
         t.start()
         t.join()
 
@@ -105,7 +105,7 @@ class Family(DataClayObject):
         new_family = Family()
         members = new_family.members
 
-        t = Thread(target=get_runtime().heap_manager.flush_all, args=(0, False))
+        t = Thread(target=get_runtime().data_manager.flush_all, args=(0, False))
         t.start()
         t.join()
 
@@ -121,7 +121,7 @@ class TestActivemethod(DataClayObject):
         from dataclay.runtime import get_runtime
 
         person = Person("Marc", 24)
-        get_runtime().update_backend_clients()
+        get_runtime().backend_clients.update()
         backend_ids = list(get_runtime().backend_clients)
         person.move(backend_ids[0])
         assert person._dc_meta.master_backend_id == backend_ids[0]

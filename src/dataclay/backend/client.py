@@ -1,103 +1,116 @@
 import logging
 import sys
 import traceback
-from typing import Iterable
+from typing import Iterable, Optional
 from uuid import UUID
 
 import grpc
 from google.protobuf.empty_pb2 import Empty
 from grpc._cython.cygrpc import ChannelArgKey
 
+import dataclay
 from dataclay.config import settings
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
+from dataclay.runtime import context_var
 from dataclay.utils.decorators import grpc_error_handler
 
 logger = logging.getLogger(__name__)
 
 
 class BackendClient:
-    def __init__(self, host: str, port: int):
-        """Create the stub and the channel at the address passed by the server."""
+    def __init__(self, host: str, port: int, backend_id: Optional[UUID] = None):
+        """Create the stub and the channel at the address passed by the server.
+
+        Optionally, the BackendID will be included in the metadata. It is not
+        strictly needed, but it can be beneficial for sanity checking and also
+        it is used for reverse proxy configurations.
+        """
+        self.id = backend_id
+        self.host = host
+        self.port = port
         self.address = str(host) + ":" + str(port)
         options = [
             (ChannelArgKey.max_send_message_length, -1),
             (ChannelArgKey.max_receive_message_length, -1),
         ]
-        self.metadata_call = []
+        self.metadata_call = [("client-version", dataclay.__version__)]
+
+        if backend_id:
+            self.metadata_call.append(("backend-id", str(backend_id)))
+
         if (
             settings.ssl_client_trusted_certificates != ""
             or settings.ssl_client_certificate != ""
             or settings.ssl_client_key != ""
         ):
-            # read in certificates
-            options.append(("grpc.ssl_target_name_override", settings.ssl_target_authority))
-            if port != 443:
-                service_alias = str(port)
-                self.metadata_call.append(("service-alias", service_alias))
-                self.address = f"{host}:443"
-                logger.info(f"SSL configured: changed address {host}:{port} to {host}:443")
-                logger.info("SSL configured: using service-alias  " + service_alias)
-            else:
-                self.metadata_call.append(("service-alias", settings.ssl_target_ee_alias))
-
-            try:
-                if settings.ssl_client_trusted_certificates != "":
-                    with open(settings.ssl_client_trusted_certificates, "rb") as f:
-                        trusted_certs = f.read()
-                if settings.ssl_client_certificate != "":
-                    with open(settings.ssl_client_certificate, "rb") as f:
-                        client_cert = f.read()
-
-                if settings.ssl_client_key != "":
-                    with open(settings.ssl_client_key, "rb") as f:
-                        client_key = f.read()
-            except Exception as e:
-                logger.error("failed-to-read-cert-keys", reason=e)
-
-            # create credentials
-            if trusted_certs is not None:
-                credentials = grpc.ssl_channel_credentials(
-                    root_certificates=trusted_certs,
-                    private_key=client_key,
-                    certificate_chain=client_cert,
-                )
-            else:
-                credentials = grpc.ssl_channel_credentials(
-                    private_key=client_key, certificate_chain=client_cert
-                )
-
-            self.channel = grpc.secure_channel(self.address, credentials, options)
-
-            logger.info(
-                "SSL configured: using SSL_CLIENT_TRUSTED_CERTIFICATES located at "
-                + settings.ssl_client_trusted_certificates
-            )
-            logger.info(
-                "SSL configured: using SSL_CLIENT_CERTIFICATE located at "
-                + settings.ssl_client_certificate
-            )
-            logger.info(
-                "SSL configured: using SSL_CLIENT_KEY located at " + settings.ssl_client_key
-            )
-            logger.info("SSL configured: using authority  " + settings.ssl_target_authority)
-
+            self._configure_ssl(options)
         else:
             self.channel = grpc.insecure_channel(self.address, options)
             logger.info("SSL not configured")
 
-        try:
-            grpc.channel_ready_future(self.channel).result(
-                timeout=settings.grpc_check_alive_timeout
-            )
-        except Exception as e:
-            sys.exit("Error connecting to server %s" % self.address)
-        else:
-            self.stub = backend_pb2_grpc.BackendServiceStub(self.channel)
+        grpc.channel_ready_future(self.channel).result(timeout=settings.grpc_check_alive_timeout)
+        self.stub = backend_pb2_grpc.BackendServiceStub(self.channel)
 
-    # NOTE: It may be not need if the channel_ready_future is check on __init__
-    def is_ready(self, timeout: float | None = None):
+    def _configure_ssl(self, options):
+        # read in certificates
+        options.append(("grpc.ssl_target_name_override", settings.ssl_target_authority))
+        if self.port != 443:
+            service_alias = str(self.port)
+            self.metadata_call.append(("service-alias", service_alias))
+            self.address = f"{self.host}:443"
+            logger.info(
+                "SSL configured: changed address %s:%s to %s:443", self.host, self.port, self.host
+            )
+            logger.info("SSL configured: using service-alias %s", service_alias)
+        else:
+            self.metadata_call.append(("service-alias", settings.ssl_target_ee_alias))
+
+        try:
+            if settings.ssl_client_trusted_certificates != "":
+                with open(settings.ssl_client_trusted_certificates, "rb") as f:
+                    trusted_certs = f.read()
+            if settings.ssl_client_certificate != "":
+                with open(settings.ssl_client_certificate, "rb") as f:
+                    client_cert = f.read()
+
+            if settings.ssl_client_key != "":
+                with open(settings.ssl_client_key, "rb") as f:
+                    client_key = f.read()
+        except IOError:
+            logger.error(
+                "Not using client trusted certificates because I was unable to read cert keys",
+                exc_info=True,
+            )
+
+        # create credentials
+        if trusted_certs is not None:
+            credentials = grpc.ssl_channel_credentials(
+                root_certificates=trusted_certs,
+                private_key=client_key,
+                certificate_chain=client_cert,
+            )
+        else:
+            credentials = grpc.ssl_channel_credentials(
+                private_key=client_key, certificate_chain=client_cert
+            )
+
+        self.channel = grpc.secure_channel(self.address, credentials, options)
+
+        logger.info(
+            "SSL configured: using SSL_CLIENT_TRUSTED_CERTIFICATES located at %s",
+            settings.ssl_client_trusted_certificates,
+        )
+        logger.info(
+            "SSL configured: using SSL_CLIENT_CERTIFICATE located at %s",
+            settings.ssl_client_certificate,
+        )
+        logger.info("SSL configured: using SSL_CLIENT_KEY located at %s", settings.ssl_client_key)
+        logger.info("SSL configured: using authority %s", settings.ssl_target_authority)
+
+    # NOTE: It may not be necessary if the channel_ready_future is check on __init__
+    def is_ready(self, timeout: Optional[float] = None):
         try:
             grpc.channel_ready_future(self.channel).result(timeout)
             return True
@@ -116,26 +129,32 @@ class BackendClient:
         request = backend_pb2.RegisterObjectsRequest(
             dict_bytes=dict_bytes, make_replica=make_replica
         )
-        self.stub.RegisterObjects(request)
+        self.stub.RegisterObjects(request, metadata=self.metadata_call)
 
     @grpc_error_handler
     def make_persistent(self, pickled_obj: Iterable[bytes]):
         request = backend_pb2.MakePersistentRequest(pickled_obj=pickled_obj)
-        self.stub.MakePersistent(request)
+        self.stub.MakePersistent(request, metadata=self.metadata_call)
 
     @grpc_error_handler
     def call_active_method(
-        self, session_id: UUID, object_id: UUID, method_name: str, args: bytes, kwargs: bytes
+        self, object_id: UUID, method_name: str, args: bytes, kwargs: bytes
     ) -> tuple[bytes, bool]:
         request = backend_pb2.CallActiveMethodRequest(
-            session_id=str(session_id),
             object_id=str(object_id),
             method_name=method_name,
             args=args,
             kwargs=kwargs,
         )
 
-        response = self.stub.CallActiveMethod(request)
+        current_context = context_var.get()
+
+        metadata = self.metadata_call + [
+            ("dataset-name", current_context["dataset_name"]),
+            ("username", current_context["username"]),
+        ]
+
+        response = self.stub.CallActiveMethod(request, metadata=metadata)
         return response.value, response.is_exception
 
     #################
@@ -143,12 +162,42 @@ class BackendClient:
     #################
 
     @grpc_error_handler
+    def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
+        request = backend_pb2.GetObjectAttributeRequest(
+            object_id=str(object_id),
+            attribute=attribute,
+        )
+        response = self.stub.GetObjectAttribute(request, metadata=self.metadata_call)
+        return response.value, response.is_exception
+
+    @grpc_error_handler
+    def set_object_attribute(
+        self, object_id: UUID, attribute: str, serialized_attribute: bytes
+    ) -> tuple[bytes, bool]:
+        request = backend_pb2.SetObjectAttributeRequest(
+            object_id=str(object_id),
+            attribute=attribute,
+            serialized_attribute=serialized_attribute,
+        )
+        response = self.stub.SetObjectAttribute(request, metadata=self.metadata_call)
+        return response.value, response.is_exception
+
+    @grpc_error_handler
+    def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
+        request = backend_pb2.DelObjectAttributeRequest(
+            object_id=str(object_id),
+            attribute=attribute,
+        )
+        response = self.stub.DelObjectAttribute(request, metadata=self.metadata_call)
+        return response.value, response.is_exception
+
+    @grpc_error_handler
     def get_object_properties(self, object_id: UUID) -> bytes:
         request = backend_pb2.GetObjectPropertiesRequest(
             object_id=str(object_id),
         )
 
-        response = self.stub.GetObjectProperties(request)
+        response = self.stub.GetObjectProperties(request, metadata=self.metadata_call)
         return response.value
 
     @grpc_error_handler
@@ -157,14 +206,14 @@ class BackendClient:
             object_id=str(object_id),
             serialized_properties=serialized_properties,
         )
-        self.stub.UpdateObjectProperties(request)
+        self.stub.UpdateObjectProperties(request, metadata=self.metadata_call)
 
     @grpc_error_handler
     def new_object_version(self, object_id: UUID) -> str:
         request = backend_pb2.NewObjectVersionRequest(
             object_id=str(object_id),
         )
-        response = self.stub.NewObjectVersion(request)
+        response = self.stub.NewObjectVersion(request, metadata=self.metadata_call)
         return response.object_info
 
     @grpc_error_handler
@@ -172,7 +221,7 @@ class BackendClient:
         request = backend_pb2.ConsolidateObjectVersionRequest(
             object_id=str(object_id),
         )
-        self.stub.ConsolidateObjectVersion(request)
+        self.stub.ConsolidateObjectVersion(request, metadata=self.metadata_call)
 
     @grpc_error_handler
     def proxify_object(self, object_id: UUID, new_object_id: UUID):
@@ -180,7 +229,7 @@ class BackendClient:
             object_id=str(object_id),
             new_object_id=str(new_object_id),
         )
-        self.stub.ProxifyObject(request)
+        self.stub.ProxifyObject(request, metadata=self.metadata_call)
 
     @grpc_error_handler
     def change_object_id(self, object_id: UUID, new_object_id: UUID):
@@ -188,7 +237,7 @@ class BackendClient:
             object_id=str(object_id),
             new_object_id=str(new_object_id),
         )
-        self.stub.ChangeObjectId(request)
+        self.stub.ChangeObjectId(request, metadata=self.metadata_call)
 
     @grpc_error_handler
     def send_objects(
@@ -206,15 +255,15 @@ class BackendClient:
             recursive=recursive,
             remotes=remotes,
         )
-        self.stub.SendObjects(request)
+        self.stub.SendObjects(request, metadata=self.metadata_call)
 
     @grpc_error_handler
     def flush_all(self):
         self.stub.FlushAll(Empty())
 
     @grpc_error_handler
-    def shutdown(self):
-        self.stub.Shutdown(Empty())
+    def stop(self):
+        self.stub.Stop(Empty())
 
     @grpc_error_handler
     def drain(self):
@@ -228,7 +277,7 @@ class BackendClient:
     #         recursive=recursive,
     #         remotes=remotes,
     #     )
-    #     self.stub.NewObjectReplica(request)
+    #     self.stub.NewObjectReplica(request, metadata=self.metadata_call)
 
     ###########
     # END NEW #
@@ -363,18 +412,6 @@ class BackendClient:
         t = (result, non_migrated)
 
         return t
-
-    def detach_object_from_session(self, object_id, session_id):
-        raise Exception("To refactor")
-        request = dataservice_messages_pb2.DetachObjectFromSessionRequest(
-            objectID=str(object_id), sessionID=str(session_id)
-        )
-        try:
-            response = self.stub.detachObjectFromSession(request, metadata=self.metadata_call)
-        except RuntimeError as e:
-            raise e
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
 
     def activate_tracing(self, task_id):
         raise Exception("To refactor")

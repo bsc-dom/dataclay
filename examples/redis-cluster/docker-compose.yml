@@ -1,0 +1,84 @@
+version: '3.9'
+services:
+
+  redis1:
+    image: redis:latest
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --port 7000
+    ports:
+      - 7000:7000
+    networks:
+      app_subnet:
+        ipv4_address: 172.20.0.31
+
+  redis2:
+    image: redis:latest
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --port 7001
+    ports:
+      - 7001:7001
+    networks:
+      app_subnet:
+        ipv4_address: 172.20.0.32
+
+  redis3:
+    image: redis:latest
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --port 7002
+    ports:
+      - 7002:7002
+    networks:
+      app_subnet:
+        ipv4_address: 172.20.0.33
+
+  redis-cluster:
+    image: redis:latest
+    command: redis-cli --cluster create 172.20.0.31:7000 172.20.0.32:7001 172.20.0.33:7002 --cluster-replicas 0 --cluster-yes
+    depends_on:
+      - redis1
+      - redis2
+      - redis3
+    networks:
+      - app_subnet
+
+  metadata-service:
+    image: "ghcr.io/bsc-dom/dataclay:dev"
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      redis-cluster:
+        condition: service_completed_successfully
+    ports:
+      - 16587:16587
+    environment:
+      - DATACLAY_KV_HOST=redis1
+      - DATACLAY_KV_PORT=7000
+      - DATACLAY_PASSWORD=s3cret
+      - DATACLAY_USERNAME=testuser
+      - DATACLAY_DATASET=testdata
+      - DATACLAY_LOGLEVEL=DEBUG
+    command: python -m dataclay.metadata
+    volumes:
+      - .:/app:ro
+    networks:
+      - app_subnet
+
+  backend:
+    image: "ghcr.io/bsc-dom/dataclay:dev"
+    depends_on:
+      redis-cluster:
+        condition: service_completed_successfully
+    environment:
+      - DATACLAY_KV_HOST=redis1
+      - DATACLAY_KV_PORT=7000
+      - DATACLAY_LOGLEVEL=DEBUG
+    command: python -m dataclay.backend
+    volumes:
+      - .:/app:ro
+    networks:
+      - app_subnet
+
+networks:
+  app_subnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

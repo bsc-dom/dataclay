@@ -1,54 +1,114 @@
 """ Class description goes here. """
 
 import logging
-import pickle
+import os.path
 import signal
 import threading
 import traceback
 from concurrent import futures
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import grpc
 from google.protobuf.empty_pb2 import Empty
 from google.protobuf.wrappers_pb2 import BytesValue
+from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
 from dataclay.backend.api import BackendAPI
 from dataclay.config import settings
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
+from dataclay.runtime import context_var
 
 logger = logging.getLogger(__name__)
+
+
+def _get_or_generate_backend_id() -> UUID:
+    """Try to retrieve this backend UUID, or generate a new one.
+
+    If there is no backend_id defined in the settings, try to get the
+    backend UUID. A file may exist in the storage folder (which means that
+    this backend already has a identifer, so we should reuse it).
+
+    If there is no UUID in persistent storage, then this means that this is
+    the first time this backend has started, so we generate a new one and
+    store it.
+    """
+    backend_id_file = os.path.join(settings.storage_path, "BACKEND_ID")
+
+    if settings.backend.id is None and os.path.exists(backend_id_file):
+        # Seems like we will be using a preexisting UUID
+        with open(backend_id_file, "rt") as f:
+            ret = UUID(f.read())
+            logger.info("Starting backend with recovered UUID: %s", ret)
+            return ret
+
+    if settings.backend.id is None:
+        backend_id = uuid4()
+        logger.info("BackendID randomly generated: %s", backend_id)
+    else:
+        backend_id = settings.backend.id
+        logger.info("BackendID defined in settings: %s", backend_id)
+
+    # Store the backend_id and return it
+    try:
+        with open(backend_id_file, "wt") as f:
+            f.write(str(backend_id))
+            logger.debug("BackendID has been stored in the following file: %s", backend_id_file)
+    except OSError:
+        logger.warning(
+            "Could not write the BackendID in persistent storage. "
+            "Restarting this backend may result in unreachable/unrecoverable objects."
+        )
+        logger.debug("Exception when trying to access persistent backend id file:", exc_info=True)
+    return backend_id
 
 
 def serve():
     stop_event = threading.Event()
 
+    backend_id = _get_or_generate_backend_id()
+
+    logger.info("Starting backend service")
     backend = BackendAPI(
         settings.backend.name,
         settings.backend.port,
+        backend_id,
         settings.kv_host,
         settings.kv_port,
     )
 
     if not backend.is_ready(timeout=10):
-        logger.error("Backend is not ready. Aborting!")
-        raise
+        raise RuntimeError("KV store is not ready. Aborting!")
 
     server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=settings.thread_pool_workers),
+        futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers),
         options=[("grpc.max_send_message_length", -1), ("grpc.max_receive_message_length", -1)],
     )
     backend_pb2_grpc.add_BackendServiceServicer_to_server(
         BackendServicer(backend, stop_event), server
     )
 
+    if settings.backend.enable_healthcheck:
+        logger.info("Enabling healthcheck for BackendService")
+        health_servicer = health.HealthServicer(
+            experimental_non_blocking=True,
+            experimental_thread_pool=futures.ThreadPoolExecutor(
+                max_workers=settings.healthcheck_max_workers
+            ),
+        )
+        health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
+        health_servicer.set(
+            "dataclay.proto.backend.BackendService", health_pb2.HealthCheckResponse.SERVING
+        )
+
     address = f"{settings.backend.listen_address}:{settings.backend.port}"
     server.add_insecure_port(address)
     server.start()
+    logger.info("Backend service listening on %s", address)
 
-    # Autoregister of backend to MetadataService
+    # Autoregister of backend to KV store
     backend.runtime.metadata_service.register_backend(
-        settings.backend.id,
+        backend_id,
         settings.backend.host,
         settings.backend.port,
         settings.dataclay_id,
@@ -60,9 +120,10 @@ def serve():
 
     # Wait until stop_event is set. Then, gracefully stop dataclay backend.
     stop_event.wait()
+    logger.info("Stopping backend service")
 
     # TODO: Check if the order can be changed to avoid new calls when shutting down
-    backend.shutdown()
+    backend.stop()
     server.stop(5)
 
 
@@ -72,7 +133,32 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
         self.backend = backend
         self.stop_event = stop_event
 
+    def _check_context(self, context):
+        metadata = dict(context.invocation_metadata())
+
+        # Check if the backend-id metadata field matches this backend
+        # There are scenarios in which backend-id will not be set, and that
+        # is not an issue. However, a mismatch is a strange scenario, which
+        # warrants at least an error log.
+        if "backend-id" in metadata:
+            if metadata["backend-id"] != str(self.backend.backend_id):
+                logger.error(
+                    "The gRPC call was intended for backend_id=%s. We are %s. "
+                    "Ignoring it and proceeding (may fail).",
+                    metadata["backend-id"],
+                    self.backend.backend_id,
+                )
+        else:
+            logger.debug("No backend-id metadata header in the call.")
+
+        # set the current_context
+        if "dataset-name" in metadata and "username" in metadata:
+            context_var.set(
+                {"dataset_name": metadata["dataset-name"], "username": metadata["username"]}
+            )
+
     def RegisterObjects(self, request, context):
+        self._check_context(context)
         try:
             self.backend.register_objects(request.dict_bytes, request.make_replica)
         except Exception as e:
@@ -83,6 +169,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
         return Empty()
 
     def MakePersistent(self, request, context):
+        self._check_context(context)
         try:
             self.backend.make_persistent(request.pickled_obj)
         except Exception as e:
@@ -93,9 +180,9 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
         return Empty()
 
     def CallActiveMethod(self, request, context):
+        self._check_context(context)
         try:
             value, is_exception = self.backend.call_active_method(
-                UUID(request.session_id),
                 UUID(request.object_id),
                 request.method_name,
                 request.args,
@@ -112,7 +199,51 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     # Store Methods #
     #################
 
+    def GetObjectAttribute(self, request, context):
+        self._check_context(context)
+        try:
+            value, is_exception = self.backend.get_object_attribute(
+                UUID(request.object_id),
+                request.attribute,
+            )
+            return backend_pb2.GetObjectAttributeResponse(value=value, is_exception=is_exception)
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return backend_pb2.GetObjectAttributeResponse()
+
+    def SetObjectAttribute(self, request, context):
+        self._check_context(context)
+        try:
+            value, is_exception = self.backend.set_object_attribute(
+                UUID(request.object_id),
+                request.attribute,
+                request.serialized_attribute,
+            )
+            return backend_pb2.SetObjectAttributeResponse(value=value, is_exception=is_exception)
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return backend_pb2.SetObjectAttributeResponse()
+
+    def DelObjectAttribute(self, request, context):
+        self._check_backend(context)
+        try:
+            value, is_exception = self.backend.del_object_attribute(
+                UUID(request.object_id),
+                request.attribute,
+            )
+            return backend_pb2.DelObjectAttributeResponse(value=value, is_exception=is_exception)
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            traceback.print_exc()
+            return backend_pb2.DelObjectAttributeResponse()
+
     def GetObjectProperties(self, request, context):
+        self._check_context(context)
         try:
             result = self.backend.get_object_properties(UUID(request.object_id))
             return BytesValue(value=result)
@@ -123,6 +254,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return BytesValue()
 
     def UpdateObjectProperties(self, request, context):
+        self._check_context(context)
         try:
             self.backend.update_object_properties(
                 UUID(request.object_id), request.serialized_properties
@@ -135,6 +267,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def NewObjectVersion(self, request, context):
+        self._check_context(context)
         try:
             result = self.backend.new_object_version(UUID(request.object_id))
             return backend_pb2.NewObjectVersionResponse(object_info=result)
@@ -145,6 +278,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return backend_pb2.NewObjectVersionResponse()
 
     def ConsolidateObjectVersion(self, request, context):
+        self._check_context(context)
         try:
             self.backend.consolidate_object_version(UUID(request.object_id))
             return Empty()
@@ -155,6 +289,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def ProxifyObject(self, request, context):
+        self._check_context(context)
         try:
             self.backend.proxify_object(UUID(request.object_id), UUID(request.new_object_id))
             return Empty()
@@ -165,6 +300,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def ChangeObjectId(self, request, context):
+        self._check_context(context)
         try:
             self.backend.change_object_id(UUID(request.object_id), UUID(request.new_object_id))
             return Empty()
@@ -175,6 +311,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def SendObjects(self, request, context):
+        self._check_context(context)
         try:
             self.backend.send_objects(
                 map(UUID, request.object_ids),
@@ -191,6 +328,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def FlushAll(self, request, context):
+        self._check_context(context)
         try:
             self.backend.flush_all()
             return Empty()
@@ -200,7 +338,8 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def Shutdown(self, request, context):
+    def Stop(self, request, context):
+        self._check_context(context)
         try:
             self.stop_event.set()
             return Empty()
@@ -211,6 +350,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def Drain(self, request, context):
+        self._check_context(context)
         try:
             self.backend.move_all_objects()
             self.stop_event.set()
@@ -222,6 +362,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
 
     def NewObjectReplica(self, request, context):
+        self._check_context(context)
         try:
             self.backend.new_object_replica(
                 UUID(request.object_id),
@@ -282,54 +423,6 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return dataservice_messages_pb2.RemoveObjectsResponse(
                 excInfo=self.get_exception_info(ex)
             )
-
-    def updateRefs(self, request, context):
-        raise Exception("To refactor")
-        try:
-            """deserialize into dictionary of object id - integer"""
-            ref_counting = {}
-            for serialized_oid, counter in request.refsToUpdate.items():
-                ref_counting[serialized_oid] = counter
-
-            self.backend.update_refs(ref_counting)
-            return common_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            traceback.print_exc()
-            return self.get_exception_info(ex)
-
-    def getRetainedReferences(self, request, context):
-        raise Exception("To refactor")
-        try:
-            result = self.backend.get_retained_references()
-            retained_refs = []
-
-            for oid in result:
-                retained_refs.append(Utils.get_msg_id(oid))
-            return dataservice_messages_pb2.GetRetainedReferencesResponse(
-                retainedReferences=retained_refs
-            )
-
-        except Exception as ex:
-            return self.get_exception_info(ex)
-
-    def closeSessionInDS(self, request, context):
-        raise Exception("To refactor")
-        try:
-            self.backend.close_session_in_ee(UUID(request.sessionID))
-            return common_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            return self.get_exception_info(ex)
-
-    def detachObjectFromSession(self, request, context):
-        raise Exception("To refactor")
-        try:
-            self.backend.detach_object_from_session(UUID(request.objectID), UUID(request.sessionID))
-            return common_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            return self.get_exception_info(ex)
 
     def migrateObjectsToBackends(self, request, context):
         raise Exception("To refactor")

@@ -1,7 +1,7 @@
 import json
 import logging
 from abc import ABC, abstractmethod
-from typing import Annotated, ClassVar, Literal
+from typing import Annotated, ClassVar, Optional, Union
 from uuid import UUID, uuid4
 
 import bcrypt
@@ -80,12 +80,12 @@ class ObjectMetadata(KeyValue):
     proto_class: ClassVar = common_pb2.ObjectMetadata
 
     id: UUID = Field(default_factory=uuid4)
-    dataset_name: str | None = None
+    dataset_name: Optional[str] = None
     class_name: str
-    master_backend_id: UUID | None = None
+    master_backend_id: Optional[UUID] = None
     replica_backend_ids: set[UUID] = Field(default_factory=set)
     is_read_only: bool = False
-    original_object_id: UUID | None = None
+    original_object_id: Optional[UUID] = None
     versions_object_ids: list[UUID] = Field(default_factory=list)
 
     @property
@@ -104,20 +104,6 @@ class Alias(KeyValue):
     @property
     def key(self):
         return self.path + f"{self.dataset_name}/{self.name}"
-
-
-class Session(KeyValue):
-    path: ClassVar = "/session/"
-    proto_class: ClassVar = common_pb2.Session
-
-    id: UUID
-    username: str
-    dataset_name: str
-    is_active: bool = True
-
-    @property
-    def key(self):
-        return self.path + str(self.id)
 
 
 class Account(KeyValue):

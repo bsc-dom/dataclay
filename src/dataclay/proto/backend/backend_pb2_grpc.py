@@ -26,6 +26,21 @@ class BackendServiceStub(object):
                 request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.CallActiveMethodRequest.SerializeToString,
                 response_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.CallActiveMethodResponse.FromString,
                 )
+        self.GetObjectAttribute = channel.unary_unary(
+                '/dataclay.proto.backend.BackendService/GetObjectAttribute',
+                request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeRequest.SerializeToString,
+                response_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeResponse.FromString,
+                )
+        self.SetObjectAttribute = channel.unary_unary(
+                '/dataclay.proto.backend.BackendService/SetObjectAttribute',
+                request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeRequest.SerializeToString,
+                response_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeResponse.FromString,
+                )
+        self.DelObjectAttribute = channel.unary_unary(
+                '/dataclay.proto.backend.BackendService/DelObjectAttribute',
+                request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeRequest.SerializeToString,
+                response_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeResponse.FromString,
+                )
         self.GetObjectProperties = channel.unary_unary(
                 '/dataclay.proto.backend.BackendService/GetObjectProperties',
                 request_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectPropertiesRequest.SerializeToString,
@@ -76,8 +91,8 @@ class BackendServiceStub(object):
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.Shutdown = channel.unary_unary(
-                '/dataclay.proto.backend.BackendService/Shutdown',
+        self.Stop = channel.unary_unary(
+                '/dataclay.proto.backend.BackendService/Stop',
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
@@ -98,6 +113,24 @@ class BackendServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def CallActiveMethod(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetObjectAttribute(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SetObjectAttribute(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DelObjectAttribute(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -163,7 +196,7 @@ class BackendServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Shutdown(self, request, context):
+    def Stop(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -187,6 +220,21 @@ def add_BackendServiceServicer_to_server(servicer, server):
                     servicer.CallActiveMethod,
                     request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.CallActiveMethodRequest.FromString,
                     response_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.CallActiveMethodResponse.SerializeToString,
+            ),
+            'GetObjectAttribute': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetObjectAttribute,
+                    request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeRequest.FromString,
+                    response_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeResponse.SerializeToString,
+            ),
+            'SetObjectAttribute': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetObjectAttribute,
+                    request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeRequest.FromString,
+                    response_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeResponse.SerializeToString,
+            ),
+            'DelObjectAttribute': grpc.unary_unary_rpc_method_handler(
+                    servicer.DelObjectAttribute,
+                    request_deserializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeRequest.FromString,
+                    response_serializer=dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeResponse.SerializeToString,
             ),
             'GetObjectProperties': grpc.unary_unary_rpc_method_handler(
                     servicer.GetObjectProperties,
@@ -238,8 +286,8 @@ def add_BackendServiceServicer_to_server(servicer, server):
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'Shutdown': grpc.unary_unary_rpc_method_handler(
-                    servicer.Shutdown,
+            'Stop': grpc.unary_unary_rpc_method_handler(
+                    servicer.Stop,
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
@@ -289,6 +337,57 @@ class BackendService(object):
         return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/CallActiveMethod',
             dataclay_dot_proto_dot_backend_dot_backend__pb2.CallActiveMethodRequest.SerializeToString,
             dataclay_dot_proto_dot_backend_dot_backend__pb2.CallActiveMethodResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetObjectAttribute(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/GetObjectAttribute',
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeRequest.SerializeToString,
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.GetObjectAttributeResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SetObjectAttribute(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/SetObjectAttribute',
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeRequest.SerializeToString,
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.SetObjectAttributeResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DelObjectAttribute(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/DelObjectAttribute',
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeRequest.SerializeToString,
+            dataclay_dot_proto_dot_backend_dot_backend__pb2.DelObjectAttributeResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -463,7 +562,7 @@ class BackendService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def Shutdown(request,
+    def Stop(request,
             target,
             options=(),
             channel_credentials=None,
@@ -473,7 +572,7 @@ class BackendService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/Shutdown',
+        return grpc.experimental.unary_unary(request, target, '/dataclay.proto.backend.BackendService/Stop',
             google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,

@@ -8,6 +8,6 @@
   environment: "{{ common_envs | combine(client_properties) }}"
   tasks:
     - name: Run script
-      shell: "{{ script }} > {{ dataclay_log_path }}/client{{ num }}.out 2>&1"
+      shell: "{{ script }} > {{ log_path }}/client{{ num }}.out 2>&1"
       args:
         chdir: "{{ lookup('env', 'PWD') }}"

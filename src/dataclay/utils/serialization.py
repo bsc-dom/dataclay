@@ -1,6 +1,7 @@
 import io
 import logging
 import pickle
+from typing import Optional
 from uuid import UUID
 
 from dataclay import utils
@@ -41,7 +42,7 @@ class RecursiveDataClayPickler(DataClayPickler):
                 if obj._dc_meta.id not in self.visited_local_objects:
                     self.visited_local_objects[obj._dc_meta.id] = obj
                     if not obj._dc_is_loaded:
-                        get_runtime().load_object_from_db(obj)
+                        get_runtime().data_manager.load_object(obj)
 
                     f = io.BytesIO()
                     RecursiveDataClayPickler(
@@ -66,8 +67,8 @@ class RecursiveDataClayPickler(DataClayPickler):
 
 def recursive_dcdumps(
     instance: DataClayObject,
-    local_objects: dict[UUID, DataClayObject] | None = None,
-    remote_objects: dict[UUID, DataClayObject] | None = None,
+    local_objects: Optional[dict[UUID, DataClayObject]] = None,
+    remote_objects: Optional[dict[UUID, DataClayObject]] = None,
     make_persistent: bool = False,
 ):
     # Initialize local_objects and remote_objects
