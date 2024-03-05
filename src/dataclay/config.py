@@ -60,6 +60,10 @@ class ClientSettings(BaseSettings):
     dataclay_host: str = Field(alias="dc_host")
     dataclay_port: int = Field(default=16587, alias="dc_port")
 
+    proxy_enabled: bool = False
+    proxy_host: str = "127.0.0.1"
+    proxy_port: int = 8676
+
 
 class Settings(BaseSettings):
     class Config:

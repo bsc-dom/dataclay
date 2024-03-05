@@ -111,7 +111,7 @@ class Account(KeyValue):
     proto_class: ClassVar = None
 
     username: str
-    hashed_password: str | None = None
+    hashed_password: Optional[str] = None
     role: str = "NORMAL"
     datasets: list = Field(default_factory=list)
 
