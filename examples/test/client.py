@@ -1,11 +1,24 @@
-from dataclay import Client
-from dataclay.contrib.modeltest.family import Person
+import contextvars
+from concurrent.futures import ThreadPoolExecutor
 
-client = Client(host="127.0.0.1", username="testuser", password="s3cret", dataset="testdata")
+from dataclay import Client
+from dataclay.contrib.modeltest.family import Dog, Family, Person
+from dataclay.runtime import get_runtime
+
+client = Client(host="127.0.0.1")
 client.start()
 
-# person = Person.get_by_alias("Alice")
-person = Person(name="Alice", age=33)
-person1 = Person(name="David", age=2)
+current_context = contextvars.copy_context()
 
-# person.make_persistent("Alice")
+
+def job(name, age):
+    person = Person(name, age)
+    person.make_persistent()
+
+
+with ThreadPoolExecutor() as executor:
+    for i in range(10):
+        future = executor.submit(current_context.run, job, f"Name{i}", i)
+        print(future.result())
+
+# person.add_year()
