@@ -53,11 +53,11 @@ class ClientSettings(BaseSettings):
         env_file = ".env"
         secrets_dir = "/run/secrets"
 
-    password: SecretStr
-    username: str
-    dataset: str
+    password: str = "admin"
+    username: str = "admin"
+    dataset: str = "admin"
     local_backend: Optional[str] = None
-    dataclay_host: str = Field(alias="dc_host")
+    dataclay_host: str = Field(default="localhost", alias="dc_host")
     dataclay_port: int = Field(default=16587, alias="dc_port")
 
     proxy_enabled: bool = False
@@ -93,7 +93,7 @@ class Settings(BaseSettings):
     ssl_target_ee_alias: str = "6867"
 
     # root account
-    password: SecretStr = Field(default="admin")
+    password: str = Field(default="admin")
     username: str = Field(default="admin")
     dataset: str = Field(default="admin")
 
