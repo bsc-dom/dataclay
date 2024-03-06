@@ -49,9 +49,7 @@ def serve():
         logger.info("MetadataService already registered with id %s", settings.dataclay_id)
         settings.dataclay_id = metadata_api.get_dataclay("this").id
     else:
-        metadata_api.new_superuser(
-            settings.username, settings.password.get_secret_value(), settings.dataset
-        )
+        metadata_api.new_superuser(settings.username, settings.password, settings.dataset)
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers))
     metadata_pb2_grpc.add_MetadataServiceServicer_to_server(
