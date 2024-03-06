@@ -162,22 +162,34 @@ class BackendClient:
     #################
 
     @grpc_error_handler
-    def get_object_attribute(self, object_id: UUID, attribute: str) -> bytes:
+    def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         request = backend_pb2.GetObjectAttributeRequest(
             object_id=str(object_id),
             attribute=attribute,
         )
         response = self.stub.GetObjectAttribute(request, metadata=self.metadata_call)
-        return response.value, False
+        return response.value, response.is_exception
 
     @grpc_error_handler
-    def set_object_attribute(self, object_id: UUID, attribute: str, serialized_attribute: bytes):
+    def set_object_attribute(
+        self, object_id: UUID, attribute: str, serialized_attribute: bytes
+    ) -> tuple[bytes, bool]:
         request = backend_pb2.SetObjectAttributeRequest(
             object_id=str(object_id),
             attribute=attribute,
             serialized_attribute=serialized_attribute,
         )
-        self.stub.SetObjectAttribute(request, metadata=self.metadata_call)
+        response = self.stub.SetObjectAttribute(request, metadata=self.metadata_call)
+        return response.value, response.is_exception
+
+    @grpc_error_handler
+    def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
+        request = backend_pb2.DelObjectAttributeRequest(
+            object_id=str(object_id),
+            attribute=attribute,
+        )
+        response = self.stub.DelObjectAttribute(request, metadata=self.metadata_call)
+        return response.value, response.is_exception
 
     @grpc_error_handler
     def get_object_properties(self, object_id: UUID) -> bytes:

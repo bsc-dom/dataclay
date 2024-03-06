@@ -159,13 +159,14 @@ class BackendAPI:
     # Store Methods
 
     @tracer.start_as_current_span("get_object_attribute")
-    def get_object_attribute(self, object_id: UUID, attribute: str) -> bytes:
+    def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         """Returns value of the object attibute with ID provided
         Args:
             object_id: ID of the object
             attribute: Name of the attibute
         Returns:
             The pickled value of the object attibute.
+            If it's an exception or not
         """
         instance = self.runtime.get_object_by_id(object_id)
         # NOTE: When the object is not local, a custom exception is sent
@@ -183,17 +184,24 @@ class BackendAPI:
                 object_id,
                 instance._dc_meta.master_backend_id,
             )
-            return pickle.dumps(
-                ObjectWithWrongBackendIdError(
-                    instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
-                )
+            return (
+                pickle.dumps(
+                    ObjectWithWrongBackendIdError(
+                        instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
+                    )
+                ),
+                False,
             )
-
-        value = getattr(instance, attribute)
-        return dcdumps(value)
+        try:
+            value = getattr(instance, attribute)
+            return dcdumps(value), False
+        except Exception as e:
+            return pickle.dumps(e), True
 
     @tracer.start_as_current_span("set_object_attribute")
-    def set_object_attribute(self, object_id: UUID, attribute: str, serialized_attribute: bytes):
+    def set_object_attribute(
+        self, object_id: UUID, attribute: str, serialized_attribute: bytes
+    ) -> tuple[bytes, bool]:
         """Updates an object attibute with ID provided"""
         instance = self.runtime.get_object_by_id(object_id)
         # NOTE: When the object is not local, a custom exception is sent
@@ -212,12 +220,54 @@ class BackendAPI:
                 instance._dc_meta.master_backend_id,
             )
 
-            ObjectWithWrongBackendIdError(
-                instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
+            return (
+                pickle.dumps(
+                    ObjectWithWrongBackendIdError(
+                        instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
+                    )
+                ),
+                False,
+            )
+        try:
+            object_attribute = pickle.loads(serialized_attribute)
+            setattr(instance, attribute, object_attribute)
+            return pickle.dumps("placeholder"), False
+        except Exception as e:
+            return pickle.dumps(e), True
+
+    @tracer.start_as_current_span("set_object_attribute")
+    def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
+        """Deletes an object attibute with ID provided"""
+        instance = self.runtime.get_object_by_id(object_id)
+        # NOTE: When the object is not local, a custom exception is sent
+        # for the client to update the backend_id, and call_active_method again
+        if not instance._dc_is_local:
+            # NOTE: We sync the metadata because when consolidating an object
+            # it might be that the proxy is pointing to the wrong backend_id which is
+            # the same current backend, creating a infinite loop. This could be solve also
+            # by passing the backend_id of the new object to the proxy, but this can create
+            # problems with race conditions (e.g. a move before the consolidation). Therefore,
+            # we check to the metadata which is more reliable.
+            self.runtime.sync_object_metadata(instance)
+            logger.warning(
+                "(%s) Wrong backend. Update to %s",
+                object_id,
+                instance._dc_meta.master_backend_id,
             )
 
-        object_attribute = pickle.loads(serialized_attribute)
-        setattr(instance, attribute, object_attribute)
+            return (
+                pickle.dumps(
+                    ObjectWithWrongBackendIdError(
+                        instance._dc_meta.master_backend_id, instance._dc_meta.replica_backend_ids
+                    )
+                ),
+                False,
+            )
+        try:
+            delattr(instance, attribute)
+            return pickle.dumps("placeholder"), False
+        except Exception as e:
+            return pickle.dumps(e), True
 
     @tracer.start_as_current_span("get_object_properties")
     def get_object_properties(self, object_id: UUID) -> bytes:

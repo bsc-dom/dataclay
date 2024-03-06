@@ -342,21 +342,25 @@ class DataClayRuntime(ABC):
                 # If the connection fails, update the list of backend clients, and try again
                 try:
                     if method_name == "__getattribute__":
-                        logger.debug(
-                            "The backend is %s with backend client %s", backend_id, backend_client
-                        )
                         serialized_response, is_exception = backend_client.get_object_attribute(
                             instance._dc_meta.id,
                             args[0],  # attribute name
                         )
                     elif method_name == "__setattr__":
-                        backend_client.set_object_attribute(
+                        serialized_response, is_exception = backend_client.set_object_attribute(
                             instance._dc_meta.id,
                             args[0],  # attribute name
                             dcdumps(args[1]),  # attribute value
                         )
-                        serialized_response = None
-                        is_exception = False
+                        if not is_exception:
+                            serialized_response = None
+                    elif method_name == "__delattr__":
+                        serialized_response, is_exception = backend_client.del_object_attribute(
+                            instance._dc_meta.id,
+                            args[0],  # attribute name
+                        )
+                        if not is_exception:
+                            serialized_response = None
                     else:
                         serialized_response, is_exception = backend_client.call_active_method(
                             instance._dc_meta.id,
