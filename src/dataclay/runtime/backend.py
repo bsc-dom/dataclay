@@ -29,7 +29,8 @@ class BackendRuntime(DataClayRuntime):
 
         # start heap manager. Invokes run() in a separate thread
         self.data_manager = DataManager()
-        self.data_manager.start()
+        # TODO: Integrate with asyncio
+        # self.data_manager.start()
 
         # References hold by sessions. Resource note: Maximum size of this map is maximum number of objects allowed in EE x sessions.
         # Also, important to think what happens if one single session is associated to two client threads? use case?

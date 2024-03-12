@@ -96,6 +96,6 @@ class ClientRuntime(DataClayRuntime):
     # Shutdown #
     ############
 
-    def stop(self):
+    async def stop(self):
         self.close_backend_clients()
-        self.metadata_service.close()
+        await self.metadata_service.close()

@@ -7,6 +7,7 @@ core and sets the "client" mode for the library.
 
 __all__ = ["init", "finish", "DataClayObject"]
 
+import asyncio
 import logging
 import logging.config
 from typing import TYPE_CHECKING, Optional
@@ -15,7 +16,7 @@ from uuid import UUID
 from dataclay.backend.client import BackendClient
 from dataclay.config import ClientSettings, settings
 from dataclay.dataclay_object import DataClayObject
-from dataclay.runtime import context_var, get_runtime, set_runtime
+from dataclay.runtime import get_runtime, session_var, set_dc_running_loop, set_runtime
 from dataclay.runtime.client import ClientRuntime
 from dataclay.utils.telemetry import trace
 
@@ -148,6 +149,11 @@ class Client:
 
         logger.info("Starting client runtime")
 
+        # Create new event loop (if not AsyncClient)
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        set_dc_running_loop(self.loop)  # TODO: find a cleaner architecture
+
         # Replace settings
         self.previous_settings = settings.client
         settings.client = self.settings
@@ -169,7 +175,7 @@ class Client:
 
         set_runtime(self.runtime)
 
-        context_var.set(
+        session_var.set(
             {"dataset_name": settings.client.dataset, "username": settings.client.username}
         )
 
