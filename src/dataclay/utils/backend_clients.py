@@ -41,15 +41,15 @@ class BackendClientsManager(collections.abc.MutableMapping):
             self.update(force=False)
             time.sleep(settings.backend_clients_check_interval)
 
-    def update(self, force: bool = True):
+    async def update(self, force: bool = True):
         """Update the backend clients."""
         logger.debug("Updating backend clients...")
-        backend_infos = self.metadata_api.get_all_backends(force=force)
+        backend_infos = await self.metadata_api.get_all_backends(force=force)
         with self.lock:
             for backend_info in backend_infos.values():
-                self.add_backend_client(backend_info)
+                await self.add_backend_client(backend_info)
 
-    def add_backend_client(self, backend_info, check_ready=False):
+    async def add_backend_client(self, backend_info, check_ready=False):
         # This only applies to the client, or at least, when client settings are set
         use_proxy = settings.client is not None and settings.client.proxy_enabled
         # (Backends will have settings.client = None by default)
@@ -88,7 +88,7 @@ class BackendClientsManager(collections.abc.MutableMapping):
                 backend_info.host, backend_info.port, backend_id=backend_info.id
             )
 
-        if not check_ready or backend_client.is_ready(settings.timeout_channel_ready):
+        if not check_ready or await backend_client.is_ready(settings.timeout_channel_ready):
             self._backend_clients[backend_info.id] = backend_client
 
         else:
@@ -135,66 +135,3 @@ class BackendClientsManager(collections.abc.MutableMapping):
 
     def __len__(self):
         return len(self._backend_clients)
-
-    def update_backend_clients_old(self, force: bool = True):
-        # The force is only used in the client, to force the access to kvstore
-        # otherwise, the metadata service will use the backend clients cache
-        # For the backend, the access to kvstore is always forced
-        backend_infos = self.metadata_api.get_all_backends(
-            from_backend=self.is_backend, force=force
-        )
-        logger.debug("Updating backend clients. Metadata reports #%d", len(backend_infos))
-        new_backend_clients = {}
-
-        # This only applies to the client, or at least, when client settings are set
-        use_proxy = settings.client is not None and settings.client.proxy_enabled
-        # (Backends will have settings.client = None by default)
-
-        def add_backend_client(backend_info: Backend):
-            if (
-                backend_info.id in self._backend_clients
-                and (
-                    use_proxy
-                    # The host and port could change, but the id be the same
-                    or (
-                        backend_info.host == self._backend_clients[backend_info.id].host
-                        and backend_info.port == self._backend_clients[backend_info.id].port
-                    )
-                )
-                and self._backend_clients[backend_info.id].is_ready(settings.timeout_channel_ready)
-            ):
-                logger.debug("Existing backend already available: %s", backend_info.id)
-                new_backend_clients[backend_info.id] = self._backend_clients[backend_info.id]
-                return
-
-            if use_proxy:
-                logger.debug("New backend %s, connecting through proxy", backend_info.id)
-                backend_client = BackendClient(
-                    settings.client.proxy_host,
-                    settings.client.proxy_port,
-                    backend_id=backend_info.id,
-                )
-            else:
-                logger.debug(
-                    "New backend %s at %s:%s", backend_info.id, backend_info.host, backend_info.port
-                )
-                backend_client = BackendClient(
-                    backend_info.host, backend_info.port, backend_id=backend_info.id
-                )
-
-            if backend_client.is_ready(settings.timeout_channel_ready):
-                new_backend_clients[backend_info.id] = backend_client
-            else:
-                logger.info("Backend %s gave a timeout, removing it from list", backend_info.id)
-                del backend_infos[backend_info.id]
-
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures = [
-                executor.submit(add_backend_client, backend_info)
-                for backend_info in backend_infos.values()
-            ]
-            concurrent.futures.wait(futures)
-            # results = [future.result() for future in futures]
-
-        logger.debug("Current list of backends: %s", new_backend_clients)
-        self._backend_clients = new_backend_clients

@@ -13,9 +13,9 @@ from typing import TYPE_CHECKING, Optional
 from dataclay import utils
 from dataclay.config import settings
 from dataclay.exceptions import *
-from dataclay.runtime import LockManager, set_runtime
+from dataclay.runtime import LockManager, pending_tasks_var, set_runtime
 from dataclay.runtime.backend import BackendRuntime
-from dataclay.utils.serialization import dcdumps, recursive_dcloads
+from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcloads
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -114,12 +114,12 @@ class BackendAPI:
             proxy_object._dc_is_registered = True
 
     @tracer.start_as_current_span("call_active_method")
-    def call_active_method(
+    async def call_active_method(
         self, object_id: UUID, method_name: str, args: tuple, kwargs: dict
     ) -> tuple[bytes, bool]:
         logger.debug("(%s) Calling remote method %s", object_id, method_name)
 
-        instance = self.runtime.get_object_by_id(object_id)
+        instance = await self.runtime.get_object_by_id(object_id)
 
         # NOTE: When the object is not local, a custom exception is sent
         # for the client to update the backend_id, and call_active_method again
@@ -145,13 +145,13 @@ class BackendAPI:
                 False,
             )
 
-        args = pickle.loads(args)
-        kwargs = pickle.loads(kwargs)
+        args = await dcloads(args)
+        kwargs = await dcloads(kwargs)
 
         try:
             value = getattr(instance, method_name)(*args, **kwargs)
             if value is not None:
-                value = dcdumps(value)
+                value = await dcdumps(value)
             return value, False
         except Exception as e:
             return pickle.dumps(e), True
@@ -159,7 +159,7 @@ class BackendAPI:
     # Store Methods
 
     @tracer.start_as_current_span("get_object_attribute")
-    def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
+    async def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         """Returns value of the object attibute with ID provided
         Args:
             object_id: ID of the object
@@ -168,7 +168,7 @@ class BackendAPI:
             The pickled value of the object attibute.
             If it's an exception or not
         """
-        instance = self.runtime.get_object_by_id(object_id)
+        instance = await self.runtime.get_object_by_id(object_id)
         # NOTE: When the object is not local, a custom exception is sent
         # for the client to update the backend_id, and call_active_method again
         if not instance._dc_is_local:
@@ -194,7 +194,7 @@ class BackendAPI:
             )
         try:
             value = getattr(instance, attribute)
-            return dcdumps(value), False
+            return await dcdumps(value), False
         except Exception as e:
             return pickle.dumps(e), True
 
@@ -270,7 +270,7 @@ class BackendAPI:
             return pickle.dumps(e), True
 
     @tracer.start_as_current_span("get_object_properties")
-    def get_object_properties(self, object_id: UUID) -> bytes:
+    async def get_object_properties(self, object_id: UUID) -> bytes:
         """Returns the properties of the object with ID provided
 
         Args:
@@ -280,15 +280,15 @@ class BackendAPI:
             The pickled properties of the object.
         """
         instance = self.runtime.get_object_by_id(object_id)
-        object_properties = self.runtime.get_object_properties(instance)
-        return dcdumps(object_properties)
+        object_properties = await self.runtime.get_object_properties(instance)
+        return await dcdumps(object_properties)
 
     @tracer.start_as_current_span("update_object_properties")
-    def update_object_properties(self, object_id: UUID, serialized_properties: bytes):
+    async def update_object_properties(self, object_id: UUID, serialized_properties: bytes):
         """Updates an object with ID provided with contents from another object"""
         instance = self.runtime.get_object_by_id(object_id)
         object_properties = pickle.loads(serialized_properties)
-        self.runtime.update_object_properties(instance, object_properties)
+        await self.runtime.update_object_properties(instance, object_properties)
 
     def new_object_version(self, object_id: UUID):
         """Creates a new version of the object with ID provided
@@ -306,10 +306,10 @@ class BackendAPI:
         new_version = self.runtime.new_object_version(instance)
         return new_version.getID()
 
-    def consolidate_object_version(self, object_id: UUID):
+    async def consolidate_object_version(self, object_id: UUID):
         """Consolidates the object with ID provided"""
         instance = self.runtime.get_object_by_id(object_id)
-        self.runtime.consolidate_version(instance)
+        await self.runtime.consolidate_version(instance)
 
     @tracer.start_as_current_span("proxify_object")
     def proxify_object(self, object_id: UUID, new_object_id: UUID):
@@ -317,12 +317,12 @@ class BackendAPI:
         self.runtime.proxify_object(instance, new_object_id)
 
     @tracer.start_as_current_span("change_object_id")
-    def change_object_id(self, object_id: UUID, new_object_id: UUID):
+    async def change_object_id(self, object_id: UUID, new_object_id: UUID):
         instance = self.runtime.get_object_by_id(object_id)
-        self.runtime.change_object_id(instance, new_object_id)
+        await self.runtime.change_object_id(instance, new_object_id)
 
     @tracer.start_as_current_span("send_objects")
-    def send_objects(
+    async def send_objects(
         self,
         object_ids: Iterable[UUID],
         backend_id: UUID,
@@ -332,7 +332,7 @@ class BackendAPI:
     ):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             instances = tuple(executor.map(self.runtime.get_object_by_id, object_ids))
-        self.runtime.send_objects(instances, backend_id, make_replica, recursive, remotes)
+        await self.runtime.send_objects(instances, backend_id, make_replica, recursive, remotes)
 
     # Shutdown
 
@@ -381,7 +381,7 @@ class BackendAPI:
 
     # Replicas
 
-    def new_object_replica(
+    async def new_object_replica(
         self,
         object_id: UUID,
         backend_id: UUID = None,
@@ -389,7 +389,7 @@ class BackendAPI:
         remotes: bool = True,
     ):
         instance = self.runtime.get_object_by_id(object_id)
-        self.runtime.new_object_replica(instance, backend_id, recursive, remotes)
+        await self.runtime.new_object_replica(instance, backend_id, recursive, remotes)
 
     def synchronize(
         self, session_id, object_id, implementation_id, serialized_value, calling_backend_id=None

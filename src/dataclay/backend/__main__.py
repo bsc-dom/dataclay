@@ -1,5 +1,6 @@
 """Entry point for standalone dataClay Backend server."""
 
+import asyncio
 import logging
 
 from dataclay.backend import servicer
@@ -35,4 +36,4 @@ if settings.metrics:
         settings.metrics_exporter,
     )
 
-servicer.serve()
+asyncio.run(servicer.serve())

@@ -9,11 +9,17 @@ from uuid import UUID
 if TYPE_CHECKING:
     from dataclay.runtime.backend import BackendRuntime
     from dataclay.runtime.client import ClientRuntime
+    from asyncio import AbstractEventLoop
+
 
 # Use for context-local data (current session, etc.)
-context_var = contextvars.ContextVar("current_session")
+session_var = contextvars.ContextVar("session")
+pending_tasks_var = contextvars.ContextVar("pending_tasks")
 
 current_runtime: Union[ClientRuntime, BackendRuntime, None] = None
+
+# TODO: Find a cleaner way
+event_loop: AbstractEventLoop = None
 
 
 def get_runtime() -> Union[ClientRuntime, BackendRuntime, None]:
@@ -23,6 +29,16 @@ def get_runtime() -> Union[ClientRuntime, BackendRuntime, None]:
 def set_runtime(new_runtime: Union[ClientRuntime, BackendRuntime]):
     global current_runtime
     current_runtime = new_runtime
+
+
+# TODO: Find a cleaner way
+def set_dc_running_loop(loop):
+    global event_loop
+    event_loop = loop
+
+
+def get_dc_running_loop() -> Union[None, AbstractEventLoop]:
+    return event_loop
 
 
 class ReadWriteLock:

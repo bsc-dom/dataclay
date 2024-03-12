@@ -195,7 +195,7 @@ class MetadataAPI:
         self.kv_manager.delete_kv(ObjectMetadata.path + str(id))
 
     @tracer.start_as_current_span("get_object_md_by_id")
-    def get_object_md_by_id(self, object_id: UUID) -> ObjectMetadata:
+    async def get_object_md_by_id(self, object_id: UUID) -> ObjectMetadata:
         object_md = self.kv_manager.get_kv(ObjectMetadata, object_id)
         return object_md
 

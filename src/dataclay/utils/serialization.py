@@ -1,3 +1,5 @@
+import asyncio
+import contextvars
 import io
 import logging
 import pickle
@@ -6,17 +8,33 @@ from uuid import UUID
 
 from dataclay import utils
 from dataclay.dataclay_object import DataClayObject
-from dataclay.runtime import get_runtime
+from dataclay.runtime import get_dc_running_loop, get_runtime
 
 logger = logging.getLogger(__name__)
 
 
 class DataClayPickler(pickle.Pickler):
+    def __init__(self, file, pending_make_persistent: Optional[list[DataClayObject]] = None):
+        super().__init__(file)
+        self.pending_make_persistent = pending_make_persistent
+
     def reducer_override(self, obj):
         if isinstance(obj, DataClayObject):
             if not obj._dc_is_registered:
-                obj.make_persistent()
-            return obj.get_by_id, (obj._dc_meta.id,)
+                # Option 0 (no async)
+                # obj.make_persistent()
+
+                # Option 1 - run_in_executor
+                loop = get_dc_running_loop()
+                t = asyncio.run_coroutine_threadsafe(obj.make_persistent(), loop)
+                t.result()
+
+                # Option 2 - post make_persistent
+                # if self.pending_make_persistent is None:
+                #     self.pending_make_persistent = []
+                # if obj not in self.pending_make_persistent:
+                #     self.pending_make_persistent.append(obj)
+            return obj.get_by_id_sync, (obj._dc_meta.id,)
         else:
             return NotImplemented
 
@@ -37,6 +55,20 @@ class RecursiveDataClayPickler(DataClayPickler):
         self.make_persistent = make_persistent
 
     def persistent_id(self, obj):
+        """
+        This method is called to get the persistent id of an object.
+        If the object is a non registered DataClayObject, then it returns a tuple with the following elements:
+        - "unregistered" tag
+        - object id
+        - object class
+
+        If the object is a persistent DataClayObject, then it returns None. And the reducer_override method is called.
+        The reducer_override will serialize the object as a tuple with the following elements:
+        - get_by_id_sync method
+        - object id
+
+        If the object is not a DataClayObject, then it returns None.
+        """
         if isinstance(obj, DataClayObject):
             if obj._dc_is_local and not obj._dc_is_replica:
                 if obj._dc_meta.id not in self.visited_local_objects:
@@ -60,7 +92,8 @@ class RecursiveDataClayPickler(DataClayPickler):
                 if self.make_persistent:
                     return ("unregistered", obj._dc_meta.id, obj.__class__)
             else:
-                # Adding to visited_remote_objects
+                # If the object is not local, then it is remote and just need to return the id
+                # Adding object to visited_remote_objects
                 if obj._dc_meta.id not in self.visited_remote_objects:
                     self.visited_remote_objects[obj._dc_meta.id] = obj
 
@@ -128,7 +161,34 @@ def recursive_dcloads(object_binary, unserialized_objects: dict[UUID, DataClayOb
     return proxy_object
 
 
-def dcdumps(obj):
+async def dcdumps(obj):
+
+    # TODO: avoid calling run_in_executor if not needed. Dunnot how, but optimize!
+
+    # Option 1 [run_in_executor]
+    loop = asyncio.get_event_loop()
+    context = contextvars.copy_context()
+    result = await loop.run_in_executor(None, tmp_dump, context, obj)
+    return result
+
+    # Option 2 - post make_persistent
+    # pending_make_persistent: list[DataClayObject] = []
+    # DataClayPickler(f, pending_make_persistent=pending_make_persistent).dump(obj)
+    # logger.warning(f"++++++ pending_make_persistent: {pending_make_persistent}")
+    # for obj in pending_make_persistent:
+    #     await obj.make_persistent()
+    # return f.getvalue()
+
+
+def tmp_dump(context, obj):
+    # This function is a helper to allow propagation of contextvars
+    # when calling run_in_executor. Needed to propagate the session_var
     f = io.BytesIO()
-    DataClayPickler(f).dump(obj)
+    context.run(DataClayPickler(f).dump, obj)
     return f.getvalue()
+
+
+async def dcloads(binary):
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(None, pickle.loads, binary)
+    return result

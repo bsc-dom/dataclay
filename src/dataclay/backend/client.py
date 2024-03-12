@@ -13,7 +13,7 @@ from dataclay.config import settings
 from dataclay.exceptions.exceptions import DataClayException
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
-from dataclay.runtime import context_var
+from dataclay.runtime import session_var
 from dataclay.utils.decorators import grpc_error_handler
 
 logger = logging.getLogger(__name__)
@@ -47,10 +47,11 @@ class BackendClient:
         ):
             self._configure_ssl(options)
         else:
-            self.channel = grpc.insecure_channel(self.address, options)
+            self.channel = grpc.aio.insecure_channel(self.address, options)
             logger.info("SSL not configured")
 
-        grpc.channel_ready_future(self.channel).result(timeout=settings.grpc_check_alive_timeout)
+        # Commented beause seems to fail with async
+        # grpc.channel_ready_future(self.channel).result(timeout=settings.grpc_check_alive_timeout)
         self.stub = backend_pb2_grpc.BackendServiceStub(self.channel)
 
     def _configure_ssl(self, options):
@@ -96,7 +97,7 @@ class BackendClient:
                 private_key=client_key, certificate_chain=client_cert
             )
 
-        self.channel = grpc.secure_channel(self.address, credentials, options)
+        self.channel = grpc.aio.secure_channel(self.address, credentials, options)
 
         logger.info(
             "SSL configured: using SSL_CLIENT_TRUSTED_CERTIFICATES located at %s",
@@ -110,9 +111,9 @@ class BackendClient:
         logger.info("SSL configured: using authority %s", settings.ssl_target_authority)
 
     # NOTE: It may not be necessary if the channel_ready_future is check on __init__
-    def is_ready(self, timeout: Optional[float] = None):
+    async def is_ready(self, timeout: Optional[float] = None):
         try:
-            grpc.channel_ready_future(self.channel).result(timeout)
+            await self.channel.channel_ready()  # TODO: Maybe put a timeout here
             return True
         except grpc.FutureTimeoutError:
             return False
@@ -125,19 +126,19 @@ class BackendClient:
         self.stub = None
 
     @grpc_error_handler
-    def register_objects(self, dict_bytes: Iterable[bytes], make_replica: bool):
+    async def register_objects(self, dict_bytes: Iterable[bytes], make_replica: bool):
         request = backend_pb2.RegisterObjectsRequest(
             dict_bytes=dict_bytes, make_replica=make_replica
         )
-        self.stub.RegisterObjects(request, metadata=self.metadata_call)
+        await self.stub.RegisterObjects(request, metadata=self.metadata_call)
 
     @grpc_error_handler
-    def make_persistent(self, pickled_obj: Iterable[bytes]):
+    async def make_persistent(self, pickled_obj: Iterable[bytes]):
         request = backend_pb2.MakePersistentRequest(pickled_obj=pickled_obj)
-        self.stub.MakePersistent(request, metadata=self.metadata_call)
+        await self.stub.MakePersistent(request, metadata=self.metadata_call)
 
     @grpc_error_handler
-    def call_active_method(
+    async def call_active_method(
         self, object_id: UUID, method_name: str, args: bytes, kwargs: bytes
     ) -> tuple[bytes, bool]:
         request = backend_pb2.CallActiveMethodRequest(
@@ -147,14 +148,14 @@ class BackendClient:
             kwargs=kwargs,
         )
 
-        current_context = context_var.get()
+        current_context = session_var.get()
 
         metadata = self.metadata_call + [
             ("dataset-name", current_context["dataset_name"]),
             ("username", current_context["username"]),
         ]
 
-        response = self.stub.CallActiveMethod(request, metadata=metadata)
+        response = await self.stub.CallActiveMethod(request, metadata=metadata)
         return response.value, response.is_exception
 
     #################
@@ -162,16 +163,16 @@ class BackendClient:
     #################
 
     @grpc_error_handler
-    def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
+    async def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         request = backend_pb2.GetObjectAttributeRequest(
             object_id=str(object_id),
             attribute=attribute,
         )
-        response = self.stub.GetObjectAttribute(request, metadata=self.metadata_call)
+        response = await self.stub.GetObjectAttribute(request, metadata=self.metadata_call)
         return response.value, response.is_exception
 
     @grpc_error_handler
-    def set_object_attribute(
+    async def set_object_attribute(
         self, object_id: UUID, attribute: str, serialized_attribute: bytes
     ) -> tuple[bytes, bool]:
         request = backend_pb2.SetObjectAttributeRequest(
@@ -179,7 +180,7 @@ class BackendClient:
             attribute=attribute,
             serialized_attribute=serialized_attribute,
         )
-        response = self.stub.SetObjectAttribute(request, metadata=self.metadata_call)
+        response = await self.stub.SetObjectAttribute(request, metadata=self.metadata_call)
         return response.value, response.is_exception
 
     @grpc_error_handler
@@ -192,55 +193,55 @@ class BackendClient:
         return response.value, response.is_exception
 
     @grpc_error_handler
-    def get_object_properties(self, object_id: UUID) -> bytes:
+    async def get_object_properties(self, object_id: UUID) -> bytes:
         request = backend_pb2.GetObjectPropertiesRequest(
             object_id=str(object_id),
         )
 
-        response = self.stub.GetObjectProperties(request, metadata=self.metadata_call)
+        response = await self.stub.GetObjectProperties(request, metadata=self.metadata_call)
         return response.value
 
     @grpc_error_handler
-    def update_object_properties(self, object_id: UUID, serialized_properties: bytes):
+    async def update_object_properties(self, object_id: UUID, serialized_properties: bytes):
         request = backend_pb2.UpdateObjectPropertiesRequest(
             object_id=str(object_id),
             serialized_properties=serialized_properties,
         )
-        self.stub.UpdateObjectProperties(request, metadata=self.metadata_call)
+        await self.stub.UpdateObjectProperties(request, metadata=self.metadata_call)
 
     @grpc_error_handler
-    def new_object_version(self, object_id: UUID) -> str:
+    async def new_object_version(self, object_id: UUID) -> str:
         request = backend_pb2.NewObjectVersionRequest(
             object_id=str(object_id),
         )
-        response = self.stub.NewObjectVersion(request, metadata=self.metadata_call)
+        response = await self.stub.NewObjectVersion(request, metadata=self.metadata_call)
         return response.object_info
 
     @grpc_error_handler
-    def consolidate_object_version(self, object_id: UUID):
+    async def consolidate_object_version(self, object_id: UUID):
         request = backend_pb2.ConsolidateObjectVersionRequest(
             object_id=str(object_id),
         )
-        self.stub.ConsolidateObjectVersion(request, metadata=self.metadata_call)
+        await self.stub.ConsolidateObjectVersion(request, metadata=self.metadata_call)
 
     @grpc_error_handler
-    def proxify_object(self, object_id: UUID, new_object_id: UUID):
+    async def proxify_object(self, object_id: UUID, new_object_id: UUID):
         request = backend_pb2.ProxifyObjectRequest(
             object_id=str(object_id),
             new_object_id=str(new_object_id),
         )
-        self.stub.ProxifyObject(request, metadata=self.metadata_call)
+        await self.stub.ProxifyObject(request, metadata=self.metadata_call)
 
     @grpc_error_handler
-    def change_object_id(self, object_id: UUID, new_object_id: UUID):
+    async def change_object_id(self, object_id: UUID, new_object_id: UUID):
         request = backend_pb2.ChangeObjectIdRequest(
             object_id=str(object_id),
             new_object_id=str(new_object_id),
         )
-        self.stub.ChangeObjectId(request, metadata=self.metadata_call)
+        await self.stub.ChangeObjectId(request, metadata=self.metadata_call)
 
     @grpc_error_handler
-    def send_objects(
+    async def send_objects(
         self,
         object_ids: Iterable[UUID],
         backend_id: UUID,
@@ -255,19 +256,19 @@ class BackendClient:
             recursive=recursive,
             remotes=remotes,
         )
-        self.stub.SendObjects(request, metadata=self.metadata_call)
+        await self.stub.SendObjects(request, metadata=self.metadata_call)
 
     @grpc_error_handler
-    def flush_all(self):
-        self.stub.FlushAll(Empty())
+    async def flush_all(self):
+        await self.stub.FlushAll(Empty())
 
     @grpc_error_handler
-    def stop(self):
-        self.stub.Stop(Empty())
+    async def stop(self):
+        await self.stub.Stop(Empty())
 
     @grpc_error_handler
-    def drain(self):
-        self.stub.Drain(Empty())
+    async def drain(self):
+        await self.stub.Drain(Empty())
 
     # @grpc_error_handler
     # def new_object_replica(self, object_id: UUID, backend_id: UUID, recursive: bool, remotes: bool):

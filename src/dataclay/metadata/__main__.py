@@ -1,5 +1,6 @@
 """Entry point for standalone dataClay Metadata server."""
 
+import asyncio
 import logging
 
 from dataclay.config import MetadataSettings, settings
@@ -35,4 +36,4 @@ if settings.metrics:
         settings.metrics_exporter,
     )
 
-servicer.serve()
+asyncio.run(servicer.serve())
