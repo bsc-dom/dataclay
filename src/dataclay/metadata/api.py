@@ -181,7 +181,7 @@ class MetadataAPI:
         return {UUID(k): v for k, v in result.items()}
 
     @tracer.start_as_current_span("upsert_object")
-    def upsert_object(self, object_md: ObjectMetadata):
+    async def upsert_object(self, object_md: ObjectMetadata):
         self.kv_manager.set(object_md)
 
     @tracer.start_as_current_span("change_object_id")

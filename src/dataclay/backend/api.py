@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import concurrent.futures
+import contextvars
 import logging
 import pickle
 import time
@@ -13,8 +15,9 @@ from typing import TYPE_CHECKING, Optional
 from dataclay import utils
 from dataclay.config import settings
 from dataclay.exceptions import *
-from dataclay.runtime import LockManager, pending_tasks_var, set_runtime
+from dataclay.runtime import LockManager, set_runtime
 from dataclay.runtime.backend import BackendRuntime
+from dataclay.utils.contextvars import run_in_context
 from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcloads
 from dataclay.utils.telemetry import trace
 
@@ -56,11 +59,11 @@ class BackendAPI:
         return False
 
     # Object Methods
-    def register_objects(self, serialized_objects: Iterable[bytes], make_replica: bool):
+    async def register_objects(self, serialized_objects: Iterable[bytes], make_replica: bool):
         for object_bytes in serialized_objects:
             object_dict, state = pickle.loads(object_bytes)
 
-            instance = self.runtime.get_object_by_id(object_dict["_dc_meta"].id)
+            instance = await self.runtime.get_object_by_id(object_dict["_dc_meta"].id)
 
             if instance._dc_is_local:
                 assert instance._dc_is_replica
@@ -88,14 +91,14 @@ class BackendAPI:
                     # instance._dc_is_replica = False # already set by vars(instance).update(object_dict)
 
                 # ¿Should be always updated here, or from the calling backend?
-                self.runtime.metadata_service.upsert_object(instance._dc_meta)
+                await self.runtime.metadata_service.upsert_object(instance._dc_meta)
 
     @tracer.start_as_current_span("make_persistent")
-    def make_persistent(self, serialized_objects: Iterable[bytes]):
-        logger.debug("Receiving objects to make persistent")
+    async def make_persistent(self, serialized_objects: Iterable[bytes]):
+        logger.debug("Received (%d) objects to register", len(serialized_objects))
         unserialized_objects: dict[UUID, DataClayObject] = {}
         for object_bytes in serialized_objects:
-            proxy_object = recursive_dcloads(object_bytes, unserialized_objects)
+            proxy_object = await recursive_dcloads(object_bytes, unserialized_objects)
             proxy_object._dc_is_local = True
             proxy_object._dc_is_loaded = True
             proxy_object._dc_meta.master_backend_id = self.backend_id
@@ -110,19 +113,21 @@ class BackendAPI:
             )
             self.runtime.inmemory_objects[proxy_object._dc_meta.id] = proxy_object
             self.runtime.data_manager.add_hard_reference(proxy_object)
-            self.runtime.metadata_service.upsert_object(proxy_object._dc_meta)
+            await self.runtime.metadata_service.upsert_object(proxy_object._dc_meta)
             proxy_object._dc_is_registered = True
 
     @tracer.start_as_current_span("call_active_method")
     async def call_active_method(
         self, object_id: UUID, method_name: str, args: tuple, kwargs: dict
     ) -> tuple[bytes, bool]:
-        logger.debug("(%s) Calling remote method %s", object_id, method_name)
+        """Entry point for calling an active method of a DataClayObject"""
+
+        logger.debug("(%s) Received call to activemethod '%s'", object_id, method_name)
 
         instance = await self.runtime.get_object_by_id(object_id)
 
-        # NOTE: When the object is not local, a custom exception is sent
-        # for the client to update the backend_id, and call_active_method again
+        # If the object isn't local (not owned by this backend), a custom exception is sent to the
+        # client to update the object's backend_id, and call_active_method again to the correct backend
         if not instance._dc_is_local:
             # NOTE: We sync the metadata because when consolidating an object
             # it might be that the proxy is pointing to the wrong backend_id which is
@@ -145,15 +150,34 @@ class BackendAPI:
                 False,
             )
 
+        # Deserialize arguments
         args = await dcloads(args)
         kwargs = await dcloads(kwargs)
 
         try:
-            value = getattr(instance, method_name)(*args, **kwargs)
-            if value is not None:
-                value = await dcdumps(value)
-            return value, False
+            logger.debug(
+                "(%s) *** Start running activemethod '%s' in executor", object_id, method_name
+            )
+
+            # Call activemethod in another thread
+            loop = asyncio.get_running_loop()  # Must be same as get_dc_running_loop
+            context = contextvars.copy_context()
+            result = await loop.run_in_executor(
+                None, run_in_context, context, getattr(instance, method_name), *args, **kwargs
+            )
+
+            logger.debug(
+                "(%s) *** Finished running activemethod '%s' in executor", object_id, method_name
+            )
+
+            # Serialize the result if not None
+            if result is None:
+                return result, False
+            else:
+                result_bytes = await dcdumps(result)
+                return result_bytes, False
         except Exception as e:
+            # If an exception was raised, serialize it and return it to be raised by the client
             return pickle.dumps(e), True
 
     # Store Methods

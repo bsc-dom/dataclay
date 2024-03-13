@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING, Union
 from uuid import UUID
 
 if TYPE_CHECKING:
+    from asyncio import AbstractEventLoop
+
     from dataclay.runtime.backend import BackendRuntime
     from dataclay.runtime.client import ClientRuntime
-    from asyncio import AbstractEventLoop
 
 
 # Use for context-local data (current session, etc.)
 session_var = contextvars.ContextVar("session")
-pending_tasks_var = contextvars.ContextVar("pending_tasks")
 
 current_runtime: Union[ClientRuntime, BackendRuntime, None] = None
 

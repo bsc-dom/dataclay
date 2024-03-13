@@ -51,19 +51,24 @@ def activemethod(func):
 
     @functools.wraps(func)
     def wrapper_activemethod(self: DataClayObject, *args, **kwargs):
-        logger.debug("(%s) Calling active method %s", self._dc_meta.id, func.__name__)
         try:
             # Example to make __init__ active:
             # if func.__name__ == "__init__" and not self._dc_is_registered:
             #     self.make_persistent()
 
-            # If the object is local executes the method locally,
-            # else, executes it remotely
             if self._dc_is_local:
+                logger.debug(
+                    "(%s) Calling activemethod '%s' locally", self._dc_meta.id, func.__name__
+                )
+
                 with LockManager.read(self._dc_meta.id):
                     result = func(self, *args, **kwargs)
                 return result
             else:
+                logger.debug(
+                    "(%s) Calling activemethod '%s' remotely", self._dc_meta.id, func.__name__
+                )
+
                 if inspect.iscoroutinefunction(func):
                     return get_runtime().call_remote_method(self, func.__name__, args, kwargs)
                 else:
@@ -121,15 +126,14 @@ class DataClayProperty:
         | False    | True    |  -
         | False    | False   |  B (remote) or C (persistent)
         """
-        logger.debug(
-            "(%s) Getting property %s.%s",
-            instance._dc_meta.id,
-            instance.__class__.__name__,
-            self.name,
-        )
-
         if instance._dc_is_local:
-            logger.debug("Local")
+            logger.debug(
+                "(%s) Getting dc_property '%s.%s' locally",
+                instance._dc_meta.id,
+                instance.__class__.__name__,
+                self.name,
+            )
+
             if not instance._dc_is_loaded:
                 get_runtime().data_manager.load_object(instance)
             try:
@@ -144,6 +148,13 @@ class DataClayProperty:
             else:
                 return self.transformer.getter(attr)
         else:
+            logger.debug(
+                "(%s) Getting dc_property '%s.%s' remotely",
+                instance._dc_meta.id,
+                instance.__class__.__name__,
+                self.name,
+            )
+
             loop = get_dc_running_loop()
             if loop.is_running():
                 # NOTE: This will make attribute access for a user's AsyncClient or from our
@@ -163,21 +174,29 @@ class DataClayProperty:
 
         See the __get__ method for the basic behavioural explanation.
         """
-        logger.debug(
-            "(%s) Setting property %s.%s=%s",
-            instance._dc_meta.id,
-            instance.__class__.__name__,
-            self.name,
-            value,
-        )
-
         if instance._dc_is_local:
+            logger.debug(
+                "(%s) Setting dc_property '%s.%s=%s' locally",
+                instance._dc_meta.id,
+                instance.__class__.__name__,
+                self.name,
+                value,
+            )
+
             if not instance._dc_is_loaded:
                 get_runtime().data_manager.load_object(instance)
             if self.transformer is not None:
                 value = self.transformer.setter(value)
             setattr(instance, self.dc_property_name, value)
         else:
+            logger.debug(
+                "(%s) Setting dc_property '%s.%s=%s' remotely",
+                instance._dc_meta.id,
+                instance.__class__.__name__,
+                self.name,
+                value,
+            )
+
             loop = get_dc_running_loop()
             if loop.is_running():
                 # NOTE: Same problem as in __get__ method.
@@ -252,16 +271,28 @@ class DataClayObject:
     def __new__(cls, *args, **kwargs):
         obj = super().__new__(cls)
         obj._dc_meta = ObjectMetadata(class_name=cls.__module__ + "." + cls.__name__)
-        if get_runtime() and get_runtime().is_backend:
-            obj.make_persistent()
 
         logger.debug(
-            "(%s) New instance %s args=%s, kwargs=%s",
+            "(%s) Creating new dc_object '%s' args=%s, kwargs=%s",
             obj._dc_meta.id,
             cls.__name__,
             args,
             kwargs,
         )
+
+        # If the object is being created in a backend, it should be made persistent immediately
+        # This should only happen when instantiating a dataClay object from an activemethod,
+        # The activemethod must had been called in another thread using an executor. Therefore,
+        # there is not running event loop in the current thread, and we can use run_coroutine_threadsafe
+        # to the main dc_running_loop.
+        # TODO: This same logic applies to all DataClayObject methods that are called withing an activemethod.
+        # We should add this logic to the chooseasync decorator.
+        if get_runtime() and get_runtime().is_backend:
+            logger.debug("(%s) Calling implicit make_persistent", obj._dc_meta.id)
+
+            loop = get_dc_running_loop()
+            t = asyncio.run_coroutine_threadsafe(obj.make_persistent(), loop)
+            t.result()
 
         return obj
 
@@ -379,12 +410,23 @@ class DataClayObject:
 
     @classmethod
     def get_by_id_sync(cls, object_id: UUID) -> DataClayObject:
-        # IT IS VERY IMPORTANT TO NO CALL THIS METHOD FROM SAME THREAD AS EVENT LOOP
-        # IT WILL BLOCK THE EVENT LOOP
-        # THEREFORE, ALWAYS UNSERIALIZE WITH DCLOADS (NOT PICKLE.LOADS)
+        """Helper method to be used by pickle unserialize a registered dataClay object
+        Acts as a synchronous wrapper for get_by_id"""
+
+        # WARNING: This method must not be called from the same thread as the running event loop
+        # or it will block the event loop. When unserializing dataClay objects, use "await dcloads"
+        # if possible. Only use "pickle.loads" if you are sure that the event loop is not running.
+
         loop = get_dc_running_loop()
-        t = asyncio.run_coroutine_threadsafe(cls.get_by_id(object_id), loop)
-        return t.result()
+        if loop.is_running():
+            # CAREFUL! This must not be running in the same thread as the running event loop
+            t = asyncio.run_coroutine_threadsafe(cls.get_by_id(object_id), loop)
+            return t.result()
+        else:
+            # If the event loop is not running, we can call directly pickle.loads
+            # and this will be the entry point for the event loop. This is useful
+            # for COMPSs, which is calling directly pickle.loads to dataClay objects.
+            return loop.run_until_complete(cls.get_by_id(object_id))
 
     @classmethod
     @tracer.start_as_current_span("get_by_alias")

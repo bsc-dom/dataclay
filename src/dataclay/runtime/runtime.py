@@ -92,7 +92,12 @@ class DataClayRuntime(ABC):
         Returns:
             ID of the backend in which the object was persisted.
         """
-        logger.debug("(%s) Starting make_persistent", instance._dc_meta.id)
+        logger.debug(
+            "(%s) Starting make_persistent. Alias=%s, backend_id=%s",
+            instance._dc_meta.id,
+            alias,
+            backend_id,
+        )
 
         if instance._dc_is_registered:
             raise ObjectAlreadyRegisteredError(instance._dc_meta.id)
@@ -105,6 +110,12 @@ class DataClayRuntime(ABC):
 
         # Register the alias
         if alias:
+            logger.debug(
+                "(%s) Registering alias '%s/%s'",
+                instance._dc_meta.id,
+                instance._dc_meta.dataset_name,
+                alias,
+            )
             await self.metadata_service.new_alias(
                 alias, instance._dc_meta.dataset_name, instance._dc_meta.id
             )
@@ -112,6 +123,7 @@ class DataClayRuntime(ABC):
         # If called inside backend runtime, default is to register in the current backend
         # unles another backend is explicitly specified
         if self.is_backend and (backend_id is None or backend_id == self.backend.id):
+            logger.debug("(%s) Registering the object in this backend", instance._dc_meta.id)
             instance._dc_meta.master_backend_id = self.backend_id
             await self.metadata_service.upsert_object(instance._dc_meta)
             instance._dc_is_registered = True
@@ -121,12 +133,15 @@ class DataClayRuntime(ABC):
 
         # Called from client runtime, default is to choose a random backend
         elif backend_id is None:
+            logger.debug(
+                "(%s) Choosing a random backend to register the object", instance._dc_meta.id
+            )
             # If there is no backend client, update the list of backend clients
             if not self.backend_clients:
                 await self.backend_clients.update()
                 if not self.backend_clients:
                     raise RuntimeError(
-                        f"({instance._dc_meta.id}) No backends available to make persistent"
+                        f"({instance._dc_meta.id}) No backends available to register the object"
                     )
             # Choose a random backend
             backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
@@ -135,8 +150,7 @@ class DataClayRuntime(ABC):
 
         # Serialize instance with a recursive Pickle
         visited_objects: dict[UUID, DataClayObject] = {}
-        # TODO: Make recursive_dcdumps async
-        serialized_objects = recursive_dcdumps(
+        serialized_objects = await recursive_dcdumps(
             instance, local_objects=visited_objects, make_persistent=True
         )
         # Register the object in the backend
@@ -184,6 +198,10 @@ class DataClayRuntime(ABC):
                     # NOTE: When the object is not in the inmemory_objects,
                     # we get the object metadata from kvstore, and create a new proxy
                     # object from it.
+
+                    logger.debug(
+                        "(%s) Object not in inmemory_objects, creating new proxy", object_id
+                    )
 
                     if object_md is None:
                         object_md = await self.metadata_service.get_object_md_by_id(object_id)
@@ -477,11 +495,13 @@ class DataClayRuntime(ABC):
                     self.data_manager.load_object(instance)
                 if recursive:
                     if remotes:
-                        serialized_objects = recursive_dcdumps(
+                        serialized_objects = await recursive_dcdumps(
                             instance, visited_local_objects, pending_remote_objects
                         )
                     else:
-                        serialized_objects = recursive_dcdumps(instance, visited_local_objects)
+                        serialized_objects = await recursive_dcdumps(
+                            instance, visited_local_objects
+                        )
 
                     serialized_local_objects.extend(serialized_objects)
                 else:
