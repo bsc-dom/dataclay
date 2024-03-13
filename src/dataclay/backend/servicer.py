@@ -152,7 +152,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def RegisterObjects(self, request, context):
         self._check_context(context)
         try:
-            self.backend.register_objects(request.dict_bytes, request.make_replica)
+            await self.backend.register_objects(request.dict_bytes, request.make_replica)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -163,7 +163,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def MakePersistent(self, request, context):
         self._check_context(context)
         try:
-            self.backend.make_persistent(request.pickled_obj)
+            await self.backend.make_persistent(request.pickled_obj)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -208,7 +208,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def SetObjectAttribute(self, request, context):
         self._check_context(context)
         try:
-            self.backend.set_object_attribute(
+            await self.backend.set_object_attribute(
                 UUID(request.object_id),
                 request.attribute,
                 request.serialized_attribute,
@@ -223,7 +223,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def GetObjectProperties(self, request, context):
         self._check_context(context)
         try:
-            result = self.backend.get_object_properties(UUID(request.object_id))
+            result = await self.backend.get_object_properties(UUID(request.object_id))
             return BytesValue(value=result)
         except Exception as e:
             context.set_details(str(e))
@@ -247,7 +247,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def NewObjectVersion(self, request, context):
         self._check_context(context)
         try:
-            result = self.backend.new_object_version(UUID(request.object_id))
+            result = await self.backend.new_object_version(UUID(request.object_id))
             return backend_pb2.NewObjectVersionResponse(object_info=result)
         except Exception as e:
             context.set_details(str(e))
@@ -269,7 +269,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def ProxifyObject(self, request, context):
         self._check_context(context)
         try:
-            self.backend.proxify_object(UUID(request.object_id), UUID(request.new_object_id))
+            await self.backend.proxify_object(UUID(request.object_id), UUID(request.new_object_id))
             return Empty()
         except Exception as e:
             context.set_details(str(e))
@@ -310,7 +310,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def FlushAll(self, request, context):
         self._check_context(context)
         try:
-            self.backend.flush_all()
+            await self.backend.flush_all()
             return Empty()
         except Exception as e:
             context.set_details(str(e))
@@ -321,7 +321,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def Stop(self, request, context):
         self._check_context(context)
         try:
-            self.server.stop()
+            await self.server.stop()
             return Empty()
         except Exception as e:
             context.set_details(str(e))
@@ -332,7 +332,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def Drain(self, request, context):
         self._check_context(context)
         try:
-            self.backend.move_all_objects()
+            await self.backend.move_all_objects()
             self.server.stop()
             return Empty()
         except Exception as e:

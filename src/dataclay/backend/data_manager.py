@@ -128,7 +128,7 @@ class DataManager(threading.Thread):
                 logger.warning("(%s) Object already loaded or not local", object_id)
                 return
 
-            logger.debug("(%s) Loading %s", object_id, instance.__class__.__name__)
+            logger.debug("(%s) Loading '%s'", object_id, instance.__class__.__name__)
             assert object_id not in self.loaded_objects
 
             try:
@@ -155,7 +155,7 @@ class DataManager(threading.Thread):
 
         if LockManager.acquire_write(object_id, timeout) or force:
             try:
-                logger.info("(%s) Unloading %s", object_id, instance.__class__.__name__)
+                logger.info("(%s) Unloading '%s'", object_id, instance.__class__.__name__)
                 assert instance._dc_is_loaded
                 assert object_id in self.loaded_objects
 
