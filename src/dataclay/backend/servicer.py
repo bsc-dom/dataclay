@@ -78,7 +78,7 @@ async def serve():
         settings.kv_port,
     )
 
-    if not backend.is_ready(timeout=10):
+    if not await backend.is_ready(timeout=10):
         raise RuntimeError("KV store is not ready. Aborting!")
 
     server = grpc.aio.server(
@@ -106,7 +106,7 @@ async def serve():
     logger.info("Backend service listening on %s", address)
 
     # Autoregister of backend to KV store
-    backend.runtime.metadata_service.register_backend(
+    await backend.runtime.metadata_service.register_backend(
         backend_id,
         settings.backend.host,
         settings.backend.port,

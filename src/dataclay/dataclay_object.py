@@ -385,9 +385,9 @@ class DataClayObject:
         if self._dc_is_registered:
             # TODO: Check if "move" and "add_alias" need await
             if backend_id:
-                self.move(backend_id)
+                await self.move(backend_id)
             if alias:
-                self.add_alias(alias)
+                await self.add_alias(alias)
         else:
             await get_runtime().make_persistent(self, alias=alias, backend_id=backend_id)
 

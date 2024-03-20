@@ -38,7 +38,7 @@ async def serve():
         if settings.dataclay_id is None:
             settings.dataclay_id = uuid4()
 
-        metadata_api.new_dataclay(
+        await metadata_api.new_dataclay(
             settings.dataclay_id,
             settings.metadata.host,
             settings.metadata.port,
@@ -46,7 +46,7 @@ async def serve():
         )
     except AlreadyExistError:
         logger.info("MetadataService already registered with id %s", settings.dataclay_id)
-        settings.dataclay_id = metadata_api.get_dataclay("this").id
+        settings.dataclay_id = await metadata_api.get_dataclay("this").id
     else:
         metadata_api.new_superuser(
             settings.root_username, settings.root_password, settings.root_dataset
@@ -116,7 +116,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     async def GetDataclay(self, request, context):
         try:
-            dataclay = self.metadata_api.get_dataclay(UUID(request.dataclay_id))
+            dataclay = await self.metadata_api.get_dataclay(UUID(request.dataclay_id))
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -128,7 +128,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
         try:
             response = {}
             if request.force:
-                backends = self.metadata_api.get_all_backends(request.from_backend)
+                backends = await self.metadata_api.get_all_backends(request.from_backend)
                 for id, backend in backends.items():
                     response[str(id)] = backend.get_proto()
             else:
@@ -154,7 +154,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     async def GetAllObjects(self, request, context):
         try:
-            object_mds = self.metadata_api.get_all_objects()
+            object_mds = await self.metadata_api.get_all_objects()
             response = {}
             for id, object_md in object_mds.items():
                 response[str(id)] = object_md.get_proto()
@@ -177,7 +177,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     async def GetObjectMDByAlias(self, request, context):
         try:
-            object_md = self.metadata_api.get_object_md_by_alias(
+            object_md = await self.metadata_api.get_object_md_by_alias(
                 request.alias_name, request.dataset_name
             )
         except Exception as e:
@@ -193,7 +193,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     async def NewAlias(self, request, context):
         try:
-            self.metadata_api.new_alias(
+            await self.metadata_api.new_alias(
                 request.alias_name, request.dataset_name, UUID(request.object_id)
             )
         except Exception as e:
@@ -205,7 +205,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     async def GetAllAlias(self, request, context):
         try:
-            aliases = self.metadata_api.get_all_alias(
+            aliases = await self.metadata_api.get_all_alias(
                 request.dataset_name, str_to_uuid(request.object_id)
             )
             response = {}
@@ -220,7 +220,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     async def DeleteAlias(self, request, context):
         try:
-            self.metadata_api.delete_alias(request.alias_name, request.dataset_name)
+            await self.metadata_api.delete_alias(request.alias_name, request.dataset_name)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)

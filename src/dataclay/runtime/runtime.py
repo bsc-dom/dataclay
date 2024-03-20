@@ -182,7 +182,7 @@ class DataClayRuntime(ABC):
         """Get dataclay object from inmemory_objects. If not present, get object metadata
         and create new proxy object.
         """
-        logger.debug("(%s) Get object by id", object_id)
+        logger.debug("(%s) Getting object by id", object_id)
 
         try:
             dc_object = self.inmemory_objects[object_id]
@@ -353,8 +353,8 @@ class DataClayRuntime(ABC):
                 # clients and the object backend locations, and try again
                 if not avail_backends:
                     logger.warning("(%s) No backends available. Syncing...", instance._dc_meta.id)
-                    self.backend_clients.update()
-                    instance.sync()
+                    await self.backend_clients.update()
+                    await instance.sync()
                     avail_backends = instance._dc_all_backend_ids.intersection(
                         self.backend_clients.keys()
                     )
@@ -404,7 +404,7 @@ class DataClayRuntime(ABC):
                 except DataClayException as e:
                     if "failed to connect" in str(e):
                         logger.warning("(%s) Failed to connect. Syncing...", instance._dc_meta.id)
-                        self.backend_clients.update()
+                        await self.backend_clients.update()
                         continue
                     else:
                         raise e
@@ -476,6 +476,9 @@ class DataClayRuntime(ABC):
         If recursice=True and remotes=False, local references will be sent, but
         not remote references.
         """
+        logger.debug(
+            "%s objects to backend %s", "Replicating" if make_replica else "Moving", backend_id
+        )
 
         visited_local_objects = {}
         pending_remote_objects = {}
@@ -512,7 +515,9 @@ class DataClayRuntime(ABC):
 
         # Check that the destination backend is not this
         if backend_id != self.backend_id:
-            backend_client = self.backend_clients[backend_id]
+            # await self.backend_clients.update()
+            # backend_client = self.backend_clients[backend_id]
+            backend_client = await self.backend_clients.get(backend_id)
             await backend_client.register_objects(
                 serialized_local_objects, make_replica=make_replica
             )
@@ -625,7 +630,7 @@ class DataClayRuntime(ABC):
             # If there is no backend without a replica, update the list of backend clients,
             # sync the object metadata, and try again
             if not avail_backends:
-                self.backend_clients.update()
+                await self.backend_clients.update()
                 instance.sync()
                 avail_backends = set(self.backend_clients.keys()) - instance._dc_all_backend_ids
 
@@ -825,7 +830,7 @@ class DataClayRuntime(ABC):
     ############
 
     @abstractmethod
-    def stop(self):
+    async def stop(self):
         pass
 
     def close_backend_clients(self):
