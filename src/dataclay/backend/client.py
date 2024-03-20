@@ -14,7 +14,7 @@ from dataclay.exceptions.exceptions import DataClayException
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
 from dataclay.runtime import session_var
-from dataclay.utils.decorators import grpc_error_handler
+from dataclay.utils.decorators import grpc_aio_error_handler
 
 logger = logging.getLogger(__name__)
 
@@ -125,19 +125,19 @@ class BackendClient:
         self.channel = None
         self.stub = None
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def register_objects(self, dict_bytes: Iterable[bytes], make_replica: bool):
         request = backend_pb2.RegisterObjectsRequest(
             dict_bytes=dict_bytes, make_replica=make_replica
         )
         await self.stub.RegisterObjects(request, metadata=self.metadata_call)
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def make_persistent(self, pickled_obj: Iterable[bytes]):
         request = backend_pb2.MakePersistentRequest(pickled_obj=pickled_obj)
         await self.stub.MakePersistent(request, metadata=self.metadata_call)
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def call_active_method(
         self, object_id: UUID, method_name: str, args: bytes, kwargs: bytes
     ) -> tuple[bytes, bool]:
@@ -162,7 +162,7 @@ class BackendClient:
     # Store Methods #
     #################
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         request = backend_pb2.GetObjectAttributeRequest(
             object_id=str(object_id),
@@ -171,7 +171,7 @@ class BackendClient:
         response = await self.stub.GetObjectAttribute(request, metadata=self.metadata_call)
         return response.value, response.is_exception
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def set_object_attribute(
         self, object_id: UUID, attribute: str, serialized_attribute: bytes
     ) -> tuple[bytes, bool]:
@@ -192,7 +192,7 @@ class BackendClient:
         response = self.stub.DelObjectAttribute(request, metadata=self.metadata_call)
         return response.value, response.is_exception
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def get_object_properties(self, object_id: UUID) -> bytes:
         request = backend_pb2.GetObjectPropertiesRequest(
             object_id=str(object_id),
@@ -201,7 +201,7 @@ class BackendClient:
         response = await self.stub.GetObjectProperties(request, metadata=self.metadata_call)
         return response.value
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def update_object_properties(self, object_id: UUID, serialized_properties: bytes):
         request = backend_pb2.UpdateObjectPropertiesRequest(
             object_id=str(object_id),
@@ -209,7 +209,7 @@ class BackendClient:
         )
         await self.stub.UpdateObjectProperties(request, metadata=self.metadata_call)
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def new_object_version(self, object_id: UUID) -> str:
         request = backend_pb2.NewObjectVersionRequest(
             object_id=str(object_id),
@@ -217,14 +217,14 @@ class BackendClient:
         response = await self.stub.NewObjectVersion(request, metadata=self.metadata_call)
         return response.object_info
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def consolidate_object_version(self, object_id: UUID):
         request = backend_pb2.ConsolidateObjectVersionRequest(
             object_id=str(object_id),
         )
         await self.stub.ConsolidateObjectVersion(request, metadata=self.metadata_call)
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def proxify_object(self, object_id: UUID, new_object_id: UUID):
         request = backend_pb2.ProxifyObjectRequest(
             object_id=str(object_id),
@@ -232,7 +232,7 @@ class BackendClient:
         )
         await self.stub.ProxifyObject(request, metadata=self.metadata_call)
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def change_object_id(self, object_id: UUID, new_object_id: UUID):
         request = backend_pb2.ChangeObjectIdRequest(
             object_id=str(object_id),
@@ -240,7 +240,7 @@ class BackendClient:
         )
         await self.stub.ChangeObjectId(request, metadata=self.metadata_call)
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def send_objects(
         self,
         object_ids: Iterable[UUID],
@@ -258,19 +258,19 @@ class BackendClient:
         )
         await self.stub.SendObjects(request, metadata=self.metadata_call)
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def flush_all(self):
         await self.stub.FlushAll(Empty())
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def stop(self):
         await self.stub.Stop(Empty())
 
-    @grpc_error_handler
+    @grpc_aio_error_handler
     async def drain(self):
         await self.stub.Drain(Empty())
 
-    # @grpc_error_handler
+    # @grpc_aio_error_handler
     # def new_object_replica(self, object_id: UUID, backend_id: UUID, recursive: bool, remotes: bool):
     #     request = backend_pb2.NewObjectReplicaRequest(
     #         object_id=str(object_id),

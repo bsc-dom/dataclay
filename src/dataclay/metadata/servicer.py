@@ -181,8 +181,10 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
                 request.alias_name, request.dataset_name
             )
         except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            context.abort(grpc.StatusCode.INTERNAL, str(e))
+            return common_pb2.ObjectMetadata()
         return object_md.get_proto()
 
     #########

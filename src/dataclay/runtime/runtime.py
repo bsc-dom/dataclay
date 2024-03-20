@@ -235,7 +235,7 @@ class DataClayRuntime(ABC):
 
         object_md = await self.metadata_service.get_object_md_by_alias(alias, dataset_name)
 
-        return self.get_object_by_id(object_md.id, object_md)
+        return await self.get_object_by_id(object_md.id, object_md)
 
     async def get_object_properties(self, instance: DataClayObject) -> dict[str, Any]:
         if instance._dc_is_local:
@@ -592,10 +592,10 @@ class DataClayRuntime(ABC):
         original_object_id = instance._dc_meta.original_object_id
 
         for version_object_id in instance._dc_meta.versions_object_ids:
-            version = self.get_object_by_id(version_object_id)
+            version = await self.get_object_by_id(version_object_id)
             await self.proxify_object(version, original_object_id)
 
-        original_object = self.get_object_by_id(original_object_id)
+        original_object = await self.get_object_by_id(original_object_id)
         await self.proxify_object(original_object, original_object_id)
         await self.change_object_id(instance, original_object_id)
 
