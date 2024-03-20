@@ -136,7 +136,7 @@ class MetadataAPI:
     ############
 
     @tracer.start_as_current_span("new_dataclay")
-    def new_dataclay(self, dataclay_id: UUID, host: str, port: int, is_this: bool = False):
+    async def new_dataclay(self, dataclay_id: UUID, host: str, port: int, is_this: bool = False):
         logger.debug("Registering Dataclay with id %s, host %s, port %s", dataclay_id, host, port)
         dataclay = Dataclay(id=dataclay_id, host=host, port=port, is_this=is_this)
         self.kv_manager.set_new(dataclay)
@@ -145,7 +145,7 @@ class MetadataAPI:
         )
 
     @tracer.start_as_current_span("get_dataclay")
-    def get_dataclay(self, dataclay_id: Union[UUID, str]) -> Dataclay:
+    async def get_dataclay(self, dataclay_id: Union[UUID, str]) -> Dataclay:
         logger.debug("Getting Dataclay with id %s", dataclay_id)
         return self.kv_manager.get_kv(Dataclay, dataclay_id)
 
@@ -154,13 +154,13 @@ class MetadataAPI:
     ###########
 
     @tracer.start_as_current_span("get_all_backends")
-    def get_all_backends(self, from_backend: bool = False, **kwargs) -> dict[UUID, Backend]:
+    async def get_all_backends(self, from_backend: bool = False, **kwargs) -> dict[UUID, Backend]:
         logger.debug("Getting all backends from kv store")
         result = self.kv_manager.getprefix(Backend, "/backend/")
         return {UUID(k): v for k, v in result.items()}
 
     @tracer.start_as_current_span("register_backend")
-    def register_backend(self, id: UUID, host: str, port: int, dataclay_id: UUID):
+    async def register_backend(self, id: UUID, host: str, port: int, dataclay_id: UUID):
         logger.debug("Registering Backend with id %s, host %s, port %s", id, host, port)
         backend = Backend(id=id, host=host, port=port, dataclay_id=dataclay_id)
         self.kv_manager.set_new(backend)
@@ -170,7 +170,7 @@ class MetadataAPI:
         self.kv_manager.r_client.publish("new-backend-client", backend.value)
 
     @tracer.start_as_current_span("delete_backend")
-    def delete_backend(self, id: UUID):
+    async def delete_backend(self, id: UUID):
         logger.debug("Deleting Backend with id %s", id)
         self.kv_manager.delete_kv(Backend.path + str(id))
         logger.info("Deleted Backend with id=%s", id)
@@ -183,7 +183,7 @@ class MetadataAPI:
     ###################
 
     @tracer.start_as_current_span("get_all_objects")
-    def get_all_objects(self) -> dict[UUID, ObjectMetadata]:
+    async def get_all_objects(self) -> dict[UUID, ObjectMetadata]:
         logger.debug("Getting all objects from kv store")
         result = self.kv_manager.getprefix(ObjectMetadata, "/object/")
         return {UUID(k): v for k, v in result.items()}
@@ -194,14 +194,14 @@ class MetadataAPI:
         self.kv_manager.set(object_md)
 
     @tracer.start_as_current_span("change_object_id")
-    def change_object_id(self, old_id: UUID, new_id: UUID):
+    async def change_object_id(self, old_id: UUID, new_id: UUID):
         logger.debug("Changing object id from %s to %s", old_id, new_id)
         object_md = self.kv_manager.getdel_kv(ObjectMetadata, old_id)
         object_md.id = new_id
         self.kv_manager.set(object_md)
 
     @tracer.start_as_current_span("delete_object")
-    def delete_object(self, id: UUID):
+    async def delete_object(self, id: UUID):
         logger.debug("Deleting object with id %s", id)
         self.kv_manager.delete_kv(ObjectMetadata.path + str(id))
 
@@ -212,7 +212,7 @@ class MetadataAPI:
         return object_md
 
     @tracer.start_as_current_span("get_object_md_by_alias")
-    def get_object_md_by_alias(
+    async def get_object_md_by_alias(
         self,
         alias_name: str,
         dataset_name: str,
@@ -226,7 +226,7 @@ class MetadataAPI:
     #########
 
     @tracer.start_as_current_span("new_alias")
-    def new_alias(
+    async def new_alias(
         self,
         alias_name: str,
         dataset_name: str,
@@ -239,7 +239,7 @@ class MetadataAPI:
         self.kv_manager.set_new(alias)
 
     @tracer.start_as_current_span("get_all_alias")
-    def get_all_alias(
+    async def get_all_alias(
         self, dataset_name: Optional[str] = None, object_id: Optional[UUID] = None
     ) -> dict[str, Alias]:
         logger.debug("Getting all aliases dataset=%s, object=%s", dataset_name, object_id)
@@ -251,7 +251,7 @@ class MetadataAPI:
         return {k: v for k, v in result.items() if v.object_id == object_id or not object_id}
 
     @tracer.start_as_current_span("delete_alias")
-    def delete_alias(
+    async def delete_alias(
         self,
         alias_name: str,
         dataset_name: str,

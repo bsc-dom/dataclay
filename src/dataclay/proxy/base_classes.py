@@ -118,13 +118,13 @@ class BackendProxyBase(backend_pb2_grpc.BackendServiceServicer, metaclass=Backen
     backend_stubs: dict[UUID, backend_pb2_grpc.BackendServiceStub]
     middleware: list
 
-    def _refresh_backends(self):
-        for k, v in self.metadata_client.get_all_backends().items():
+    async def _refresh_backends(self):
+        for k, v in await self.metadata_client.get_all_backends().items():
             # TODO: Something something SSL check (maybe not always will be an insecure channel)
             ch = grpc.insecure_channel(f"{v.host}:{v.port}")
             self.backend_stubs[k] = backend_pb2_grpc.BackendServiceStub(ch)
 
-    def _get_stub(self, context):
+    async def _get_stub(self, context):
         """Get a channel to a specific backend.
 
         Metadata header (retrieved through the context) *must* contain the
@@ -146,7 +146,7 @@ class BackendProxyBase(backend_pb2_grpc.BackendServiceServicer, metaclass=Backen
         except KeyError:
             pass
 
-        self._refresh_backends()
+        await self._refresh_backends()
         try:
             return self.backend_stubs[backend_id]
         except KeyError:

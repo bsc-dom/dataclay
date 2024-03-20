@@ -185,14 +185,14 @@ class Client:
         self.is_active = True
 
     @tracer.start_as_current_span("stop")
-    def stop(self):
+    async def stop(self):
         """Stop the client runtime"""
         if not self.is_active:
             logger.warning("Client is not active. Ignoring")
             return
 
         logger.info("Stopping client runtime")
-        self.runtime.stop()
+        await self.runtime.stop()
         settings.client = self.previous_settings
         set_runtime(self.previous_runtime)
         self.is_active = False
@@ -209,7 +209,10 @@ class Client:
 
     @tracer.start_as_current_span("get_backends")
     def get_backends(self) -> dict[UUID, BackendClient]:
-        self.runtime.backend_clients.update()
+        if not self.is_active:
+            raise RuntimeError("Client is not active")
+        self.loop.run_until_complete(self.runtime.backend_clients.update())
+        # self.runtime.backend_clients.update()
         return self.runtime.backend_clients
 
 

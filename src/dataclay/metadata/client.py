@@ -1,7 +1,6 @@
 import logging
 from typing import Optional
 from uuid import UUID
-from dataclay.exceptions import *
 
 import grpc
 from google.protobuf.empty_pb2 import Empty

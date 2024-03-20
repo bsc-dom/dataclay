@@ -20,7 +20,16 @@ class BackendClientsManager(collections.abc.MutableMapping):
         self._backend_clients = {}
         self.metadata_api = metadata_api
         self.running = False
-        self.lock = threading.Lock()
+        # TODO: Can the lock be removed in async? (marc: If we don't use a new thread, we can remove it)
+        self.lock = threading.RLock()
+
+    async def get(self, key) -> BackendClient:
+        with self.lock:
+            try:
+                return self._backend_clients[key]
+            except KeyError:
+                await self.update()
+                return self._backend_clients[key]
 
     def start_update(self):
         """Start the background thread that updates the dictionary."""
@@ -43,7 +52,7 @@ class BackendClientsManager(collections.abc.MutableMapping):
 
     async def update(self, force: bool = True):
         """Update the backend clients."""
-        logger.debug("Updating backend clients...")
+        logger.debug("Updating backend clients")
         backend_infos = await self.metadata_api.get_all_backends(force=force)
         with self.lock:
             for backend_info in backend_infos.values():
@@ -118,7 +127,6 @@ class BackendClientsManager(collections.abc.MutableMapping):
             del self._backend_clients[backend_id]
 
     def __getitem__(self, key) -> BackendClient:
-        # Maybe call self.update if the key is not in the dictionary?
         with self.lock:
             return self._backend_clients[key]
 
