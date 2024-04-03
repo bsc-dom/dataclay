@@ -2,8 +2,6 @@
 
 import logging
 import os
-from dataclay.runtime import get_dc_event_loop
-
 
 from dotenv import dotenv_values
 
@@ -14,7 +12,7 @@ from dataclay.metadata.kvdata import ObjectMetadata
 
 # Also "publish" the split method
 # from dataclay.contrib.splitting import split
-from dataclay.runtime import get_runtime
+from dataclay.runtime import get_dc_event_loop, get_runtime
 
 # The StorageDict and StorageList data structures
 # from .models.storagedict import StorageDict

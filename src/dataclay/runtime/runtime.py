@@ -376,11 +376,12 @@ class DataClayRuntime(ABC):
                 # If the connection fails, update the list of backend clients, and try again
                 try:
                     if method_name == "__getattribute__":
-                        serialized_response, is_exception = (
-                            await backend_client.get_object_attribute(
-                                instance._dc_meta.id,
-                                args[0],  # attribute name
-                            )
+                        (
+                            serialized_response,
+                            is_exception,
+                        ) = await backend_client.get_object_attribute(
+                            instance._dc_meta.id,
+                            args[0],  # attribute name
                         )
 
                     elif method_name == "__setattr__":

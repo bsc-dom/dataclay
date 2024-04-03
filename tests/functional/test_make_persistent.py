@@ -1,6 +1,7 @@
 import pytest
 
 from dataclay.contrib.modeltest.family import Dog, Family, Person
+from dataclay.contrib.modeltest.test_remote import TestMakePersistent
 
 
 def test_make_persistent_basic(client):
@@ -101,3 +102,12 @@ def test_persistent_references(client):
     family.make_persistent()
     assert family._dc_is_registered == True
     assert person == family.members[0]
+
+
+# Remote methods
+
+
+def test_remote_make_persistent(client):
+    test_remote_method = TestMakePersistent()
+    test_remote_method.make_persistent()
+    test_remote_method.test_make_persistent()

@@ -1,6 +1,5 @@
 import asyncio
 
-
 from dataclay import AsyncClient
 from dataclay.contrib.modeltest.family import Dog, Family, Person
 

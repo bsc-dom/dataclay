@@ -1,9 +1,8 @@
 import pytest
-from dataclay.runtime import get_dc_event_loop
-
 
 import storage.api
 from dataclay.contrib.modeltest.family import Dog, Family, Person
+from dataclay.runtime import get_dc_event_loop
 
 
 def test_new_version_and_consolidate(client):
