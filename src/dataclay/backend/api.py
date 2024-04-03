@@ -60,9 +60,9 @@ class BackendAPI:
 
     # Object Methods
     async def register_objects(self, serialized_objects: Iterable[bytes], make_replica: bool):
+        logger.debug("Receiving (%d) objects to register", len(serialized_objects))
         for object_bytes in serialized_objects:
-            object_dict, state = pickle.loads(object_bytes)
-
+            object_dict, state = await dcloads(object_bytes)
             instance = await self.runtime.get_object_by_id(object_dict["_dc_meta"].id)
 
             if instance._dc_is_local:
@@ -95,7 +95,7 @@ class BackendAPI:
 
     @tracer.start_as_current_span("make_persistent")
     async def make_persistent(self, serialized_objects: Iterable[bytes]):
-        logger.debug("Receiving (%d) objects to register", len(serialized_objects))
+        logger.debug("Receiving (%d) objects to make persistent", len(serialized_objects))
         unserialized_objects: dict[UUID, DataClayObject] = {}
         for object_bytes in serialized_objects:
             proxy_object = await recursive_dcloads(object_bytes, unserialized_objects)
@@ -151,17 +151,20 @@ class BackendAPI:
             )
 
         # Deserialize arguments
-        args = await dcloads(args)
-        kwargs = await dcloads(kwargs)
+        args, kwargs = await asyncio.gather(dcloads(args), dcloads(kwargs))
 
         try:
             logger.debug("(%s) *** Starting activemethod '%s' in executor", object_id, method_name)
 
             # Call activemethod in another thread
             loop = asyncio.get_running_loop()  # Must be same as get_dc_running_loop
-            context = contextvars.copy_context()
             result = await loop.run_in_executor(
-                None, run_in_context, context, getattr(instance, method_name), *args, **kwargs
+                None,
+                run_in_context,
+                contextvars.copy_context(),
+                getattr(instance, method_name),
+                *args,
+                **kwargs,
             )
 
             logger.debug("(%s) *** Finished activemethod '%s' in executor", object_id, method_name)
@@ -249,7 +252,7 @@ class BackendAPI:
                 False,
             )
         try:
-            object_attribute = pickle.loads(serialized_attribute)
+            object_attribute = await dcloads(serialized_attribute)
             setattr(instance, attribute, object_attribute)
             return pickle.dumps("placeholder"), False
         except Exception as e:
@@ -305,8 +308,9 @@ class BackendAPI:
     @tracer.start_as_current_span("update_object_properties")
     async def update_object_properties(self, object_id: UUID, serialized_properties: bytes):
         """Updates an object with ID provided with contents from another object"""
-        instance = await self.runtime.get_object_by_id(object_id)
-        object_properties = dcloads(serialized_properties)
+        instance, object_properties = await asyncio.gather(
+            self.runtime.get_object_by_id(object_id), dcloads(serialized_properties)
+        )
         await self.runtime.update_object_properties(instance, object_properties)
 
     async def new_object_version(self, object_id: UUID):
@@ -321,7 +325,6 @@ class BackendAPI:
             The JSON-encoded metadata of the new DataClayObject version.
         """
         instance = await self.runtime.get_object_by_id(object_id)
-
         new_version = self.runtime.new_object_version(instance)
         return new_version.getID()
 

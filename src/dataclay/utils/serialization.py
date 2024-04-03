@@ -121,12 +121,12 @@ async def recursive_dcdumps(
 
     # TODO: Use an executor to all pickle.dump (to release GIL?)
     # Serialize the object state (__dict__ or __getstate__), and its referees
-    f = io.BytesIO()
+    file = io.BytesIO()
     RecursiveDataClayPickler(
-        f, local_objects, remote_objects, serialized_local_objects, make_persistent
+        file, local_objects, remote_objects, serialized_local_objects, make_persistent
     ).dump(instance._dc_state)
 
-    serialized_local_objects.append(f.getvalue())
+    serialized_local_objects.append(file.getvalue())
     return serialized_local_objects
 
 
@@ -152,9 +152,14 @@ async def recursive_dcloads(object_binary, unserialized_objects: dict[UUID, Data
     if unserialized_objects is None:
         unserialized_objects = {}
 
-    object_dict, state = RecursiveDataClayObjectUnpickler(
-        io.BytesIO(object_binary), unserialized_objects
-    ).load()
+    # Run in executor to avoid blocking the event loop in `get_by_id_sync`
+    loop = asyncio.get_running_loop()
+    object_dict, state = await loop.run_in_executor(
+        None,
+        # run_in_context,
+        # contextvars.copy_context(),
+        RecursiveDataClayObjectUnpickler(io.BytesIO(object_binary), unserialized_objects).load,
+    )
 
     object_id = object_dict["_dc_meta"].id
     try:
@@ -172,18 +177,24 @@ async def recursive_dcloads(object_binary, unserialized_objects: dict[UUID, Data
 
 
 async def dcdumps(obj):
+    """Serialize the object using DataClayPickler. It will manage the serialization of DataClayObjects.
+
+    Args:
+        obj: The object to serialize. Should never be a DataClayObject, but the _dc_state attribute of it.
+    """
     logger.debug("Serializing object in executor")
 
-    # TODO: avoid calling run_in_executor if not needed. Dunnot how, but optimize!
+    # TODO: Avoid calling run_in_executor if not needed. Dunnot how, but optimize!
     # If object is None, return None
 
-    # Option 1 - run_in_executor
+    # NOTE: Executor needed to avoid blocking the event loop in `make_persistent`
+    # The context needs to be propagated to access the session_var
+    file = io.BytesIO()
     loop = asyncio.get_running_loop()
-    f = io.BytesIO()
     await loop.run_in_executor(
-        None, run_in_context, contextvars.copy_context(), DataClayPickler(f).dump, obj
+        None, run_in_context, contextvars.copy_context(), DataClayPickler(file).dump, obj
     )
-    return f.getvalue()
+    return file.getvalue()
 
     # Option 2 - post make_persistent
     # pending_make_persistent: list[DataClayObject] = []
@@ -195,8 +206,16 @@ async def dcdumps(obj):
 
 
 async def dcloads(binary):
+    """Deserialize the object using pickle.loads. It will manage the deserialization of DataClayObjects.
+
+    Necessary to use run_in_executor to avoid blocking the event loop.
+
+    Args:
+        binary: The binary to deserialize. Should be the result of dcdumps.
+    """
     logger.debug("Deserializing binary in executor")
     # TODO: Be sure contextvars won't be need. If so, use run_in_context
+    # (session_var is not used in deserialization, so it should be fine)
     loop = asyncio.get_running_loop()
     result = await loop.run_in_executor(None, pickle.loads, binary)
     return result

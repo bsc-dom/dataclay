@@ -13,6 +13,7 @@ import asyncio
 import functools
 import inspect
 import logging
+import threading
 import traceback
 from collections import ChainMap
 
@@ -303,11 +304,6 @@ class DataClayObject:
         return obj
 
     @property
-    def _dc_dict(self):
-        """Returns __dict__ with only _dc_ attributes"""
-        return {k: v for k, v in vars(self).items() if k.startswith("_dc_")}
-
-    @property
     def _dc_properties(self):
         """Returns __dict__ with only _dc_property_ attributes"""
         return {k: v for k, v in vars(self).items() if k.startswith(DC_PROPERTY_PREFIX)}
@@ -383,7 +379,7 @@ class DataClayObject:
             KeyError: If the backend_id is not registered in dataClay.
         """
         if self._dc_is_registered:
-            # TODO: Check if "move" and "add_alias" need await
+            logger.info("(%s) Object is already registered", self._dc_meta.id)
             if backend_id:
                 await self.move(backend_id)
             if alias:
@@ -419,9 +415,14 @@ class DataClayObject:
 
         loop = get_dc_running_loop()
         if loop.is_running():
-            # CAREFUL! This must not be running in the same thread as the running event loop
-            t = asyncio.run_coroutine_threadsafe(cls.get_by_id(object_id), loop)
-            return t.result()
+            # WARNING: This code must not be running in the same thread as the running event loop
+            if loop._thread_id == threading.get_ident():
+                raise RuntimeError(
+                    "get_by_id_sync called from the same thread as the running event loop. "
+                    "This will block the event loop. Use 'await dcloads' instead."
+                )
+            future = asyncio.run_coroutine_threadsafe(cls.get_by_id(object_id), loop)
+            return future.result()
         else:
             # If the event loop is not running, we can call directly pickle.loads
             # and this will be the entry point for the event loop. This is useful

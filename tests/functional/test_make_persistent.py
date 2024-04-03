@@ -87,3 +87,17 @@ def test_make_persistent_already_registered(client):
     person.sync()
     assert person._dc_meta.master_backend_id == backend_ids[1]
     assert "test_make_persistent_already_registered" in person.get_aliases()
+
+
+def test_persistent_references(client):
+    """
+    Trying to make_persistent and object with persistent references
+    """
+    person = Person("Marc", 24)
+    person.make_persistent()
+    family = Family(person)
+    assert family._dc_is_registered == False
+
+    family.make_persistent()
+    assert family._dc_is_registered == True
+    assert person == family.members[0]

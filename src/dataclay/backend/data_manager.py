@@ -161,8 +161,7 @@ class DataManager(threading.Thread):
 
                 # Not serializing metadata nor extradata. These are saved in redis
                 path = f"{settings.storage_path}/{object_id}"
-                state = instance._dc_state
-                DataClayPickler(open(path, "wb")).dump(state)
+                DataClayPickler(open(path, "wb")).dump(instance._dc_state)
                 self.dataclay_stored_objects.inc()
 
                 # TODO: Maybe update Redis (since is loaded has changed). For access optimization.

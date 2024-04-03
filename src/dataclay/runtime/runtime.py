@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import collections
 import copy
 import logging
@@ -146,7 +147,7 @@ class DataClayRuntime(ABC):
             # Choose a random backend
             backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
         else:
-            backend_client = self.backend_clients[backend_id]
+            backend_client = await self.backend_clients.get(backend_id)
 
         # Serialize instance with a recursive Pickle
         visited_objects: dict[UUID, DataClayObject] = {}
@@ -243,7 +244,7 @@ class DataClayRuntime(ABC):
                 self.data_manager.load_object(instance)
             return instance._dc_properties
         else:
-            backend_client = self.backend_clients[instance._dc_meta.master_backend_id]
+            backend_client = await self.backend_clients.get(instance._dc_meta.master_backend_id)
             serialized_properties = await backend_client.get_object_properties(instance._dc_meta.id)
             return pickle.loads(serialized_properties)
 
@@ -279,7 +280,7 @@ class DataClayRuntime(ABC):
                 # del self.inmemory_objects[instance._dc_meta.id]
                 await self.metadata_service.delete_object(instance._dc_meta.id)
         else:
-            backend_client = self.backend_clients[instance._dc_meta.master_backend_id]
+            backend_client = await self.backend_clients.get(instance._dc_meta.master_backend_id)
             await backend_client.proxify_object(instance._dc_meta.id, new_object_id)
 
         instance._dc_meta.id = new_object_id
@@ -305,7 +306,7 @@ class DataClayRuntime(ABC):
                 instance._dc_meta.versions_object_ids = []
                 await self.metadata_service.upsert_object(instance._dc_meta)
         else:
-            backend_client = self.backend_clients[instance._dc_meta.master_backend_id]
+            backend_client = await self.backend_clients.get(instance._dc_meta.master_backend_id)
             await backend_client.change_object_id(instance._dc_meta.id, new_object_id)
             instance._dc_meta.id = new_object_id
 
@@ -339,8 +340,9 @@ class DataClayRuntime(ABC):
             )
 
             # Serialize args and kwargs
-            serialized_args = await dcdumps(args)
-            serialized_kwargs = await dcdumps(kwargs)
+            serialized_args, serialized_kwargs = await asyncio.gather(
+                dcdumps(args), dcdumps(kwargs)
+            )
 
             # Fault tolerance loop
             while True:
@@ -353,8 +355,8 @@ class DataClayRuntime(ABC):
                 # clients and the object backend locations, and try again
                 if not avail_backends:
                     logger.warning("(%s) No backends available. Syncing...", instance._dc_meta.id)
-                    await self.backend_clients.update()
-                    await instance.sync()
+                    await asyncio.gather(self.backend_clients.update(), instance.sync())
+
                     avail_backends = instance._dc_all_backend_ids.intersection(
                         self.backend_clients.keys()
                     )
@@ -365,7 +367,7 @@ class DataClayRuntime(ABC):
 
                 # Choose a random backend from the available ones
                 backend_id = random.choice(tuple(avail_backends))
-                backend_client = self.backend_clients[backend_id]
+                backend_client = await self.backend_clients.get(backend_id)
 
                 # If the connection fails, update the list of backend clients, and try again
                 try:
@@ -403,7 +405,7 @@ class DataClayRuntime(ABC):
                         )
                 except DataClayException as e:
                     if "failed to connect" in str(e):
-                        logger.warning("(%s) Failed to connect. Syncing...", instance._dc_meta.id)
+                        logger.warning("(%s) Connection failed. Syncing...", instance._dc_meta.id)
                         await self.backend_clients.update()
                         continue
                     else:
@@ -480,24 +482,32 @@ class DataClayRuntime(ABC):
             "%s objects to backend %s", "Replicating" if make_replica else "Moving", backend_id
         )
 
+        # NOTE: We cannot make a replica of a replica because we need a global lock
+        # of the metadata to keep consistency of _dc_meta.replica_backend_ids. Therefore,
+        # we only allow to make replicas of master objects, which will acquire a lock
+        # when updating the metadata.
+
         visited_local_objects = {}
         pending_remote_objects = {}
         serialized_local_objects = []
 
+        # Process each instance and serialize
         for instance in instances:
-            # NOTE: We cannot make a replica of a replica because we need a global lock
-            # of the metadata to keep consistency of _dc_meta.replica_backend_ids. Therefore,
-            # we only allow to make replicas of master objects, which will acquire a lock
-            # when updating the metadata.
             if instance._dc_is_local and not instance._dc_is_replica:
+                # Check if the instance was already visited (as a reference of another instance)
                 if instance._dc_meta.id in visited_local_objects:
                     continue
+
+                # Add the instance to the visited objects
                 visited_local_objects[instance._dc_meta.id] = instance
 
+                # Load the object if it is not loaded
                 if not instance._dc_is_loaded:
                     self.data_manager.load_object(instance)
+
                 if recursive:
                     if remotes:
+                        # If recursive and remotes, we need to obtain the remote references
                         serialized_objects = await recursive_dcdumps(
                             instance, visited_local_objects, pending_remote_objects
                         )
@@ -505,18 +515,17 @@ class DataClayRuntime(ABC):
                         serialized_objects = await recursive_dcdumps(
                             instance, visited_local_objects
                         )
-
                     serialized_local_objects.extend(serialized_objects)
                 else:
+                    # If not recursive, we only serialize the current instance
                     object_bytes = await dcdumps(instance._dc_state)
                     serialized_local_objects.append(object_bytes)
             else:
+                # If the instance is not local, then it is remote
                 pending_remote_objects[instance._dc_meta.id] = instance
 
-        # Check that the destination backend is not this
         if backend_id != self.backend_id:
-            # await self.backend_clients.update()
-            # backend_client = self.backend_clients[backend_id]
+            # Register the objects in the destination backend
             backend_client = await self.backend_clients.get(backend_id)
             await backend_client.register_objects(
                 serialized_local_objects, make_replica=make_replica
@@ -550,7 +559,7 @@ class DataClayRuntime(ABC):
 
         if len(counter) > 0:
             remote_backend_id = counter.most_common(1)[0][0]
-            remote_backend_client = self.backend_clients[remote_backend_id]
+            remote_backend_client = await self.backend_clients.get(remote_backend_id)
             await remote_backend_client.send_objects(
                 pending_remote_objects.keys(), backend_id, make_replica, recursive, remotes
             )
@@ -568,7 +577,7 @@ class DataClayRuntime(ABC):
             vars(instance).update(new_properties)
             instance._dc_is_loaded = True
         else:
-            backend_client = self.backend_clients[instance._dc_meta.master_backend_id]
+            backend_client = await self.backend_clients.get(instance._dc_meta.master_backend_id)
             await backend_client.update_object_properties(
                 instance._dc_meta.id, await dcdumps(new_properties)
             )
