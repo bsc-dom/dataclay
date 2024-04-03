@@ -2,7 +2,8 @@
 
 import logging
 import os
-import uuid
+from dataclay.runtime import get_dc_event_loop
+
 
 from dotenv import dotenv_values
 
@@ -45,8 +46,9 @@ def getByID(object_md_json: str):
     Returns:
         The DataClayObject identified by the given object_md_json
     """
+    loop = get_dc_event_loop()
     object_md = ObjectMetadata.model_validate_json(object_md_json)
-    return get_runtime().get_object_by_id(object_md.id, object_md)
+    return loop.run_until_complete(get_runtime().get_object_by_id(object_md.id, object_md))
 
 
 def initWorker(config_file_path, **kwargs):

@@ -18,7 +18,7 @@ from dataclay.backend.api import BackendAPI
 from dataclay.config import settings
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
-from dataclay.runtime import session_var, set_dc_running_loop
+from dataclay.runtime import session_var, set_dc_event_loop
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ def _get_or_generate_backend_id() -> UUID:
 
 
 async def serve():
-    set_dc_running_loop(asyncio.get_running_loop())
+    set_dc_event_loop(asyncio.get_running_loop())
 
     backend_id = _get_or_generate_backend_id()
 

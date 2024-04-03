@@ -8,7 +8,7 @@ from uuid import UUID
 
 from dataclay import utils
 from dataclay.dataclay_object import DataClayObject
-from dataclay.runtime import get_dc_running_loop, get_runtime
+from dataclay.runtime import get_dc_event_loop, get_runtime
 from dataclay.utils.contextvars import run_in_context
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ class DataClayPickler(pickle.Pickler):
                 # obj.make_persistent()
 
                 # Option 1 - run_in_executor
-                loop = get_dc_running_loop()
+                loop = get_dc_event_loop()
                 t = asyncio.run_coroutine_threadsafe(obj.make_persistent(), loop)
                 t.result()
 

@@ -18,8 +18,7 @@ session_var = contextvars.ContextVar("session")
 
 current_runtime: Union[ClientRuntime, BackendRuntime, None] = None
 
-# TODO: Find a cleaner way
-event_loop: AbstractEventLoop = None
+dc_event_loop: AbstractEventLoop = None
 
 
 def get_runtime() -> Union[ClientRuntime, BackendRuntime, None]:
@@ -31,14 +30,13 @@ def set_runtime(new_runtime: Union[ClientRuntime, BackendRuntime]):
     current_runtime = new_runtime
 
 
-# TODO: Find a cleaner way
-def set_dc_running_loop(loop):
-    global event_loop
-    event_loop = loop
+def set_dc_event_loop(loop):
+    global dc_event_loop
+    dc_event_loop = loop
 
 
-def get_dc_running_loop() -> Union[None, AbstractEventLoop]:
-    return event_loop
+def get_dc_event_loop() -> Union[None, AbstractEventLoop]:
+    return dc_event_loop
 
 
 class ReadWriteLock:

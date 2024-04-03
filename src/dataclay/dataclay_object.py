@@ -31,7 +31,7 @@ from typing import TYPE_CHECKING, Annotated, Any, Optional, Type, TypeVar, get_o
 from dataclay.annotated import LocalOnly, PropertyTransformer
 from dataclay.exceptions import *
 from dataclay.metadata.kvdata import ObjectMetadata
-from dataclay.runtime import LockManager, get_dc_running_loop, get_runtime
+from dataclay.runtime import LockManager, get_dc_event_loop, get_runtime
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -73,7 +73,7 @@ def activemethod(func):
                 if inspect.iscoroutinefunction(func):
                     return get_runtime().call_remote_method(self, func.__name__, args, kwargs)
                 else:
-                    loop = get_dc_running_loop()
+                    loop = get_dc_event_loop()
                     return loop.run_until_complete(
                         get_runtime().call_remote_method(self, func.__name__, args, kwargs)
                     )
@@ -91,7 +91,7 @@ def chooseasync(f):
         if settings.client is None or settings.client.async_enabled:
             return f(*args, **kwargs)
         else:
-            loop = get_dc_running_loop()
+            loop = get_dc_event_loop()
             if loop.is_running():
                 # If the event loop is running, we can't call run_until_complete.
                 # Therefore, we should await the result.
@@ -135,6 +135,7 @@ class DataClayProperty:
                 self.name,
             )
 
+            # If the object is local and loaded, we can access the attribute directly
             if not instance._dc_is_loaded:
                 get_runtime().data_manager.load_object(instance)
             try:
@@ -156,7 +157,7 @@ class DataClayProperty:
                 self.name,
             )
 
-            loop = get_dc_running_loop()
+            loop = get_dc_event_loop()
             if loop.is_running():
                 # NOTE: This will make attribute access for a user's AsyncClient or from our
                 # inner code, to be async. This could not be desired in the future, since
@@ -198,7 +199,7 @@ class DataClayProperty:
                 value,
             )
 
-            loop = get_dc_running_loop()
+            loop = get_dc_event_loop()
             if loop.is_running():
                 # NOTE: Same problem as in __get__ method.
                 # TODO: Find a better way to handle this.
@@ -291,7 +292,7 @@ class DataClayObject:
         if get_runtime() and get_runtime().is_backend:
             logger.debug("(%s) Calling implicit make_persistent", obj._dc_meta.id)
 
-            loop = get_dc_running_loop()
+            loop = get_dc_event_loop()
             t = asyncio.run_coroutine_threadsafe(obj.make_persistent(), loop)
             t.result()
 
@@ -413,7 +414,7 @@ class DataClayObject:
         # or it will block the event loop. When unserializing dataClay objects, use "await dcloads"
         # if possible. Only use "pickle.loads" if you are sure that the event loop is not running.
 
-        loop = get_dc_running_loop()
+        loop = get_dc_event_loop()
         if loop.is_running():
             # WARNING: This code must not be running in the same thread as the running event loop
             if loop._thread_id == threading.get_ident():
@@ -573,7 +574,7 @@ class DataClayObject:
             raise TypeError("Objects must be of the same type")
 
         o = await cls.get_by_alias(alias)
-        o.dc_update(from_object)
+        await o.dc_update(from_object)
 
     @tracer.start_as_current_span("dc_update")
     @chooseasync
@@ -635,7 +636,11 @@ class DataClayObject:
     @tracer.start_as_current_span("consolidate_version")
     @chooseasync
     async def consolidate_version(self):
-        """Consolidate the current version of the object with the original one."""
+        """Consolidate the current version of the object with the original one.
+
+        Raises:
+            ObjectIsNotVersionError: If the object is not a version.
+        """
         await get_runtime().consolidate_version(self)
 
     @tracer.start_as_current_span("getID")

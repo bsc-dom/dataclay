@@ -231,14 +231,14 @@ class DataClayRuntime(ABC):
 
     async def get_object_by_alias(self, alias: str, dataset_name: str = None) -> DataClayObject:
         """Get object instance from alias"""
+        logger.debug("Getting object by alias %s", alias)
         if dataset_name is None:
             dataset_name = session_var.get()["dataset_name"]
-
         object_md = await self.metadata_service.get_object_md_by_alias(alias, dataset_name)
-
         return await self.get_object_by_id(object_md.id, object_md)
 
     async def get_object_properties(self, instance: DataClayObject) -> dict[str, Any]:
+        logger.debug("(%s) Getting object properties", instance._dc_meta.id)
         if instance._dc_is_local:
             if not instance._dc_is_loaded:
                 self.data_manager.load_object(instance)
@@ -251,6 +251,7 @@ class DataClayRuntime(ABC):
     async def make_object_copy(
         self, instance: DataClayObject, recursive: bool = False, is_proxy: bool = False
     ):
+        logger.debug("(%s) Making object copy", instance._dc_meta.id)
         object_properties = copy.deepcopy(await self.get_object_properties(instance))
         if is_proxy:
             # Avoid the object get persistent automatically when called in a backend
@@ -262,6 +263,7 @@ class DataClayRuntime(ABC):
         return object_copy
 
     async def proxify_object(self, instance: DataClayObject, new_object_id: UUID):
+        logger.debug("(%s) Proxifying object to %s", instance._dc_meta.id, new_object_id)
         if not instance._dc_is_registered:
             raise ObjectNotRegisteredError(instance._dc_meta.id)
 
@@ -286,6 +288,7 @@ class DataClayRuntime(ABC):
         instance._dc_meta.id = new_object_id
 
     async def change_object_id(self, instance: DataClayObject, new_object_id: UUID):
+        logger.debug("(%s) Changing object id to %s", instance._dc_meta.id, new_object_id)
         old_object_id = instance._dc_meta.id
 
         if instance._dc_is_local:
@@ -313,6 +316,7 @@ class DataClayRuntime(ABC):
         del self.inmemory_objects[old_object_id]
 
     async def sync_object_metadata(self, instance: DataClayObject):
+        logger.debug("(%s) Syncing object metadata", instance._dc_meta.id)
         if not instance._dc_is_registered:
             raise ObjectNotRegisteredError(instance._dc_meta.id)
         object_md = await self.metadata_service.get_object_md_by_id(instance._dc_meta.id)
@@ -372,13 +376,13 @@ class DataClayRuntime(ABC):
                 # If the connection fails, update the list of backend clients, and try again
                 try:
                     if method_name == "__getattribute__":
-                        (
-                            serialized_response,
-                            is_exception,
-                        ) = await backend_client.get_object_attribute(
-                            instance._dc_meta.id,
-                            args[0],  # attribute name
+                        serialized_response, is_exception = (
+                            await backend_client.get_object_attribute(
+                                instance._dc_meta.id,
+                                args[0],  # attribute name
+                            )
                         )
+
                     elif method_name == "__setattr__":
                         serialized_response, is_exception = (
                             await backend_client.set_object_attribute(
@@ -437,6 +441,7 @@ class DataClayRuntime(ABC):
     #########
 
     async def add_alias(self, instance: DataClayObject, alias: str):
+        logger.debug("(%s) Adding alias %s", instance._dc_meta.id, alias)
         if not instance._dc_is_registered:
             raise ObjectNotRegisteredError(instance._dc_meta.id)
         if not alias:
@@ -446,14 +451,15 @@ class DataClayRuntime(ABC):
         )
 
     async def delete_alias(self, alias: str, dataset_name: Optional[str] = None):
+        logger.debug("Deleting alias %s.%s", dataset_name, alias)
         if dataset_name is None:
             dataset_name = session_var.get()["dataset_name"]
-
         await self.metadata_service.delete_alias(alias, dataset_name)
 
     async def get_all_alias(
         self, dataset_name: Optional[str] = None, object_id: Optional[UUID] = None
     ):
+        logger.debug("Getting all alias for dataset %s and object %s", dataset_name, object_id)
         return await self.metadata_service.get_all_alias(dataset_name, object_id)
 
     #################
@@ -479,7 +485,12 @@ class DataClayRuntime(ABC):
         not remote references.
         """
         logger.debug(
-            "%s objects to backend %s", "Replicating" if make_replica else "Moving", backend_id
+            "Send (%s) objects to backend %s. Make replica=%s, recursive=%s, remotes=%s",
+            len(instances),
+            backend_id,
+            make_replica,
+            recursive,
+            remotes,
         )
 
         # NOTE: We cannot make a replica of a replica because we need a global lock
@@ -524,18 +535,19 @@ class DataClayRuntime(ABC):
                 # If the instance is not local, then it is remote
                 pending_remote_objects[instance._dc_meta.id] = instance
 
+        # Register the objects in the destination backend
         if backend_id != self.backend_id:
-            # Register the objects in the destination backend
             backend_client = await self.backend_clients.get(backend_id)
             await backend_client.register_objects(
                 serialized_local_objects, make_replica=make_replica
             )
-
+            # Update the metadata of the local objects
             for local_object in visited_local_objects.values():
                 if make_replica:
                     local_object._dc_meta.replica_backend_ids.add(backend_id)
                 else:
-                    # Moving object
+                    # Object has been moved to another backend
+                    # The object is no longer local, and is a proxy
                     # TODO: Remove pickle file to reduce space
                     self.data_manager.remove_hard_reference(local_object)
                     local_object._clean_dc_properties()
@@ -544,9 +556,10 @@ class DataClayRuntime(ABC):
                     local_object._dc_meta.master_backend_id = backend_id
                     local_object._dc_meta.replica_backend_ids.discard(backend_id)
 
-        # Get the backend with most remote references.
+        # Update the metadata of the remote proxy objects
         counter = collections.Counter()
         for remote_object in pending_remote_objects.values():
+            # Count the number of objects per backend
             counter[remote_object._dc_meta.master_backend_id] += 1
             if make_replica:
                 if backend_id != remote_object._dc_meta.master_backend_id:
@@ -555,8 +568,11 @@ class DataClayRuntime(ABC):
                 remote_object._dc_meta.master_backend_id = backend_id
                 remote_object._dc_meta.replica_backend_ids.discard(backend_id)
 
+        # This should not happen
         assert counter[self.backend_id] == 0
 
+        # Ask to the backend with most remote objects to continue the "send_objects" operation
+        # This is done to reduce the number of recursive "send_objects" calls between backends
         if len(counter) > 0:
             remote_backend_id = counter.most_common(1)[0][0]
             remote_backend_client = await self.backend_clients.get(remote_backend_id)
@@ -567,12 +583,15 @@ class DataClayRuntime(ABC):
     async def replace_object_properties(
         self, instance: DataClayObject, new_instance: DataClayObject
     ):
+        logger.debug("(%s) Replacing object properties", instance._dc_meta.id)
         new_object_properties = await self.get_object_properties(new_instance)
         await self.update_object_properties(instance, new_object_properties)
 
     async def update_object_properties(
         self, instance: DataClayObject, new_properties: dict[str, Any]
     ):
+        logger.debug("(%s) Updating object properties", instance._dc_meta.id)
+
         if instance._dc_is_local:
             vars(instance).update(new_properties)
             instance._dc_is_loaded = True
@@ -582,37 +601,48 @@ class DataClayRuntime(ABC):
                 instance._dc_meta.id, await dcdumps(new_properties)
             )
 
-    def new_object_version(self, instance: DataClayObject, backend_id: Optional[UUID] = None):
-        new_version = self.make_object_copy(instance, is_proxy=True)
+    async def new_object_version(self, instance: DataClayObject, backend_id: Optional[UUID] = None):
+        logger.debug("(%s) Creating new version", instance._dc_meta.id)
 
+        # Create a proxy copy of the object
+        new_version = await self.make_object_copy(instance, is_proxy=True)
+
+        # Set the original object ID and the versions to the new version
         if instance._dc_meta.original_object_id is None:
             new_version._dc_meta.original_object_id = instance._dc_meta.id
-
         else:
             new_version._dc_meta.original_object_id = instance._dc_meta.original_object_id
             new_version._dc_meta.versions_object_ids = instance._dc_meta.versions_object_ids + [
                 instance._dc_meta.id
             ]
 
+        # Copy the dataset name to the new version
         new_version._dc_meta.dataset_name = instance._dc_meta.dataset_name
 
-        self.make_persistent(new_version, backend_id=backend_id)
+        # Register and return the new version
+        await self.make_persistent(new_version, backend_id=backend_id)
         return new_version
 
     async def consolidate_version(self, instance: DataClayObject):
+        logger.debug("(%s) Consolidating version", instance._dc_meta.id)
+
+        # Check if the object is a version
         if instance._dc_meta.original_object_id is None:
             raise ObjectIsNotVersionError(instance._dc_meta.id)
 
         original_object_id = instance._dc_meta.original_object_id
 
+        # Proxify all versions
         for version_object_id in instance._dc_meta.versions_object_ids:
             version = await self.get_object_by_id(version_object_id)
             await self.proxify_object(version, original_object_id)
 
+        # Proxify original object and steal its ID to the instance
         original_object = await self.get_object_by_id(original_object_id)
         await self.proxify_object(original_object, original_object_id)
         await self.change_object_id(instance, original_object_id)
 
+        # Clean version metadata
         instance._dc_meta.original_object_id = None
         instance._dc_meta.versions_object_ids = []
 
@@ -627,7 +657,7 @@ class DataClayRuntime(ABC):
         recursive: bool = False,
         remotes: bool = True,
     ):
-        logger.debug("Starting new replica of %s", instance._dc_meta.id)
+        logger.debug("(%s) Creating new replica", instance._dc_meta.id)
 
         if not instance._dc_is_registered:
             raise ObjectNotRegisteredError(instance._dc_meta.id)
@@ -640,7 +670,7 @@ class DataClayRuntime(ABC):
             # sync the object metadata, and try again
             if not avail_backends:
                 await self.backend_clients.update()
-                instance.sync()
+                await instance.sync()
                 avail_backends = set(self.backend_clients.keys()) - instance._dc_all_backend_ids
 
                 if not avail_backends:
@@ -657,7 +687,7 @@ class DataClayRuntime(ABC):
 
         elif backend_id in instance._dc_meta.replica_backend_ids:
             # If the backend already have a replica, sync the instnace metadata, and try again
-            instance.sync()
+            await instance.sync()
             if backend_id in instance._dc_meta.replica_backend_ids:
                 logger.warning("The backend already have a replica")
                 # If not recursive, no need to continue

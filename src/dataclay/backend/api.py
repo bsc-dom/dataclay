@@ -135,7 +135,7 @@ class BackendAPI:
             # by passing the backend_id of the new object to the proxy, but this can create
             # problems with race conditions (e.g. a move before the consolidation). Therefore,
             # we check to the metadata which is more reliable.
-            self.runtime.sync_object_metadata(instance)
+            await self.runtime.sync_object_metadata(instance)
             logger.warning(
                 "(%s) Wrong backend. Update to %s",
                 object_id,
@@ -201,7 +201,7 @@ class BackendAPI:
             # by passing the backend_id of the new object to the proxy, but this can create
             # problems with race conditions (e.g. a move before the consolidation). Therefore,
             # we check to the metadata which is more reliable.
-            self.runtime.sync_object_metadata(instance)
+            await self.runtime.sync_object_metadata(instance)
             logger.warning(
                 "(%s) Wrong backend. Update to %s",
                 object_id,
@@ -325,7 +325,7 @@ class BackendAPI:
             The JSON-encoded metadata of the new DataClayObject version.
         """
         instance = await self.runtime.get_object_by_id(object_id)
-        new_version = self.runtime.new_object_version(instance)
+        new_version = await self.runtime.new_object_version(instance)
         return new_version.getID()
 
     async def consolidate_object_version(self, object_id: UUID):
@@ -335,8 +335,10 @@ class BackendAPI:
 
     @tracer.start_as_current_span("proxify_object")
     async def proxify_object(self, object_id: UUID, new_object_id: UUID):
+        """Proxify object with ID provided to new object ID"""
+        logger.debug("Proxifying object %s to %s", object_id, new_object_id)
         instance = await self.runtime.get_object_by_id(object_id)
-        self.runtime.proxify_object(instance, new_object_id)
+        await self.runtime.proxify_object(instance, new_object_id)
 
     @tracer.start_as_current_span("change_object_id")
     async def change_object_id(self, object_id: UUID, new_object_id: UUID):
