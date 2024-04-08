@@ -26,9 +26,10 @@ class DataClayPickler(pickle.Pickler):
                 # obj.make_persistent()
 
                 # Option 1 - run_in_executor
-                loop = get_dc_event_loop()
-                t = asyncio.run_coroutine_threadsafe(obj.make_persistent(), loop)
-                t.result()
+                obj.make_persistent()
+                # loop = get_dc_event_loop()
+                # t = asyncio.run_coroutine_threadsafe(obj.make_persistent(), loop)
+                # t.result()
 
                 # Option 2 - post make_persistent
                 # if self.pending_make_persistent is None:

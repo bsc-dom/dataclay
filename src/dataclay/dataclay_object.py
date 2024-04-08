@@ -88,14 +88,26 @@ def activemethod(func):
 def chooseasync(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        if settings.client is None or settings.client.async_enabled:
+        # if settings.client is None or settings.client.async_enabled:
+        #     return f(*args, **kwargs)
+        if settings.client and settings.client.async_enabled:
             return f(*args, **kwargs)
         else:
             loop = get_dc_event_loop()
             if loop.is_running():
                 # If the event loop is running, we can't call run_until_complete.
-                # Therefore, we should await the result.
-                return f(*args, **kwargs)
+                if loop._thread_id == threading.get_ident():
+                    # If calling from the same thread, return coroutine
+                    # Happens only(?) inside inner dataClay code. Return should be awaited.
+                    return f(*args, **kwargs)
+                else:
+                    # Event loop is running in another thread
+                    # Only(?) happens when backend run dataClay methods inside an activemethod
+                    # TODO: What if inside async activemethod? We should return coroutine?
+                    # This is pretty complex because to know if we are being called by an async method
+                    # we should check the call stack
+                    future = asyncio.run_coroutine_threadsafe(f(*args, **kwargs), loop)
+                    return future.result()
             else:
                 # If the event loop is not running, we can call run_until_complete.
                 # This should only happen from user SyncClient calls. All inner code
@@ -292,9 +304,12 @@ class DataClayObject:
         if get_runtime() and get_runtime().is_backend:
             logger.debug("(%s) Calling implicit make_persistent", obj._dc_meta.id)
 
-            loop = get_dc_event_loop()
-            t = asyncio.run_coroutine_threadsafe(obj.make_persistent(), loop)
-            t.result()
+            # TODO: Option to make an eventual call to make_persistent async
+            # loop.create_task(obj.a_make_persistent())
+            obj.make_persistent()
+            # loop = get_dc_event_loop()
+            # t = asyncio.run_coroutine_threadsafe(obj.make_persistent(), loop)
+            # t.result()
 
         return obj
 
@@ -422,8 +437,9 @@ class DataClayObject:
                     "get_by_id_sync called from the same thread as the running event loop. "
                     "This will block the event loop. Use 'await dcloads' instead."
                 )
-            future = asyncio.run_coroutine_threadsafe(cls.get_by_id(object_id), loop)
-            return future.result()
+            return cls.get_by_id(object_id)
+            # future = asyncio.run_coroutine_threadsafe(cls.get_by_id(object_id), loop)
+            # return future.result()
         else:
             # If the event loop is not running, we can call directly pickle.loads
             # and this will be the entry point for the event loop. This is useful
