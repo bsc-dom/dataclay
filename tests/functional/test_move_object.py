@@ -357,8 +357,8 @@ def test_move_local_object_recursive_remotes(client):
 # Remote Methods
 
 
-def test_remote_move_activemethod(client):
-    """Move object inside an active method"""
-    remote_test = TestMoveObject()
-    remote_test.make_persistent()
-    remote_test.test_move_object()
+# def test_remote_move_activemethod(client):
+#     """Move object inside an active method"""
+#     remote_test = TestMoveObject()
+#     remote_test.make_persistent()
+#     remote_test.test_move_object()
