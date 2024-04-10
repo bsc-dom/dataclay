@@ -85,36 +85,27 @@ def activemethod(func):
     return wrapper_activemethod
 
 
-def chooseasync(f):
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        # if settings.client is None or settings.client.async_enabled:
-        #     return f(*args, **kwargs)
-        if settings.client and settings.client.async_enabled:
-            return f(*args, **kwargs)
+def run_dc_coroutine(func, *args, **kwargs):
+    loop = get_dc_event_loop()
+    if loop.is_running():
+        # If the event loop is running, we can't call run_until_complete.
+        if loop._thread_id == threading.get_ident():
+            # From the same thread must use the async version of the method
+            # Happens only(?) inside inner dataClay code.
+            raise RuntimeError(
+                "Trying to run non-async dataClay API method from inside the event loop."
+                "Use the async version of the method or run it from outside the event loop."
+            )
         else:
-            loop = get_dc_event_loop()
-            if loop.is_running():
-                # If the event loop is running, we can't call run_until_complete.
-                if loop._thread_id == threading.get_ident():
-                    # If calling from the same thread, return coroutine
-                    # Happens only(?) inside inner dataClay code. Return should be awaited.
-                    return f(*args, **kwargs)
-                else:
-                    # Event loop is running in another thread
-                    # Only(?) happens when backend run dataClay methods inside an activemethod
-                    # TODO: What if inside async activemethod? We should return coroutine?
-                    # This is pretty complex because to know if we are being called by an async method
-                    # we should check the call stack
-                    future = asyncio.run_coroutine_threadsafe(f(*args, **kwargs), loop)
-                    return future.result()
-            else:
-                # If the event loop is not running, we can call run_until_complete.
-                # This should only happen from user SyncClient calls. All inner code
-                # should be async with a running event loop.
-                return loop.run_until_complete(f(*args, **kwargs))
-
-    return wrapper
+            # Event loop is running in another thread
+            # Only(?) happens when backend run dataClay methods inside an activemethod
+            future = asyncio.run_coroutine_threadsafe(func(*args, **kwargs), loop)
+            return future.result()
+    else:
+        # If the event loop is not running, we can call run_until_complete.
+        # This should only happen from user SyncClient calls. All inner code
+        # should be async with a running event loop.
+        return loop.run_until_complete(func(*args, **kwargs))
 
 
 class DataClayProperty:
@@ -300,7 +291,6 @@ class DataClayObject:
         # there is not running event loop in the current thread, and we can use run_coroutine_threadsafe
         # to the main dc_running_loop.
         # TODO: This same logic applies to all DataClayObject methods that are called withing an activemethod.
-        # We should add this logic to the chooseasync decorator.
         if get_runtime() and get_runtime().is_backend:
             logger.debug("(%s) Calling implicit make_persistent", obj._dc_meta.id)
 
@@ -351,8 +341,28 @@ class DataClayObject:
         """Returns a set with all the backend ids where the object is stored"""
         return self._dc_all_backend_ids
 
-    @chooseasync
-    async def sync(self):
+    def _clean_dc_properties(self):
+        """
+        Used to free up space when the client or backend lose ownership of the objects;
+        or the object is being stored and unloaded
+        """
+        self.__dict__ = {
+            k: v for k, v in vars(self).items() if not k.startswith(DC_PROPERTY_PREFIX)
+        }
+
+    @tracer.start_as_current_span("getID")
+    def getID(self) -> Optional[str]:
+        """Return the JSON-encoded metadata of the persistent object for COMPSs.
+
+        If the object is NOT persistent, then this method returns None.
+        """
+        if self._dc_is_registered:
+            return self._dc_meta.model_dump_json()
+        else:
+            return None
+
+    @tracer.start_as_current_span("sync")
+    async def a_sync(self):
         """Synchronizes the object metadata
 
         It will always retrieve the current metadata from the kv database.
@@ -368,22 +378,17 @@ class DataClayObject:
             raise ObjectIsMasterError(self._dc_meta.id)
         await get_runtime().sync_object_metadata(self)
 
-    def _clean_dc_properties(self):
-        """
-        Used to free up space when the client or backend lose ownership of the objects;
-        or the object is being stored and unloaded
-        """
-        self.__dict__ = {
-            k: v for k, v in vars(self).items() if not k.startswith(DC_PROPERTY_PREFIX)
-        }
+    def sync(self):
+        return run_dc_coroutine(self.a_sync)
 
     ###########################
     # Object Oriented Methods #
     ###########################
 
     @tracer.start_as_current_span("make_persistent")
-    @chooseasync
-    async def make_persistent(self, alias: Optional[str] = None, backend_id: Optional[UUID] = None):
+    async def a_make_persistent(
+        self, alias: Optional[str] = None, backend_id: Optional[UUID] = None
+    ):
         """Makes the object persistent.
 
         Args:
@@ -397,16 +402,18 @@ class DataClayObject:
         if self._dc_is_registered:
             logger.info("(%s) Object is already registered", self._dc_meta.id)
             if backend_id:
-                await self.move(backend_id)
+                await self.a_move(backend_id)
             if alias:
-                await self.add_alias(alias)
+                await self.a_add_alias(alias)
         else:
             await get_runtime().make_persistent(self, alias=alias, backend_id=backend_id)
 
+    def make_persistent(self, alias: Optional[str] = None, backend_id: Optional[UUID] = None):
+        return run_dc_coroutine(self.a_make_persistent, alias, backend_id)
+
     @classmethod
     @tracer.start_as_current_span("get_by_id")
-    @chooseasync
-    async def get_by_id(cls, object_id: UUID) -> DataClayObject:
+    async def a_get_by_id(cls, object_id: UUID) -> DataClayObject:
         """Returns the object with the given id.
 
         Args:
@@ -421,35 +428,19 @@ class DataClayObject:
         return await get_runtime().get_object_by_id(object_id)
 
     @classmethod
-    def get_by_id_sync(cls, object_id: UUID) -> DataClayObject:
-        """Helper method to be used by pickle unserialize a registered dataClay object
-        Acts as a synchronous wrapper for get_by_id"""
+    def get_by_id(cls, object_id: UUID) -> DataClayObject:
 
         # WARNING: This method must not be called from the same thread as the running event loop
         # or it will block the event loop. When unserializing dataClay objects, use "await dcloads"
         # if possible. Only use "pickle.loads" if you are sure that the event loop is not running.
+        # "pickle.loads" of dataClay objects is calling this method behind. With `dcloads` this method
+        # will be called in another thread, so it will not block the event loop.
 
-        loop = get_dc_event_loop()
-        if loop.is_running():
-            # WARNING: This code must not be running in the same thread as the running event loop
-            if loop._thread_id == threading.get_ident():
-                raise RuntimeError(
-                    "get_by_id_sync called from the same thread as the running event loop. "
-                    "This will block the event loop. Use 'await dcloads' instead."
-                )
-            return cls.get_by_id(object_id)
-            # future = asyncio.run_coroutine_threadsafe(cls.get_by_id(object_id), loop)
-            # return future.result()
-        else:
-            # If the event loop is not running, we can call directly pickle.loads
-            # and this will be the entry point for the event loop. This is useful
-            # for COMPSs, which is calling directly pickle.loads to dataClay objects.
-            return loop.run_until_complete(cls.get_by_id(object_id))
+        return run_dc_coroutine(cls.a_get_by_id, object_id)
 
     @classmethod
     @tracer.start_as_current_span("get_by_alias")
-    @chooseasync
-    async def get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
+    async def a_get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
         """Returns the object with the given alias.
 
         Args:
@@ -465,8 +456,12 @@ class DataClayObject:
         """
         return await get_runtime().get_object_by_alias(alias, dataset_name)
 
-    @chooseasync
-    async def add_alias(self, alias: str):
+    @classmethod
+    def get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
+        return run_dc_coroutine(cls.a_get_by_alias, alias, dataset_name)
+
+    @tracer.start_as_current_span("add_alias")
+    async def a_add_alias(self, alias: str):
         """Adds an alias to the object.
 
         Args:
@@ -479,16 +474,21 @@ class DataClayObject:
         """
         await get_runtime().add_alias(self, alias)
 
-    @chooseasync
-    async def get_aliases(self) -> set[str]:
+    def add_alias(self, alias: str):
+        return run_dc_coroutine(self.a_add_alias, alias)
+
+    @tracer.start_as_current_span("get_aliases")
+    async def a_get_aliases(self) -> set[str]:
         """Returns a set with all the aliases of the object."""
         aliases = await get_runtime().get_all_alias(self._dc_meta.dataset_name, self._dc_meta.id)
         return set(aliases)
 
+    def get_aliases(self) -> set[str]:
+        return run_dc_coroutine(self.a_get_aliases)
+
     @classmethod
     @tracer.start_as_current_span("delete_alias")
-    @chooseasync
-    async def delete_alias(cls, alias: str, dataset_name: str = None):
+    async def a_delete_alias(cls, alias: str, dataset_name: str = None):
         """Removes the alias linked to an object.
 
         If this object is not referenced starting from a root object and no active session is
@@ -504,9 +504,12 @@ class DataClayObject:
         """
         await get_runtime().delete_alias(alias, dataset_name=dataset_name)
 
+    @classmethod
+    def delete_alias(cls, alias: str, dataset_name: str = None):
+        return run_dc_coroutine(cls.a_delete_alias, alias, dataset_name)
+
     @tracer.start_as_current_span("move")
-    @chooseasync
-    async def move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
+    async def a_move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
         """Moves the object to the specified backend.
 
         If the object is not registered, it will be registered with all its references
@@ -523,9 +526,63 @@ class DataClayObject:
             KeyError: If the backend_id is not registered in dataClay.
         """
         if not self._dc_is_registered:
-            await self.make_persistent(backend_id=backend_id)
+            await self.a_make_persistent(backend_id=backend_id)
         else:
             await get_runtime().send_objects([self], backend_id, False, recursive, remotes)
+
+    def move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
+        return run_dc_coroutine(self.a_move, backend_id, recursive, remotes)
+
+    ##############
+    # Versioning #
+    ##############
+
+    @tracer.start_as_current_span("new_version")
+    async def a_new_version(
+        self, backend_id: UUID = None, recursive: bool = False
+    ) -> DataClayObject:
+        """Create a new version of the current object.
+
+        Args:
+            backend_id: the backend where the object will be stored. If this parameter is not
+                specified, a random backend will be chosen.
+
+        Returns:
+            A new object instance initialized with the field values of the current object.
+
+        Raises:
+            ObjectNotRegisteredError: If the object is not registered in dataClay.
+            KeyError: If the backend_id is not registered in dataClay.
+        """
+        return await get_runtime().new_object_version(self, backend_id)
+
+    def new_version(self, backend_id: UUID = None, recursive: bool = False) -> DataClayObject:
+        return run_dc_coroutine(self.a_new_version, backend_id, recursive)
+
+    @tracer.start_as_current_span("consolidate_version")
+    async def a_consolidate_version(self):
+        """Consolidate the current version of the object with the original one.
+
+        Raises:
+            ObjectIsNotVersionError: If the object is not a version.
+        """
+        await get_runtime().consolidate_version(self)
+
+    def consolidate_version(self):
+        return run_dc_coroutine(self.a_consolidate_version)
+
+    ###########
+    # Replica #
+    ###########
+
+    @tracer.start_as_current_span("new_replica")
+    async def a_new_replica(
+        self, backend_id: UUID = None, recursive: bool = False, remotes: bool = True
+    ):
+        await get_runtime().new_object_replica(self, backend_id, recursive, remotes)
+
+    def new_replica(self, backend_id: UUID = None, recursive: bool = False, remotes: bool = True):
+        return run_dc_coroutine(self.a_new_replica, backend_id, recursive, remotes)
 
     ########################
     # Object Store Methods #
@@ -533,7 +590,6 @@ class DataClayObject:
 
     @classmethod
     @tracer.start_as_current_span("dc_clone_by_alias")
-    @chooseasync
     async def dc_clone_by_alias(cls, alias: str, recursive: bool = False) -> DataClayObject:
         """Returns a non-persistent object as a copy of the object with the alias specified.
 
@@ -552,11 +608,10 @@ class DataClayObject:
         Raises:
             DoesNotExistError: If the alias does not exist.
         """
-        instance = await cls.get_by_alias(alias)
+        instance = await cls.a_get_by_alias(alias)
         return await get_runtime().make_object_copy(instance, recursive)
 
     @tracer.start_as_current_span("dc_clone")
-    @chooseasync
     async def dc_clone(self, recursive: bool = False) -> DataClayObject:
         """Returns a non-persistent object as a copy of the current object.
 
@@ -574,7 +629,6 @@ class DataClayObject:
 
     @classmethod
     @tracer.start_as_current_span("dc_update_by_alias")
-    @chooseasync
     async def dc_update_by_alias(cls, alias: str, from_object: DataClayObject):
         """Updates the object identified by specified alias with contents of from_object.
 
@@ -589,11 +643,10 @@ class DataClayObject:
         if cls != type(from_object):
             raise TypeError("Objects must be of the same type")
 
-        o = await cls.get_by_alias(alias)
+        o = await cls.a_get_by_alias(alias)
         await o.dc_update(from_object)
 
     @tracer.start_as_current_span("dc_update")
-    @chooseasync
     async def dc_update(self, from_object: DataClayObject):
         """Updates current object with contents of from_object.
 
@@ -609,7 +662,6 @@ class DataClayObject:
         await get_runtime().replace_object_properties(self, from_object)
 
     @tracer.start_as_current_span("dc_put")
-    @chooseasync
     async def dc_put(self, alias: str, backend_id: UUID = None):
         """Makes the object persistent in the specified backend.
 
@@ -627,58 +679,7 @@ class DataClayObject:
         """
         if not alias:
             raise AttributeError("Alias cannot be null or empty")
-        await self.make_persistent(alias=alias, backend_id=backend_id)
-
-    # Versioning
-
-    @tracer.start_as_current_span("new_version")
-    @chooseasync
-    async def new_version(self, backend_id: UUID = None, recursive: bool = False) -> DataClayObject:
-        """Create a new version of the current object.
-
-        Args:
-            backend_id: the backend where the object will be stored. If this parameter is not
-                specified, a random backend will be chosen.
-
-        Returns:
-            A new object instance initialized with the field values of the current object.
-
-        Raises:
-            ObjectNotRegisteredError: If the object is not registered in dataClay.
-            KeyError: If the backend_id is not registered in dataClay.
-        """
-        return await get_runtime().new_object_version(self, backend_id)
-
-    @tracer.start_as_current_span("consolidate_version")
-    @chooseasync
-    async def consolidate_version(self):
-        """Consolidate the current version of the object with the original one.
-
-        Raises:
-            ObjectIsNotVersionError: If the object is not a version.
-        """
-        await get_runtime().consolidate_version(self)
-
-    @tracer.start_as_current_span("getID")
-    def getID(self) -> Optional[str]:
-        """Return the JSON-encoded metadata of the persistent object for COMPSs.
-
-        If the object is NOT persistent, then this method returns None.
-        """
-        if self._dc_is_registered:
-            return self._dc_meta.model_dump_json()
-        else:
-            return None
-
-    ###########
-    # Replica #
-    ###########
-
-    @chooseasync
-    async def new_replica(
-        self, backend_id: UUID = None, recursive: bool = False, remotes: bool = True
-    ):
-        await get_runtime().new_object_replica(self, backend_id, recursive, remotes)
+        await self.a_make_persistent(alias=alias, backend_id=backend_id)
 
     ##############
     # Federation #

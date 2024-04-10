@@ -359,7 +359,7 @@ class DataClayRuntime(ABC):
                 # clients and the object backend locations, and try again
                 if not avail_backends:
                     logger.warning("(%s) No backends available. Syncing...", instance._dc_meta.id)
-                    await asyncio.gather(self.backend_clients.update(), instance.sync())
+                    await asyncio.gather(self.backend_clients.update(), instance.a_sync())
 
                     avail_backends = instance._dc_all_backend_ids.intersection(
                         self.backend_clients.keys()
@@ -671,7 +671,7 @@ class DataClayRuntime(ABC):
             # sync the object metadata, and try again
             if not avail_backends:
                 await self.backend_clients.update()
-                await instance.sync()
+                await instance.a_sync()
                 avail_backends = set(self.backend_clients.keys()) - instance._dc_all_backend_ids
 
                 if not avail_backends:
@@ -688,7 +688,7 @@ class DataClayRuntime(ABC):
 
         elif backend_id in instance._dc_meta.replica_backend_ids:
             # If the backend already have a replica, sync the instnace metadata, and try again
-            await instance.sync()
+            await instance.a_sync()
             if backend_id in instance._dc_meta.replica_backend_ids:
                 logger.warning("The backend already have a replica")
                 # If not recursive, no need to continue

@@ -36,7 +36,7 @@ class DataClayPickler(pickle.Pickler):
                 #     self.pending_make_persistent = []
                 # if obj not in self.pending_make_persistent:
                 #     self.pending_make_persistent.append(obj)
-            return obj.get_by_id_sync, (obj._dc_meta.id,)
+            return obj.get_by_id, (obj._dc_meta.id,)
         else:
             return NotImplemented
 
