@@ -45,7 +45,7 @@ class BackendAPI:
     async def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         ref = time.time()
         now = ref
-        if self.runtime.metadata_service.is_ready(timeout):
+        if await self.runtime.metadata_service.is_ready(timeout):
             # Check that dataclay_id is defined. If it is not defined, it could break things
             while timeout is None or (now - ref) < timeout:
                 try:

@@ -1,13 +1,8 @@
 from __future__ import annotations
 
-import asyncio
 import logging
-import signal
-import threading
-import time
 import traceback
 from concurrent import futures
-from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import grpc
@@ -30,7 +25,7 @@ async def serve():
     logger.info("Starting MetadataService")
     metadata_api = MetadataAPI(settings.kv_host, settings.kv_port)
 
-    if not metadata_api.is_ready(timeout=10):
+    if not await metadata_api.is_ready(timeout=10):
         raise RuntimeError("KV store is not ready. Aborting!")
 
     # Try to set the dataclay id if don't exists yet
@@ -48,7 +43,7 @@ async def serve():
         logger.info("MetadataService already registered with id %s", settings.dataclay_id)
         settings.dataclay_id = await metadata_api.get_dataclay("this").id
     else:
-        metadata_api.new_superuser(
+        await metadata_api.new_superuser(
             settings.root_username, settings.root_password, settings.root_dataset
         )
 
@@ -96,7 +91,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     async def NewAccount(self, request, context):
         try:
-            self.metadata_api.new_account(request.username, request.password)
+            await self.metadata_api.new_account(request.username, request.password)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -106,7 +101,7 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     async def NewDataset(self, request, context):
         try:
-            self.metadata_api.new_dataset(request.username, request.password, request.dataset)
+            await self.metadata_api.new_dataset(request.username, request.password, request.dataset)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)

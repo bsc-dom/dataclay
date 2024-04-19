@@ -4,8 +4,9 @@ import logging
 import time
 from typing import TYPE_CHECKING, Optional
 
-import redis
-from redis.cluster import RedisCluster
+from redis.exceptions import RedisClusterException, ConnectionError
+
+import redis.asyncio as redis
 
 from dataclay.exceptions.exceptions import *
 
@@ -19,75 +20,95 @@ logger = logging.getLogger(__name__)
 
 class RedisManager:
     def __init__(self, host: str, port: int = 6379):
-        try:
-            self.r_client = RedisCluster(host=host, port=port)
-        except (redis.exceptions.RedisClusterException, IndexError):
-            logger.warning("Redis cluster not found, using single node")
-            self.r_client = redis.Redis(host=host, port=port)
+        self.r_client = redis.Redis(host=host, port=port)
 
-    def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
+        # TODO: This won't work since the cluster is not initialized
+        # and the exception is not caught. We could use r_client.initialize()
+        # but it's not async and can't be called from __init__
+        # try:
+        #     self.r_client = redis.RedisCluster(host=host, port=port)
+        #     self.r_client.initialize()
+        # except (RedisClusterException, IndexError):
+        #     logger.warning("Redis cluster not found, using single node")
+        #     self.r_client = redis.Redis(host=host, port=port)
+
+    # @classmethod
+    # async def initialize(cls, host: str, port: int = 6379):
+    #     self = cls(host=host, port=port)
+    #     try:
+    #         logger.warning("trying to cluster")
+    #         self.r_client = redis.RedisCluster(host=host, port=port)
+    #         await self.r_client.initialize()
+    #         logger.warning("Redis cluster found")
+    #     except (RedisClusterException, IndexError):
+    #         logger.warning("Redis cluster not found, using single node")
+    #         self.r_client = redis.Redis(host=host, port=port)
+    #         await self.r_client.initialize()
+    #     return self
+
+    async def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         ref = time.time()
         now = ref
         while timeout is None or (now - ref) < timeout:
             try:
-                return self.r_client.ping()
-            except redis.ConnectionError:
+                return await self.r_client.ping()
+            except ConnectionError:
                 time.sleep(pause)
                 now = time.time()
         return False
 
-    def set_new(self, kv_object: KeyValue):
+    async def set_new(self, kv_object: KeyValue):
         """Sets a new key, failing if already exists.
 
         Use "set" if the key is using a UUID (should avoid conflict), in order to optimize for etcd (if used)
         """
-        if not self.r_client.set(kv_object.key, kv_object.value, nx=True):
+        if not await self.r_client.set(kv_object.key, kv_object.value, nx=True):
             raise AlreadyExistError(kv_object.key)
 
-    def set(self, kv_object: KeyValue):
+    async def set(self, kv_object: KeyValue):
         """Sets a key, overwriting if already exists."""
-        self.r_client.set(kv_object.key, kv_object.value)
+        await self.r_client.set(kv_object.key, kv_object.value)
 
-    def update(self, kv_object: KeyValue):
+    async def update(self, kv_object: KeyValue):
         """Updates a key that already exists.
 
         It could be used "set(..)" instead, but "update" makes sure the key was not deleted
         """
-        if not self.r_client.set(kv_object.key, kv_object.value, xx=True):
+        if not await self.r_client.set(kv_object.key, kv_object.value, xx=True):
             raise DoesNotExistError(kv_object.key)
 
-    def get_kv(self, kv_class: KeyValue, id: str | UUID):
+    async def get_kv(self, kv_class: KeyValue, id: str | UUID):
         """Get kv_class"""
 
         name = kv_class.path + str(id)
-        value = self.r_client.get(name)
+        value = await self.r_client.get(name)
         if value is None:
             raise DoesNotExistError(name)
 
         return kv_class.from_json(value)
 
-    def getdel_kv(self, kv_class: KeyValue, id: str | UUID):
+    async def getdel_kv(self, kv_class: KeyValue, id: str | UUID):
         """Get kv_class and delete key"""
 
         name = kv_class.path + str(id)
-        value = self.r_client.getdel(name)
+        value = await self.r_client.getdel(name)
         if value is None:
             raise DoesNotExistError(name)
 
         return kv_class.from_json(value)
 
-    def delete_kv(self, *names: str):
+    async def delete_kv(self, *names: str):
         """Delete one or more keys"""
-        self.r_client.delete(*names)
+        await self.r_client.delete(*names)
 
-    def getprefix(self, kv_class: KeyValue, prefix: str) -> dict[str, KeyValue]:
+    async def getprefix(self, kv_class: KeyValue, prefix: str) -> dict[str, KeyValue]:
         """Get a dict for all kv with prefix"""
         result = {}
-        for key in self.r_client.scan_iter(prefix + "*"):
-            value = self.r_client.get(key)
+        async for key in self.r_client.scan_iter(prefix + "*"):
+            value = await self.r_client.get(key)
             value = kv_class.from_json(value)
             result[key.decode().removeprefix(prefix)] = value
         return result
 
-    def lock(self, name: str):
-        return self.r_client.lock("/lock" + name)
+    async def lock(self, name: str):
+        return await self.r_client.lock("/lock" + name)
