@@ -18,6 +18,9 @@ session_var = contextvars.ContextVar("session")
 
 current_runtime: Union[ClientRuntime, BackendRuntime, None] = None
 
+# NOTE: This global event loop is necessary (even if not recommended by asyncio) because
+# dataClay methods can be called from different threads (when running activemethods in backend)
+# and we need to access the single event loop from the main thread.
 dc_event_loop: AbstractEventLoop = None
 
 

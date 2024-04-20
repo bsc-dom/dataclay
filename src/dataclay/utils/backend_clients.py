@@ -30,28 +30,26 @@ class BackendClientsManager(collections.abc.MutableMapping):
             await self.update()
             return self._backend_clients[key]
 
-    def start_update(self):
+    def start_update_loop(self):
         """Start the background thread that updates the dictionary."""
         if self.update_task is None or self.update_task.done():
-            loop = get_dc_event_loop()
-            self.update_task = loop.create_task(self._update_loop())
+            self.update_task = get_dc_event_loop().create_task(self._update_loop())
         else:
             logger.warning("Update loop is already running")
+
+    def stop_update_loop(self):
+        """Stop the background thread."""
+        if self.update_task:
+            self.update_task.cancel()
 
     async def _update_loop(self):
         try:
             while True:
-                logger.debug("Update loop running")
                 await self.update(force=False)
                 await asyncio.sleep(settings.backend_clients_check_interval)
         except asyncio.CancelledError:
             logger.info("Update loop has been cancelled.")
             raise
-
-    def stop_update(self):
-        """Stop the background thread."""
-        if self.update_task:
-            self.update_task.cancel()
 
     async def update(self, force: bool = True):
         """Update the backend clients.
@@ -114,24 +112,24 @@ class BackendClientsManager(collections.abc.MutableMapping):
     def start_subscribe(self):
         """Subscribe to the new-backend-client and del-backend-client pub/sub topics. Only for backends"""
         self.pubsub = self.metadata_api.kv_manager.r_client.pubsub()
-        self.pubsub.subscribe(
-            **{
-                "new-backend-client": self._new_backend_handler,
-                "del-backend-client": self._del_backend_handler,
-            }
+        self.worker_task = get_dc_event_loop().create_task(self._pubsub_worker())
+
+    async def _pubsub_worker(self):
+        await self.pubsub.subscribe(
+            "new-backend-client",
+            "del-backend-client",
         )
-        self.pubsub_thread = self.pubsub.run_in_thread(sleep_time=0.001, daemon=True)
-
-    def _new_backend_handler(self, message):
-        backend_info = Backend.from_json(message["data"])
-        logger.debug("Received new-backend-client publication: %s", backend_info.id)
-        self.add_backend_client(backend_info)
-
-    def _del_backend_handler(self, message):
-        backend_id = UUID(message["data"].decode())
-        logger.debug("Received del-backend-client publication: %s", backend_id)
-        if backend_id in self._backend_clients:
-            del self._backend_clients[backend_id]
+        async for message in self.pubsub.listen():
+            if message["type"] == "message":
+                if message["channel"].decode() == "new-backend-client":
+                    backend_info = Backend.from_json(message["data"])
+                    logger.debug("Received new-backend-client publication: %s", backend_info.id)
+                    await self.add_backend_client(backend_info)
+                elif message["channel"].decode() == "del-backend-client":
+                    backend_id = UUID(message["data"].decode())
+                    logger.debug("Received del-backend-client publication: %s", backend_id)
+                    if backend_id in self._backend_clients:
+                        del self._backend_clients[backend_id]
 
     def __getitem__(self, key) -> BackendClient:
         return self._backend_clients[key]

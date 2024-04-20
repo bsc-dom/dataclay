@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import traceback
 from concurrent import futures
@@ -15,6 +16,7 @@ from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.kvdata import Backend
 from dataclay.proto.common import common_pb2
 from dataclay.proto.metadata import metadata_pb2, metadata_pb2_grpc
+from dataclay.runtime import set_dc_event_loop
 from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.uuid import str_to_uuid
 
@@ -22,6 +24,10 @@ logger = logging.getLogger(__name__)
 
 
 async def serve():
+    # TODO: Think about moving the dc_event_loop to another place, since
+    # metadata don't need to import runtime, but has to define the event loop
+    set_dc_event_loop(asyncio.get_running_loop())
+
     logger.info("Starting MetadataService")
     metadata_api = MetadataAPI(settings.kv_host, settings.kv_port)
 
@@ -84,8 +90,8 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
         # Start the backend clients manager
         self.backend_clients = BackendClientsManager(metadata_api)
-        # self.backend_clients.start_update()
-        # self.backend_clients.start_subscribe()
+        self.backend_clients.start_update_loop()
+        self.backend_clients.start_subscribe()
 
     # TODO: define get_exception_info(..) to serialize excpetions
 

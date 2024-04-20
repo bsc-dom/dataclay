@@ -53,7 +53,7 @@ class DataClayRuntime(ABC):
         # Backend clients manager
         self.backend_clients = BackendClientsManager(metadata_service)
         # TODO: Integrate with asyncio
-        self.backend_clients.start_update()
+        self.backend_clients.start_update_loop()
         # if self.is_backend:
         #     self.backend_clients.start_subscribe()
 
@@ -879,7 +879,7 @@ class DataClayRuntime(ABC):
         for name, client in self.backend_clients.items():
             logger.debug("Closing client connection to %s", name)
             client.close()
-        self.backend_clients.stop_update()
+        self.backend_clients.stop_update_loop()
 
     ################## EXTRAE IGNORED FUNCTIONS ###########################
     deactivate_tracing.do_not_trace = True
