@@ -53,7 +53,7 @@ class DataClayRuntime(ABC):
         # Backend clients manager
         self.backend_clients = BackendClientsManager(metadata_service)
         # TODO: Integrate with asyncio
-        # self.backend_clients.start_update()
+        self.backend_clients.start_update()
         # if self.is_backend:
         #     self.backend_clients.start_subscribe()
 

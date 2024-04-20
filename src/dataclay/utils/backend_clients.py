@@ -4,11 +4,13 @@ import logging
 import threading
 import time
 from uuid import UUID
+import asyncio
 
 from dataclay.backend.client import BackendClient
 from dataclay.config import settings
 from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.kvdata import Backend
+from dataclay.runtime import get_dc_event_loop
 
 logger = logging.getLogger(__name__)
 
@@ -19,44 +21,49 @@ class BackendClientsManager(collections.abc.MutableMapping):
     def __init__(self, metadata_api: MetadataAPI):
         self._backend_clients = {}
         self.metadata_api = metadata_api
-        self.running = False
-        # TODO: Can the lock be removed in async? (marc: If we don't use a new thread, we can remove it)
-        self.lock = threading.RLock()
+        self.update_task = None
 
     async def get(self, key) -> BackendClient:
-        with self.lock:
-            try:
-                return self._backend_clients[key]
-            except KeyError:
-                await self.update()
-                return self._backend_clients[key]
+        try:
+            return self._backend_clients[key]
+        except KeyError:
+            await self.update()
+            return self._backend_clients[key]
 
     def start_update(self):
         """Start the background thread that updates the dictionary."""
-        if not self.running:
-            self.running = True
-            self.thread = threading.Thread(
-                target=self._update_loop, name="backend-clients-manager", daemon=True
-            )
-            self.thread.start()
+        if self.update_task is None or self.update_task.done():
+            loop = get_dc_event_loop()
+            self.update_task = loop.create_task(self._update_loop())
+        else:
+            logger.warning("Update loop is already running")
+
+    async def _update_loop(self):
+        try:
+            while True:
+                logger.debug("Update loop running")
+                await self.update(force=False)
+                await asyncio.sleep(settings.backend_clients_check_interval)
+        except asyncio.CancelledError:
+            logger.info("Update loop has been cancelled.")
+            raise
 
     def stop_update(self):
         """Stop the background thread."""
-        self.running = False
-        # self.thread.join() # This just makes shutdown slower
-
-    def _update_loop(self):
-        while self.running:
-            self.update(force=False)
-            time.sleep(settings.backend_clients_check_interval)
+        if self.update_task:
+            self.update_task.cancel()
 
     async def update(self, force: bool = True):
-        """Update the backend clients."""
+        """Update the backend clients.
+
+        If force is True, the backend clients will be updated directly from the kv.
+        If force is False, the backend clients will be updated with the metadata backends cache.
+        """
         logger.debug("Updating backend clients")
         backend_infos = await self.metadata_api.get_all_backends(force=force)
-        with self.lock:
-            for backend_info in backend_infos.values():
-                await self.add_backend_client(backend_info)
+
+        for backend_info in backend_infos.values():
+            await self.add_backend_client(backend_info)
 
     async def add_backend_client(self, backend_info, check_ready=False):
         # This only applies to the client, or at least, when client settings are set
@@ -127,16 +134,13 @@ class BackendClientsManager(collections.abc.MutableMapping):
             del self._backend_clients[backend_id]
 
     def __getitem__(self, key) -> BackendClient:
-        with self.lock:
-            return self._backend_clients[key]
+        return self._backend_clients[key]
 
     def __setitem__(self, key, value):
-        with self.lock:
-            self._backend_clients[key] = value
+        self._backend_clients[key] = value
 
     def __delitem__(self, key):
-        with self.lock:
-            del self._backend_clients[key]
+        del self._backend_clients[key]
 
     def __iter__(self):
         return iter(self._backend_clients.copy())

@@ -150,9 +150,10 @@ class Client:
         logger.info("Starting client runtime")
 
         # Create new event loop (if not AsyncClient)
+        # TODO: Should we add the loop to a background thread?
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        set_dc_event_loop(self.loop)  # TODO: find a cleaner architecture
+        set_dc_event_loop(self.loop)
 
         # Replace settings
         self.previous_settings = settings.client
