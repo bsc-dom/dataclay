@@ -1,0 +1,17 @@
+{
+  plugins: {
+    rest: {                        // activate and configure the REST plugin
+      http_port: 8000              // with HTTP server listening on port 8000
+    },
+    storage_manager: {             // activate and configure the storage_manager plugin
+      storages: {
+        data: {                  // configure a "data" storage
+          key_expr: "**",   // which subscribes and replies to query on **
+          volume: {                // and using the "memory" volume (always present by default)
+            id: "memory"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,74 @@
+version: '3.9'
+services:
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+
+  metadata-service:
+    image: "ghcr.io/bsc-dom/dataclay:dev"
+    depends_on:
+      - redis
+    ports:
+      - 16587:16587
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_KV_PORT=6379
+      - DATACLAY_ID
+      - DATACLAY_PASSWORD=s3cret
+      - DATACLAY_USERNAME=testuser
+      - DATACLAY_DATASET=testdata
+      - DATACLAY_METADATA_PORT=16587
+      - DATACLAY_LOGLEVEL=DEBUG
+    command: python -m dataclay.metadata
+
+  backend:
+    image: "ghcr.io/bsc-dom/dataclay:dev"
+    depends_on:
+      - redis
+    ports:
+      - 6867:6867
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_KV_PORT=6379
+      - DATACLAY_BACKEND_ID
+      - DATACLAY_BACKEND_NAME
+      - DATACLAY_BACKEND_PORT=6867
+      - DATACLAY_LOGLEVEL=DEBUG
+    command: bash -c "pip install eclipse-zenoh && python -m dataclay.backend"
+    volumes:
+      - ./model:/workdir/model:ro
+
+  backend_2:
+    image: "ghcr.io/bsc-dom/dataclay:dev"
+    depends_on:
+      - redis
+    ports:
+      - 6868:6868
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_KV_PORT=6379
+      - DATACLAY_BACKEND_ID
+      - DATACLAY_BACKEND_NAME
+      - DATACLAY_BACKEND_PORT=6868
+      - DATACLAY_LOGLEVEL=DEBUG
+    command: bash -c "pip install eclipse-zenoh && python -m dataclay.backend"
+    volumes:
+      - ./model:/workdir/model:ro
+  
+  # zenoh eclipse
+  zenoh_net:
+    image: eclipse/zenoh
+    restart: unless-stopped
+    ports:
+      - 7447:7447
+      - 8000:8000
+    volumes:
+      - ./zenoh_docker:/root/.zenoh
+    environment:
+      - RUST_LOG=debug
+    command: -c /root/.zenoh/zenoh-conf.json5
+
+
+    

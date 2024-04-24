@@ -4,10 +4,9 @@ MQTT bridging
 
 dataClay includes support for client communication via MQTT.
 
-In order to use this functionality, the client class has to inherit the MQTTMixin class. The client will be 
-able to specify how the messages should be handled, to which topics will be subscribed and send messages with 
-a topic. 
-
+In order to use this functionality, the client class has to inherit the MQTTMixin class. 
+The client will be able to specify how the messages should be handled, which topics will be subscribed to,
+and send messages with a topic. 
 """
 from typing import Any
 
@@ -26,22 +25,22 @@ class MQTTMixin:
     @activemethod
     def message_handling(self,client, userdata, msg):
         """Placeholder for function message_handling. This function describes how the client will handle a 
-        message
+        message.
 
         Args:
-            client (Client): The client instance for this callback
-            userdata: The private user data as set in Client() or user_data_set()
+            client (paho.mqtt.client.Client): The client instance for this callback.
+            userdata: The private user data as set in Client() or user_data_set().
             msg (MQTTMessage): The received message.
                         This is a class with members topic, payload, qos, retain.
 
         Raises:
-            NotImplementedError: If the message_handling function has not been implemented an error is raised
+            NotImplementedError: If the message_handling function has not been implemented, an error is raised.
         """
         raise NotImplementedError("Must override message_handling")
 
     @activemethod
     def subscribe_to_topic(self, topic: str = "dataclay"):
-        """Subscribes the client to a topic and indicates how will handle a message receiving
+        """Subscribes the client to a topic and indicates how it will handle a message received.
 
         Args:
             topic (str, optional): String representing the topic. Defaults to "dataclay".
@@ -66,10 +65,10 @@ class MQTTMixin:
 
     @activemethod
     def produce_mqtt_msg(self, data: dict[str, Any], topic: str = "dataclay", **more):
-        """The client is connected to the broker and it sends a message to the chosen topic
+        """The client is connected to the broker, and it sends the message to the chosen topic.
 
         Args:
-            data (dict[str, Any]): Message
+            data (dict[str, Any]): Message.
             topic (str, optional): Topic of the message. Defaults to "dataclay".
         """
         import os
@@ -93,7 +92,7 @@ class MQTTMixin:
 
     @activemethod
     def send_to_mqtt(self):
-        """Previous function to produce_mqtt_msg. Gets all the arguments needed from the calling class
+        """Previous function to produce_mqtt_msg. Gets all the arguments needed from the calling class.
         """
         import inspect
         attributes = inspect.getmembers(self.__class__, lambda a: not (inspect.isroutine(a)))
