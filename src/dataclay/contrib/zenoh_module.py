@@ -121,7 +121,11 @@ class ZenohMixin:
         session = zenoh.open(zenoh.Config.from_json5(self.conf))
         replies = session.get(key,zenoh.ListCollector())
         for reply in replies():
-            returns.append("Received ('{}': '{}')"
-                .format(reply.ok.key_expr, reply.ok.payload.decode("utf-8")))
+            try:
+                returns.append("Received ('{}': '{}')"
+                    .format(reply.ok.key_expr, reply.ok.payload.decode("utf-8")))
+            except:
+                returns.append("Received (ERROR: '{}')"
+                    .format(reply.err.payload.decode("utf-8")))
         return returns
         
