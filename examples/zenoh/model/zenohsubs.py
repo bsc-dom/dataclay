@@ -1,9 +1,7 @@
 from dataclay import DataClayObject, activemethod
-from dataclay.contrib.zenoh import ZenohMixin
+from dataclay.contrib.zenoh_module import ZenohMixin
 import logging
 
-import zenoh
-import time
 
 logger = logging.getLogger(__name__)
 

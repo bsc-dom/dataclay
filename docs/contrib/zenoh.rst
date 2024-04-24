@@ -1,2 +1,2 @@
-.. automodule:: dataclay.contrib.zenoh
+.. automodule:: dataclay.contrib.zenoh_module
     :members:
