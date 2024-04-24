@@ -1,12 +1,13 @@
 """
 Zenoh bridging
-=============
+==============
 
 dataClay includes support for publisher/subscriber communication via Zenoh.
 
 In order to use this functionality, the client class has to inherit the ZenohMixin class. Communications can 
-be established using pub/sub and queries. The subscriber can specify how the messages will be handled and to
-which topics will be subscribed. Also it can ask for the last value stored in an existing subscription.
+be established using pub/sub and queries. 
+The subscriber can specify how the messages will be handled and to which topics will be subscribed. Also it 
+can ask for the last value stored in an existing subscription using the queries.
 The publisher can send messages to a specific topic.
 
 """
@@ -27,7 +28,7 @@ class ZenohMixin:
 
     @activemethod
     def __init__(self, conf = '{}'):
-        """Class constructor
+        """Class constructor.
 
         Args:
             conf (str, optional): Changes the configuration if needed. Defaults to '{}'.
@@ -37,20 +38,19 @@ class ZenohMixin:
 
     @activemethod
     def handler(self,sample):
-        """Placeholder for function handler. This function describes how the client will handle a 
-        message
+        """Placeholder for function handler. This function describes how the client will handle a message.
 
         Args:
-            sample (zenoh.Sample): Information sent by Zenoh to the subscriber
+            sample (zenoh.Sample): Information sent by Zenoh to the subscriber.
 
         Raises:
-            NotImplementedError: If the handler function has not been implemented an error is raised
+            NotImplementedError: If the handler function has not been implemented an error is raised.
         """
         raise NotImplementedError("Must override handler")
         
     @activemethod
     def produce_zenoh_msg(self, buf: str = "", key: str = "dataclay", **more):
-        """Sends the message "buf" to the topic "key"
+        """Sends the message "buf" to the topic "key".
 
         Args:
             buf (str, optional): Message. Defaults to "".
@@ -62,7 +62,7 @@ class ZenohMixin:
 
     @activemethod
     def send_to_zenoh(self):
-        """Previous function to produce_zenoh_msg. Gets all the arguments needed from the calling class
+        """Previous function to produce_zenoh_msg. Gets all the arguments needed from the calling class.
         """
         import inspect
         attributes = inspect.getmembers(self.__class__, lambda a: not (inspect.isroutine(a)))
@@ -99,7 +99,7 @@ class ZenohMixin:
 
     @activemethod
     def unsubscribe(self,key):
-        """Unsubscribes the client from a topic
+        """Unsubscribes the client from a topic.
 
         Args:
             key (str): Topic.
@@ -108,14 +108,14 @@ class ZenohMixin:
 
     @activemethod
     def get_last_data(self,key):
-        """Returns the lastest value stored in this Zenoh topic
+        """Returns the lastest value stored in this Zenoh topic.
 
         Args:
-            key (str): Topic
+            key (str): Topic.
 
         Returns:
-            list[str{reply.key_expr}:{reply.playload}]: Returns the lastest value stored in a specific
-             Zenoh topic
+            list[str{reply.key_expr}:{reply.playload}]: Returns the lastest value stored in a specific Zenoh 
+            topic.
         """
         returns=[]
         session = zenoh.open(zenoh.Config.from_json5(self.conf))
