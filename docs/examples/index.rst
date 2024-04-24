@@ -6,4 +6,6 @@ Examples
 
    quickstart
    hello-family
+   mqtt
+   zenoh
 
