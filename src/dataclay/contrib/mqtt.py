@@ -5,7 +5,7 @@ MQTT bridging
 dataClay includes support for client communication via MQTT.
 
 In order to use this functionality, the client class has to inherit the MQTTMixin class. 
-The client will be able to specify how the messages should be handled, to which topics will be subscribed
+The client will be able to specify how the messages should be handled, which topics will be subscribed to,
 and send messages with a topic. 
 """
 from typing import Any
@@ -34,13 +34,13 @@ class MQTTMixin:
                         This is a class with members topic, payload, qos, retain.
 
         Raises:
-            NotImplementedError: If the message_handling function has not been implemented an error is raised.
+            NotImplementedError: If the message_handling function has not been implemented, an error is raised.
         """
         raise NotImplementedError("Must override message_handling")
 
     @activemethod
     def subscribe_to_topic(self, topic: str = "dataclay"):
-        """Subscribes the client to a topic and indicates how will handle a message receiving.
+        """Subscribes the client to a topic and indicates how it will handle a message received.
 
         Args:
             topic (str, optional): String representing the topic. Defaults to "dataclay".
@@ -65,7 +65,7 @@ class MQTTMixin:
 
     @activemethod
     def produce_mqtt_msg(self, data: dict[str, Any], topic: str = "dataclay", **more):
-        """The client is connected to the broker and it sends the message to the chosen topic.
+        """The client is connected to the broker, and it sends the message to the chosen topic.
 
         Args:
             data (dict[str, Any]): Message.

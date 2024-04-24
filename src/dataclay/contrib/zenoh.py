@@ -6,7 +6,7 @@ dataClay includes support for publisher/subscriber communication via Zenoh.
 
 In order to use this functionality, the client class has to inherit the ZenohMixin class. Communications can 
 be established using pub/sub and queries. 
-The subscriber can specify how the messages will be handled and to which topics will be subscribed. Also it 
+The subscriber can specify how the messages will be handled and to which topics it will be subscribed. Also, it 
 can ask for the last value stored in an existing subscription using the queries.
 The publisher can send messages to a specific topic.
 
@@ -31,7 +31,7 @@ class ZenohMixin:
         """Class constructor.
 
         Args:
-            conf (str, optional): Changes the configuration if needed. Defaults to '{}'.
+            conf (str, optional): Change the configuration if needed. Defaults to '{}'.
         """
         self.subscriptions = []
         self.conf = conf
@@ -75,7 +75,7 @@ class ZenohMixin:
 
     @activemethod
     def __receive_data(self,key):
-        """While the client is subscribed to a topic it will check and handle the receivment of a message.
+        """While the client is subscribed to a topic, it will check and handle the receipt of a message.
 
         Args:
             key (str): Topic.
@@ -88,7 +88,7 @@ class ZenohMixin:
 
     @activemethod
     def receive_data(self,key):
-        """Creates a thread which will check if a message from the topic arrives and will handle it.
+        """Create a thread which will check if a message from the topic arrives and will handle it.
 
         Args:
             key (str): Topic.
@@ -108,13 +108,13 @@ class ZenohMixin:
 
     @activemethod
     def get_last_data(self,key):
-        """Returns the lastest value stored in this Zenoh topic.
+        """Returns the latest value stored in this Zenoh topic.
 
         Args:
             key (str): Topic.
 
         Returns:
-            list[str{reply.key_expr}:{reply.playload}]: Returns the lastest value stored in a specific Zenoh 
+            list[str{reply.key_expr}:{reply.playload}]: Returns the latest value stored on a specific Zenoh 
             topic.
         """
         returns=[]
