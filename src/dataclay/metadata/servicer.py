@@ -5,6 +5,7 @@ import logging
 import traceback
 from concurrent import futures
 from uuid import UUID, uuid4
+import signal
 
 import grpc
 from google.protobuf.empty_pb2 import Empty
@@ -16,7 +17,7 @@ from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.kvdata import Backend
 from dataclay.proto.common import common_pb2
 from dataclay.proto.metadata import metadata_pb2, metadata_pb2_grpc
-from dataclay.runtime import set_dc_event_loop
+from dataclay.runtime import set_dc_event_loop, get_dc_event_loop
 from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.uuid import str_to_uuid
 
@@ -28,9 +29,10 @@ async def serve():
     # metadata don't need to import runtime, but has to define the event loop
     set_dc_event_loop(asyncio.get_running_loop())
 
-    logger.info("Starting MetadataService")
+    logger.info("Starting Metadata Service...")
     metadata_api = MetadataAPI(settings.kv_host, settings.kv_port)
 
+    # Wait for the KV store to be ready
     if not await metadata_api.is_ready(timeout=10):
         raise RuntimeError("KV store is not ready. Aborting!")
 
@@ -53,13 +55,12 @@ async def serve():
             settings.root_username, settings.root_password, settings.root_dataset
         )
 
-    server = grpc.aio.server(
-        futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers)
-    )
-    metadata_pb2_grpc.add_MetadataServiceServicer_to_server(
-        MetadataServicer(metadata_api, server), server
-    )
+    # Initialize the servicer
+    server = grpc.aio.server()
+    metadata_servicer = MetadataServicer(metadata_api, server)
+    metadata_pb2_grpc.add_MetadataServiceServicer_to_server(metadata_servicer, server)
 
+    # Enable healthcheck for the server
     if settings.metadata.enable_healthcheck:
         logger.info("Enabling healthcheck for MetadataService")
         health_servicer = health.HealthServicer(
@@ -73,18 +74,30 @@ async def serve():
             "dataclay.proto.metadata.MetadataService", health_pb2.HealthCheckResponse.SERVING
         )
 
+    # Start the server
     address = f"{settings.metadata.listen_address}:{settings.metadata.port}"
     server.add_insecure_port(address)
     await server.start()
     logger.info("MetadataService listening on %s", address)
 
-    await server.wait_for_termination()  # Neccessary to keep the server running (cannot use event.wait())
+    # Register signal handlers for graceful termination
+    loop = get_dc_event_loop()
+    for sig in [signal.SIGINT, signal.SIGTERM]:
+        get_dc_event_loop().add_signal_handler(
+            sig, lambda: loop.create_task(server.stop(settings.shutdown_grace_period))
+        )
+
+    # Wait for the server to stop
+    await server.wait_for_termination()
+    logger.info("MetadataService stopped")
+    await metadata_servicer.backend_clients.stop()
+    await metadata_api.close()
 
 
 class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
     """Provides methods that implement functionality of metadata server"""
 
-    def __init__(self, metadata_api: MetadataAPI, server: grpc.aio.server):
+    def __init__(self, metadata_api: MetadataAPI, server: grpc.aio.Server):
         self.metadata_api = metadata_api
         self.server = server
 
@@ -231,8 +244,10 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     async def Stop(self, request, context):
         try:
-            logger.info("Stopping MetadataService")
-            self.server.stop(5)
+            logger.warning(
+                "Stopping MetadataService. Grace period: %ss", settings.shutdown_grace_period
+            )
+            get_dc_event_loop().create_task(self.server.stop(settings.shutdown_grace_period))
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)

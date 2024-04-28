@@ -27,6 +27,9 @@ class MetadataAPI:
     def __init__(self, kv_host: str, kv_port: int):
         self.kv_manager = RedisManager(kv_host, kv_port)
 
+    async def close(self):
+        await self.kv_manager.close()
+
     async def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         return await self.kv_manager.is_ready(timeout=timeout, pause=pause)
 
@@ -167,7 +170,7 @@ class MetadataAPI:
         logger.info("Registered Backend with id=%s, host=%s, port=%s", id, host, port)
 
         # Publishes a message to the channel "new-backend-client"
-        await self.kv_manager.r_client.publish("new-backend-client", backend.value)
+        await self.kv_manager.publish("new-backend-client", backend.value)
 
     @tracer.start_as_current_span("delete_backend")
     async def delete_backend(self, id: UUID):
@@ -176,7 +179,7 @@ class MetadataAPI:
         logger.info("Deleted Backend with id=%s", id)
 
         # Publishes a message to the channel "del-backend-clients"
-        await self.kv_manager.r_client.publish("del-backend-client", str(id))
+        await self.kv_manager.publish("del-backend-client", str(id))
 
     ###################
     # Dataclay Object #

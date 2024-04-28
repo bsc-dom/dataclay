@@ -54,8 +54,8 @@ class DataClayRuntime(ABC):
         self.backend_clients = BackendClientsManager(metadata_service)
         # TODO: Integrate with asyncio
         self.backend_clients.start_update_loop()
-        # if self.is_backend:
-        #     self.backend_clients.start_subscribe()
+        if self.is_backend:
+            self.backend_clients.start_subscribe()
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
         self.inmemory_objects: WeakValueDictionary[UUID, DataClayObject] = WeakValueDictionary()
@@ -872,14 +872,6 @@ class DataClayRuntime(ABC):
     @abstractmethod
     async def stop(self):
         pass
-
-    def close_backend_clients(self):
-        """Stop connections and daemon threads."""
-        logger.debug("** Stopping runtime **")
-        for name, client in self.backend_clients.items():
-            logger.debug("Closing client connection to %s", name)
-            client.close()
-        self.backend_clients.stop_update_loop()
 
     ################## EXTRAE IGNORED FUNCTIONS ###########################
     deactivate_tracing.do_not_trace = True

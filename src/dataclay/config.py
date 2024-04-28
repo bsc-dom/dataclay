@@ -81,6 +81,7 @@ class Settings(BaseSettings):
     unload_timeout: int = 5
     timeout_channel_ready: int = 5
     backend_clients_check_interval: int = 10
+    shutdown_grace_period: int = 5
 
     # SSL
     ssl_client_trusted_certificates: str = ""

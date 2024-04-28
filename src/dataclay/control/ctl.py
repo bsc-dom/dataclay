@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 import json
 import logging
 import time
@@ -50,10 +51,10 @@ def new_dataset(username, password, dataset, host, port):
     mds_client.new_dataset(username, password, dataset)
 
 
-def get_backends(host, port):
+async def get_backends(host, port):
     logger.info("Getting backends from %s:%s", host, port)
     metadata_client = MetadataClient(host, port)
-    backend_infos = metadata_client.get_all_backends()
+    backend_infos = await metadata_client.get_all_backends()
     for v in backend_infos.values():
         print(json.dumps(v.__dict__, cls=UUIDEncoder, indent=2))
 
@@ -62,20 +63,20 @@ def new_backend(args):
     pass
 
 
-def stop_backend(host, port):
+async def stop_backend(host, port):
     logger.info("Stopping backend at %s:%s", host, port)
     backend_client = BackendClient(host, port)
-    backend_client.stop()
+    await backend_client.stop()
 
 
-def stop_dataclay(host, port):
+async def stop_dataclay(host, port):
     logger.info("Stopping dataclay at %s:%s", host, port)
     metadata_client = MetadataClient(host, port)
-    backend_infos = metadata_client.get_all_backends()
+    backend_infos = await metadata_client.get_all_backends()
     for v in backend_infos.values():
-        stop_backend(v.host, v.port)
+        await stop_backend(v.host, v.port)
 
-    metadata_client.stop()
+    await metadata_client.stop()
 
 
 def rebalance(host, port):
@@ -236,7 +237,7 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def main():
+async def main():
     # Set client settings
     settings.client = ClientSettings()
 
@@ -259,20 +260,24 @@ def main():
         new_dataset(args.username, args.password, args.dataset, args.host, args.port)
 
     elif args.function == "stop_backend":
-        stop_backend(args.host, args.port)
+        await stop_backend(args.host, args.port)
 
     elif args.function == "stop_dataclay":
-        stop_dataclay(args.host, args.port)
+        await stop_dataclay(args.host, args.port)
 
     elif args.function == "rebalance":
         rebalance(args.host, args.port)
 
     elif args.function == "get_backends":
-        get_backends(args.host, args.port)
+        await get_backends(args.host, args.port)
 
     elif args.function == "get_objects":
         get_objects(args.host, args.port)
 
 
+def run():
+    asyncio.run(main())
+
+
 if __name__ == "__main__":
-    main()
+    run()

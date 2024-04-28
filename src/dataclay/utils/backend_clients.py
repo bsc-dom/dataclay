@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections
 import concurrent.futures
 import logging
@@ -5,12 +7,17 @@ import threading
 import time
 from uuid import UUID
 import asyncio
+from typing import TYPE_CHECKING
 
 from dataclay.backend.client import BackendClient
 from dataclay.config import settings
-from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.kvdata import Backend
 from dataclay.runtime import get_dc_event_loop
+from dataclay.metadata.api import MetadataAPI
+
+if TYPE_CHECKING:
+    from dataclay.metadata.api import MetadataAPI
+    from dataclay.metadata.client import MetadataClient
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +25,12 @@ logger = logging.getLogger(__name__)
 class BackendClientsManager(collections.abc.MutableMapping):
     """Thread that periodically updates the backend clients."""
 
-    def __init__(self, metadata_api: MetadataAPI):
-        self._backend_clients = {}
+    def __init__(self, metadata_api: MetadataAPI | MetadataClient):
+        self._backend_clients: dict[UUID, BackendClient] = {}
         self.metadata_api = metadata_api
         self.update_task = None
+        self.pubsub = None
+        self.worker_task = None
 
     async def get(self, key) -> BackendClient:
         try:
@@ -111,8 +120,18 @@ class BackendClientsManager(collections.abc.MutableMapping):
 
     def start_subscribe(self):
         """Subscribe to the new-backend-client and del-backend-client pub/sub topics. Only for backends"""
-        self.pubsub = self.metadata_api.kv_manager.r_client.pubsub()
+        if not isinstance(self.metadata_api, MetadataAPI):
+            logger.warning("Pub/sub not available. Access to kv data is not allowed for clients.")
+            return
+
+        self.pubsub = self.metadata_api.kv_manager.pubsub()
         self.worker_task = get_dc_event_loop().create_task(self._pubsub_worker())
+
+    async def stop_subscribe(self):
+        """Unsubscribe from the pub/sub topics."""
+        if self.worker_task:
+            self.worker_task.cancel()
+            await self.pubsub.close()
 
     async def _pubsub_worker(self):
         await self.pubsub.subscribe(
@@ -145,3 +164,11 @@ class BackendClientsManager(collections.abc.MutableMapping):
 
     def __len__(self):
         return len(self._backend_clients)
+
+    async def stop(self):
+        """Stop the background task and close the pubsub connection."""
+        self.stop_update_loop()
+        await self.stop_subscribe()
+        for backend_id, backend_client in self._backend_clients.items():
+            logger.debug("Closing client connection to %s", backend_id)
+            backend_client.close()

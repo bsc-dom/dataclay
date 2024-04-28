@@ -53,13 +53,16 @@ class BackendRuntime(DataClayRuntime):
         # Remove backend entry from metadata
         await self.metadata_service.delete_backend(self.backend_id)
 
-        # Stop DataManager
-        logger.debug("Stopping DataManager")
-        self.data_manager.stop()
-        self.data_manager.join()
-        logger.debug("DataManager stopped.")
+        # Stop metadata redis connection
+        await self.metadata_service.close()
 
-        self.close_backend_clients()
+        # Stop DataManager
+        # logger.debug("Stopping DataManager")
+        # self.data_manager.stop()
+        # self.data_manager.join()
+        # logger.debug("DataManager stopped.")
+
+        await self.backend_clients.stop()
         if not settings.ephemeral:
             self.data_manager.flush_all()
 

@@ -18,7 +18,7 @@ from dataclay.backend.api import BackendAPI
 from dataclay.config import settings
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
-from dataclay.runtime import session_var, set_dc_event_loop
+from dataclay.runtime import session_var, set_dc_event_loop, get_dc_event_loop
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ async def serve():
 
     backend_id = _get_or_generate_backend_id()
 
-    logger.info("Starting backend service")
+    logger.info("Starting backend service...")
     backend = BackendAPI(
         settings.backend.name,
         settings.backend.port,
@@ -78,15 +78,21 @@ async def serve():
         settings.kv_port,
     )
 
+    # Wait for the KV store to be ready
     if not await backend.is_ready(timeout=10):
         raise RuntimeError("KV store is not ready. Aborting!")
 
+    # Initialize the servicer
     server = grpc.aio.server(
-        futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers),
-        options=[("grpc.max_send_message_length", -1), ("grpc.max_receive_message_length", -1)],
+        options=[
+            ("grpc.max_send_message_length", -1),
+            ("grpc.max_receive_message_length", -1),
+        ],
     )
-    backend_pb2_grpc.add_BackendServiceServicer_to_server(BackendServicer(backend, server), server)
+    backend_servicer = BackendServicer(backend, server)
+    backend_pb2_grpc.add_BackendServiceServicer_to_server(backend_servicer, server)
 
+    # Enable healthcheck for the server
     if settings.backend.enable_healthcheck:
         logger.info("Enabling healthcheck for BackendService")
         health_servicer = health.HealthServicer(
@@ -100,6 +106,7 @@ async def serve():
             "dataclay.proto.backend.BackendService", health_pb2.HealthCheckResponse.SERVING
         )
 
+    # Start the server
     address = f"{settings.backend.listen_address}:{settings.backend.port}"
     server.add_insecure_port(address)
     await server.start()
@@ -113,14 +120,21 @@ async def serve():
         settings.dataclay_id,
     )
 
-    await server.wait_for_termination()
-    logger.info("Stopping backend service")
+    # Register signal handlers for graceful termination
+    loop = get_dc_event_loop()
+    for sig in [signal.SIGINT, signal.SIGTERM]:
+        loop.add_signal_handler(
+            sig, lambda: loop.create_task(server.stop(settings.shutdown_grace_period))
+        )
 
-    backend.stop()
+    # Wait for the server to stop
+    await server.wait_for_termination()
+    logger.info("Backend service stopped")
+    await backend.stop()
 
 
 class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
-    def __init__(self, backend: BackendAPI, server: grpc.aio.server):
+    def __init__(self, backend: BackendAPI, server: grpc.aio.Server):
         """Execution environment being managed"""
         self.backend = backend
         self.server = server
@@ -324,6 +338,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def FlushAll(self, request, context):
         self._check_context(context)
         try:
+            logger.info("Flushing all objects")
             await self.backend.flush_all()
             return Empty()
         except Exception as e:
@@ -335,7 +350,8 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def Stop(self, request, context):
         self._check_context(context)
         try:
-            await self.server.stop()
+            logger.info("Stopping backend. Grace period: %ss", settings.shutdown_grace_period)
+            get_dc_event_loop().create_task(self.server.stop(settings.shutdown_grace_period))
             return Empty()
         except Exception as e:
             context.set_details(str(e))
@@ -346,8 +362,9 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def Drain(self, request, context):
         self._check_context(context)
         try:
+            logger.info("Draining backend. Grace period: %ss", settings.shutdown_grace_period)
             await self.backend.move_all_objects()
-            self.server.stop()
+            get_dc_event_loop().create_task(self.server.stop(settings.shutdown_grace_period))
             return Empty()
         except Exception as e:
             context.set_details(str(e))
