@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Optional
 from dataclay import utils
 from dataclay.config import settings
 from dataclay.exceptions import *
-from dataclay.runtime import LockManager, set_runtime
+from dataclay.runtime import set_runtime, lock_manager, get_dc_event_loop
 from dataclay.runtime.backend import BackendRuntime
 from dataclay.utils.contextvars import run_in_context
 from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcloads
@@ -62,8 +62,8 @@ class BackendAPI:
     async def register_objects(self, serialized_objects: Iterable[bytes], make_replica: bool):
         logger.debug("Receiving (%d) objects to register", len(serialized_objects))
         for object_bytes in serialized_objects:
-            object_dict, state = await dcloads(object_bytes)
-            instance = await self.runtime.get_object_by_id(object_dict["_dc_meta"].id)
+            state, getstate = await dcloads(object_bytes)
+            instance = await self.runtime.get_object_by_id(state["_dc_meta"].id)
 
             if instance._dc_is_local:
                 assert instance._dc_is_replica
@@ -71,12 +71,13 @@ class BackendAPI:
                     logger.warning("Replica already exists with id=%s", instance._dc_meta.id)
                     continue
 
-            with LockManager.write(instance._dc_meta.id):
-                object_dict["_dc_is_loaded"] = True
-                object_dict["_dc_is_local"] = True
-                vars(instance).update(object_dict)
-                if state:
-                    instance.__setstate__(state)
+            async with lock_manager.get_lock(instance._dc_meta.id).writer_lock:
+                # Update object state and flags
+                state["_dc_is_loaded"] = True
+                state["_dc_is_local"] = True
+                vars(instance).update(state)
+                if getstate:
+                    instance.__setstate__(getstate)
                 self.runtime.data_manager.add_hard_reference(instance)
 
                 if make_replica:
@@ -88,7 +89,7 @@ class BackendAPI:
                     instance._dc_meta.master_backend_id = self.backend_id
                     instance._dc_meta.replica_backend_ids.discard(self.backend_id)
                     # we can only move masters
-                    # instance._dc_is_replica = False # already set by vars(instance).update(object_dict)
+                    # instance._dc_is_replica = False # already set by vars(instance).update(state)
 
                 # ¿Should be always updated here, or from the calling backend?
                 await self.runtime.metadata_service.upsert_object(instance._dc_meta)
@@ -157,7 +158,7 @@ class BackendAPI:
             logger.debug("(%s) *** Starting activemethod '%s' in executor", object_id, method_name)
 
             # Call activemethod in another thread
-            loop = asyncio.get_running_loop()  # Must be same as get_dc_running_loop
+            loop = get_dc_event_loop()
             result = await loop.run_in_executor(
                 None,
                 run_in_context,
@@ -369,7 +370,7 @@ class BackendAPI:
 
     @tracer.start_as_current_span("flush_all")
     async def flush_all(self):
-        self.runtime.data_manager.flush_all()
+        await self.runtime.data_manager.flush_all()
 
     @tracer.start_as_current_span("move_all_objects")
     async def move_all_objects(self):

@@ -19,10 +19,12 @@ from dataclay.backend.client import BackendClient
 from dataclay.config import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
-from dataclay.runtime import LockManager, session_var
+from dataclay.runtime import session_var, lock_manager
 from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcdumps
 from dataclay.utils.telemetry import trace
+from dataclay.backend.data_manager import DataManager
+
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -50,12 +52,14 @@ class DataClayRuntime(ABC):
         self.is_backend = bool(backend_id)
         self.metadata_service = metadata_service
 
-        # Backend clients manager
+        # Initialize BackendClientsManager and Data Manager
         self.backend_clients = BackendClientsManager(metadata_service)
-        # TODO: Integrate with asyncio
+        self.data_manager = DataManager()
         self.backend_clients.start_update_loop()
+
         if self.is_backend:
             self.backend_clients.start_subscribe()
+            self.data_manager.start_memory_monitor()
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
         self.inmemory_objects: WeakValueDictionary[UUID, DataClayObject] = WeakValueDictionary()
@@ -168,11 +172,6 @@ class DataClayRuntime(ABC):
 
         return instance._dc_meta.master_backend_id
 
-    @property
-    @abstractmethod
-    def data_manager(self) -> DataManager:
-        pass
-
     ##################
     # Object methods #
     ##################
@@ -190,13 +189,13 @@ class DataClayRuntime(ABC):
             self.dataclay_inmemory_hits_total.inc()
             return dc_object
         except KeyError:
-            with LockManager.write(object_id):
+            async with lock_manager.get_lock(object_id).writer_lock:
                 try:
                     dc_object = self.inmemory_objects[object_id]
                     self.dataclay_inmemory_hits_total.inc()
                     return dc_object
                 except KeyError:
-                    # NOTE: When the object is not in the inmemory_objects,
+                    # When the object is not in the inmemory_objects,
                     # we get the object metadata from kvstore, and create a new proxy
                     # object from it.
 
@@ -204,14 +203,16 @@ class DataClayRuntime(ABC):
                         "(%s) Object not in inmemory_objects, creating new proxy", object_id
                     )
 
+                    # If object metadata is not provided, get it from the metadata service
                     if object_md is None:
                         object_md = await self.metadata_service.get_object_md_by_id(object_id)
 
+                    # Create a new proxy object
                     cls: DataClayObject = utils.get_class_by_name(object_md.class_name)
-
                     proxy_object = cls.new_proxy_object()
                     proxy_object._dc_meta = object_md
 
+                    # Determine if the object is local, replica, or remote
                     if proxy_object._dc_meta.master_backend_id == self.backend_id:
                         proxy_object._dc_is_local = True
                         assert self.backend_id not in proxy_object._dc_meta.replica_backend_ids
@@ -221,11 +222,16 @@ class DataClayRuntime(ABC):
                     else:
                         proxy_object._dc_is_local = False
 
+                    # Set the object as registered and not loaded
                     proxy_object._dc_is_loaded = False
                     proxy_object._dc_is_registered = True
 
-                    # Since it is no loaded, we only add it to the inmemory list
-                    # The object will be loaded if needed calling `load_object`
+                    # Since the object is not loaded, don't store a hard reference
+                    # only add th object to the inmemory list
+                    # The object will be loaded if needed (and if local) by calling `load_object`
+                    # TODO: If the gc deletes the proxy object very quickly, it may be inefficient
+                    # if many calls are made to the same object, and this is deleted every time.
+                    # TODO: Check if this is really the case. If so, gc should act in a LIFO way.
                     self.inmemory_objects[proxy_object._dc_meta.id] = proxy_object
                     return proxy_object
 
@@ -241,7 +247,7 @@ class DataClayRuntime(ABC):
         logger.debug("(%s) Getting object properties", instance._dc_meta.id)
         if instance._dc_is_local:
             if not instance._dc_is_loaded:
-                self.data_manager.load_object(instance)
+                await self.data_manager.load_object(instance)
             return instance._dc_properties
         else:
             backend_client = await self.backend_clients.get(instance._dc_meta.master_backend_id)
@@ -269,7 +275,7 @@ class DataClayRuntime(ABC):
 
         if instance._dc_is_local:
             assert self.is_backend
-            with LockManager.write(instance._dc_meta.id):
+            async with lock_manager.get_lock(instance._dc_meta.id).writer_lock:
                 # TODO: remove pickle file if serialized in disk (when not loaded)
                 instance._clean_dc_properties()
                 instance._dc_is_loaded = False
@@ -292,10 +298,10 @@ class DataClayRuntime(ABC):
         old_object_id = instance._dc_meta.id
 
         if instance._dc_is_local:
-            with LockManager.write(instance._dc_meta.id):
+            async with lock_manager.get_lock(instance._dc_meta.id).writer_lock:
                 # loaded since pickle filed is named with the old object_id
                 if not instance._dc_is_loaded:
-                    self.data_manager.load_object(instance)
+                    await self.data_manager.load_object(instance)
 
                 # update the loaded_objects with the new object_id
                 self.data_manager.remove_hard_reference(instance)
@@ -515,7 +521,7 @@ class DataClayRuntime(ABC):
 
                 # Load the object if it is not loaded
                 if not instance._dc_is_loaded:
-                    self.data_manager.load_object(instance)
+                    await self.data_manager.load_object(instance)
 
                 if recursive:
                     if remotes:
@@ -537,7 +543,9 @@ class DataClayRuntime(ABC):
                 pending_remote_objects[instance._dc_meta.id] = instance
 
         # Register the objects in the destination backend
-        if backend_id != self.backend_id:
+        # NOTE: Could be that the backend_id is the same as the current backend
+        # This could be useful to move all references together in the same backend
+        if len(serialized_local_objects) > 0 and backend_id != self.backend_id:
             backend_client = await self.backend_clients.get(backend_id)
             await backend_client.register_objects(
                 serialized_local_objects, make_replica=make_replica
@@ -697,174 +705,6 @@ class DataClayRuntime(ABC):
 
         await self.send_objects([instance], backend_id, True, recursive, remotes)
 
-    ######################
-
-    # TODO: Change name to something like get_other_backend...
-    def prepare_for_new_replica_version_consolidate(
-        self, object_id, hint, backend_id, backend_host, different_location
-    ):
-        """Helper function to prepare information for new replica - version - consolidate algorithms
-
-        Args:
-            object_id: id of the object
-            backend_id: Destination backend ID to get information from (can be none)
-            backend_host: Destination host to get information from (can be null)
-            different_location:
-                If true indicates that destination backend
-                should be different to any location of the object
-        Returns:
-            Tuple with destination backend API to call and:
-                Either information of dest backend with id provided,
-                some exec env in host provided or random exec env.
-        """
-
-        raise Exception("Deprecated?¿")
-        # NOTE ¿It should never happen?
-        if hint is None:
-            instance = self.inmemory_objects[object_id]
-            self.sync_object_metadata(instance)
-            hint = instance._dc_meta.master_backend_id
-
-        dest_backend_id = backend_id
-        dest_backend = None
-        if dest_backend_id is None:
-            if backend_host is not None:
-                exec_envs_at_host = self.get_all_execution_environments_at_host(backend_host)
-                if len(exec_envs_at_host) > 0:
-                    dest_backend = list(exec_envs_at_host.values())[0]
-                    dest_backend_id = dest_backend.id
-            if dest_backend is None:
-                if different_location:
-                    # no destination specified, get one destination in which object is not already replicated
-                    obj_locations = self.get_all_locations(object_id)
-                    all_exec_envs = self.get_all_execution_environments_at_dataclay(
-                        self.dataclay_id
-                    )
-                    for exec_env_id, exec_env in all_exec_envs.items():
-                        logger.debug("Checking if %s is in %s", exec_env_id, obj_locations)
-                        for obj_location in obj_locations:
-                            if str(exec_env_id) != str(obj_location):
-                                dest_backend_id = exec_env_id
-                                dest_backend = exec_env
-                                break
-                    if dest_backend is None:
-                        logger.debug(
-                            "Could not find any different location for replica, updating available exec envs"
-                        )
-                        # retry updating locations
-                        self.update_ee_infos()
-                        all_exec_envs = self.get_all_execution_environments_at_dataclay(
-                            self.dataclay_id
-                        )
-                        for exec_env_id, exec_env in all_exec_envs.items():
-                            for obj_location in obj_locations:
-                                if str(exec_env_id) != str(obj_location):
-                                    dest_backend_id = exec_env_id
-                                    dest_backend = exec_env
-                                    break
-                if dest_backend is None:
-                    dest_backend_id = hint
-                    dest_backend = self.get_execution_environment_info(dest_backend_id)
-
-        else:
-            dest_backend = self.get_execution_environment_info(dest_backend_id)
-
-        try:
-            ee_client = self.backend_clients[hint]
-        except KeyError:
-            backend_to_call = self.get_execution_environment_info(hint)
-            ee_client = BackendClient(backend_to_call.host, backend_to_call.port)
-            self.backend_clients[hint] = ee_client
-        return ee_client, dest_backend
-
-    ##############
-    # Federation #
-    ##############
-
-    def federate_object(self, dc_obj, ext_dataclay_id, recursive):
-        external_execution_environment_id = next(
-            iter(self.get_all_execution_environments_at_dataclay(ext_dataclay_id))
-        )
-        self.federate_to_backend(dc_obj, external_execution_environment_id, recursive)
-
-    @abstractmethod
-    def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
-        pass
-
-    def unfederate_object(self, dc_obj, ext_dataclay_id, recursive):
-        self.unfederate_from_backend(dc_obj, None, recursive)
-
-    @abstractmethod
-    def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
-        pass
-
-    def unfederate_all_objects(self, ext_dataclay_id):
-        raise NotImplementedError()
-
-    def unfederate_all_objects_with_all_dcs(self):
-        raise NotImplementedError()
-
-    def unfederate_object_with_all_dcs(self, dc_obj, recursive):
-        raise NotImplementedError()
-
-    def migrate_federated_objects(self, origin_dataclay_id, dest_dataclay_id):
-        raise NotImplementedError()
-
-    def federate_all_objects(self, dest_dataclay_id):
-        raise NotImplementedError()
-
-    async def register_external_dataclay(self, id, host, port):
-        """Register external dataClay for federation
-        Args:
-            host: external dataClay host name
-            port: external dataClay port
-        """
-        await self.metadata_service.autoregister_mds(id, host, port)
-
-    ###########
-    # Tracing #
-    ###########
-
-    def activate_tracing(self, initialize):
-        """Activate tracing"""
-        initialize_extrae(initialize)
-
-    def deactivate_tracing(self, finalize_extrae):
-        """Close the runtime paraver manager and deactivate the traces in LM (That deactivate also the DS)"""
-        finish_tracing(finalize_extrae)
-
-    def activate_tracing_in_dataclay_services(self):
-        """Activate the traces in LM (That activate also the DS)"""
-        if extrae_tracing_is_enabled():
-            self.backend_clients["@LM"].activate_tracing(get_current_available_task_id())
-
-    def deactivate_tracing_in_dataclay_services(self):
-        """Deactivate the traces in LM and DSs"""
-        if extrae_tracing_is_enabled():
-            self.backend_clients["@LM"].deactivate_tracing()
-
-    def get_traces_in_dataclay_services(self):
-        """Get temporary traces from LM and DSs and store it in current workspace"""
-        traces = self.backend_clients["@LM"].get_traces()
-        traces_dir = settings.TRACES_DEST_PATH
-        if len(traces) > 0:
-            set_path = settings.TRACES_DEST_PATH + "/set-0"
-            trace_mpits = settings.TRACES_DEST_PATH + "/TRACE.mpits"
-            with open(trace_mpits, "a+") as trace_file:
-                # store them here
-                for key, value in traces.items():
-                    dest_path = set_path + "/" + key
-                    logger.debug("Storing object %s" % dest_path)
-                    with open(dest_path, "wb") as dest_file:
-                        dest_file.write(value)
-                        dest_file.close()
-                    if key.endswith("mpit"):
-                        pointer = str(dest_path) + " named\n"
-                        trace_file.write(pointer)
-                        logger.debug("Appending to %s line: %s" % (trace_mpits, pointer))
-                trace_file.flush()
-                trace_file.close()
-
     ############
     # Shutdown #
     ############
@@ -873,8 +713,178 @@ class DataClayRuntime(ABC):
     async def stop(self):
         pass
 
+    ######################
+
+    # DEPRECATED
+
+    # TODO: Change name to something like get_other_backend...
+    # def prepare_for_new_replica_version_consolidate(
+    #     self, object_id, hint, backend_id, backend_host, different_location
+    # ):
+    #     """Helper function to prepare information for new replica - version - consolidate algorithms
+
+    #     Args:
+    #         object_id: id of the object
+    #         backend_id: Destination backend ID to get information from (can be none)
+    #         backend_host: Destination host to get information from (can be null)
+    #         different_location:
+    #             If true indicates that destination backend
+    #             should be different to any location of the object
+    #     Returns:
+    #         Tuple with destination backend API to call and:
+    #             Either information of dest backend with id provided,
+    #             some exec env in host provided or random exec env.
+    #     """
+
+    #     raise Exception("Deprecated?¿")
+    #     # NOTE ¿It should never happen?
+    #     if hint is None:
+    #         instance = self.inmemory_objects[object_id]
+    #         self.sync_object_metadata(instance)
+    #         hint = instance._dc_meta.master_backend_id
+
+    #     dest_backend_id = backend_id
+    #     dest_backend = None
+    #     if dest_backend_id is None:
+    #         if backend_host is not None:
+    #             exec_envs_at_host = self.get_all_execution_environments_at_host(backend_host)
+    #             if len(exec_envs_at_host) > 0:
+    #                 dest_backend = list(exec_envs_at_host.values())[0]
+    #                 dest_backend_id = dest_backend.id
+    #         if dest_backend is None:
+    #             if different_location:
+    #                 # no destination specified, get one destination in which object is not already replicated
+    #                 obj_locations = self.get_all_locations(object_id)
+    #                 all_exec_envs = self.get_all_execution_environments_at_dataclay(
+    #                     self.dataclay_id
+    #                 )
+    #                 for exec_env_id, exec_env in all_exec_envs.items():
+    #                     logger.debug("Checking if %s is in %s", exec_env_id, obj_locations)
+    #                     for obj_location in obj_locations:
+    #                         if str(exec_env_id) != str(obj_location):
+    #                             dest_backend_id = exec_env_id
+    #                             dest_backend = exec_env
+    #                             break
+    #                 if dest_backend is None:
+    #                     logger.debug(
+    #                         "Could not find any different location for replica, updating available exec envs"
+    #                     )
+    #                     # retry updating locations
+    #                     self.update_ee_infos()
+    #                     all_exec_envs = self.get_all_execution_environments_at_dataclay(
+    #                         self.dataclay_id
+    #                     )
+    #                     for exec_env_id, exec_env in all_exec_envs.items():
+    #                         for obj_location in obj_locations:
+    #                             if str(exec_env_id) != str(obj_location):
+    #                                 dest_backend_id = exec_env_id
+    #                                 dest_backend = exec_env
+    #                                 break
+    #             if dest_backend is None:
+    #                 dest_backend_id = hint
+    #                 dest_backend = self.get_execution_environment_info(dest_backend_id)
+
+    #     else:
+    #         dest_backend = self.get_execution_environment_info(dest_backend_id)
+
+    #     try:
+    #         ee_client = self.backend_clients[hint]
+    #     except KeyError:
+    #         backend_to_call = self.get_execution_environment_info(hint)
+    #         ee_client = BackendClient(backend_to_call.host, backend_to_call.port)
+    #         self.backend_clients[hint] = ee_client
+    #     return ee_client, dest_backend
+
+    # ##############
+    # # Federation #
+    # ##############
+
+    # def federate_object(self, dc_obj, ext_dataclay_id, recursive):
+    #     external_execution_environment_id = next(
+    #         iter(self.get_all_execution_environments_at_dataclay(ext_dataclay_id))
+    #     )
+    #     self.federate_to_backend(dc_obj, external_execution_environment_id, recursive)
+
+    # @abstractmethod
+    # def federate_to_backend(self, dc_obj, external_execution_environment_id, recursive):
+    #     pass
+
+    # def unfederate_object(self, dc_obj, ext_dataclay_id, recursive):
+    #     self.unfederate_from_backend(dc_obj, None, recursive)
+
+    # @abstractmethod
+    # def unfederate_from_backend(self, dc_obj, external_execution_environment_id, recursive):
+    #     pass
+
+    # def unfederate_all_objects(self, ext_dataclay_id):
+    #     raise NotImplementedError()
+
+    # def unfederate_all_objects_with_all_dcs(self):
+    #     raise NotImplementedError()
+
+    # def unfederate_object_with_all_dcs(self, dc_obj, recursive):
+    #     raise NotImplementedError()
+
+    # def migrate_federated_objects(self, origin_dataclay_id, dest_dataclay_id):
+    #     raise NotImplementedError()
+
+    # def federate_all_objects(self, dest_dataclay_id):
+    #     raise NotImplementedError()
+
+    # async def register_external_dataclay(self, id, host, port):
+    #     """Register external dataClay for federation
+    #     Args:
+    #         host: external dataClay host name
+    #         port: external dataClay port
+    #     """
+    #     await self.metadata_service.autoregister_mds(id, host, port)
+
+    # ###########
+    # # Tracing #
+    # ###########
+
+    # def activate_tracing(self, initialize):
+    #     """Activate tracing"""
+    #     initialize_extrae(initialize)
+
+    # def deactivate_tracing(self, finalize_extrae):
+    #     """Close the runtime paraver manager and deactivate the traces in LM (That deactivate also the DS)"""
+    #     finish_tracing(finalize_extrae)
+
+    # def activate_tracing_in_dataclay_services(self):
+    #     """Activate the traces in LM (That activate also the DS)"""
+    #     if extrae_tracing_is_enabled():
+    #         self.backend_clients["@LM"].activate_tracing(get_current_available_task_id())
+
+    # def deactivate_tracing_in_dataclay_services(self):
+    #     """Deactivate the traces in LM and DSs"""
+    #     if extrae_tracing_is_enabled():
+    #         self.backend_clients["@LM"].deactivate_tracing()
+
+    # def get_traces_in_dataclay_services(self):
+    #     """Get temporary traces from LM and DSs and store it in current workspace"""
+    #     traces = self.backend_clients["@LM"].get_traces()
+    #     traces_dir = settings.TRACES_DEST_PATH
+    #     if len(traces) > 0:
+    #         set_path = settings.TRACES_DEST_PATH + "/set-0"
+    #         trace_mpits = settings.TRACES_DEST_PATH + "/TRACE.mpits"
+    #         with open(trace_mpits, "a+") as trace_file:
+    #             # store them here
+    #             for key, value in traces.items():
+    #                 dest_path = set_path + "/" + key
+    #                 logger.debug("Storing object %s" % dest_path)
+    #                 with open(dest_path, "wb") as dest_file:
+    #                     dest_file.write(value)
+    #                     dest_file.close()
+    #                 if key.endswith("mpit"):
+    #                     pointer = str(dest_path) + " named\n"
+    #                     trace_file.write(pointer)
+    #                     logger.debug("Appending to %s line: %s" % (trace_mpits, pointer))
+    #             trace_file.flush()
+    #             trace_file.close()
+
     ################## EXTRAE IGNORED FUNCTIONS ###########################
-    deactivate_tracing.do_not_trace = True
-    activate_tracing.do_not_trace = True
-    activate_tracing_in_dataclay_services.do_not_trace = True
-    deactivate_tracing_in_dataclay_services.do_not_trace = True
+    # deactivate_tracing.do_not_trace = True
+    # activate_tracing.do_not_trace = True
+    # activate_tracing_in_dataclay_services.do_not_trace = True
+    # deactivate_tracing_in_dataclay_services.do_not_trace = True

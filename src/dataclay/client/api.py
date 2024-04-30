@@ -16,7 +16,13 @@ from uuid import UUID
 from dataclay.backend.client import BackendClient
 from dataclay.config import ClientSettings, settings
 from dataclay.dataclay_object import DataClayObject
-from dataclay.runtime import get_runtime, session_var, set_dc_event_loop, set_runtime
+from dataclay.runtime import (
+    get_runtime,
+    session_var,
+    set_dc_event_loop,
+    set_runtime,
+    get_dc_event_loop,
+)
 from dataclay.runtime.client import ClientRuntime
 from dataclay.utils.telemetry import trace
 
@@ -151,9 +157,11 @@ class Client:
 
         # Create new event loop (if not AsyncClient)
         # TODO: Should we add the loop to a background thread?
-        self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
-        set_dc_event_loop(self.loop)
+        # TODO: Should we replace the loop for each client?
+        if get_dc_event_loop() is None:
+            self.loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.loop)
+            set_dc_event_loop(self.loop)
 
         # Replace settings
         self.previous_settings = settings.client
@@ -212,8 +220,7 @@ class Client:
     def get_backends(self) -> dict[UUID, BackendClient]:
         if not self.is_active:
             raise RuntimeError("Client is not active")
-        self.loop.run_until_complete(self.runtime.backend_clients.update())
-        # self.runtime.backend_clients.update()
+        get_dc_event_loop().run_until_complete(self.runtime.backend_clients.update())
         return self.runtime.backend_clients
 
 

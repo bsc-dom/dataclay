@@ -26,12 +26,12 @@ except ImportError:
     # (see dependencies on pyproject.toml)
     from get_annotations import get_annotations
 
-from typing import TYPE_CHECKING, Annotated, Any, Optional, Type, TypeVar, get_origin
+from typing import TYPE_CHECKING, Annotated, Any, Awaitable, Optional, Type, TypeVar, get_origin
 
 from dataclay.annotated import LocalOnly, PropertyTransformer
 from dataclay.exceptions import *
 from dataclay.metadata.kvdata import ObjectMetadata
-from dataclay.runtime import LockManager, get_dc_event_loop, get_runtime
+from dataclay.runtime import get_dc_event_loop, get_runtime, lock_manager
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -51,7 +51,7 @@ def activemethod(func):
     """Decorator for DataClayObject active methods."""
 
     @functools.wraps(func)
-    def wrapper_activemethod(self: DataClayObject, *args, **kwargs):
+    def wrapper(self: DataClayObject, *args, **kwargs):
         try:
             # Example to make __init__ active:
             # if func.__name__ == "__init__" and not self._dc_is_registered:
@@ -62,9 +62,32 @@ def activemethod(func):
                     "(%s) Calling activemethod '%s' locally", self._dc_meta.id, func.__name__
                 )
 
-                with LockManager.read(self._dc_meta.id):
-                    result = func(self, *args, **kwargs)
-                return result
+                # NOTE: When calling an activemethod (from a backend), we must acquire the lock
+                # so the object is not modified/unload by another coroutine. This is only important
+                # for the non-dc properties. If the object has only dc_properties, this is no
+                # relevant since the object will be reloaded when accessing this properties.
+                # TODO: Check if this increaes the overhead. If so, maybe remove the lock.
+                # Only acquire the reader lock, so multiple clients can perform multiple calls on
+                # the same object methods.
+                # NOTE: Using run_dc_coroutine to run the coroutine in the main event loop.
+                # This means that all activemethods should be run in another thread.
+                # NOTE: If running in a non-initialized client, there won't be any event loop setup.
+                return func(self, *args, **kwargs)
+
+                # TODO: TO SOLVE
+                if get_dc_event_loop() is None:
+                    logger.warning("1111111")
+                    return func(self, *args, **kwargs)
+                else:
+                    logger.warning("2222222")
+                    lock = lock_manager.get_lock(self._dc_meta.id)
+                    logger.warning(lock)
+                    run_dc_coroutine(lock.reader_lock.acquire)
+                    try:
+                        result = func(self, *args, **kwargs)
+                    finally:
+                        lock.reader_lock.release()
+                    return result
             else:
                 logger.debug(
                     "(%s) Calling activemethod '%s' remotely", self._dc_meta.id, func.__name__
@@ -81,11 +104,11 @@ def activemethod(func):
             traceback.print_exc()
             raise
 
-    # wrapper_activemethod.is_activemethod = True
-    return wrapper_activemethod
+    # wrapper.is_activemethod = True
+    return wrapper
 
 
-def run_dc_coroutine(func, *args, **kwargs):
+def run_dc_coroutine(func: Awaitable, *args, **kwargs):
     loop = get_dc_event_loop()
     if loop.is_running():
         # If the event loop is running, we can't call run_until_complete.
@@ -99,6 +122,7 @@ def run_dc_coroutine(func, *args, **kwargs):
         else:
             # Event loop is running in another thread
             # Only(?) happens when backend run dataClay methods inside an activemethod
+            # And when serializing dataClay objects with pickle
             future = asyncio.run_coroutine_threadsafe(func(*args, **kwargs), loop)
             return future.result()
     else:
@@ -140,7 +164,9 @@ class DataClayProperty:
 
             # If the object is local and loaded, we can access the attribute directly
             if not instance._dc_is_loaded:
-                get_runtime().data_manager.load_object(instance)
+                # NOTE: Should be called from another thread.
+                # Should only happen inside activemethods.
+                run_dc_coroutine(get_runtime().data_manager.load_object, instance)
             try:
                 attr = getattr(instance, self.dc_property_name)
             except AttributeError as e:
@@ -189,7 +215,8 @@ class DataClayProperty:
             )
 
             if not instance._dc_is_loaded:
-                get_runtime().data_manager.load_object(instance)
+                # NOTE: (Same as in __get__ method)
+                run_dc_coroutine(get_runtime().data_manager.load_object, instance)
             if self.transformer is not None:
                 value = self.transformer.setter(value)
             setattr(instance, self.dc_property_name, value)
@@ -310,12 +337,12 @@ class DataClayObject:
         return obj
 
     @property
-    def _dc_properties(self):
+    def _dc_properties(self) -> dict[str, Any]:
         """Returns __dict__ with only _dc_property_ attributes"""
         return {k: v for k, v in vars(self).items() if k.startswith(DC_PROPERTY_PREFIX)}
 
     @property
-    def _dc_state(self):
+    def _dc_state(self) -> tuple[dict, Any]:
         """Returns the object state"""
         state = {"_dc_meta": self._dc_meta}
         if hasattr(self, "__getstate__") and hasattr(self, "__setstate__"):

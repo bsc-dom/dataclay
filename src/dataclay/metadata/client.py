@@ -60,9 +60,9 @@ class MetadataClient:
         response = await self.stub.GetDataclay(request)
         return Dataclay.from_proto(response)
 
-    #####################
-    # EE-SL information #
-    #####################
+    ###################
+    # Backend Manager #
+    ###################
 
     @grpc_aio_error_handler
     async def get_all_backends(

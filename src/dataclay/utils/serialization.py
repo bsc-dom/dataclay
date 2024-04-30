@@ -154,7 +154,7 @@ async def recursive_dcloads(object_binary, unserialized_objects: dict[UUID, Data
         unserialized_objects = {}
 
     # Run in executor to avoid blocking the event loop in `get_by_id_sync`
-    loop = asyncio.get_running_loop()
+    loop = get_dc_event_loop()
     object_dict, state = await loop.run_in_executor(
         None,
         # run_in_context,
@@ -191,7 +191,7 @@ async def dcdumps(obj):
     # NOTE: Executor needed to avoid blocking the event loop in `make_persistent`
     # The context needs to be propagated to access the session_var
     file = io.BytesIO()
-    loop = asyncio.get_running_loop()
+    loop = get_dc_event_loop()
     await loop.run_in_executor(
         None, run_in_context, contextvars.copy_context(), DataClayPickler(file).dump, obj
     )
@@ -217,6 +217,6 @@ async def dcloads(binary):
     logger.debug("Deserializing binary in executor")
     # TODO: Be sure contextvars won't be need. If so, use run_in_context
     # (session_var is not used in deserialization, so it should be fine)
-    loop = asyncio.get_running_loop()
+    loop = get_dc_event_loop()
     result = await loop.run_in_executor(None, pickle.loads, binary)
     return result
