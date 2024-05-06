@@ -11,8 +11,11 @@ can ask for the last value stored in an existing subscription using the queries.
 The publisher can send messages to a specific topic.
 
 """
-
-import zenoh
+try:
+    import zenoh
+except ImportError:
+    import warnings
+    warnings.warn("Warning: <import zenoh> failed",category= ImportWarning)
 import time
 from threading import Thread
 import logging
@@ -27,7 +30,7 @@ class ZenohMixin:
     conf: str
 
     @activemethod
-    def __init__(self, conf = '{}'):
+    def __init__(self, conf: str = '{}'):
         """Class constructor.
 
         Args:
@@ -83,11 +86,11 @@ class ZenohMixin:
         session = zenoh.open(zenoh.Config.from_json5(self.conf))
         sub = session.declare_subscriber(key, self.handler)
         while(key in self.subscriptions):
-            time.sleep(1)
+            time.sleep(0.1)
         return
 
     @activemethod
-    def receive_data(self,key):
+    def receive_data(self,key: str = "dataclay"):
         """Create a thread which will check if a message from the topic arrives and will handle it.
 
         Args:
@@ -98,23 +101,26 @@ class ZenohMixin:
         t.start()
 
     @activemethod
-    def unsubscribe(self,key):
+    def unsubscribe(self,key: str = "dataclay"):
         """Unsubscribes the client from a topic.
 
         Args:
             key (str): Topic.
         """
-        self.subscriptions.remove(key)
+        try:
+            self.subscriptions.remove(key)
+        except:
+            logger.error("The client was not subscribed to this topic")
 
     @activemethod
-    def get_last_data(self,key):
+    def get_last_data(self,key: str = "dataclay"):
         """Returns the latest value stored in this Zenoh topic.
 
         Args:
             key (str): Topic.
 
         Returns:
-            list[str{reply.key_expr}:{reply.playload}]: Returns the latest value stored on a specific Zenoh 
+            list[str{reply.key_expr};{reply.playload}]: Latest value stored on a specific Zenoh 
             topic.
         """
         returns=[]

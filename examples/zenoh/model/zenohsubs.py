@@ -12,8 +12,8 @@ class ZenohSubs(DataClayObject,ZenohMixin):
     key: str
 
     @activemethod
-    def __init__(self):
-        super().__init__()
+    def __init__(self,conf):
+        super().__init__(conf)
         self = self
         self.data=""
         self.buf =""
