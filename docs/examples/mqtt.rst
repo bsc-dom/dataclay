@@ -49,4 +49,4 @@ And run the sender client application:
    :caption: sender.py
 
 If we leave our receiver.py application running and we call the function "mqttsub.get_temp()", we will get
-the temperature which the thermometer sent.
+the temperature that the thermometer sent.

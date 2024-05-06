@@ -30,7 +30,7 @@ class ZenohMixin:
     conf: str
 
     @activemethod
-    def __init__(self, conf = '{}'):
+    def __init__(self, conf: str = '{}'):
         """Class constructor.
 
         Args:
@@ -120,7 +120,7 @@ class ZenohMixin:
             key (str): Topic.
 
         Returns:
-            list[str{reply.key_expr}:{reply.playload}]: Returns the latest value stored on a specific Zenoh 
+            list[str{reply.key_expr};{reply.playload}]: Latest value stored on a specific Zenoh 
             topic.
         """
         returns=[]
