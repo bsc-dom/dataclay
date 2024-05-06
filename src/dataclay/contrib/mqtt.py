@@ -14,6 +14,21 @@ from dataclay import activemethod
 
 import logging
 
+import inspect
+
+import os
+try:
+    import paho.mqtt.client as mqtt
+except ImportError:
+    import warnings
+    warnings.warn("Warning: <import paho.mqtt.client> failed",category= ImportWarning)
+try:
+    from json import dumps
+except ImportError:
+    import warnings
+    warnings.warn("Warning: <from json import dumps> failed",category= ImportWarning)
+from dataclay.contrib.mqtt import MQTT_PRODUCERS
+
 """ Mqtt pool of producers """
 MQTT_PRODUCERS = dict()
 
@@ -45,10 +60,6 @@ class MQTTMixin:
         Args:
             topic (str, optional): String representing the topic. Defaults to "dataclay".
         """
-        import os
-        import paho.mqtt.client as mqtt
-        from dataclay.contrib.mqtt import MQTT_PRODUCERS
-
         mqtt_host = os.getenv("MQTT_HOST", "mqtt5")
         mqtt_port = int(os.getenv("MQTT_PORT", "1883"))
         mqtt_client = os.getenv("MQTT_PRODUCER_ID", "dataclay_mqtt_producer")
@@ -71,11 +82,6 @@ class MQTTMixin:
             data (dict[str, Any]): Message.
             topic (str, optional): Topic of the message. Defaults to "dataclay".
         """
-        import os
-        from json import dumps
-        import paho.mqtt.client as mqtt
-        from dataclay.contrib.mqtt import MQTT_PRODUCERS
-
         mqtt_host = os.getenv("MQTT_HOST", "mqtt5")
         mqtt_port = int(os.getenv("MQTT_PORT", "1883"))
         mqtt_client = os.getenv("MQTT_PRODUCER_ID", "dataclay_mqtt_producer")
@@ -94,7 +100,6 @@ class MQTTMixin:
     def send_to_mqtt(self):
         """Previous function to produce_mqtt_msg. Gets all the arguments needed from the calling class.
         """
-        import inspect
         attributes = inspect.getmembers(self.__class__, lambda a: not (inspect.isroutine(a)))
         field_values = {}
         for field in attributes:

@@ -13,9 +13,9 @@ will generate a new temperature value and we will see how the subscriber handles
     This example is available in `GitHub <https://github.com/bsc-dom/dataclay/tree/main/examples/zenoh>`_.
 
 Class definition:
-The handler() function will overwritte the one from the class ZenohMixin at `dataclay.contrib.zenoh`_
+The handler() function will overwritte the one from the class ZenohMixin at `dataclay.contrib.zenoh_module`_
 
-.. _dataclay.contrib.zenoh: https://github.com/bsc-dom/dataclay/blob/main/src/dataclay/contrib/zenoh.py
+.. _dataclay.contrib.zenoh_module: https://github.com/bsc-dom/dataclay/blob/main/src/dataclay/contrib/zenoh_module.py
 
 .. literalinclude:: /../examples/zenoh/model/zenohsubs.py
    :language: python
@@ -36,7 +36,7 @@ Create a file docker-compose.yml and use the following docker-compose file using
    :language: yaml
    :caption: docker-compose.yml
 
-Then we can run the publisher(sensor) code:
+In this moment we can run the publisher(sensor) code:
 
 .. literalinclude:: /../examples/zenoh/sensor.py
    :language: python
@@ -48,7 +48,7 @@ Run the subscriber code:
    :language: python
    :caption: subscriber.py
 
-And run the sensor code again
+Finally run the sensor code again
 
-If we leave our subscriber.py application running and we call the function "zenoh.get_data()", we will get
-the temperature which the thermometer sent.
+If we left our subscriber.py application running and we call the function "zenoh.get_data()", we will get
+the temperature that the thermometer sent.
