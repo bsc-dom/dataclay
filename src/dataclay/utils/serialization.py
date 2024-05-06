@@ -1,4 +1,3 @@
-import asyncio
 import contextvars
 import io
 import logging
@@ -7,9 +6,9 @@ from typing import Optional
 from uuid import UUID
 
 from dataclay import utils
-from dataclay.dataclay_object import DataClayObject
+from dataclay.dataclay_object import DataClayObject, run_dc_coroutine
 from dataclay.runtime import get_dc_event_loop, get_runtime
-from dataclay.utils.contextvars import run_in_context
+from dataclay.utils.contextvars import dc_to_thread, run_in_context
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +75,8 @@ class RecursiveDataClayPickler(DataClayPickler):
                 if obj._dc_meta.id not in self.visited_local_objects:
                     self.visited_local_objects[obj._dc_meta.id] = obj
                     if not obj._dc_is_loaded:
-                        get_runtime().data_manager.load_object(obj)
+                        # get_runtime().data_manager.load_object(obj)
+                        run_dc_coroutine(get_runtime().data_manager.load_object, obj)
 
                     f = io.BytesIO()
                     RecursiveDataClayPickler(
@@ -123,9 +123,16 @@ async def recursive_dcdumps(
     # TODO: Use an executor to all pickle.dump (to release GIL?)
     # Serialize the object state (__dict__ or __getstate__), and its referees
     file = io.BytesIO()
-    RecursiveDataClayPickler(
-        file, local_objects, remote_objects, serialized_local_objects, make_persistent
-    ).dump(instance._dc_state)
+    # RecursiveDataClayPickler(
+    #     file, local_objects, remote_objects, serialized_local_objects, make_persistent
+    # ).dump(instance._dc_state)
+
+    await dc_to_thread(
+        RecursiveDataClayPickler(
+            file, local_objects, remote_objects, serialized_local_objects, make_persistent
+        ).dump,
+        instance._dc_state,
+    )
 
     serialized_local_objects.append(file.getvalue())
     return serialized_local_objects

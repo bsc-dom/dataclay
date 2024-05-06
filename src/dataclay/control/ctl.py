@@ -128,6 +128,12 @@ def rebalance(host, port):
         print(f"{backend_id}: {mean+diff}")
 
 
+async def flush_all(host, port):
+    logger.info("Flushing all data from %s:%s", host, port)
+    backend_client = BackendClient(host, port)
+    await backend_client.flush_all()
+
+
 def get_objects(host, port):
     logger.info("Getting objects from %s:%s", host, port)
     metadata_client = MetadataClient(host, port)
@@ -214,12 +220,25 @@ def parse_arguments():
     #############
     parser_rebalance = subparsers.add_parser("rebalance", parents=[common_args])
 
+    ##############
+    # flush_all #
+    ##############
+    parser_flush_all = subparsers.add_parser("flush_all")
+    parser_flush_all.add_argument(
+        "--host", type=str, required=True, help="Specify the backend host"
+    )
+    parser_flush_all.add_argument(
+        "--port", type=int, default=6867, help="Specify the backend port (default: 6867)"
+    )
+
     ################
     # stop_backend #
     ################
     # TODO: Improve this?
     parser_stop_backend = subparsers.add_parser("stop_backend")
-    parser_stop_backend.add_argument("--host", type=str, help="Specify the backend host")
+    parser_stop_backend.add_argument(
+        "--host", type=str, required=True, help="Specify the backend host"
+    )
     parser_stop_backend.add_argument(
         "--port", type=int, default=6867, help="Specify the backend port (default: 6867)"
     )
@@ -267,6 +286,9 @@ async def main():
 
     elif args.function == "rebalance":
         rebalance(args.host, args.port)
+
+    elif args.function == "flush_all":
+        await flush_all(args.host, args.port)
 
     elif args.function == "get_backends":
         await get_backends(args.host, args.port)

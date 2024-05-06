@@ -46,21 +46,21 @@ class BackendRuntime(DataClayRuntime):
         # self.session_expires_dates = {}
 
     async def stop(self):
+        # Stop all backend clients
+        await self.backend_clients.stop()
+
         # Remove backend entry from metadata
         await self.metadata_service.delete_backend(self.backend_id)
 
-        # Stop metadata redis connection
-        await self.metadata_service.close()
-
         # Stop DataManager memory monitor
-        await self.data_manager.stop_memory_monitor()
-
-        # Stop all backend clients
-        await self.backend_clients.stop()
+        self.data_manager.stop_memory_monitor()
 
         # Flush all data if not ephemeral
         if not settings.ephemeral:
             await self.data_manager.flush_all()
+
+        # Stop metadata redis connection
+        await self.metadata_service.close()
 
     # DEPRECATED
 

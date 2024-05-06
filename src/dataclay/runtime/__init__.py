@@ -1,14 +1,9 @@
 from __future__ import annotations
 
 import contextvars
-import threading
-from contextlib import contextmanager
 from typing import TYPE_CHECKING, Union
-from uuid import UUID
-import asyncio
-import aiorwlock
-from dataclay.utils.lockmanager import LockManager
 
+from dataclay.utils.lockmanager import LockManager
 
 if TYPE_CHECKING:
     from asyncio import AbstractEventLoop

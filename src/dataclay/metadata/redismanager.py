@@ -4,9 +4,8 @@ import logging
 import time
 from typing import TYPE_CHECKING, Optional
 
-from redis.exceptions import RedisClusterException, ConnectionError
-
 import redis.asyncio as redis
+from redis.exceptions import ConnectionError, RedisClusterException
 
 from dataclay.exceptions.exceptions import *
 

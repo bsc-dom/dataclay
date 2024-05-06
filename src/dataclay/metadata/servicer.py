@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import signal
 import traceback
 from concurrent import futures
 from uuid import UUID, uuid4
-import signal
 
 import grpc
 from google.protobuf.empty_pb2 import Empty
@@ -17,7 +17,7 @@ from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.kvdata import Backend
 from dataclay.proto.common import common_pb2
 from dataclay.proto.metadata import metadata_pb2, metadata_pb2_grpc
-from dataclay.runtime import set_dc_event_loop, get_dc_event_loop
+from dataclay.runtime import get_dc_event_loop, set_dc_event_loop
 from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.uuid import str_to_uuid
 

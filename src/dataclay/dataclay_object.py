@@ -26,7 +26,16 @@ except ImportError:
     # (see dependencies on pyproject.toml)
     from get_annotations import get_annotations
 
-from typing import TYPE_CHECKING, Annotated, Any, Awaitable, Optional, Type, TypeVar, get_origin
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    Awaitable,
+    Optional,
+    Type,
+    TypeVar,
+    get_origin,
+)
 
 from dataclay.annotated import LocalOnly, PropertyTransformer
 from dataclay.exceptions import *
@@ -62,32 +71,12 @@ def activemethod(func):
                     "(%s) Calling activemethod '%s' locally", self._dc_meta.id, func.__name__
                 )
 
-                # NOTE: When calling an activemethod (from a backend), we must acquire the lock
-                # so the object is not modified/unload by another coroutine. This is only important
-                # for the non-dc properties. If the object has only dc_properties, this is no
-                # relevant since the object will be reloaded when accessing this properties.
-                # TODO: Check if this increaes the overhead. If so, maybe remove the lock.
-                # Only acquire the reader lock, so multiple clients can perform multiple calls on
-                # the same object methods.
-                # NOTE: Using run_dc_coroutine to run the coroutine in the main event loop.
-                # This means that all activemethods should be run in another thread.
-                # NOTE: If running in a non-initialized client, there won't be any event loop setup.
+                # NOTE: Decided to remove reader lock. It is too complex and not necessary, since
+                # the method can be executed even if the object is not loaded. The object will be
+                # loaded again when accessing the properties.
+                # BUG: If the object has non-dc_properties, thise could be problematic, if the
+                # object is unloaded while executing the method.
                 return func(self, *args, **kwargs)
-
-                # TODO: TO SOLVE
-                if get_dc_event_loop() is None:
-                    logger.warning("1111111")
-                    return func(self, *args, **kwargs)
-                else:
-                    logger.warning("2222222")
-                    lock = lock_manager.get_lock(self._dc_meta.id)
-                    logger.warning(lock)
-                    run_dc_coroutine(lock.reader_lock.acquire)
-                    try:
-                        result = func(self, *args, **kwargs)
-                    finally:
-                        lock.reader_lock.release()
-                    return result
             else:
                 logger.debug(
                     "(%s) Calling activemethod '%s' remotely", self._dc_meta.id, func.__name__

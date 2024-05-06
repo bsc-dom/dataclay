@@ -9,22 +9,19 @@ import logging
 import pickle
 import random
 from abc import ABC, abstractmethod
-from builtins import Exception
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 from weakref import WeakValueDictionary
 
 from dataclay import utils
-from dataclay.backend.client import BackendClient
+from dataclay.backend.data_manager import DataManager
 from dataclay.config import settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import *
-from dataclay.runtime import session_var, lock_manager
+from dataclay.runtime import lock_manager, session_var
 from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcdumps
 from dataclay.utils.telemetry import trace
-from dataclay.backend.data_manager import DataManager
-
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

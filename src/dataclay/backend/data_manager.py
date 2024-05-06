@@ -1,19 +1,17 @@
 from __future__ import annotations
 
+import asyncio
 import gc
 import logging
 import pickle
 from typing import TYPE_CHECKING, Optional
-import asyncio
 
 import psutil
 
 from dataclay.config import settings
 from dataclay.exceptions import *
-from dataclay.runtime import lock_manager
+from dataclay.runtime import get_dc_event_loop, lock_manager
 from dataclay.utils.serialization import DataClayPickler
-from dataclay.runtime import get_dc_event_loop
-
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -113,13 +111,16 @@ class DataManager:
         self.loaded_objects.pop(instance._dc_meta.id, None)
 
     async def load_object(self, instance: DataClayObject):
-        """Load the provided object from disk to memory.
+        """Load the provided object from disk to memory. This method is blocking.
+        Should be called from another thread to avoid blocking the main thread.
 
         Args:
             instance (DataClayObject): The object to load.
         """
         object_id = instance._dc_meta.id
 
+        # BUG: Could even be necessary to make it a blocking call to avoid problems
+        # (https://stackoverflow.com/questions/44358705/using-async-await-with-pickle)
         async with lock_manager.get_lock(object_id).writer_lock:
             if instance._dc_is_loaded:
                 # Object may had been loaded while waiting for lock
@@ -136,7 +137,9 @@ class DataManager:
             # Load object from disk
             try:
                 path = f"{settings.storage_path}/{object_id}"
-                state, getstate = pickle.load(open(path, "rb"))
+                state, getstate = await get_dc_event_loop().run_in_executor(
+                    None, pickle.load, open(path, "rb")
+                )
                 self.dataclay_stored_objects.dec()
             except Exception as e:
                 raise DataClayException("Object not found.") from e
@@ -163,16 +166,19 @@ class DataManager:
         """
         object_id = instance._dc_meta.id
 
-        object_lock = lock_manager.get_lock(object_id)
-        try:
-            await asyncio.wait_for(object_lock.writer_lock.acquire(), timeout=timeout)
-        except asyncio.TimeoutError:
-            if not force:
-                logger.warning("Could not acquire lock to unload object")
-                return
+        # BUG: Timeout not working with aiorwlock
+        # object_lock = lock_manager.get_lock(object_id)
+        # if object_lock.writer_lock.locked:
+        #     logger.warning("Could not acquire lock to unload object")
+        #     return
 
-        # If lock is acquired or force is True, continue
-        try:
+        # if not force:
+        #     if object_lock.writer_lock.locked:
+        #         logger.warning("Could not acquire lock to unload object")
+        #         return
+        #     await object_lock.writer_lock.acquire()
+
+        async with lock_manager.get_lock(object_id).writer_lock:
             if not instance._dc_is_local:
                 logger.warning("(%s) Object is not local", object_id)
                 return
@@ -195,8 +201,6 @@ class DataManager:
             instance._clean_dc_properties()
             instance._dc_is_loaded = False
             self.remove_hard_reference(instance)
-        finally:
-            object_lock.writer_lock.release()
 
     def is_memory_over_threshold(self):
         """Check if memory usage is over a specified threshold.

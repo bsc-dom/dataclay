@@ -1,19 +1,16 @@
 from __future__ import annotations
 
-import collections
-import concurrent.futures
-import logging
-import threading
-import time
-from uuid import UUID
 import asyncio
+import collections
+import logging
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 from dataclay.backend.client import BackendClient
 from dataclay.config import settings
+from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.kvdata import Backend
 from dataclay.runtime import get_dc_event_loop
-from dataclay.metadata.api import MetadataAPI
 
 if TYPE_CHECKING:
     from dataclay.metadata.api import MetadataAPI

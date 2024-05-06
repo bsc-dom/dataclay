@@ -17,11 +17,11 @@ from dataclay.backend.client import BackendClient
 from dataclay.config import ClientSettings, settings
 from dataclay.dataclay_object import DataClayObject
 from dataclay.runtime import (
+    get_dc_event_loop,
     get_runtime,
     session_var,
     set_dc_event_loop,
     set_runtime,
-    get_dc_event_loop,
 )
 from dataclay.runtime.client import ClientRuntime
 from dataclay.utils.telemetry import trace

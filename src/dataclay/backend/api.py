@@ -15,9 +15,9 @@ from typing import TYPE_CHECKING, Optional
 from dataclay import utils
 from dataclay.config import settings
 from dataclay.exceptions import *
-from dataclay.runtime import set_runtime, lock_manager, get_dc_event_loop
+from dataclay.runtime import get_dc_event_loop, lock_manager, set_runtime
 from dataclay.runtime.backend import BackendRuntime
-from dataclay.utils.contextvars import run_in_context
+from dataclay.utils.contextvars import dc_to_thread, run_in_context
 from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcloads
 from dataclay.utils.telemetry import trace
 
@@ -155,19 +155,9 @@ class BackendAPI:
         args, kwargs = await asyncio.gather(dcloads(args), dcloads(kwargs))
 
         try:
-            logger.debug("(%s) *** Starting activemethod '%s' in executor", object_id, method_name)
-
             # Call activemethod in another thread
-            loop = get_dc_event_loop()
-            result = await loop.run_in_executor(
-                None,
-                run_in_context,
-                contextvars.copy_context(),
-                getattr(instance, method_name),
-                *args,
-                **kwargs,
-            )
-
+            logger.debug("(%s) *** Starting activemethod '%s' in executor", object_id, method_name)
+            result = await dc_to_thread(getattr(instance, method_name), *args, **kwargs)
             logger.debug("(%s) *** Finished activemethod '%s' in executor", object_id, method_name)
 
             # Serialize the result if not None
@@ -182,6 +172,7 @@ class BackendAPI:
 
     # Store Methods
 
+    # TODO: Rename to get_object_property
     @tracer.start_as_current_span("get_object_attribute")
     async def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         """Returns value of the object attibute with ID provided
@@ -192,16 +183,9 @@ class BackendAPI:
             The pickled value of the object attibute.
             If it's an exception or not
         """
+        logger.debug("(%s) Receiving get attribute '%s'", object_id, attribute)
         instance = await self.runtime.get_object_by_id(object_id)
-        # NOTE: When the object is not local, a custom exception is sent
-        # for the client to update the backend_id, and call_active_method again
         if not instance._dc_is_local:
-            # NOTE: We sync the metadata because when consolidating an object
-            # it might be that the proxy is pointing to the wrong backend_id which is
-            # the same current backend, creating a infinite loop. This could be solve also
-            # by passing the backend_id of the new object to the proxy, but this can create
-            # problems with race conditions (e.g. a move before the consolidation). Therefore,
-            # we check to the metadata which is more reliable.
             await self.runtime.sync_object_metadata(instance)
             logger.warning(
                 "(%s) Wrong backend. Update to %s",
@@ -217,26 +201,20 @@ class BackendAPI:
                 False,
             )
         try:
-            value = getattr(instance, attribute)
+            value = await dc_to_thread(getattr, instance, attribute)
             return await dcdumps(value), False
         except Exception as e:
             return pickle.dumps(e), True
 
+    # TODO: Rename to set_object_property
     @tracer.start_as_current_span("set_object_attribute")
     async def set_object_attribute(
         self, object_id: UUID, attribute: str, serialized_attribute: bytes
     ) -> tuple[bytes, bool]:
         """Updates an object attibute with ID provided"""
+        logger.debug("(%s) Receiving set attribute '%s'", object_id, attribute)
         instance = await self.runtime.get_object_by_id(object_id)
-        # NOTE: When the object is not local, a custom exception is sent
-        # for the client to update the backend_id, and call_active_method again
         if not instance._dc_is_local:
-            # NOTE: We sync the metadata because when consolidating an object
-            # it might be that the proxy is pointing to the wrong backend_id which is
-            # the same current backend, creating a infinite loop. This could be solve also
-            # by passing the backend_id of the new object to the proxy, but this can create
-            # problems with race conditions (e.g. a move before the consolidation). Therefore,
-            # we check to the metadata which is more reliable.
             await self.runtime.sync_object_metadata(instance)
             logger.warning(
                 "(%s) Wrong backend. Update to %s",
@@ -254,7 +232,7 @@ class BackendAPI:
             )
         try:
             object_attribute = await dcloads(serialized_attribute)
-            setattr(instance, attribute, object_attribute)
+            await dc_to_thread(setattr, instance, attribute, object_attribute)
             return pickle.dumps("placeholder"), False
         except Exception as e:
             return pickle.dumps(e), True

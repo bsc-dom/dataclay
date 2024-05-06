@@ -1,6 +1,6 @@
-import asyncio
-from aiorwlock import RWLock
 from uuid import UUID
+
+from aiorwlock import RWLock
 
 
 class LockManager:

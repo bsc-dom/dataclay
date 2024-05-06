@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from threading import Thread
-
 from dataclay import DataClayObject, activemethod
+from dataclay.dataclay_object import run_dc_coroutine
 
 
 class Person(DataClayObject):
@@ -75,6 +74,11 @@ class Family(DataClayObject):
 
         return "\n".join(result)
 
+    # WARNING: Logic changed. Flush all now unloads all objects,
+    # enven those that are running activemethods. This test is not valid anymore,
+    # and will fail. Mutable attributes are not guaranteed to be consistent. To
+    # guarantee consistency, use immutable attributes. The below code would work
+    # if members was reassigned to the self.members attribute.
     @activemethod
     def test_self_is_not_unloaded(self):
         """Testing that while executing the activemethod in a Backend,
@@ -85,12 +89,16 @@ class Family(DataClayObject):
 
         members = self.members
 
-        t = Thread(target=get_runtime().data_manager.flush_all, args=(0, False))
-        t.start()
-        t.join()
+        run_dc_coroutine(get_runtime().data_manager.flush_all)
 
         dog = Dog("Rio", 4)
         members.append(dog)
+
+        ##################
+        # NOTE: Corrected line (check WARNING above)
+        self.members = members
+        ##################
+
         # If the current instance was nullified,
         # mutable "members" won't be consistent with the attribute
         assert members is self.members
@@ -105,9 +113,7 @@ class Family(DataClayObject):
         new_family = Family()
         members = new_family.members
 
-        t = Thread(target=get_runtime().data_manager.flush_all, args=(0, False))
-        t.start()
-        t.join()
+        run_dc_coroutine(get_runtime().data_manager.flush_all)
 
         dog = Dog("Rio", 4)
         members.append(dog)

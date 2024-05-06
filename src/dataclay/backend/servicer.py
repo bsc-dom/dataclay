@@ -18,7 +18,7 @@ from dataclay.backend.api import BackendAPI
 from dataclay.config import settings
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
-from dataclay.runtime import session_var, set_dc_event_loop, get_dc_event_loop
+from dataclay.runtime import get_dc_event_loop, session_var, set_dc_event_loop
 
 logger = logging.getLogger(__name__)
 
