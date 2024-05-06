@@ -96,9 +96,10 @@ class ZenohMixin:
         Args:
             key (str): Topic.
         """
-        t = Thread(target=self.__receive_data, args=(key,))
-        self.subscriptions.append(key)
-        t.start()
+        if(key not in self.subscriptions):
+            t = Thread(target=self.__receive_data, args=(key,))
+            self.subscriptions.append(key)
+            t.start()
 
     @activemethod
     def unsubscribe(self,key: str = "dataclay"):
