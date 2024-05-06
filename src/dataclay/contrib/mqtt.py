@@ -27,7 +27,11 @@ try:
 except ImportError:
     import warnings
     warnings.warn("Warning: <from json import dumps> failed",category= ImportWarning)
-from dataclay.contrib.mqtt import MQTT_PRODUCERS
+try:
+    from dataclay.contrib.mqtt import MQTT_PRODUCERS
+except ImportError:
+    import warnings
+    warnings.warn("Warning: <from dataclay.contrib.mqtt import MQTT_PRODUCERS> failed",category= ImportWarning)
 
 """ Mqtt pool of producers """
 MQTT_PRODUCERS = dict()
