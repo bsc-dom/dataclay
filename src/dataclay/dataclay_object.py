@@ -143,14 +143,15 @@ class DataClayProperty:
         | False    | True    |  -
         | False    | False   |  B (remote) or C (persistent)
         """
-        if instance._dc_is_local:
-            logger.debug(
-                "(%s) Getting dc_property '%s.%s' locally",
-                instance._dc_meta.id,
-                instance.__class__.__name__,
-                self.name,
-            )
+        logger.debug(
+            "(%s) Getting dc_property '%s.%s'",
+            instance._dc_meta.id,
+            instance.__class__.__name__,
+            self.name,
+        )
 
+        if instance._dc_is_local:
+            logger.debug("local get")
             # If the object is local and loaded, we can access the attribute directly
             if not instance._dc_is_loaded:
                 # NOTE: Should be called from another thread.
@@ -168,13 +169,7 @@ class DataClayProperty:
             else:
                 return self.transformer.getter(attr)
         else:
-            logger.debug(
-                "(%s) Getting dc_property '%s.%s' remotely",
-                instance._dc_meta.id,
-                instance.__class__.__name__,
-                self.name,
-            )
-
+            logger.debug("remote get")
             loop = get_dc_event_loop()
             if loop.is_running():
                 # NOTE: This will make attribute access for a user's AsyncClient or from our
@@ -194,15 +189,16 @@ class DataClayProperty:
 
         See the __get__ method for the basic behavioural explanation.
         """
-        if instance._dc_is_local:
-            logger.debug(
-                "(%s) Setting dc_property '%s.%s=%s' locally",
-                instance._dc_meta.id,
-                instance.__class__.__name__,
-                self.name,
-                value,
-            )
+        logger.debug(
+            "(%s) Setting dc_property '%s.%s=%s'",
+            instance._dc_meta.id,
+            instance.__class__.__name__,
+            self.name,
+            value,
+        )
 
+        if instance._dc_is_local:
+            logger.debug("local set")
             if not instance._dc_is_loaded:
                 # NOTE: (Same as in __get__ method)
                 run_dc_coroutine(get_runtime().data_manager.load_object, instance)
@@ -210,14 +206,7 @@ class DataClayProperty:
                 value = self.transformer.setter(value)
             setattr(instance, self.dc_property_name, value)
         else:
-            logger.debug(
-                "(%s) Setting dc_property '%s.%s=%s' remotely",
-                instance._dc_meta.id,
-                instance.__class__.__name__,
-                self.name,
-                value,
-            )
-
+            logger.debug("remote set")
             loop = get_dc_event_loop()
             if loop.is_running():
                 # NOTE: Same problem as in __get__ method.
@@ -235,18 +224,29 @@ class DataClayProperty:
     def __delete__(self, instance: DataClayObject):
         """Deleter for the dataClay property"""
         logger.debug(
-            "(%s) Deleting property %s.%s",
+            "(%s) Deleting dc_property '%s.%s'",
             instance._dc_meta.id,
             instance.__class__.__name__,
             self.name,
         )
 
         if instance._dc_is_local:
-            logger.debug("Local")
+            logger.debug("local delete")
+            if not instance._dc_is_loaded:
+                # NOTE: (Same as in __get__ method)
+                run_dc_coroutine(get_runtime().data_manager.load_object, instance)
+
             delattr(instance, self.dc_property_name)
         else:
-            logger.debug("Remote")
-            get_runtime().call_remote_method(instance, "__delattr__", (self.name,), {})
+            logger.debug("remote delete")
+            loop = get_dc_event_loop()
+            if loop.is_running():
+                # NOTE: Same problem as in __get__ method.
+                return get_runtime().call_remote_method(instance, "__delattr__", (self.name,), {})
+            else:
+                return loop.run_until_complete(
+                    get_runtime().call_remote_method(instance, "__delattr__", (self.name,), {})
+                )
 
 
 class DataClayObject:

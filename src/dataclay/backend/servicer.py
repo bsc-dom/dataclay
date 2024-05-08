@@ -234,10 +234,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return backend_pb2.SetObjectAttributeResponse()
 
-    def DelObjectAttribute(self, request, context):
-        self._check_backend(context)
+    async def DelObjectAttribute(self, request, context):
+        self._check_context(context)
         try:
-            value, is_exception = self.backend.del_object_attribute(
+            value, is_exception = await self.backend.del_object_attribute(
                 UUID(request.object_id),
                 request.attribute,
             )

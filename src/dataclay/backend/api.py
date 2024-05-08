@@ -233,24 +233,16 @@ class BackendAPI:
         try:
             object_attribute = await dcloads(serialized_attribute)
             await dc_to_thread(setattr, instance, attribute, object_attribute)
-            return pickle.dumps("placeholder"), False
+            return None, False
         except Exception as e:
             return pickle.dumps(e), True
 
-    @tracer.start_as_current_span("set_object_attribute")
-    def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
+    @tracer.start_as_current_span("del_object_attribute")
+    async def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         """Deletes an object attibute with ID provided"""
-        instance = self.runtime.get_object_by_id(object_id)
-        # NOTE: When the object is not local, a custom exception is sent
-        # for the client to update the backend_id, and call_active_method again
+        instance = await self.runtime.get_object_by_id(object_id)
         if not instance._dc_is_local:
-            # NOTE: We sync the metadata because when consolidating an object
-            # it might be that the proxy is pointing to the wrong backend_id which is
-            # the same current backend, creating a infinite loop. This could be solve also
-            # by passing the backend_id of the new object to the proxy, but this can create
-            # problems with race conditions (e.g. a move before the consolidation). Therefore,
-            # we check to the metadata which is more reliable.
-            self.runtime.sync_object_metadata(instance)
+            await self.runtime.sync_object_metadata(instance)
             logger.warning(
                 "(%s) Wrong backend. Update to %s",
                 object_id,
@@ -265,8 +257,8 @@ class BackendAPI:
                 False,
             )
         try:
-            delattr(instance, attribute)
-            return pickle.dumps("placeholder"), False
+            await dc_to_thread(delattr, instance, attribute)
+            return None, False
         except Exception as e:
             return pickle.dumps(e), True
 

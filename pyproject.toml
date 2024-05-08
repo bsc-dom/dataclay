@@ -26,6 +26,7 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
+    "aiorwlock>=1.4.0",
     "bcrypt>=4.0.1",
     "grpcio>=1.59.2",
     "grpcio-health-checking>=1.59.2",
@@ -64,7 +65,7 @@ telemetry = [
 ]
 
 [project.scripts]
-dataclayctl = "dataclay.control.ctl:main"
+dataclayctl = "dataclay.control.ctl:run"
 
 [tool.setuptools.dynamic]
 version = {attr = "dataclay.__version__"}

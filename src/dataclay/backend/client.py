@@ -183,13 +183,13 @@ class BackendClient:
         response = await self.stub.SetObjectAttribute(request, metadata=self.metadata_call)
         return response.value, response.is_exception
 
-    @grpc_error_handler
-    def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
+    @grpc_aio_error_handler
+    async def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         request = backend_pb2.DelObjectAttributeRequest(
             object_id=str(object_id),
             attribute=attribute,
         )
-        response = self.stub.DelObjectAttribute(request, metadata=self.metadata_call)
+        response = await self.stub.DelObjectAttribute(request, metadata=self.metadata_call)
         return response.value, response.is_exception
 
     @grpc_aio_error_handler

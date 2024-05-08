@@ -379,14 +379,12 @@ class DataClayRuntime(ABC):
                 # If the connection fails, update the list of backend clients, and try again
                 try:
                     if method_name == "__getattribute__":
-                        (
-                            serialized_response,
-                            is_exception,
-                        ) = await backend_client.get_object_attribute(
-                            instance._dc_meta.id,
-                            args[0],  # attribute name
+                        serialized_response, is_exception = (
+                            await backend_client.get_object_attribute(
+                                instance._dc_meta.id,
+                                args[0],  # attribute name
+                            )
                         )
-
                     elif method_name == "__setattr__":
                         serialized_response, is_exception = (
                             await backend_client.set_object_attribute(
@@ -395,15 +393,15 @@ class DataClayRuntime(ABC):
                                 await dcdumps(args[1]),  # attribute value
                             )
                         )
-                        if not is_exception:
-                            serialized_response = None
+                        logger.warning("**** serialized_response %s", serialized_response)
                     elif method_name == "__delattr__":
-                        serialized_response, is_exception = backend_client.del_object_attribute(
-                            instance._dc_meta.id,
-                            args[0],  # attribute name
+                        serialized_response, is_exception = (
+                            await backend_client.del_object_attribute(
+                                instance._dc_meta.id,
+                                args[0],  # attribute name
+                            )
                         )
-                        if not is_exception:
-                            serialized_response = None
+                        logger.warning("**** serialized_response %s", serialized_response)
                     else:
                         serialized_response, is_exception = await backend_client.call_active_method(
                             instance._dc_meta.id,
@@ -411,6 +409,7 @@ class DataClayRuntime(ABC):
                             serialized_args,
                             serialized_kwargs,
                         )
+                        logger.warning("**** serialized_response %s", serialized_response)
                 except DataClayException as e:
                     if "failed to connect" in str(e):
                         logger.warning("(%s) Connection failed. Syncing...", instance._dc_meta.id)
@@ -422,8 +421,7 @@ class DataClayRuntime(ABC):
                 if serialized_response:
                     response = await dcloads(serialized_response)
 
-                    # If the response is an ObjectWithWrongBackendIdError, update the object metadata
-                    # and try again
+                    # If response is ObjectWithWrongBackendIdError, update object metadata and retry
                     if isinstance(response, ObjectWithWrongBackendIdError):
                         instance._dc_meta.master_backend_id = response.backend_id
                         instance._dc_meta.replica_backend_ids = response.replica_backend_ids
