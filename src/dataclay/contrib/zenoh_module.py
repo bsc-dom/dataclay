@@ -15,13 +15,16 @@ try:
     import zenoh
 except ImportError:
     import warnings
-    warnings.warn("Warning: <import zenoh> failed",category= ImportWarning)
+
+    warnings.warn("Warning: <import zenoh> failed", category=ImportWarning)
+import logging
 import time
 from threading import Thread
-import logging
+
 from dataclay import activemethod
 
 logger = logging.getLogger(__name__)
+
 
 class ZenohMixin:
     """Zenoh mechanisms"""
@@ -30,7 +33,7 @@ class ZenohMixin:
     conf: str
 
     @activemethod
-    def __init__(self, conf: str = '{}'):
+    def __init__(self, conf: str = "{}"):
         """Class constructor.
 
         Args:
@@ -40,7 +43,7 @@ class ZenohMixin:
         self.conf = conf
 
     @activemethod
-    def handler(self,sample):
+    def handler(self, sample):
         """Placeholder for function handler. This function describes how the client will handle a message.
 
         Args:
@@ -50,7 +53,7 @@ class ZenohMixin:
             NotImplementedError: If the handler function has not been implemented an error is raised.
         """
         raise NotImplementedError("Must override handler")
-        
+
     @activemethod
     def produce_zenoh_msg(self, buf: str = "", key: str = "dataclay", **more):
         """Sends the message "buf" to the topic "key".
@@ -65,9 +68,9 @@ class ZenohMixin:
 
     @activemethod
     def send_to_zenoh(self):
-        """Previous function to produce_zenoh_msg. Gets all the arguments needed from the calling class.
-        """
+        """Previous function to produce_zenoh_msg. Gets all the arguments needed from the calling class."""
         import inspect
+
         attributes = inspect.getmembers(self.__class__, lambda a: not (inspect.isroutine(a)))
         field_values = {}
         for field in attributes:
@@ -77,7 +80,7 @@ class ZenohMixin:
         self.produce_zenoh_msg(**field_values)
 
     @activemethod
-    def __receive_data(self,key):
+    def __receive_data(self, key):
         """While the client is subscribed to a topic, it will check and handle the receipt of a message.
 
         Args:
@@ -85,24 +88,24 @@ class ZenohMixin:
         """
         session = zenoh.open(zenoh.Config.from_json5(self.conf))
         sub = session.declare_subscriber(key, self.handler)
-        while(key in self.subscriptions):
+        while key in self.subscriptions:
             time.sleep(0.1)
         return
 
     @activemethod
-    def receive_data(self,key: str = "dataclay"):
+    def receive_data(self, key: str = "dataclay"):
         """Create a thread which will check if a message from the topic arrives and will handle it.
 
         Args:
             key (str): Topic.
         """
-        if(key not in self.subscriptions):
+        if key not in self.subscriptions:
             t = Thread(target=self.__receive_data, args=(key,))
             self.subscriptions.append(key)
             t.start()
 
     @activemethod
-    def unsubscribe(self,key: str = "dataclay"):
+    def unsubscribe(self, key: str = "dataclay"):
         """Unsubscribes the client from a topic.
 
         Args:
@@ -114,25 +117,26 @@ class ZenohMixin:
             logger.error("The client was not subscribed to this topic")
 
     @activemethod
-    def get_last_data(self,key: str = "dataclay"):
+    def get_last_data(self, key: str = "dataclay"):
         """Returns the latest value stored in this Zenoh topic.
 
         Args:
             key (str): Topic.
 
         Returns:
-            list[str{reply.key_expr};{reply.playload}]: Latest value stored on a specific Zenoh 
+            list[str{reply.key_expr};{reply.playload}]: Latest value stored on a specific Zenoh
             topic.
         """
-        returns=[]
+        returns = []
         session = zenoh.open(zenoh.Config.from_json5(self.conf))
-        replies = session.get(key,zenoh.ListCollector())
+        replies = session.get(key, zenoh.ListCollector())
         for reply in replies():
             try:
-                returns.append("Received ('{}': '{}')"
-                    .format(reply.ok.key_expr, reply.ok.payload.decode("utf-8")))
+                returns.append(
+                    "Received ('{}': '{}')".format(
+                        reply.ok.key_expr, reply.ok.payload.decode("utf-8")
+                    )
+                )
             except:
-                returns.append("Received (ERROR: '{}')"
-                    .format(reply.err.payload.decode("utf-8")))
+                returns.append("Received (ERROR: '{}')".format(reply.err.payload.decode("utf-8")))
         return returns
-        

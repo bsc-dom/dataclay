@@ -1,5 +1,6 @@
 """ Class description goes here. """
 
+import asyncio
 import logging
 import os.path
 import signal
@@ -17,7 +18,7 @@ from dataclay.backend.api import BackendAPI
 from dataclay.config import settings
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
-from dataclay.runtime import context_var
+from dataclay.runtime import get_dc_event_loop, session_var, set_dc_event_loop
 
 logger = logging.getLogger(__name__)
 
@@ -63,12 +64,12 @@ def _get_or_generate_backend_id() -> UUID:
     return backend_id
 
 
-def serve():
-    stop_event = threading.Event()
+async def serve():
+    set_dc_event_loop(asyncio.get_running_loop())
 
     backend_id = _get_or_generate_backend_id()
 
-    logger.info("Starting backend service")
+    logger.info("Starting backend service...")
     backend = BackendAPI(
         settings.backend.name,
         settings.backend.port,
@@ -77,17 +78,21 @@ def serve():
         settings.kv_port,
     )
 
-    if not backend.is_ready(timeout=10):
+    # Wait for the KV store to be ready
+    if not await backend.is_ready(timeout=10):
         raise RuntimeError("KV store is not ready. Aborting!")
 
-    server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers),
-        options=[("grpc.max_send_message_length", -1), ("grpc.max_receive_message_length", -1)],
+    # Initialize the servicer
+    server = grpc.aio.server(
+        options=[
+            ("grpc.max_send_message_length", -1),
+            ("grpc.max_receive_message_length", -1),
+        ],
     )
-    backend_pb2_grpc.add_BackendServiceServicer_to_server(
-        BackendServicer(backend, stop_event), server
-    )
+    backend_servicer = BackendServicer(backend, server)
+    backend_pb2_grpc.add_BackendServiceServicer_to_server(backend_servicer, server)
 
+    # Enable healthcheck for the server
     if settings.backend.enable_healthcheck:
         logger.info("Enabling healthcheck for BackendService")
         health_servicer = health.HealthServicer(
@@ -101,37 +106,38 @@ def serve():
             "dataclay.proto.backend.BackendService", health_pb2.HealthCheckResponse.SERVING
         )
 
+    # Start the server
     address = f"{settings.backend.listen_address}:{settings.backend.port}"
     server.add_insecure_port(address)
-    server.start()
+    await server.start()
     logger.info("Backend service listening on %s", address)
 
     # Autoregister of backend to KV store
-    backend.runtime.metadata_service.register_backend(
+    await backend.runtime.metadata_service.register_backend(
         backend_id,
         settings.backend.host,
         settings.backend.port,
         settings.dataclay_id,
     )
 
-    # Set signal hook for SIGINT and SIGTERM
-    signal.signal(signal.SIGINT, lambda sig, frame: stop_event.set())
-    signal.signal(signal.SIGTERM, lambda sig, frame: stop_event.set())
+    # Register signal handlers for graceful termination
+    loop = get_dc_event_loop()
+    for sig in [signal.SIGINT, signal.SIGTERM]:
+        loop.add_signal_handler(
+            sig, lambda: loop.create_task(server.stop(settings.shutdown_grace_period))
+        )
 
-    # Wait until stop_event is set. Then, gracefully stop dataclay backend.
-    stop_event.wait()
-    logger.info("Stopping backend service")
-
-    # TODO: Check if the order can be changed to avoid new calls when shutting down
-    backend.stop()
-    server.stop(5)
+    # Wait for the server to stop
+    await server.wait_for_termination()
+    logger.info("Backend service stopped")
+    await backend.stop()
 
 
 class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
-    def __init__(self, backend: BackendAPI, stop_event: threading.Event):
+    def __init__(self, backend: BackendAPI, server: grpc.aio.Server):
         """Execution environment being managed"""
         self.backend = backend
-        self.stop_event = stop_event
+        self.server = server
 
     def _check_context(self, context):
         metadata = dict(context.invocation_metadata())
@@ -153,14 +159,14 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
 
         # set the current_context
         if "dataset-name" in metadata and "username" in metadata:
-            context_var.set(
+            session_var.set(
                 {"dataset_name": metadata["dataset-name"], "username": metadata["username"]}
             )
 
-    def RegisterObjects(self, request, context):
+    async def RegisterObjects(self, request, context):
         self._check_context(context)
         try:
-            self.backend.register_objects(request.dict_bytes, request.make_replica)
+            await self.backend.register_objects(request.dict_bytes, request.make_replica)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -168,10 +174,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
         return Empty()
 
-    def MakePersistent(self, request, context):
+    async def MakePersistent(self, request, context):
         self._check_context(context)
         try:
-            self.backend.make_persistent(request.pickled_obj)
+            await self.backend.make_persistent(request.pickled_obj)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -179,10 +185,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             return Empty()
         return Empty()
 
-    def CallActiveMethod(self, request, context):
+    async def CallActiveMethod(self, request, context):
         self._check_context(context)
         try:
-            value, is_exception = self.backend.call_active_method(
+            value, is_exception = await self.backend.call_active_method(
                 UUID(request.object_id),
                 request.method_name,
                 request.args,
@@ -199,10 +205,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     # Store Methods #
     #################
 
-    def GetObjectAttribute(self, request, context):
+    async def GetObjectAttribute(self, request, context):
         self._check_context(context)
         try:
-            value, is_exception = self.backend.get_object_attribute(
+            value, is_exception = await self.backend.get_object_attribute(
                 UUID(request.object_id),
                 request.attribute,
             )
@@ -213,10 +219,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return backend_pb2.GetObjectAttributeResponse()
 
-    def SetObjectAttribute(self, request, context):
+    async def SetObjectAttribute(self, request, context):
         self._check_context(context)
         try:
-            value, is_exception = self.backend.set_object_attribute(
+            value, is_exception = await self.backend.set_object_attribute(
                 UUID(request.object_id),
                 request.attribute,
                 request.serialized_attribute,
@@ -228,10 +234,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return backend_pb2.SetObjectAttributeResponse()
 
-    def DelObjectAttribute(self, request, context):
-        self._check_backend(context)
+    async def DelObjectAttribute(self, request, context):
+        self._check_context(context)
         try:
-            value, is_exception = self.backend.del_object_attribute(
+            value, is_exception = await self.backend.del_object_attribute(
                 UUID(request.object_id),
                 request.attribute,
             )
@@ -242,10 +248,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return backend_pb2.DelObjectAttributeResponse()
 
-    def GetObjectProperties(self, request, context):
+    async def GetObjectProperties(self, request, context):
         self._check_context(context)
         try:
-            result = self.backend.get_object_properties(UUID(request.object_id))
+            result = await self.backend.get_object_properties(UUID(request.object_id))
             return BytesValue(value=result)
         except Exception as e:
             context.set_details(str(e))
@@ -253,10 +259,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return BytesValue()
 
-    def UpdateObjectProperties(self, request, context):
+    async def UpdateObjectProperties(self, request, context):
         self._check_context(context)
         try:
-            self.backend.update_object_properties(
+            await self.backend.update_object_properties(
                 UUID(request.object_id), request.serialized_properties
             )
             return Empty()
@@ -266,10 +272,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def NewObjectVersion(self, request, context):
+    async def NewObjectVersion(self, request, context):
         self._check_context(context)
         try:
-            result = self.backend.new_object_version(UUID(request.object_id))
+            result = await self.backend.new_object_version(UUID(request.object_id))
             return backend_pb2.NewObjectVersionResponse(object_info=result)
         except Exception as e:
             context.set_details(str(e))
@@ -277,10 +283,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return backend_pb2.NewObjectVersionResponse()
 
-    def ConsolidateObjectVersion(self, request, context):
+    async def ConsolidateObjectVersion(self, request, context):
         self._check_context(context)
         try:
-            self.backend.consolidate_object_version(UUID(request.object_id))
+            await self.backend.consolidate_object_version(UUID(request.object_id))
             return Empty()
         except Exception as e:
             context.set_details(str(e))
@@ -288,10 +294,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def ProxifyObject(self, request, context):
+    async def ProxifyObject(self, request, context):
         self._check_context(context)
         try:
-            self.backend.proxify_object(UUID(request.object_id), UUID(request.new_object_id))
+            await self.backend.proxify_object(UUID(request.object_id), UUID(request.new_object_id))
             return Empty()
         except Exception as e:
             context.set_details(str(e))
@@ -299,10 +305,12 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def ChangeObjectId(self, request, context):
+    async def ChangeObjectId(self, request, context):
         self._check_context(context)
         try:
-            self.backend.change_object_id(UUID(request.object_id), UUID(request.new_object_id))
+            await self.backend.change_object_id(
+                UUID(request.object_id), UUID(request.new_object_id)
+            )
             return Empty()
         except Exception as e:
             context.set_details(str(e))
@@ -310,10 +318,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def SendObjects(self, request, context):
+    async def SendObjects(self, request, context):
         self._check_context(context)
         try:
-            self.backend.send_objects(
+            await self.backend.send_objects(
                 map(UUID, request.object_ids),
                 UUID(request.backend_id),
                 request.make_replica,
@@ -327,10 +335,11 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def FlushAll(self, request, context):
+    async def FlushAll(self, request, context):
         self._check_context(context)
         try:
-            self.backend.flush_all()
+            logger.info("Flushing all objects")
+            await self.backend.flush_all()
             return Empty()
         except Exception as e:
             context.set_details(str(e))
@@ -338,10 +347,11 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def Stop(self, request, context):
+    async def Stop(self, request, context):
         self._check_context(context)
         try:
-            self.stop_event.set()
+            logger.info("Stopping backend. Grace period: %ss", settings.shutdown_grace_period)
+            get_dc_event_loop().create_task(self.server.stop(settings.shutdown_grace_period))
             return Empty()
         except Exception as e:
             context.set_details(str(e))
@@ -349,11 +359,12 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def Drain(self, request, context):
+    async def Drain(self, request, context):
         self._check_context(context)
         try:
-            self.backend.move_all_objects()
-            self.stop_event.set()
+            logger.info("Draining backend. Grace period: %ss", settings.shutdown_grace_period)
+            await self.backend.move_all_objects()
+            get_dc_event_loop().create_task(self.server.stop(settings.shutdown_grace_period))
             return Empty()
         except Exception as e:
             context.set_details(str(e))
@@ -361,10 +372,10 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             traceback.print_exc()
             return Empty()
 
-    def NewObjectReplica(self, request, context):
+    async def NewObjectReplica(self, request, context):
         self._check_context(context)
         try:
-            self.backend.new_object_replica(
+            await self.backend.new_object_replica(
                 UUID(request.object_id),
                 UUID(request.backend_id),
                 request.recursive,

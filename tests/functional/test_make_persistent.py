@@ -1,6 +1,7 @@
 import pytest
 
 from dataclay.contrib.modeltest.family import Dog, Family, Person
+from dataclay.contrib.modeltest.test_remote import TestMakePersistent
 
 
 def test_make_persistent_basic(client):
@@ -78,12 +79,53 @@ def test_make_persistent_already_registered(client):
     person = Person("Marc", 24)
 
     person.make_persistent(backend_id=backend_ids[0])
-    person.sync()
+    person.sync()  # Sync to update object metadata
     assert person._dc_meta.master_backend_id == backend_ids[0]
 
     person.make_persistent(
         alias="test_make_persistent_already_registered", backend_id=backend_ids[1]
     )
-    person.sync()
+    person.sync()  # Sync to update object metadata
     assert person._dc_meta.master_backend_id == backend_ids[1]
     assert "test_make_persistent_already_registered" in person.get_aliases()
+
+
+def test_persistent_references(client):
+    """
+    Trying to make_persistent and object with persistent references
+    """
+    person = Person("Marc", 24)
+    person.make_persistent()
+    family = Family(person)
+    assert family._dc_is_registered == False
+
+    family.make_persistent()
+    assert family._dc_is_registered == True
+    assert person == family.members[0]
+
+
+# Remote methods
+
+
+def test_remote_automatic_register(client):
+    test_remote_method = TestMakePersistent()
+    test_remote_method.make_persistent()
+    test_remote_method.test_remote_automatic_register()
+
+
+def test_remote_make_persistent(client):
+    test_remote_method = TestMakePersistent()
+    test_remote_method.make_persistent()
+    test_remote_method.test_remote_make_persistent()
+
+
+def test_remote_make_persistent_alias(client):
+    test_remote_method = TestMakePersistent()
+    test_remote_method.make_persistent()
+    test_remote_method.test_remote_make_persistent_alias()
+
+
+def test_remote_make_persistent_backend(client):
+    test_remote_method = TestMakePersistent()
+    test_remote_method.make_persistent()
+    test_remote_method.test_remote_make_persistent_backend()

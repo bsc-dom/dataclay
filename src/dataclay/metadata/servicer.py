@@ -1,12 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import signal
-import threading
-import time
 import traceback
 from concurrent import futures
-from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import grpc
@@ -19,19 +17,23 @@ from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.kvdata import Backend
 from dataclay.proto.common import common_pb2
 from dataclay.proto.metadata import metadata_pb2, metadata_pb2_grpc
+from dataclay.runtime import get_dc_event_loop, set_dc_event_loop
 from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.uuid import str_to_uuid
 
 logger = logging.getLogger(__name__)
 
 
-def serve():
-    stop_event = threading.Event()
+async def serve():
+    # TODO: Think about moving the dc_event_loop to another place, since
+    # metadata don't need to import runtime, but has to define the event loop
+    set_dc_event_loop(asyncio.get_running_loop())
 
-    logger.info("Starting MetadataService")
+    logger.info("Starting Metadata Service...")
     metadata_api = MetadataAPI(settings.kv_host, settings.kv_port)
 
-    if not metadata_api.is_ready(timeout=10):
+    # Wait for the KV store to be ready
+    if not await metadata_api.is_ready(timeout=10):
         raise RuntimeError("KV store is not ready. Aborting!")
 
     # Try to set the dataclay id if don't exists yet
@@ -39,7 +41,7 @@ def serve():
         if settings.dataclay_id is None:
             settings.dataclay_id = uuid4()
 
-        metadata_api.new_dataclay(
+        await metadata_api.new_dataclay(
             settings.dataclay_id,
             settings.metadata.host,
             settings.metadata.port,
@@ -47,17 +49,18 @@ def serve():
         )
     except AlreadyExistError:
         logger.info("MetadataService already registered with id %s", settings.dataclay_id)
-        settings.dataclay_id = metadata_api.get_dataclay("this").id
+        settings.dataclay_id = await metadata_api.get_dataclay("this").id
     else:
-        metadata_api.new_superuser(
+        await metadata_api.new_superuser(
             settings.root_username, settings.root_password, settings.root_dataset
         )
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers))
-    metadata_pb2_grpc.add_MetadataServiceServicer_to_server(
-        MetadataServicer(metadata_api, stop_event), server
-    )
+    # Initialize the servicer
+    server = grpc.aio.server()
+    metadata_servicer = MetadataServicer(metadata_api, server)
+    metadata_pb2_grpc.add_MetadataServiceServicer_to_server(metadata_servicer, server)
 
+    # Enable healthcheck for the server
     if settings.metadata.enable_healthcheck:
         logger.info("Enabling healthcheck for MetadataService")
         health_servicer = health.HealthServicer(
@@ -71,39 +74,43 @@ def serve():
             "dataclay.proto.metadata.MetadataService", health_pb2.HealthCheckResponse.SERVING
         )
 
+    # Start the server
     address = f"{settings.metadata.listen_address}:{settings.metadata.port}"
     server.add_insecure_port(address)
-    server.start()
+    await server.start()
     logger.info("MetadataService listening on %s", address)
 
-    # Set signal hook for SIGINT and SIGTERM
-    signal.signal(signal.SIGINT, lambda sig, frame: stop_event.set())
-    signal.signal(signal.SIGTERM, lambda sig, frame: stop_event.set())
+    # Register signal handlers for graceful termination
+    loop = get_dc_event_loop()
+    for sig in [signal.SIGINT, signal.SIGTERM]:
+        get_dc_event_loop().add_signal_handler(
+            sig, lambda: loop.create_task(server.stop(settings.shutdown_grace_period))
+        )
 
-    # Wait until stop_event is set. Then, gracefully stop dataclay metadata service.
-    stop_event.wait()
-    logger.info("Stopping MetadataService")
-
-    server.stop(5)
+    # Wait for the server to stop
+    await server.wait_for_termination()
+    logger.info("MetadataService stopped")
+    await metadata_servicer.backend_clients.stop()
+    await metadata_api.close()
 
 
 class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
     """Provides methods that implement functionality of metadata server"""
 
-    def __init__(self, metadata_api: MetadataAPI, stop_event: threading.Event):
+    def __init__(self, metadata_api: MetadataAPI, server: grpc.aio.Server):
         self.metadata_api = metadata_api
-        self.stop_event = stop_event
+        self.server = server
 
         # Start the backend clients manager
         self.backend_clients = BackendClientsManager(metadata_api)
-        self.backend_clients.start_update()
+        self.backend_clients.start_update_loop()
         self.backend_clients.start_subscribe()
 
     # TODO: define get_exception_info(..) to serialize excpetions
 
-    def NewAccount(self, request, context):
+    async def NewAccount(self, request, context):
         try:
-            self.metadata_api.new_account(request.username, request.password)
+            await self.metadata_api.new_account(request.username, request.password)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -111,9 +118,9 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
             return Empty()
         return Empty()
 
-    def NewDataset(self, request, context):
+    async def NewDataset(self, request, context):
         try:
-            self.metadata_api.new_dataset(request.username, request.password, request.dataset)
+            await self.metadata_api.new_dataset(request.username, request.password, request.dataset)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -121,9 +128,9 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
             return Empty()
         return Empty()
 
-    def GetDataclay(self, request, context):
+    async def GetDataclay(self, request, context):
         try:
-            dataclay = self.metadata_api.get_dataclay(UUID(request.dataclay_id))
+            dataclay = await self.metadata_api.get_dataclay(UUID(request.dataclay_id))
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -131,11 +138,11 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
             return common_pb2.Dataclay()
         return dataclay.get_proto()
 
-    def GetAllBackends(self, request, context):
+    async def GetAllBackends(self, request, context):
         try:
             response = {}
             if request.force:
-                backends = self.metadata_api.get_all_backends(request.from_backend)
+                backends = await self.metadata_api.get_all_backends(request.from_backend)
                 for id, backend in backends.items():
                     response[str(id)] = backend.get_proto()
             else:
@@ -159,9 +166,9 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
     # Object Metadata #
     ###################
 
-    def GetAllObjects(self, request, context):
+    async def GetAllObjects(self, request, context):
         try:
-            object_mds = self.metadata_api.get_all_objects()
+            object_mds = await self.metadata_api.get_all_objects()
             response = {}
             for id, object_md in object_mds.items():
                 response[str(id)] = object_md.get_proto()
@@ -172,9 +179,9 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
             return metadata_pb2.GetAllObjectsResponse()
         return metadata_pb2.GetAllObjectsResponse(objects=response)
 
-    def GetObjectMDById(self, request, context):
+    async def GetObjectMDById(self, request, context):
         try:
-            object_md = self.metadata_api.get_object_md_by_id(UUID(request.object_id))
+            object_md = await self.metadata_api.get_object_md_by_id(UUID(request.object_id))
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -182,23 +189,25 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
             return common_pb2.ObjectMetadata()
         return object_md.get_proto()
 
-    def GetObjectMDByAlias(self, request, context):
+    async def GetObjectMDByAlias(self, request, context):
         try:
-            object_md = self.metadata_api.get_object_md_by_alias(
+            object_md = await self.metadata_api.get_object_md_by_alias(
                 request.alias_name, request.dataset_name
             )
         except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
             traceback.print_exc()
-            context.abort(grpc.StatusCode.INTERNAL, str(e))
+            return common_pb2.ObjectMetadata()
         return object_md.get_proto()
 
     #########
     # Alias #
     #########
 
-    def NewAlias(self, request, context):
+    async def NewAlias(self, request, context):
         try:
-            self.metadata_api.new_alias(
+            await self.metadata_api.new_alias(
                 request.alias_name, request.dataset_name, UUID(request.object_id)
             )
         except Exception as e:
@@ -208,9 +217,9 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
             return Empty()
         return Empty()
 
-    def GetAllAlias(self, request, context):
+    async def GetAllAlias(self, request, context):
         try:
-            aliases = self.metadata_api.get_all_alias(
+            aliases = await self.metadata_api.get_all_alias(
                 request.dataset_name, str_to_uuid(request.object_id)
             )
             response = {}
@@ -223,9 +232,9 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
             return metadata_pb2.GetAllAliasResponse()
         return metadata_pb2.GetAllAliasResponse(aliases=response)
 
-    def DeleteAlias(self, request, context):
+    async def DeleteAlias(self, request, context):
         try:
-            self.metadata_api.delete_alias(request.alias_name, request.dataset_name)
+            await self.metadata_api.delete_alias(request.alias_name, request.dataset_name)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -233,9 +242,12 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
             return Empty()
         return Empty()
 
-    def Stop(self, request, context):
+    async def Stop(self, request, context):
         try:
-            self.stop_event.set()
+            logger.warning(
+                "Stopping MetadataService. Grace period: %ss", settings.shutdown_grace_period
+            )
+            get_dc_event_loop().create_task(self.server.stop(settings.shutdown_grace_period))
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)

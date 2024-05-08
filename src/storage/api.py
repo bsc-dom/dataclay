@@ -2,7 +2,6 @@
 
 import logging
 import os
-import uuid
 
 from dotenv import dotenv_values
 
@@ -13,7 +12,7 @@ from dataclay.metadata.kvdata import ObjectMetadata
 
 # Also "publish" the split method
 # from dataclay.contrib.splitting import split
-from dataclay.runtime import get_runtime
+from dataclay.runtime import get_dc_event_loop, get_runtime
 
 # The StorageDict and StorageList data structures
 # from .models.storagedict import StorageDict
@@ -45,8 +44,9 @@ def getByID(object_md_json: str):
     Returns:
         The DataClayObject identified by the given object_md_json
     """
+    loop = get_dc_event_loop()
     object_md = ObjectMetadata.model_validate_json(object_md_json)
-    return get_runtime().get_object_by_id(object_md.id, object_md)
+    return loop.run_until_complete(get_runtime().get_object_by_id(object_md.id, object_md))
 
 
 def initWorker(config_file_path, **kwargs):

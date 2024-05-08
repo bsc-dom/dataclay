@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import concurrent.futures
+import contextvars
 import logging
 import pickle
 import time
@@ -13,9 +15,10 @@ from typing import TYPE_CHECKING, Optional
 from dataclay import utils
 from dataclay.config import settings
 from dataclay.exceptions import *
-from dataclay.runtime import LockManager, set_runtime
+from dataclay.runtime import get_dc_event_loop, lock_manager, set_runtime
 from dataclay.runtime.backend import BackendRuntime
-from dataclay.utils.serialization import dcdumps, recursive_dcloads
+from dataclay.utils.contextvars import dc_to_thread, run_in_context
+from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcloads
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
@@ -39,15 +42,15 @@ class BackendAPI:
         self.runtime = BackendRuntime(kv_host, kv_port, self.backend_id)
         set_runtime(self.runtime)
 
-    def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
+    async def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
         ref = time.time()
         now = ref
-        if self.runtime.metadata_service.is_ready(timeout):
+        if await self.runtime.metadata_service.is_ready(timeout):
             # Check that dataclay_id is defined. If it is not defined, it could break things
             while timeout is None or (now - ref) < timeout:
                 try:
-                    dataclay_id = self.runtime.metadata_service.get_dataclay("this").id
-                    settings.dataclay_id = dataclay_id
+                    dataclay_obj = await self.runtime.metadata_service.get_dataclay("this")
+                    settings.dataclay_id = dataclay_obj.id
                     return True
                 except DoesNotExistError:
                     time.sleep(pause)
@@ -56,11 +59,11 @@ class BackendAPI:
         return False
 
     # Object Methods
-    def register_objects(self, serialized_objects: Iterable[bytes], make_replica: bool):
+    async def register_objects(self, serialized_objects: Iterable[bytes], make_replica: bool):
+        logger.debug("Receiving (%d) objects to register", len(serialized_objects))
         for object_bytes in serialized_objects:
-            object_dict, state = pickle.loads(object_bytes)
-
-            instance = self.runtime.get_object_by_id(object_dict["_dc_meta"].id)
+            state, getstate = await dcloads(object_bytes)
+            instance = await self.runtime.get_object_by_id(state["_dc_meta"].id)
 
             if instance._dc_is_local:
                 assert instance._dc_is_replica
@@ -68,12 +71,13 @@ class BackendAPI:
                     logger.warning("Replica already exists with id=%s", instance._dc_meta.id)
                     continue
 
-            with LockManager.write(instance._dc_meta.id):
-                object_dict["_dc_is_loaded"] = True
-                object_dict["_dc_is_local"] = True
-                vars(instance).update(object_dict)
-                if state:
-                    instance.__setstate__(state)
+            async with lock_manager.get_lock(instance._dc_meta.id).writer_lock:
+                # Update object state and flags
+                state["_dc_is_loaded"] = True
+                state["_dc_is_local"] = True
+                vars(instance).update(state)
+                if getstate:
+                    instance.__setstate__(getstate)
                 self.runtime.data_manager.add_hard_reference(instance)
 
                 if make_replica:
@@ -85,17 +89,17 @@ class BackendAPI:
                     instance._dc_meta.master_backend_id = self.backend_id
                     instance._dc_meta.replica_backend_ids.discard(self.backend_id)
                     # we can only move masters
-                    # instance._dc_is_replica = False # already set by vars(instance).update(object_dict)
+                    # instance._dc_is_replica = False # already set by vars(instance).update(state)
 
                 # ¿Should be always updated here, or from the calling backend?
-                self.runtime.metadata_service.upsert_object(instance._dc_meta)
+                await self.runtime.metadata_service.upsert_object(instance._dc_meta)
 
     @tracer.start_as_current_span("make_persistent")
-    def make_persistent(self, serialized_objects: Iterable[bytes]):
-        logger.debug("Receiving objects to make persistent")
+    async def make_persistent(self, serialized_objects: Iterable[bytes]):
+        logger.debug("Receiving (%d) objects to make persistent", len(serialized_objects))
         unserialized_objects: dict[UUID, DataClayObject] = {}
         for object_bytes in serialized_objects:
-            proxy_object = recursive_dcloads(object_bytes, unserialized_objects)
+            proxy_object = await recursive_dcloads(object_bytes, unserialized_objects)
             proxy_object._dc_is_local = True
             proxy_object._dc_is_loaded = True
             proxy_object._dc_meta.master_backend_id = self.backend_id
@@ -110,19 +114,21 @@ class BackendAPI:
             )
             self.runtime.inmemory_objects[proxy_object._dc_meta.id] = proxy_object
             self.runtime.data_manager.add_hard_reference(proxy_object)
-            self.runtime.metadata_service.upsert_object(proxy_object._dc_meta)
+            await self.runtime.metadata_service.upsert_object(proxy_object._dc_meta)
             proxy_object._dc_is_registered = True
 
     @tracer.start_as_current_span("call_active_method")
-    def call_active_method(
+    async def call_active_method(
         self, object_id: UUID, method_name: str, args: tuple, kwargs: dict
     ) -> tuple[bytes, bool]:
-        logger.debug("(%s) Calling remote method %s", object_id, method_name)
+        """Entry point for calling an active method of a DataClayObject"""
 
-        instance = self.runtime.get_object_by_id(object_id)
+        logger.debug("(%s) Receiving call to activemethod '%s'", object_id, method_name)
 
-        # NOTE: When the object is not local, a custom exception is sent
-        # for the client to update the backend_id, and call_active_method again
+        instance = await self.runtime.get_object_by_id(object_id)
+
+        # If the object isn't local (not owned by this backend), a custom exception is sent to the
+        # client to update the object's backend_id, and call_active_method again to the correct backend
         if not instance._dc_is_local:
             # NOTE: We sync the metadata because when consolidating an object
             # it might be that the proxy is pointing to the wrong backend_id which is
@@ -130,7 +136,7 @@ class BackendAPI:
             # by passing the backend_id of the new object to the proxy, but this can create
             # problems with race conditions (e.g. a move before the consolidation). Therefore,
             # we check to the metadata which is more reliable.
-            self.runtime.sync_object_metadata(instance)
+            await self.runtime.sync_object_metadata(instance)
             logger.warning(
                 "(%s) Wrong backend. Update to %s",
                 object_id,
@@ -145,21 +151,30 @@ class BackendAPI:
                 False,
             )
 
-        args = pickle.loads(args)
-        kwargs = pickle.loads(kwargs)
+        # Deserialize arguments
+        args, kwargs = await asyncio.gather(dcloads(args), dcloads(kwargs))
 
         try:
-            value = getattr(instance, method_name)(*args, **kwargs)
-            if value is not None:
-                value = dcdumps(value)
-            return value, False
+            # Call activemethod in another thread
+            logger.debug("(%s) *** Starting activemethod '%s' in executor", object_id, method_name)
+            result = await dc_to_thread(getattr(instance, method_name), *args, **kwargs)
+            logger.debug("(%s) *** Finished activemethod '%s' in executor", object_id, method_name)
+
+            # Serialize the result if not None
+            if result is None:
+                return result, False
+            else:
+                result_bytes = await dcdumps(result)
+                return result_bytes, False
         except Exception as e:
+            # If an exception was raised, serialize it and return it to be raised by the client
             return pickle.dumps(e), True
 
     # Store Methods
 
+    # TODO: Rename to get_object_property
     @tracer.start_as_current_span("get_object_attribute")
-    def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
+    async def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         """Returns value of the object attibute with ID provided
         Args:
             object_id: ID of the object
@@ -168,17 +183,10 @@ class BackendAPI:
             The pickled value of the object attibute.
             If it's an exception or not
         """
-        instance = self.runtime.get_object_by_id(object_id)
-        # NOTE: When the object is not local, a custom exception is sent
-        # for the client to update the backend_id, and call_active_method again
+        logger.debug("(%s) Receiving get attribute '%s'", object_id, attribute)
+        instance = await self.runtime.get_object_by_id(object_id)
         if not instance._dc_is_local:
-            # NOTE: We sync the metadata because when consolidating an object
-            # it might be that the proxy is pointing to the wrong backend_id which is
-            # the same current backend, creating a infinite loop. This could be solve also
-            # by passing the backend_id of the new object to the proxy, but this can create
-            # problems with race conditions (e.g. a move before the consolidation). Therefore,
-            # we check to the metadata which is more reliable.
-            self.runtime.sync_object_metadata(instance)
+            await self.runtime.sync_object_metadata(instance)
             logger.warning(
                 "(%s) Wrong backend. Update to %s",
                 object_id,
@@ -193,27 +201,21 @@ class BackendAPI:
                 False,
             )
         try:
-            value = getattr(instance, attribute)
-            return dcdumps(value), False
+            value = await dc_to_thread(getattr, instance, attribute)
+            return await dcdumps(value), False
         except Exception as e:
             return pickle.dumps(e), True
 
+    # TODO: Rename to set_object_property
     @tracer.start_as_current_span("set_object_attribute")
-    def set_object_attribute(
+    async def set_object_attribute(
         self, object_id: UUID, attribute: str, serialized_attribute: bytes
     ) -> tuple[bytes, bool]:
         """Updates an object attibute with ID provided"""
-        instance = self.runtime.get_object_by_id(object_id)
-        # NOTE: When the object is not local, a custom exception is sent
-        # for the client to update the backend_id, and call_active_method again
+        logger.debug("(%s) Receiving set attribute '%s'", object_id, attribute)
+        instance = await self.runtime.get_object_by_id(object_id)
         if not instance._dc_is_local:
-            # NOTE: We sync the metadata because when consolidating an object
-            # it might be that the proxy is pointing to the wrong backend_id which is
-            # the same current backend, creating a infinite loop. This could be solve also
-            # by passing the backend_id of the new object to the proxy, but this can create
-            # problems with race conditions (e.g. a move before the consolidation). Therefore,
-            # we check to the metadata which is more reliable.
-            self.runtime.sync_object_metadata(instance)
+            await self.runtime.sync_object_metadata(instance)
             logger.warning(
                 "(%s) Wrong backend. Update to %s",
                 object_id,
@@ -229,32 +231,23 @@ class BackendAPI:
                 False,
             )
         try:
-            object_attribute = pickle.loads(serialized_attribute)
-            setattr(instance, attribute, object_attribute)
-            return pickle.dumps("placeholder"), False
+            object_attribute = await dcloads(serialized_attribute)
+            await dc_to_thread(setattr, instance, attribute, object_attribute)
+            return None, False
         except Exception as e:
             return pickle.dumps(e), True
 
-    @tracer.start_as_current_span("set_object_attribute")
-    def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
+    @tracer.start_as_current_span("del_object_attribute")
+    async def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         """Deletes an object attibute with ID provided"""
-        instance = self.runtime.get_object_by_id(object_id)
-        # NOTE: When the object is not local, a custom exception is sent
-        # for the client to update the backend_id, and call_active_method again
+        instance = await self.runtime.get_object_by_id(object_id)
         if not instance._dc_is_local:
-            # NOTE: We sync the metadata because when consolidating an object
-            # it might be that the proxy is pointing to the wrong backend_id which is
-            # the same current backend, creating a infinite loop. This could be solve also
-            # by passing the backend_id of the new object to the proxy, but this can create
-            # problems with race conditions (e.g. a move before the consolidation). Therefore,
-            # we check to the metadata which is more reliable.
-            self.runtime.sync_object_metadata(instance)
+            await self.runtime.sync_object_metadata(instance)
             logger.warning(
                 "(%s) Wrong backend. Update to %s",
                 object_id,
                 instance._dc_meta.master_backend_id,
             )
-
             return (
                 pickle.dumps(
                     ObjectWithWrongBackendIdError(
@@ -264,13 +257,13 @@ class BackendAPI:
                 False,
             )
         try:
-            delattr(instance, attribute)
-            return pickle.dumps("placeholder"), False
+            await dc_to_thread(delattr, instance, attribute)
+            return None, False
         except Exception as e:
             return pickle.dumps(e), True
 
     @tracer.start_as_current_span("get_object_properties")
-    def get_object_properties(self, object_id: UUID) -> bytes:
+    async def get_object_properties(self, object_id: UUID) -> bytes:
         """Returns the properties of the object with ID provided
 
         Args:
@@ -279,18 +272,19 @@ class BackendAPI:
         Returns:
             The pickled properties of the object.
         """
-        instance = self.runtime.get_object_by_id(object_id)
-        object_properties = self.runtime.get_object_properties(instance)
-        return dcdumps(object_properties)
+        instance = await self.runtime.get_object_by_id(object_id)
+        object_properties = await self.runtime.get_object_properties(instance)
+        return await dcdumps(object_properties)
 
     @tracer.start_as_current_span("update_object_properties")
-    def update_object_properties(self, object_id: UUID, serialized_properties: bytes):
+    async def update_object_properties(self, object_id: UUID, serialized_properties: bytes):
         """Updates an object with ID provided with contents from another object"""
-        instance = self.runtime.get_object_by_id(object_id)
-        object_properties = pickle.loads(serialized_properties)
-        self.runtime.update_object_properties(instance, object_properties)
+        instance, object_properties = await asyncio.gather(
+            self.runtime.get_object_by_id(object_id), dcloads(serialized_properties)
+        )
+        await self.runtime.update_object_properties(instance, object_properties)
 
-    def new_object_version(self, object_id: UUID):
+    async def new_object_version(self, object_id: UUID):
         """Creates a new version of the object with ID provided
 
         This entrypoint for new_version is solely for COMPSs (called from java).
@@ -301,28 +295,29 @@ class BackendAPI:
         Returns:
             The JSON-encoded metadata of the new DataClayObject version.
         """
-        instance = self.runtime.get_object_by_id(object_id)
-
-        new_version = self.runtime.new_object_version(instance)
+        instance = await self.runtime.get_object_by_id(object_id)
+        new_version = await self.runtime.new_object_version(instance)
         return new_version.getID()
 
-    def consolidate_object_version(self, object_id: UUID):
+    async def consolidate_object_version(self, object_id: UUID):
         """Consolidates the object with ID provided"""
-        instance = self.runtime.get_object_by_id(object_id)
-        self.runtime.consolidate_version(instance)
+        instance = await self.runtime.get_object_by_id(object_id)
+        await self.runtime.consolidate_version(instance)
 
     @tracer.start_as_current_span("proxify_object")
-    def proxify_object(self, object_id: UUID, new_object_id: UUID):
-        instance = self.runtime.get_object_by_id(object_id)
-        self.runtime.proxify_object(instance, new_object_id)
+    async def proxify_object(self, object_id: UUID, new_object_id: UUID):
+        """Proxify object with ID provided to new object ID"""
+        logger.debug("Proxifying object %s to %s", object_id, new_object_id)
+        instance = await self.runtime.get_object_by_id(object_id)
+        await self.runtime.proxify_object(instance, new_object_id)
 
     @tracer.start_as_current_span("change_object_id")
-    def change_object_id(self, object_id: UUID, new_object_id: UUID):
-        instance = self.runtime.get_object_by_id(object_id)
-        self.runtime.change_object_id(instance, new_object_id)
+    async def change_object_id(self, object_id: UUID, new_object_id: UUID):
+        instance = await self.runtime.get_object_by_id(object_id)
+        await self.runtime.change_object_id(instance, new_object_id)
 
     @tracer.start_as_current_span("send_objects")
-    def send_objects(
+    async def send_objects(
         self,
         object_ids: Iterable[UUID],
         backend_id: UUID,
@@ -330,24 +325,27 @@ class BackendAPI:
         recursive: bool,
         remotes: bool,
     ):
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            instances = tuple(executor.map(self.runtime.get_object_by_id, object_ids))
-        self.runtime.send_objects(instances, backend_id, make_replica, recursive, remotes)
+        logger.debug("Receiving objects to %s", "replicate" if make_replica else "move")
+        # Use asyncio.gather to call get_object_by_id concurrently for all object_ids
+        instances = await asyncio.gather(
+            *[self.runtime.get_object_by_id(object_id) for object_id in object_ids]
+        )
+        await self.runtime.send_objects(instances, backend_id, make_replica, recursive, remotes)
 
     # Shutdown
 
     @tracer.start_as_current_span("stop")
-    def stop(self):
-        self.runtime.stop()
+    async def stop(self):
+        await self.runtime.stop()
 
     @tracer.start_as_current_span("flush_all")
-    def flush_all(self):
-        self.runtime.data_manager.flush_all()
+    async def flush_all(self):
+        await self.runtime.data_manager.flush_all()
 
     @tracer.start_as_current_span("move_all_objects")
-    def move_all_objects(self):
-        dc_objects = self.runtime.metadata_service.get_all_objects()
-        self.runtime.backend_clients.update()
+    async def move_all_objects(self):
+        dc_objects = await self.runtime.metadata_service.get_all_objects()
+        await self.runtime.backend_clients.update()
         backends = self.runtime.backend_clients
 
         if len(backends) <= 1:
@@ -381,15 +379,15 @@ class BackendAPI:
 
     # Replicas
 
-    def new_object_replica(
+    async def new_object_replica(
         self,
         object_id: UUID,
         backend_id: UUID = None,
         recursive: bool = False,
         remotes: bool = True,
     ):
-        instance = self.runtime.get_object_by_id(object_id)
-        self.runtime.new_object_replica(instance, backend_id, recursive, remotes)
+        instance = await self.runtime.get_object_by_id(object_id)
+        await self.runtime.new_object_replica(instance, backend_id, recursive, remotes)
 
     def synchronize(
         self, session_id, object_id, implementation_id, serialized_value, calling_backend_id=None

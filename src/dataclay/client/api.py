@@ -7,6 +7,7 @@ core and sets the "client" mode for the library.
 
 __all__ = ["init", "finish", "DataClayObject"]
 
+import asyncio
 import logging
 import logging.config
 from typing import TYPE_CHECKING, Optional
@@ -15,7 +16,13 @@ from uuid import UUID
 from dataclay.backend.client import BackendClient
 from dataclay.config import ClientSettings, settings
 from dataclay.dataclay_object import DataClayObject
-from dataclay.runtime import context_var, get_runtime, set_runtime
+from dataclay.runtime import (
+    get_dc_event_loop,
+    get_runtime,
+    session_var,
+    set_dc_event_loop,
+    set_runtime,
+)
 from dataclay.runtime.client import ClientRuntime
 from dataclay.utils.telemetry import trace
 
@@ -81,7 +88,7 @@ class Client:
     Usually you create client instance and call start() method to initialize it.
 
         from dataclay import client
-        client = dataclay.client(host="127.0.0.1", username="testuser", password="s3cret", dataset="testuser")
+        client = dataclay.client(host="127.0.0.1")
         client.start()
     """
 
@@ -148,6 +155,14 @@ class Client:
 
         logger.info("Starting client runtime")
 
+        # Create new event loop (if not AsyncClient)
+        # TODO: Should we add the loop to a background thread?
+        # TODO: Should we replace the loop for each client?
+        if get_dc_event_loop() is None:
+            self.loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.loop)
+            set_dc_event_loop(self.loop)
+
         # Replace settings
         self.previous_settings = settings.client
         settings.client = self.settings
@@ -169,7 +184,7 @@ class Client:
 
         set_runtime(self.runtime)
 
-        context_var.set(
+        session_var.set(
             {"dataset_name": settings.client.dataset, "username": settings.client.username}
         )
 
@@ -179,14 +194,14 @@ class Client:
         self.is_active = True
 
     @tracer.start_as_current_span("stop")
-    def stop(self):
+    async def stop(self):
         """Stop the client runtime"""
         if not self.is_active:
             logger.warning("Client is not active. Ignoring")
             return
 
         logger.info("Stopping client runtime")
-        self.runtime.stop()
+        await self.runtime.stop()
         settings.client = self.previous_settings
         set_runtime(self.previous_runtime)
         self.is_active = False
@@ -203,6 +218,70 @@ class Client:
 
     @tracer.start_as_current_span("get_backends")
     def get_backends(self) -> dict[UUID, BackendClient]:
+        if not self.is_active:
+            raise RuntimeError("Client is not active")
+        get_dc_event_loop().run_until_complete(self.runtime.backend_clients.update())
+        return self.runtime.backend_clients
+
+
+class AsyncClient(Client):
+    """AsyncClient API for dataClay.
+
+    Usually you create client instance and call start() method to initialize it.
+
+        from dataclay import AsyncClient
+        client = AsyncClient(host="127.0.0.1")
+        await client.start()
+    """
+
+    @tracer.start_as_current_span("start")
+    async def start(self):
+        """Start the client runtime"""
+
+        if self.is_active:
+            logger.warning("Client already active. Ignoring")
+            return
+
+        logger.info("Starting client runtime")
+
+        # Get the current event loop (if not Client)
+        self.loop = asyncio.get_running_loop()
+        set_dc_event_loop(self.loop)  # TODO: find a cleaner architecture
+
+        # Replace settings
+        self.previous_settings = settings.client
+        settings.client = self.settings
+
+        # Create and replace runtime
+        self.previous_runtime = get_runtime()
+
+        if settings.client.proxy_enabled:
+            logger.debug(
+                "Using proxy connection to %s:%s",
+                settings.client.proxy_host,
+                settings.client.proxy_port,
+            )
+            self.runtime = ClientRuntime(settings.client.proxy_host, settings.client.proxy_port)
+        else:
+            self.runtime = ClientRuntime(
+                settings.client.dataclay_host, settings.client.dataclay_port
+            )
+
+        set_runtime(self.runtime)
+
+        session_var.set(
+            {"dataset_name": settings.client.dataset, "username": settings.client.username}
+        )
+
+        # Cache the dataclay_id, to avoid later request
+        # self.runtime.dataclay_id
+
+        self.is_active = True
+
+    @tracer.start_as_current_span("get_backends")
+    async def get_backends(self) -> dict[UUID, BackendClient]:
+        if not self.is_active:
+            raise RuntimeError("Client is not active")
         self.runtime.backend_clients.update()
         return self.runtime.backend_clients
 

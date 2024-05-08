@@ -1,6 +1,8 @@
-from model.mqttsubs import MqttSubs
-from dataclay import Client
 import random
+
+from model.mqttsubs import MqttSubs
+
+from dataclay import Client
 
 client = Client(host="127.0.0.1", username="testuser", password="s3cret", dataset="testdata")
 client.start()

@@ -1,7 +1,6 @@
-import pytest
-
 import storage.api
 from dataclay.contrib.modeltest.family import Dog, Family, Person
+from dataclay.dataclay_object import run_dc_coroutine
 
 
 def test_new_version_and_consolidate(client):
@@ -103,13 +102,12 @@ def test_version_references_3(client):
 
 def test_new_object_version(client):
     backends = client.get_backends()
-    backend_ids = list(backends)
 
     person = Person("Marc", 24)
     person.make_persistent()
 
     backend_client = backends[person._dc_meta.master_backend_id]
-    person_v1_md_json = backend_client.new_object_version(person._dc_meta.id)
+    person_v1_md_json = run_dc_coroutine(backend_client.new_object_version, person._dc_meta.id)
     person_v1 = storage.api.getByID(person_v1_md_json)
 
     assert person_v1.name == "Marc"
@@ -117,5 +115,5 @@ def test_new_object_version(client):
     person_v1.name = "Alice"
     assert person.name == "Marc"
 
-    backend_client.consolidate_object_version(person_v1._dc_meta.id)
+    run_dc_coroutine(backend_client.consolidate_object_version, person_v1._dc_meta.id)
     assert person.name == "Alice"

@@ -1,6 +1,6 @@
-import pytest
-
-from dataclay.contrib.modeltest.family import Dog, Family, Person, TestActivemethod
+from dataclay.contrib.modeltest.family import Dog, Family, Person
+from dataclay.contrib.modeltest.test_remote import TestMoveObject
+from dataclay.dataclay_object import run_dc_coroutine
 
 
 def test_move_object(client):
@@ -66,6 +66,26 @@ def test_move_unload_object(client):
     assert person._dc_meta.master_backend_id == backend_ids[1]
 
 
+def test_move_unload_object_reference(client):
+    backends = client.get_backends()
+    backend_ids = list(backends)
+
+    person_1 = Person("Marc", 24)
+    person_2 = Person("Alice", 21)
+    person_1.make_persistent(backend_id=backend_ids[0])
+    person_2.make_persistent(backend_id=backend_ids[0])
+    person_1.spouse = person_2
+
+    run_dc_coroutine(backends[backend_ids[0]].flush_all)
+    person_1.move(backend_ids[1], recursive=True)
+
+    person_1.sync()
+    person_2.sync()
+
+    assert person_1._dc_meta.master_backend_id == backend_ids[1]
+    assert person_2._dc_meta.master_backend_id == backend_ids[1]
+
+
 def test_move_reference(client):
     """When moving object to new backend, if that backend already
     has the object as remote object, make it local.
@@ -96,13 +116,6 @@ def test_wrong_backend_id(client):
     assert person._dc_meta.master_backend_id == backend_ids[1]
     assert person.name == "Marc"
     assert person._dc_meta.master_backend_id == backend_ids[0]
-
-
-def test_move_activemethod(client):
-    """Move object inside an active method"""
-    test_activemethod = TestActivemethod()
-    test_activemethod.make_persistent()
-    test_activemethod.test_move_activemethod()
 
 
 def test_move_recursive_remotes(client):
@@ -358,3 +371,13 @@ def test_move_local_object_recursive_remotes(client):
     assert person_3._dc_meta.master_backend_id == backend_ids[0]
     person_4.sync()  # forcing update of backend_id
     assert person_4._dc_meta.master_backend_id == backend_ids[0]
+
+
+# Remote Methods
+
+
+# def test_remote_move_activemethod(client):
+#     """Move object inside an active method"""
+#     remote_test = TestMoveObject()
+#     remote_test.make_persistent()
+#     remote_test.test_move_object()

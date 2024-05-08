@@ -60,6 +60,7 @@ class ClientSettings(BaseSettings):
     proxy_enabled: bool = False
     proxy_host: str = "127.0.0.1"
     proxy_port: int = 8676
+    async_enabled: bool = False
 
 
 class Settings(BaseSettings):
@@ -80,6 +81,7 @@ class Settings(BaseSettings):
     unload_timeout: int = 5
     timeout_channel_ready: int = 5
     backend_clients_check_interval: int = 10
+    shutdown_grace_period: int = 5
 
     # SSL
     ssl_client_trusted_certificates: str = ""

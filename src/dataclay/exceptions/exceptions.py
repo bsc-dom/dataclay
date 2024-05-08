@@ -1,7 +1,5 @@
 """ Class description goes here. """
 
-from dataclay.exceptions.ErrorDefs import ErrorCodes
-
 
 class DataClayException(Exception):
     """Base class for exceptions in this module."""

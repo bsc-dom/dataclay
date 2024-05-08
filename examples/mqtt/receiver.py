@@ -1,6 +1,6 @@
 from model.mqttsubs import MqttSubs
-from dataclay import Client
 
+from dataclay import Client
 
 client = Client(host="127.0.0.1", username="testuser", password="s3cret", dataset="testdata")
 client.start()
@@ -14,4 +14,3 @@ except Exception:
 mqttsub.set_topic("tmp")
 
 mqttsub.subscribe_to_topic(mqttsub.topic)
-

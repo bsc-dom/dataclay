@@ -8,42 +8,46 @@ In order to use this functionality, the client class has to inherit the MQTTMixi
 The client will be able to specify how the messages should be handled, which topics will be subscribed to,
 and send messages with a topic. 
 """
+import inspect
+import logging
+import os
 from typing import Any
 
 from dataclay import activemethod
 
-import logging
-
-import inspect
-
-import os
 try:
     import paho.mqtt.client as mqtt
 except ImportError:
     import warnings
-    warnings.warn("Warning: <import paho.mqtt.client> failed",category= ImportWarning)
+
+    warnings.warn("Warning: <import paho.mqtt.client> failed", category=ImportWarning)
 try:
     from json import dumps
 except ImportError:
     import warnings
-    warnings.warn("Warning: <from json import dumps> failed",category= ImportWarning)
+
+    warnings.warn("Warning: <from json import dumps> failed", category=ImportWarning)
 try:
     from dataclay.contrib.mqtt import MQTT_PRODUCERS
 except ImportError:
     import warnings
-    warnings.warn("Warning: <from dataclay.contrib.mqtt import MQTT_PRODUCERS> failed",category= ImportWarning)
+
+    warnings.warn(
+        "Warning: <from dataclay.contrib.mqtt import MQTT_PRODUCERS> failed", category=ImportWarning
+    )
 
 """ Mqtt pool of producers """
 MQTT_PRODUCERS = dict()
 
 logger = logging.getLogger(__name__)
 
+
 class MQTTMixin:
     """MQTT mechanisms"""
 
     @activemethod
-    def message_handling(self,client, userdata, msg):
-        """Placeholder for function message_handling. This function describes how the client will handle a 
+    def message_handling(self, client, userdata, msg):
+        """Placeholder for function message_handling. This function describes how the client will handle a
         message.
 
         Args:
@@ -71,7 +75,7 @@ class MQTTMixin:
         if mqtt_address in MQTT_PRODUCERS:
             mqtt_producer = MQTT_PRODUCERS[mqtt_address]
         else:
-            mqtt_producer = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,mqtt_client)
+            mqtt_producer = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, mqtt_client)
             mqtt_producer.on_message = self.message_handling
             mqtt_producer.connect(mqtt_host, mqtt_port)
             mqtt_producer.loop_start()
@@ -93,7 +97,7 @@ class MQTTMixin:
         if mqtt_address in MQTT_PRODUCERS:
             mqtt_producer = MQTT_PRODUCERS[mqtt_address]
         else:
-            mqtt_producer = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,mqtt_client)
+            mqtt_producer = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, mqtt_client)
             mqtt_producer.connect(mqtt_host, mqtt_port)
             mqtt_producer.loop_start()
             MQTT_PRODUCERS[mqtt_address] = mqtt_producer
@@ -102,8 +106,7 @@ class MQTTMixin:
 
     @activemethod
     def send_to_mqtt(self):
-        """Previous function to produce_mqtt_msg. Gets all the arguments needed from the calling class.
-        """
+        """Previous function to produce_mqtt_msg. Gets all the arguments needed from the calling class."""
         attributes = inspect.getmembers(self.__class__, lambda a: not (inspect.isroutine(a)))
         field_values = {}
         for field in attributes:
