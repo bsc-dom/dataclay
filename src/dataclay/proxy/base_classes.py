@@ -119,7 +119,7 @@ class BackendProxyBase(backend_pb2_grpc.BackendServiceServicer, metaclass=Backen
     middleware: list
 
     async def _refresh_backends(self):
-        for k, v in await self.metadata_client.get_all_backends().items():
+        for k, v in (await self.metadata_client.get_all_backends()).items():
             # TODO: Something something SSL check (maybe not always will be an insecure channel)
             ch = grpc.insecure_channel(f"{v.host}:{v.port}")
             self.backend_stubs[k] = backend_pb2_grpc.BackendServiceStub(ch)
