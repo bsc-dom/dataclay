@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 class BackendRuntime(DataClayRuntime):
-
     def __init__(self, kv_host: str, kv_port: int, backend_id: UUID):
         # Initialize Metadata Service
         metadata_service = MetadataAPI(kv_host, kv_port)
