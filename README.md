@@ -22,15 +22,15 @@ dataClay is a distributed data store that enables applications to store and acce
 To install dataClay, you can use [pip](https://pip.pypa.io):
 
 ```bash
-$ pip install dataclay
+pip install dataclay
 ```
 
 Alternatively, you can obtain the latest source code from [GitHub](https://github.com/bsc-dom/dataclay):
 
 ```bash
-$ git clone https://github.com/bsc-dom/dataclay.git
-$ cd dataclay
-$ pip install .
+git clone https://github.com/bsc-dom/dataclay.git
+cd dataclay
+pip install .
 ```
 
 ## Documentation
