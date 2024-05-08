@@ -8,9 +8,9 @@ services:
 
   metadata-service:
     image: "ghcr.io/bsc-dom/dataclay:dev"
-    # build:
-    #   context: ../../
-    #   dockerfile: Dockerfile.dev
+    build:
+      context: ../../
+      dockerfile: Dockerfile.dev
     depends_on:
       - redis
     ports:
