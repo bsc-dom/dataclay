@@ -1,0 +1,184 @@
+#!/usr/bin/env python3
+
+import argparse
+import logging
+import os
+
+import ansible_runner
+from dotenv import dotenv_values
+
+from dataclay.config import ClientSettings, settings
+from dataclay.control import ctl
+
+logger = logging.getLogger(__name__)
+
+
+def parse_arguments():
+    """
+    Parses command line arguments.
+
+    Returns:
+        Namespace: The parsed arguments.
+    """
+    parser = argparse.ArgumentParser(
+        description="Generate an Ansible inventory file from input hostnames."
+    )
+    parser.add_argument(
+        "--redis",
+        nargs="+",
+        required=False,
+        default=[],
+        help="List of redis hostnames, separated by space.",
+    )
+    parser.add_argument(
+        "--metadata",
+        nargs="+",
+        required=False,
+        default=[],
+        help="List of metadata server hostnames, separated by space.",
+    )
+    parser.add_argument(
+        "--backends",
+        nargs="+",
+        required=False,
+        default=[],
+        help="List of backend server hostnames, separated by space.",
+    )
+    parser.add_argument(
+        "--network",
+        default="-ib0",
+        help="Network suffix for all hostnames. Defaults to 'infiniband'.",
+    )
+    parser.add_argument(
+        "--env-file",
+        default=".env",
+        help="Path to the file containing environment variables. Defaults to '.env'.",
+    )
+
+    return parser.parse_args()
+
+
+def run_ansible_playbook(inventory, env_vars):
+    """
+    Runs the Ansible playbook with the specified in-memory inventory and environment variables.
+
+    Args:
+        inventory (dict): The in-memory inventory to use.
+        env_vars (dict): Dictionary with environment variables.
+    """
+    # Construct the playbook path
+    dataclay_home = env_vars["DATACLAY_HOME"]
+    playbook_path = os.path.join(dataclay_home, "config", "deploy-playbook.yaml")
+
+    logger.info("Running Ansible playbook: %s", playbook_path)
+
+    # Run the ansible playbook
+    runner_response = ansible_runner.run(
+        private_data_dir=f"{env_vars['DATACLAY_JOB_PATH']}/ansible",
+        playbook=playbook_path,
+        inventory=inventory,
+        envvars=env_vars,
+    )
+
+    if runner_response.status == "successful":
+        logger.info("Ansible playbook executed successfully.")
+    else:
+        logger.error("Ansible playbook execution failed: %s", runner_response.status)
+        exit(1)
+
+
+if __name__ == "__main__":
+    logger.info("Starting dataClay deployment...")
+
+    #############
+    # HOSTNAMES #
+    #############
+
+    args = parse_arguments()
+
+    # Suffix already included in the hostnames
+    redis_servers = args.redis
+    metadata_servers = args.metadata
+    backend_servers = args.backends
+
+    print("\nHostnames:")
+    print("\tRedis servers: ", redis_servers)
+    print("\tMetadata servers: ", metadata_servers)
+    print("\tBackend servers: ", backend_servers)
+
+    #########################
+    # ENVIRONMENT VARIABLES #
+    #########################
+
+    # Load the environment variables from the file (if it exists)
+    env_vars = {}
+    if os.path.exists(args.env_file):
+        logger.info("Loading environment variables from %s", args.env_file)
+        env_vars = dotenv_values(args.env_file)
+    else:
+        logger.info("Environment variables file not found: %s", args.env_file)
+
+    # Add the current environment variables to the dictionary
+    env_vars.update(os.environ)
+
+    # Add the dynamic environment variables
+    if metadata_servers:
+        env_vars["DATACLAY_METADATA_HOST"] = metadata_servers[0]
+    elif env_vars.get("DATACLAY_METADATA_HOST") is None:
+        logger.warning("DATACLAY_METADATA_HOST not set.")
+    if redis_servers:
+        env_vars["DATACLAY_KV_HOST"] = redis_servers[0]
+    elif env_vars.get("DATACLAY_KV_HOST") is None:
+        logger.warning("DATACLAY_KV_HOST not set.")
+    env_vars["PYTHONPATH"] = f"{os.environ.get('PYTHONPATH')}:{os.getcwd()}"
+
+    # Create folers
+    env_vars["DATACLAY_JOB_PATH"] = f"{env_vars['HOME']}/.dataclay/{env_vars['SLURM_JOB_ID']}"
+
+    os.makedirs(f"{env_vars['DATACLAY_JOB_PATH']}/logs", exist_ok=True)
+    os.makedirs(f"{env_vars['DATACLAY_JOB_PATH']}/ansible", exist_ok=True)
+
+    logger.info("Created job folder: %s", env_vars["DATACLAY_JOB_PATH"])
+
+    #############
+    # INVENTORY #
+    #############
+
+    # Create an in-memory inventory
+    inventory = {
+        "redis": {
+            "hosts": {server: {} for server in redis_servers},
+        },
+        "metadata": {
+            "hosts": {server: {} for server in metadata_servers},
+        },
+        "backend": {
+            "hosts": {server: {} for server in backend_servers},
+        },
+    }
+
+    ############
+    # PLAYBOOK #
+    ############
+
+    run_ansible_playbook(inventory, env_vars)
+
+    ###############
+    # HEALTHCHECK #
+    ###############
+
+    # TODO: Use dataclay.config.settings to get the ports?
+    # check healtchcheck of all metadata servers
+    logger.info("Checking healthcheck of metadata servers...")
+    for server in metadata_servers:
+        port = int(os.environ.get("DATACLAY_METADATA_PORT", 16587))
+        ctl.healthcheck(server, port, "dataclay.proto.metadata.MetadataService", retries=30)
+
+    # check healtchcheck of all backend servers
+    logger.info("Checking healthcheck of backend servers...")
+    for server in backend_servers:
+        port = int(os.environ.get("DATACLAY_BACKEND_PORT", 6867))
+        # Socket 1
+        ctl.healthcheck(server, port, "dataclay.proto.backend.BackendService", retries=30)
+        # Socket 2
+        ctl.healthcheck(server, port + 1, "dataclay.proto.backend.BackendService", retries=30)

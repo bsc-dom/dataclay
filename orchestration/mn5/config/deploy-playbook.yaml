@@ -1,0 +1,92 @@
+# Already created deploy_dataclay
+# - name: Set up the DataClay environment on localhost
+#   hosts: localhost
+#   gather_facts: false
+#   connection: local
+#   vars_files:
+#     - external_vars.yml
+#   tasks:
+#     - name: Ensure DataClay directories exist
+#       file:
+#         path: "{{ item }}"
+#         state: directory
+#       with_items:
+#         - "{{ job_path }}"
+#         - "{{ log_path }}"
+
+- name: Deploy Redis servers or cluster
+  hosts: redis
+  gather_facts: false
+  vars_files:
+    - external_vars.yml
+  environment: "{{ global_env }}"
+  tasks:
+    - name: Count the number of hosts in the 'redis' group
+      set_fact:
+        redis_host_count: "{{ groups['redis'] | length }}"
+
+    - name: Placeholder for setting up Redis cluster
+      block:
+        - import_tasks: redis-cluster.yaml
+      when: redis_host_count | int >= 3
+
+    - name: Start Redis server if there's only one 'redis' host
+      shell: |
+        nohup redis-server --protected-mode no > {{ log_path }}/redis.out 2>&1 &
+      args:
+        executable: /bin/bash
+        chdir: "{{ job_path }}"
+      when: redis_host_count | int < 3
+
+- name: Deploy Metadata Service
+  hosts: metadata
+  gather_facts: false
+  any_errors_fatal: true
+  vars_files:
+    - ./external_vars.yml
+  environment: "{{ global_env | combine(metadata_properties) }}"
+  tasks:
+    - name: Start OTEL Collector
+      shell: nohup otelcol --config {{ global_env.DATACLAY_HOME }}/config/otel-json-exporter.yaml > {{ log_path }}/otel.out 2>&1 &
+      args:
+        executable: /bin/bash
+        chdir: "{{ job_path }}"
+      when: global_env.DATACLAY_TRACING|bool
+
+    - name: Start Metadata Service
+      shell: nohup python -u -m dataclay.metadata > {{ log_path }}/metadata.out 2>&1 &
+      args:
+        executable: /bin/bash
+        chdir: "{{ job_path }}"
+
+- name: Deploy Backends
+  hosts: backend
+  gather_facts: false
+  vars:
+    num: "{{ groups['backend'].index(inventory_hostname) }}"
+  vars_files:
+    - ./external_vars.yml
+  environment: "{{ global_env | combine(backend_properties) }}"
+  tasks:
+    - name: Create backend directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ job_path }}/backend-{{ inventory_hostname }}-s0/storage"
+        - "{{ job_path }}/backend-{{ inventory_hostname }}-s1/storage"
+    - name: Start Backend Socket 0
+      shell: nohup numactl -N 0 -m 0 -- python -u -m dataclay.backend > {{ log_path }}/backend-{{ inventory_hostname }}-s0.out 2>&1 &
+      args:
+        executable: /bin/bash
+        chdir: "{{ job_path }}/backend-{{ inventory_hostname }}-s0"
+      environment:
+        DATACLAY_STORAGE_PATH: "{{ job_path }}/backend-{{ inventory_hostname }}-s0/storage"
+    - name: Start Backend Socket 1
+      shell: nohup numactl -N 1 -m 1 -- python -u -m dataclay.backend > {{ log_path }}/backend-{{ inventory_hostname }}-s1.out 2>&1 &
+      args:
+        executable: /bin/bash
+        chdir: "{{ job_path }}/backend-{{ inventory_hostname }}-s1"
+      environment:
+        DATACLAY_BACKEND_PORT: "{{ backend_properties.DATACLAY_BACKEND_PORT | int + 1 }}"
+        DATACLAY_STORAGE_PATH: "{{ job_path }}/backend-{{ inventory_hostname }}-s1/storage"

@@ -3,8 +3,9 @@ DATACLAY_VERSION=$(cat VERSION)
 
 # Internal MareNostrum paths (do not change!)
 MN_TRANSFER_HOST=transfer1.bsc.es
-MN_DATACLAY_PATH=/apps/DATACLAY/$DATACLAY_VERSION/
-MN_LUA_PATH=/apps/modules/modulefiles/tools/DATACLAY/$DATACLAY_VERSION.lua
+MN_DATACLAY_PATH=/gpfs/apps/MN5/GPP/DATACLAY/$DATACLAY_VERSION
+MN_GPP_LUA_PATH=/gpfs/apps/MN5/GPP/modulefiles/applications/dataclay/$DATACLAY_VERSION.lua
+MN_ACC_LUA_PATH=/gpfs/apps/MN5/ACC/modulefiles/applications/dataclay/$DATACLAY_VERSION.lua
 
 # bin & config
 rsync -av --copy-links bin $MN_TRANSFER_HOST:$MN_DATACLAY_PATH
@@ -14,8 +15,9 @@ rsync -av --delete --copy-links config $MN_TRANSFER_HOST:$MN_DATACLAY_PATH
 rsync -av --delete-after --copy-links --filter={":- .gitignore",": /.rsync-filter"} \
 	--exclude={.git} ../../ $MN_TRANSFER_HOST:$MN_DATACLAY_PATH/dataclay
 
-# luafile
-scp modulefile.lua $MN_TRANSFER_HOST:$MN_LUA_PATH
+# luafile (ACC will use GPP source)
+scp modulefile.lua $MN_TRANSFER_HOST:$MN_GPP_LUA_PATH
+scp modulefile.lua $MN_TRANSFER_HOST:$MN_ACC_LUA_PATH
 
 # examples
 rsync -av --delete --copy-links ../../examples $MN_TRANSFER_HOST:~/
