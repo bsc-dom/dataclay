@@ -20,7 +20,7 @@ scp modulefile.lua $MN_TRANSFER_HOST:$MN_GPP_LUA_PATH
 scp modulefile.lua $MN_TRANSFER_HOST:$MN_ACC_LUA_PATH
 
 # examples
-rsync -av --delete --copy-links ../../examples $MN_TRANSFER_HOST:~/
+rsync -av --delete --copy-links ../../examples/ $MN_TRANSFER_HOST:~/dc-examples
 
 # storage
 mvn -f ../../addons/storage/pom.xml package
