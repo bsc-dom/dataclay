@@ -4,7 +4,7 @@
 
 *Each benchmark run was executed three times to ensure consistency and reliability of the results.*
 
-## Benchmark 2024-05-13
+## Benchmark 2024-05-15
 
 - **Supercomputer Name:** MareNostrum 5
 - **dataClay version:** edge (3.1.1.dev)
@@ -14,9 +14,9 @@
 
 | Execution | basic counter (sec)   | local counter (sec)   | persistent counter (sec)  | COMPSs counter (sec)  |
 |-----------|-----------------------|-----------------------|---------------------------|-----------------------|
-| Run 1     | ???????               | ???????               | ???????                   | ???????               |
-| Run 2     | ???????               | ???????               | ???????                   | ???????               |
-| Run 3     | ???????               | ???????               | ???????                   | ???????               |
+| Run 1     | 0.00015               | 0.00162               | 1.28068                   | ???????               |
+| Run 2     | 0.00014               | 0.00163               | 1.28343                   | ???????               |
+| Run 3     | 0.00015               | 0.00162               | 1.29881                   | ???????               |
 | **Avg**   | **???????**           | **???????**           | **???????**               | **???????**           |
 
 ## Benchmark 2023
