@@ -75,18 +75,30 @@
       with_items:
         - "{{ job_path }}/backend-{{ inventory_hostname }}-s0/storage"
         - "{{ job_path }}/backend-{{ inventory_hostname }}-s1/storage"
+        # For scratch add these lines
+        # - "/scratch/tmp/{{ slurm_job_id }}/backend-{{ inventory_hostname }}-s0/storage"
+        # - "/scratch/tmp/{{ slurm_job_id }}/backend-{{ inventory_hostname }}-s1/storage"
     - name: Start Backend Socket 0
       shell: nohup numactl -N 0 -m 0 -- python -u -m dataclay.backend > {{ log_path }}/backend-{{ inventory_hostname }}-s0.out 2>&1 &
+      # For profiling use this line instead
+      # shell: nohup numactl -N 0 -m 0 -- python -u -m cProfile -o {{ log_path }}/profile-{{ inventory_hostname }}-s0.prof -m dataclay.backend > {{ log_path }}/backend-{{ inventory_hostname }}-s0.out 2>&1 &
       args:
         executable: /bin/bash
         chdir: "{{ job_path }}/backend-{{ inventory_hostname }}-s0"
       environment:
         DATACLAY_STORAGE_PATH: "{{ job_path }}/backend-{{ inventory_hostname }}-s0/storage"
+        # For scratch use this line instead. Using GPFS may be slow.
+        # DATACLAY_STORAGE_PATH: "/scratch/tmp/{{ slurm_job_id }}/backend-{{ inventory_hostname }}-s0/storage"
     - name: Start Backend Socket 1
       shell: nohup numactl -N 1 -m 1 -- python -u -m dataclay.backend > {{ log_path }}/backend-{{ inventory_hostname }}-s1.out 2>&1 &
+      # For profiling use this line instead
+      # shell: nohup numactl -N 1 -m 1 -- python -u -m cProfile -o {{ log_path }}/profile-{{ inventory_hostname }}-s1.prof -m dataclay.backend > {{ log_path }}/backend-{{ inventory_hostname }}-s1.out 2>&1 &
       args:
         executable: /bin/bash
         chdir: "{{ job_path }}/backend-{{ inventory_hostname }}-s1"
       environment:
         DATACLAY_BACKEND_PORT: "{{ backend_properties.DATACLAY_BACKEND_PORT | int + 1 }}"
         DATACLAY_STORAGE_PATH: "{{ job_path }}/backend-{{ inventory_hostname }}-s1/storage"
+        # For scratch use this line instead. Using GPFS may be slow.
+        # DATACLAY_STORAGE_PATH: "/scratch/tmp/{{ slurm_job_id }}/backend-{{ inventory_hostname }}-s1/storage"
+

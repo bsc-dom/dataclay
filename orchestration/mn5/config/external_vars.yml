@@ -19,7 +19,7 @@ backend_properties:
   DATACLAY_BACKEND_PORT: "{{ lookup('env', 'DATACLAY_BACKEND_PORT') | default(6867, true) }}"
   DATACLAY_KV_HOST: "{{ lookup('env', 'DATACLAY_KV_HOST') }}"
   DATACLAY_KV_PORT: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
-  # DATACLAY_STORAGE_PATH: "{{ lookup('env', 'DATACLAY_STORAGE_PATH') }}"
+  # DATACLAY_STORAGE_PATH: "{{ lookup('env', 'DATACLAY_STORAGE_PATH') }}" # defined in playbook
 
 metadata_properties:
   DATACLAY_METADATA_HOST: "{{ lookup('env', 'DATACLAY_METADATA_HOST') }}"
@@ -42,6 +42,7 @@ ansible_pipelining: true
 
 job_path: "{{ lookup('env', 'DATACLAY_JOB_PATH') }}"
 log_path: "{{ job_path }}/logs"
+slurm_job_id: "{{ lookup('env', 'SLURM_JOB_ID') }}"
 
 redis_port: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
 cluster_enabled: "{{ lookup('env', 'DATACLAY_KV_CLUSTER_ENABLED') | default('yes', true) }}"
