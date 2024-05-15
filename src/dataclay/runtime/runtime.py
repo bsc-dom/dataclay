@@ -395,7 +395,6 @@ class DataClayRuntime(ABC):
                             args[0],  # attribute name
                             await dcdumps(args[1]),  # attribute value
                         )
-                        logger.warning("**** serialized_response %s", serialized_response)
                     elif method_name == "__delattr__":
                         (
                             serialized_response,
@@ -404,7 +403,6 @@ class DataClayRuntime(ABC):
                             instance._dc_meta.id,
                             args[0],  # attribute name
                         )
-                        logger.warning("**** serialized_response %s", serialized_response)
                     else:
                         serialized_response, is_exception = await backend_client.call_active_method(
                             instance._dc_meta.id,
@@ -412,7 +410,6 @@ class DataClayRuntime(ABC):
                             serialized_args,
                             serialized_kwargs,
                         )
-                        logger.warning("**** serialized_response %s", serialized_response)
                 except DataClayException as e:
                     if "failed to connect" in str(e):
                         logger.warning("(%s) Connection failed. Syncing...", instance._dc_meta.id)
