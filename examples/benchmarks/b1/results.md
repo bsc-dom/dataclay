@@ -29,10 +29,15 @@
 
 ### Iterations: 1000
 
-| Execution | basic counter (sec)   | local counter (sec)   | persistent counter (sec)  | COMPSs counter (sec)  |
-|-----------|-----------------------|-----------------------|---------------------------|-----------------------|
-| Run 1     | 0.00039               | 0.00052               | 1.59830                   | 1.77650               |
-| **Avg**   | **0.00039**           | **0.00052**           | **1.59830**               | **1.77650**           |
+| Execution | basic counter (sec)   | local counter (sec)   | persistent counter (sec)  |
+|-----------|-----------------------|-----------------------|---------------------------|
+| Run 1     | 0.00039               | 0.00052               | 1.59830                   |
+
+### Iterations: 1000 - COMPSs
+
+| Execution | COMPSs counter (sec)  |
+|-----------|-----------------------|
+| Run 1     | 1.77650               |
 
 ## TEMPLATE Benchmark [DATE]
 
@@ -42,9 +47,14 @@
 
 ### Iterations: [NUM_ITERATIONS]
 
-| Execution | basic counter (sec)   | local counter (sec)   | persistent counter (sec)  | COMPSs counter (sec)  |
-|-----------|-----------------------|-----------------------|---------------------------|-----------------------|
-| Run 1     | ???????               | ???????               | ???????                   | ???????               |
-| Run 2     | ???????               | ???????               | ???????                   | ???????               |
-| Run 3     | ???????               | ???????               | ???????                   | ???????               |
-| **Avg**   | **???????**           | **???????**           | **???????**               | **???????**           |
+| Execution | basic counter (sec)   | local counter (sec)   | persistent counter (sec)  |
+|-----------|-----------------------|-----------------------|---------------------------|
+| Run 1     | ???????               | ???????               | ???????                   |
+| **Avg**   | **???????**           | **???????**           | **???????**               |
+
+### Iterations: [NUM_ITERATIONS] - COMPSs
+
+| Execution | COMPSs counter (sec)  |
+|-----------|-----------------------|
+| Run 1     | ???????               |
+| **Avg**   | **???????**           |

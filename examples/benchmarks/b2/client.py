@@ -8,7 +8,7 @@ client = Client()
 client.start()
 
 # Number of Box instances to create and manipulate.
-iterations = 10_000
+iterations = 100_000
 boxes = []
 
 # Start timing the creation and persistence of Box instances.
