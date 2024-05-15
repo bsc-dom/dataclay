@@ -59,7 +59,7 @@ def test_move_unload_object(client):
     family.make_persistent(backend_id=backend_ids[0])
 
     # call to flush_all to unload all objects
-    backends[backend_ids[0]].flush_all()
+    run_dc_coroutine(backends[backend_ids[0]].flush_all)
     family.move(backend_ids[1], recursive=True)
 
     assert person.name == "Marc"  # forcing update of backend_id

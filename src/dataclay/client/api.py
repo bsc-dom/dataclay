@@ -15,7 +15,7 @@ from uuid import UUID
 
 from dataclay.backend.client import BackendClient
 from dataclay.config import ClientSettings, settings
-from dataclay.dataclay_object import DataClayObject
+from dataclay.dataclay_object import DataClayObject, run_dc_coroutine
 from dataclay.runtime import (
     get_dc_event_loop,
     get_runtime,
@@ -194,14 +194,14 @@ class Client:
         self.is_active = True
 
     @tracer.start_as_current_span("stop")
-    async def stop(self):
+    def stop(self):
         """Stop the client runtime"""
         if not self.is_active:
             logger.warning("Client is not active. Ignoring")
             return
 
         logger.info("Stopping client runtime")
-        await self.runtime.stop()
+        run_dc_coroutine(self.runtime.stop)
         settings.client = self.previous_settings
         set_runtime(self.previous_runtime)
         self.is_active = False
@@ -220,7 +220,7 @@ class Client:
     def get_backends(self) -> dict[UUID, BackendClient]:
         if not self.is_active:
             raise RuntimeError("Client is not active")
-        get_dc_event_loop().run_until_complete(self.runtime.backend_clients.update())
+        run_dc_coroutine(self.runtime.backend_clients.update)
         return self.runtime.backend_clients
 
 

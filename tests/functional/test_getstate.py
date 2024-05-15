@@ -1,6 +1,7 @@
 import pytest
 
 from dataclay.contrib.modeltest.classes import Box, TextReader
+from dataclay.dataclay_object import run_dc_coroutine
 
 
 def test_getstate(client):
@@ -32,7 +33,7 @@ def test_getstate_unload(client):
     text_reader = TextReader("testfile")
     text_reader.make_persistent(backend_id=backend_ids[0])
 
-    backends[backend_ids[0]].flush_all()
+    run_dc_coroutine(backends[backend_ids[0]].flush_all)
     text_reader.readline()
 
     assert text_reader.lineno == 1
@@ -46,7 +47,7 @@ def test_getstate_unload_v2(client):
     box.value = TextReader("testfile")
     box.make_persistent(backend_id=backend_ids[0])
 
-    backends[backend_ids[0]].flush_all()
+    run_dc_coroutine(backends[backend_ids[0]].flush_all)
     box.value.readline()
     assert box.value.lineno == 1
 
