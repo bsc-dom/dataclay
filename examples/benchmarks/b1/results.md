@@ -23,7 +23,7 @@
 
 - **Supercomputer Name:** MareNostrum 4
 - **dataClay version:** 3.1.0
-- **COMPSs version:** ???
+- **COMPSs version:** 3.2
 
 *Each benchmark run was executed three times to ensure consistency and reliability of the results.*
 

@@ -1,59 +1,104 @@
-# Results
+# DataClay Application Benchmark Results
 
-## latest
+<!-- The script performs [Brief description of what the script does]. -->
 
-### MN4 - only dataclay - sequential
+*Each benchmark run was executed three times to ensure consistency and reliability of the results.*
 
-**1000 iterations**:
+## Benchmark 2024-05-15
 
-- Time make_persistent: 1.32540 seconds
-- Time read all values: 0.91725 seconds
-- Time flush_all: 0.11181 seconds
-- Time load and read all values: 1.38091 seconds
+- **Supercomputer Name:** MareNostrum 5
+- **dataClay version:** edge (3.1.1.dev)
+- **COMPSs version:** ???
 
-**10000 iterations**:
+### Iterations: 1000
 
-- Time make_persistent: 15.40256 seconds
-- Time read all values: 7.55768 seconds
-- Time flush_all: 3.27596 seconds
-- Time load and read all values: 24.88401 seconds
+| Execution | make_persistent (sec) | read all values (sec) | flush_all (sec)   | load and read all (sec)   |
+|-----------|-----------------------|-----------------------|-------------------|---------------------------|
+| Run 1     | 0.75646               | 0.66808               | 0.23325           | 1.15998                   |
+| Run 2     | 0.75913               | 0.67283               | 0.64444           | 1.17200                   |
+| Run 2     | 0.76021               | 0.68074               | 44.34103           | 1.20933                   |
 
-**100000 iterations**:
+### Iterations: 10_000
 
-- Time make_persistent: 164.41901 seconds
-- Time read all values: 120.31077 seconds
-- Time flush_all: 39.86417 seconds
-- Time load and read all values: 323.71481 seconds
+| Execution | make_persistent (sec) | read all values (sec) | flush_all (sec)   | load and read all (sec)   |
+|-----------|-----------------------|-----------------------|-------------------|---------------------------|
+| Run 1     | ???????               | ???????               | ???????           | ???????                   |
 
-**100000 iterations (REDIS CLUSTER)**:
+## Benchmark 2023
 
-- Time make_persistent: 549.42915 seconds
-- Time read all values: 101.78536 seconds
-- Time flush_all: 44.86119 seconds
-- Time load and read all values: 325.89406 seconds
+- **Supercomputer Name:** MareNostrum 4
+- **dataClay version:** 3.1.0
+- **COMPSs version:** 3.2
 
-### MN4 - COMPSs
+*Each benchmark run was executed three times to ensure consistency and reliability of the results.*
 
-#### 2 node (2 backends) one per socket except the metadata node
+### Iterations: 1000
 
-**1000 iterations**:
+| Execution | make_persistent (sec) | read all values (sec) | flush_all (sec)   | load and read all (sec)   |
+|-----------|-----------------------|-----------------------|-------------------|---------------------------|
+| Run 1     | 1.32540               | 0.91725               | 0.11181           | 1.38091                   |
+| **Avg**   | **1.32540**           | **0.91725**           | **0.11181**       | **1.38091**               |
 
-- Time make_persistent: 3.89035 seconds
-- Time read all values: 1.57359 seconds
+### Iterations: 10_000
 
-**10000 iterations**:
+| Execution | make_persistent (sec) | read all values (sec) | flush_all (sec)   | load and read all (sec)   |
+|-----------|-----------------------|-----------------------|-------------------|---------------------------|
+| Run 1     | 15.40256               | 7.55768               | 3.27596           | 24.88401                   |
+| **Avg**   | **15.40256**           | **7.55768**           | **3.27596**       | **24.88401**               |
 
-- Time make_persistent: 26.28644 seconds
-- Time read all values: 14.99796 seconds
+### Iterations: 100_000
 
-**100000 iterations**:
+| Execution | make_persistent (sec) | read all values (sec) | flush_all (sec)   | load and read all (sec)   |
+|-----------|-----------------------|-----------------------|-------------------|---------------------------|
+| Run 1     | 164.41901               | 120.31077               | 39.86417           | 323.71481                   |
+| **Avg**   | **164.41901**           | **120.31077**           | **39.86417**       | **323.71481**               |
 
-- Time make_persistent: 183.97537 seconds
-- Time read all values: 179.85352 seconds
+### Iterations: 100_000 (redis_cluster)
 
-#### 4 node (6 backends)
+| Execution | make_persistent (sec) | read all values (sec) | flush_all (sec)   | load and read all (sec)   |
+|-----------|-----------------------|-----------------------|-------------------|---------------------------|
+| Run 1     | 549.42915               | 101.78536               | 44.86119           | 325.89406                   |
+| **Avg**   | **549.42915**           | **101.78536**           | **44.86119**       | **325.89406**               |
 
-**100000 iterations**:
+### Iterations: 1000 - COMPSs - 2 backends (1 per socket)
 
-- Time make_persistent: 86.46714 seconds
-- Time read all values: 106.98263 seconds
+| Execution | make_persistent (sec) | read all values (sec) | flush_all (sec)   | load and read all (sec)   |
+|-----------|-----------------------|-----------------------|-------------------|---------------------------|
+| Run 1     | 3.89035               | 1.57359               | ???????           | ???????                   |
+| **Avg**   | **3.89035**           | **1.57359**           | **???????**       | **???????**               |
+
+### Iterations: 10_000 - COMPSs - 2 backends (1 per socket)
+
+| Execution | make_persistent (sec) | read all values (sec) | flush_all (sec)   | load and read all (sec)   |
+|-----------|-----------------------|-----------------------|-------------------|---------------------------|
+| Run 1     | 26.28644               | 14.99796               | ???????           | ???????                   |
+| **Avg**   | **26.28644**           | **14.99796**           | **???????**       | **???????**               |
+
+### Iterations: 100_000 - COMPSs - 2 backends (1 per socket)
+
+| Execution | make_persistent (sec) | read all values (sec) | flush_all (sec)   | load and read all (sec)   |
+|-----------|-----------------------|-----------------------|-------------------|---------------------------|
+| Run 1     | 183.97537               | 179.85352               | ???????           | ???????                   |
+| **Avg**   | **183.97537**           | **179.85352**           | **???????**       | **???????**               |
+
+### Iterations: 100_000 - COMPSs - 6 backends (1 per socket)
+
+| Execution | make_persistent (sec) | read all values (sec) | flush_all (sec)   | load and read all (sec)   |
+|-----------|-----------------------|-----------------------|-------------------|---------------------------|
+| Run 1     | 86.46714               | 106.98263               | ???????           | ???????                   |
+| **Avg**   | **86.46714**           | **106.98263**           | **???????**       | **???????**               |
+
+## TEMPLATE Benchmark [DATE]
+
+- **Supercomputer Name:** ???
+- **dataClay version:** ???
+- **COMPSs version:** ???
+
+### Iterations: [NUM_ITERATIONS]
+
+| Execution | make_persistent (sec) | read all values (sec) | flush_all (sec)   | load and read all (sec)   |
+|-----------|-----------------------|-----------------------|-------------------|---------------------------|
+| Run 1     | ???????               | ???????               | ???????           | ???????                   |
+| Run 2     | ???????               | ???????               | ???????           | ???????                   |
+| Run 3     | ???????               | ???????               | ???????           | ???????                   |
+| **Avg**   | **???????**           | **???????**           | **???????**       | **???????**               |
