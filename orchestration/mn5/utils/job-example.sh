@@ -1,9 +1,9 @@
 #!/bin/bash -e
-#SBATCH --job-name=b2
+#SBATCH --job-name=example
 #SBATCH --output=job-%A.out
 #SBATCH --error=job-%A.out
 #SBATCH --nodes=2
-#SBATCH --time=00:30:00
+#SBATCH --time=00:05:00
 #SBATCH --exclusive
 #SBATCH --qos=gp_debug
 #############################

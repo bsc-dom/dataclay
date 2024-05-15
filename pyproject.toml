@@ -54,7 +54,7 @@ dev = [
     "black",
     "isort",
 ]
-mn4 = ["ansible", "ansible_runner", "python-dotenv"]
+bsc_mn = ["ansible", "ansible_runner", "python-dotenv"]
 docs = ["furo", "sphinx-copybutton"]
 metrics = ["prometheus-client"]
 telemetry = [

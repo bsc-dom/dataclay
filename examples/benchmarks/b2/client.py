@@ -2,12 +2,14 @@ import time
 
 from dataclay import Client
 from dataclay.contrib.modeltest.classes import Box
+from dataclay.dataclay_object import run_dc_coroutine
 
-client = Client(username="admin", password="admin", dataset="admin")
+
+client = Client()
 client.start()
 
 # Number of Box instances to create and manipulate.
-iterations = 100
+iterations = 10_000
 boxes = []
 
 # Start timing the creation and persistence of Box instances.
@@ -30,7 +32,7 @@ print(f"Time read all values: {end_time - start_time:0.5f} seconds")
 backends = client.get_backends()
 start_time = time.perf_counter()
 for backend in backends.values():
-    backend.flush_all()
+    run_dc_coroutine(backend.flush_all)
 end_time = time.perf_counter()
 print(f"Time flush_all: {end_time - start_time:0.5f} seconds")
 

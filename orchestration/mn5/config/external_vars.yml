@@ -1,0 +1,50 @@
+# defaults are necessary here since not defined 
+# environment variables will be replaced by empty strings, causing errors
+global_env:
+
+  # system properties
+  PATH: "{{ lookup('env', 'PATH') }}"
+  PYTHONPATH: "{{ lookup('env', 'PYTHONPATH') }}"
+  PYTHONHOME: "{{ lookup('env', 'PYTHONHOME') }}"
+  LD_LIBRARY_PATH: "{{ lookup('env', 'LD_LIBRARY_PATH') }}"
+  DATACLAY_HOME: "{{ lookup('env', 'DATACLAY_HOME') }}"
+
+  # dataclay properties
+  DATACLAY_LOGLEVEL: "{{ lookup('env', 'DATACLAY_LOGLEVEL') | default('WARNING', true) }}"
+  DATACLAY_TRACING: "{{ lookup('env', 'DATACLAY_TRACING') | default('false', true) }}"
+  DATACLAY_TRACING_HOST: "{{ lookup('env', 'DATACLAY_TRACING_HOST') }}"
+  DATACLAY_JOB_PATH: "{{ job_path }}" # Used in otel-json-exporter.yaml
+
+backend_properties:
+  DATACLAY_BACKEND_PORT: "{{ lookup('env', 'DATACLAY_BACKEND_PORT') | default(6867, true) }}"
+  DATACLAY_KV_HOST: "{{ lookup('env', 'DATACLAY_KV_HOST') }}"
+  DATACLAY_KV_PORT: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
+  # DATACLAY_STORAGE_PATH: "{{ lookup('env', 'DATACLAY_STORAGE_PATH') }}"
+
+metadata_properties:
+  DATACLAY_METADATA_HOST: "{{ lookup('env', 'DATACLAY_METADATA_HOST') }}"
+  DATACLAY_METADATA_PORT: "{{ lookup('env', 'DATACLAY_METADATA_PORT') | default(16587, true) }}"
+  DATACLAY_KV_HOST: "{{ lookup('env', 'DATACLAY_KV_HOST') }}"
+  DATACLAY_KV_PORT: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
+  DATACLAY_USERNAME: "{{ lookup('env', 'DATACLAY_USERNAME') | default('admin', true) }}"
+  DATACLAY_PASSWORD: "{{ lookup('env', 'DATACLAY_PASSWORD') | default('admin', true) }}"
+  DATACLAY_DATASET: "{{ lookup('env', 'DATACLAY_DATASET') | default('admin', true) }}"
+
+client_properties:
+  DC_HOST: "{{ lookup('env', 'DC_HOST') }}"
+  DC_PORT: "{{ lookup('env', 'DC_PORT') | default(16587, true) }}"
+  DC_USERNAME: "{{ lookup('env', 'DC_USERNAME') }}"
+  DC_PASSWORD: "{{ lookup('env', 'DC_PASSWORD') }}"
+  DC_DATASET: "{{ lookup('env', 'DC_DATASET') }}"
+
+ansible_python_interpreter: "{{ ansible_playbook_python }}" # Uses the venv python. Maybe not optimized for HPC (get which python otherwise)
+ansible_pipelining: true
+
+job_path: "{{ lookup('env', 'DATACLAY_JOB_PATH') }}"
+log_path: "{{ job_path }}/logs"
+
+redis_port: "{{ lookup('env', 'DATACLAY_KV_PORT') | default(6379, true) }}"
+cluster_enabled: "{{ lookup('env', 'DATACLAY_KV_CLUSTER_ENABLED') | default('yes', true) }}"
+# cluster_config_file: "{{ lookup('env', 'DATACLAY_KV_CLUSTER_CONFIG_FILE') | default('nodes.conf', true) }}"
+cluster_node_timeout: "{{ lookup('env', 'DATACLAY_KV_CLUSTER_NODE_TIMEOUT') | default(5000, true) }}"
+cluster_replicas: "{{ lookup('env', 'DATACLAY_KV_CLUSTER_REPLICAS') | default(0, true) }}"

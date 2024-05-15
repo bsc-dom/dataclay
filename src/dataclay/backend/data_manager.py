@@ -148,11 +148,13 @@ class DataManager:
             del state["_dc_meta"]
             vars(instance).update(state)
 
+            # NOTE: We need to set _dc_is_loaded before calling __setstate__ to avoid infinite recursion
+            instance._dc_is_loaded = True
             if getstate is not None:
                 instance.__setstate__(getstate)
 
-            instance._dc_is_loaded = True
             self.add_hard_reference(instance)
+            logger.debug("(%s) Loaded '%s'", object_id, instance.__class__.__name__)
 
     async def unload_object(
         self, instance: DataClayObject, timeout: float = 0, force: bool = False
@@ -201,6 +203,7 @@ class DataManager:
             instance._clean_dc_properties()
             instance._dc_is_loaded = False
             self.remove_hard_reference(instance)
+            logger.debug("(%s) Unloaded '%s'", object_id, instance.__class__.__name__)
 
     def is_memory_over_threshold(self):
         """Check if memory usage is over a specified threshold.

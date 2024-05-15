@@ -83,6 +83,7 @@ def activemethod(func):
                 )
 
                 if inspect.iscoroutinefunction(func):
+                    # TODO: I think this gives problems, in test_remote_method.test_remote_make_persistent()
                     return get_runtime().call_remote_method(self, func.__name__, args, kwargs)
                 else:
                     loop = get_dc_event_loop()
