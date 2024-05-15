@@ -1,3 +1,11 @@
+# Cleanup function to copy files regardless of exit status
+cleanup() {
+    cp "job-$SLURM_JOB_ID.out" "$HOME/.dataclay/$SLURM_JOB_ID"
+}
+
+# Trap to run the cleanup function on exit
+trap cleanup EXIT
+
 # Get hostnames
 hostnames=($(scontrol show hostname $SLURM_JOB_NODELIST))
 hostnames=($(add_network_suffix "-ib0" "${hostnames[@]}"))
@@ -14,4 +22,3 @@ python3 $1
 
 # Stop dataClay
 python3 -m dataclay.control.ctl stop_dataclay
-cp "job-$SLURM_JOB_ID.out" "$HOME/.dataclay/$SLURM_JOB_ID"

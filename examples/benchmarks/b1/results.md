@@ -1,19 +1,50 @@
-# Results
+# DataClay Application Benchmark Results
 
-## latest
+<!-- The script performs [Brief description of what the script does]. -->
 
-### MN4 - only dataclay
+*Each benchmark run was executed three times to ensure consistency and reliability of the results.*
 
-**1000 iterations**:
+## Benchmark 2024-05-13
 
-- Time basic counter: 0.00039 seconds
-- Time local counter: 0.00052 seconds
-- Time persistent counter: 1.59830 seconds
+- **Supercomputer Name:** MareNostrum 5
+- **dataClay version:** edge (3.1.1.dev)
+- **COMPSs version:** ???
 
-**10000 iterations**:
+### Iterations: 1000
 
-### MN4 - COMPSs
+| Execution | basic counter (sec)   | local counter (sec)   | persistent counter (sec)  | COMPSs counter (sec)  |
+|-----------|-----------------------|-----------------------|---------------------------|-----------------------|
+| Run 1     | ???????               | ???????               | ???????                   | ???????               |
+| Run 2     | ???????               | ???????               | ???????                   | ???????               |
+| Run 3     | ???????               | ???????               | ???????                   | ???????               |
+| **Avg**   | **???????**           | **???????**           | **???????**               | **???????**           |
 
-**1000 iterations**:
+## Benchmark 2023
 
-- Time persistent counter: 1.77650 seconds
+- **Supercomputer Name:** MareNostrum 4
+- **dataClay version:** 3.1.0
+- **COMPSs version:** ???
+
+*Each benchmark run was executed three times to ensure consistency and reliability of the results.*
+
+### Iterations: 1000
+
+| Execution | basic counter (sec)   | local counter (sec)   | persistent counter (sec)  | COMPSs counter (sec)  |
+|-----------|-----------------------|-----------------------|---------------------------|-----------------------|
+| Run 1     | 0.00039               | 0.00052               | 1.59830                   | 1.77650               |
+| **Avg**   | **0.00039**           | **0.00052**           | **1.59830**               | **1.77650**           |
+
+## TEMPLATE Benchmark [DATE]
+
+- **Supercomputer Name:** ???
+- **dataClay version:** ???
+- **COMPSs version:** ???
+
+### Iterations: [NUM_ITERATIONS]
+
+| Execution | basic counter (sec)   | local counter (sec)   | persistent counter (sec)  | COMPSs counter (sec)  |
+|-----------|-----------------------|-----------------------|---------------------------|-----------------------|
+| Run 1     | ???????               | ???????               | ???????                   | ???????               |
+| Run 2     | ???????               | ???????               | ???????                   | ???????               |
+| Run 3     | ???????               | ???????               | ???????                   | ???????               |
+| **Avg**   | **???????**           | **???????**           | **???????**               | **???????**           |

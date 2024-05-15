@@ -18,14 +18,6 @@ whatis("dataClay " .. version)
 conflict(name:lower())
 
 -- Depend modules
-if (not isloaded("python")) then
-  if string.find(myFileName(), "/ACC/") then
-    depends_on("mkl", "intel")
-  elseif string.find(myFileName(), "/GPP/") then
-    depends_on("hdf5")
-  end
-  depends_on(between("python", "3.9", "<3.13"))
-end
 prereq(between("python", "3.9", "<3.13"))
 
 -- This shows info about loaded/unloaded module
