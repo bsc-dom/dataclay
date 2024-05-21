@@ -1,10 +1,16 @@
+from __future__ import annotations
+
+import contextvars
 import logging
 import socket
 import uuid
-from typing import Annotated, Literal, Optional
+from typing import TYPE_CHECKING, Annotated, Literal, Optional, Union
 
 from pydantic import AliasChoices, Field, StringConstraints
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+if TYPE_CHECKING:
+    from dataclay.runtime import BackendRuntime, ClientRuntime
 
 
 class BackendSettings(BaseSettings):
@@ -136,6 +142,21 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+# Use for context-local data (current session, etc.)
+session_var = contextvars.ContextVar("session")
+
+current_runtime: Union[ClientRuntime, BackendRuntime, None] = None
+
+
+def get_runtime() -> Union[ClientRuntime, BackendRuntime, None]:
+    return current_runtime
+
+
+def set_runtime(new_runtime: Union[ClientRuntime, BackendRuntime]):
+    global current_runtime
+    current_runtime = new_runtime
 
 
 logging.basicConfig(level=settings.loglevel)

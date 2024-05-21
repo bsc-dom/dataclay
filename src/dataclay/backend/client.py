@@ -1,5 +1,4 @@
 import logging
-import sys
 import traceback
 from typing import Iterable, Optional
 from uuid import UUID
@@ -9,11 +8,10 @@ from google.protobuf.empty_pb2 import Empty
 from grpc._cython.cygrpc import ChannelArgKey
 
 import dataclay
-from dataclay.config import settings
-from dataclay.exceptions.exceptions import DataClayException
+from dataclay.config import session_var, settings
+from dataclay.exceptions import DataClayException
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
-from dataclay.runtime import session_var
 from dataclay.utils.decorators import grpc_aio_error_handler
 
 logger = logging.getLogger(__name__)

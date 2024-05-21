@@ -12,12 +12,12 @@ from google.protobuf.empty_pb2 import Empty
 from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
 from dataclay.config import settings
-from dataclay.exceptions.exceptions import AlreadyExistError
+from dataclay.event_loop import get_dc_event_loop, set_dc_event_loop
+from dataclay.exceptions import AlreadyExistError
 from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.kvdata import Backend
 from dataclay.proto.common import common_pb2
 from dataclay.proto.metadata import metadata_pb2, metadata_pb2_grpc
-from dataclay.runtime import get_dc_event_loop, set_dc_event_loop
 from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.uuid import str_to_uuid
 

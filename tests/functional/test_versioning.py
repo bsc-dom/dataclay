@@ -1,6 +1,6 @@
 import storage.api
 from dataclay.contrib.modeltest.family import Dog, Family, Person
-from dataclay.dataclay_object import run_dc_coroutine
+from dataclay.event_loop import run_dc_coroutine
 
 
 def test_new_version_and_consolidate(client):

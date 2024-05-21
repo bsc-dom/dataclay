@@ -4,7 +4,6 @@ import asyncio
 import logging
 import os.path
 import signal
-import threading
 import traceback
 from concurrent import futures
 from uuid import UUID, uuid4
@@ -15,10 +14,10 @@ from google.protobuf.wrappers_pb2 import BytesValue
 from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
 from dataclay.backend.api import BackendAPI
-from dataclay.config import settings
+from dataclay.config import session_var, settings
+from dataclay.event_loop import get_dc_event_loop, set_dc_event_loop
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.proto.common import common_pb2
-from dataclay.runtime import get_dc_event_loop, session_var, set_dc_event_loop
 
 logger = logging.getLogger(__name__)
 

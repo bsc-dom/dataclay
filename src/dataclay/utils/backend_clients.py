@@ -8,9 +8,9 @@ from uuid import UUID
 
 from dataclay.backend.client import BackendClient
 from dataclay.config import settings
+from dataclay.event_loop import get_dc_event_loop
 from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.kvdata import Backend
-from dataclay.runtime import get_dc_event_loop
 
 if TYPE_CHECKING:
     from dataclay.metadata.api import MetadataAPI

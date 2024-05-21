@@ -5,11 +5,9 @@ Run `pytest -v -k "test_remote"` to run all remote executions
 
 from __future__ import annotations
 
-from threading import Thread
-
 from dataclay import DataClayObject, activemethod
+from dataclay.config import get_runtime
 from dataclay.contrib.modeltest.family import Dog, Family, Person
-from dataclay.runtime import get_runtime
 
 
 class TestMakePersistent(DataClayObject):
