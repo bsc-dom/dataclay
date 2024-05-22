@@ -14,11 +14,19 @@ from uuid import UUID
 from weakref import WeakValueDictionary
 
 from dataclay import utils
-from dataclay.backend.data_manager import DataManager
-from dataclay.config import settings
+from dataclay.config import session_var, settings
+from dataclay.data_manager import DataManager
 from dataclay.dataclay_object import DataClayObject
-from dataclay.exceptions import *
-from dataclay.runtime import lock_manager, session_var
+from dataclay.exceptions import (
+    DataClayException,
+    ObjectAlreadyRegisteredError,
+    ObjectIsNotVersionError,
+    ObjectNotRegisteredError,
+    ObjectWithWrongBackendIdError,
+)
+from dataclay.lock_manager import lock_manager
+from dataclay.metadata.api import MetadataAPI
+from dataclay.metadata.client import MetadataClient
 from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcdumps
 from dataclay.utils.telemetry import trace
@@ -26,9 +34,6 @@ from dataclay.utils.telemetry import trace
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from dataclay.backend.data_manager import DataManager
-    from dataclay.metadata.api import MetadataAPI
-    from dataclay.metadata.client import MetadataClient
     from dataclay.metadata.kvdata import ObjectMetadata
 
 
@@ -709,3 +714,47 @@ class DataClayRuntime(ABC):
         pass
 
     # NOTE: Previous commits contained deprecated replica, federation, tracing/extrae methods
+
+
+class ClientRuntime(DataClayRuntime):
+    def __init__(self, metadata_service_host: str, metadata_service_port: int):
+        metadata_service = MetadataClient(metadata_service_host, metadata_service_port)
+        super().__init__(metadata_service)
+
+    # NOTE: Previous commits contained deprecated syncronize, federate and unfederate methods
+
+    ############
+    # Shutdown #
+    ############
+
+    async def stop(self):
+        await self.backend_clients.stop()
+        await self.metadata_service.close()
+
+
+class BackendRuntime(DataClayRuntime):
+    def __init__(self, kv_host: str, kv_port: int, backend_id: UUID):
+        # Initialize Metadata Service
+        metadata_service = MetadataAPI(kv_host, kv_port)
+        super().__init__(metadata_service, backend_id)
+
+        self.backend_id = backend_id
+
+        # NOTE: Previous commits contained deprecated gc code for session and references
+
+    async def stop(self):
+        # Stop all backend clients
+        await self.backend_clients.stop()
+
+        # Remove backend entry from metadata
+        await self.metadata_service.delete_backend(self.backend_id)
+
+        # Stop DataManager memory monitor
+        self.data_manager.stop_memory_monitor()
+
+        # Flush all data if not ephemeral
+        if not settings.ephemeral:
+            await self.data_manager.flush_all()
+
+        # Stop metadata redis connection
+        await self.metadata_service.close()

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Optional
 import redis.asyncio as redis
 from redis.exceptions import ConnectionError, RedisClusterException
 
-from dataclay.exceptions.exceptions import *
+from dataclay.exceptions import AlreadyExistError, DoesNotExistError
 
 if TYPE_CHECKING:
     from uuid import UUID

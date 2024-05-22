@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclay import DataClayObject, activemethod
-from dataclay.dataclay_object import run_dc_coroutine
+from dataclay.event_loop import run_dc_coroutine
 
 
 class Person(DataClayObject):
@@ -85,7 +85,7 @@ class Family(DataClayObject):
         the current instance must not be unloaded/nullified, in order to
         guarantee properties mutability.
         """
-        from dataclay.runtime import get_runtime
+        from dataclay.config import get_runtime
 
         members = self.members
 
@@ -108,7 +108,7 @@ class Family(DataClayObject):
         """
         DataClayObjects that are not self, can be unloaded in memory pressure.
         """
-        from dataclay.runtime import get_runtime
+        from dataclay.config import get_runtime
 
         new_family = Family()
         members = new_family.members

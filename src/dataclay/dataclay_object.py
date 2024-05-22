@@ -9,15 +9,22 @@ related to classes and function call parameters.
 
 from __future__ import annotations
 
-import asyncio
 import functools
 import inspect
 import logging
-import threading
 import traceback
 from collections import ChainMap
+from typing import TYPE_CHECKING, Annotated, Any, Optional, Type, TypeVar, get_origin
 
-from dataclay.config import settings
+from dataclay.annotated import LocalOnly, PropertyTransformer
+from dataclay.config import get_runtime
+from dataclay.event_loop import get_dc_event_loop, run_dc_coroutine
+from dataclay.exceptions import ObjectIsMasterError, ObjectNotRegisteredError
+from dataclay.metadata.kvdata import ObjectMetadata
+from dataclay.utils.telemetry import trace
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 try:
     from inspect import get_annotations
@@ -26,25 +33,6 @@ except ImportError:
     # (see dependencies on pyproject.toml)
     from get_annotations import get_annotations
 
-from typing import (
-    TYPE_CHECKING,
-    Annotated,
-    Any,
-    Awaitable,
-    Optional,
-    Type,
-    TypeVar,
-    get_origin,
-)
-
-from dataclay.annotated import LocalOnly, PropertyTransformer
-from dataclay.exceptions import *
-from dataclay.metadata.kvdata import ObjectMetadata
-from dataclay.runtime import get_dc_event_loop, get_runtime, lock_manager
-from dataclay.utils.telemetry import trace
-
-if TYPE_CHECKING:
-    from uuid import UUID
 
 DC_PROPERTY_PREFIX = "_dc_property_"
 Sentinel = object()
@@ -96,30 +84,6 @@ def activemethod(func):
 
     # wrapper.is_activemethod = True
     return wrapper
-
-
-def run_dc_coroutine(func: Awaitable, *args, **kwargs):
-    loop = get_dc_event_loop()
-    if loop.is_running():
-        # If the event loop is running, we can't call run_until_complete.
-        if loop._thread_id == threading.get_ident():
-            # From the same thread must use the async version of the method
-            # Happens only(?) inside inner dataClay code.
-            raise RuntimeError(
-                "Trying to run non-async dataClay API method from inside the event loop."
-                "Use the async version of the method or run it from outside the event loop."
-            )
-        else:
-            # Event loop is running in another thread
-            # Only(?) happens when backend run dataClay methods inside an activemethod
-            # And when serializing dataClay objects with pickle
-            future = asyncio.run_coroutine_threadsafe(func(*args, **kwargs), loop)
-            return future.result()
-    else:
-        # If the event loop is not running, we can call run_until_complete.
-        # This should only happen from user SyncClient calls. All inner code
-        # should be async with a running event loop.
-        return loop.run_until_complete(func(*args, **kwargs))
 
 
 class DataClayProperty:

@@ -2,7 +2,7 @@ import time
 
 from dataclay import Client
 from dataclay.contrib.modeltest.classes import Box
-from dataclay.dataclay_object import run_dc_coroutine
+from dataclay.event_loop import run_dc_coroutine
 
 client = Client()
 client.start()

@@ -2,7 +2,7 @@ import functools
 
 import grpc
 
-from dataclay.exceptions import *
+from dataclay.exceptions import DataClayException
 
 
 def grpc_error_handler(func):

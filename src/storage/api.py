@@ -8,11 +8,12 @@ from dotenv import dotenv_values
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
 from dataclay.client.api import Client
-from dataclay.metadata.kvdata import ObjectMetadata
 
 # Also "publish" the split method
 # from dataclay.contrib.splitting import split
-from dataclay.runtime import get_dc_event_loop, get_runtime
+from dataclay.config import get_runtime
+from dataclay.event_loop import get_dc_event_loop
+from dataclay.metadata.kvdata import ObjectMetadata
 
 # The StorageDict and StorageList data structures
 # from .models.storagedict import StorageDict

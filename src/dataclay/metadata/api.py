@@ -2,7 +2,7 @@ import logging
 from typing import Optional, Union
 from uuid import UUID
 
-from dataclay.exceptions.exceptions import *
+from dataclay.exceptions import AccountError, AccountInvalidCredentialsError
 from dataclay.metadata.kvdata import (
     Account,
     Alias,

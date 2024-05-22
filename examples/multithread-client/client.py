@@ -2,8 +2,8 @@ import contextvars
 from concurrent.futures import ThreadPoolExecutor
 
 from dataclay import Client
+from dataclay.config import get_runtime
 from dataclay.contrib.modeltest.family import Dog, Family, Person
-from dataclay.runtime import get_runtime
 
 client = Client(host="127.0.0.1")
 client.start()

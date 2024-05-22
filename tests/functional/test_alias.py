@@ -1,7 +1,7 @@
 import pytest
 
 from dataclay.contrib.modeltest.family import Family, Person
-from dataclay.exceptions import *
+from dataclay.exceptions import DataClayException
 
 
 def test_get_by_alias(client):

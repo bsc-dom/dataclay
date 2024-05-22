@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import concurrent.futures
-import contextvars
 import logging
 import pickle
 import time
@@ -13,11 +11,11 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING, Optional
 
 from dataclay import utils
-from dataclay.config import settings
-from dataclay.exceptions import *
-from dataclay.runtime import get_dc_event_loop, lock_manager, set_runtime
-from dataclay.runtime.backend import BackendRuntime
-from dataclay.utils.contextvars import dc_to_thread, run_in_context
+from dataclay.config import set_runtime, settings
+from dataclay.event_loop import dc_to_thread
+from dataclay.exceptions import DoesNotExistError, ObjectWithWrongBackendIdError
+from dataclay.lock_manager import lock_manager
+from dataclay.runtime import BackendRuntime
 from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcloads
 from dataclay.utils.telemetry import trace
 

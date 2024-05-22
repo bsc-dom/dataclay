@@ -9,8 +9,9 @@ from typing import TYPE_CHECKING, Optional
 import psutil
 
 from dataclay.config import settings
-from dataclay.exceptions import *
-from dataclay.runtime import get_dc_event_loop, lock_manager
+from dataclay.event_loop import get_dc_event_loop
+from dataclay.exceptions import DataClayException
+from dataclay.lock_manager import lock_manager
 from dataclay.utils.serialization import DataClayPickler
 
 if TYPE_CHECKING:

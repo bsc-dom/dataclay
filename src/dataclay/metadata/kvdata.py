@@ -7,7 +7,6 @@ import bcrypt
 from google.protobuf.json_format import MessageToDict, ParseDict
 from pydantic import BaseModel, BeforeValidator, Field
 
-from dataclay.exceptions import *
 from dataclay.proto.common import common_pb2
 
 logger = logging.getLogger(__name__)

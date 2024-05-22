@@ -14,6 +14,9 @@ class LockManager:
         return self.locks[object_id]
 
 
+lock_manager = LockManager()
+
+
 # Example usage
 # async def access_object(object_id, manager, operation="read"):
 #     lock = manager.get_lock(object_id)

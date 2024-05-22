@@ -1,14 +1,19 @@
+from __future__ import annotations
+
 import contextvars
 import io
 import logging
 import pickle
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
 from dataclay import utils
-from dataclay.dataclay_object import DataClayObject, run_dc_coroutine
-from dataclay.runtime import get_dc_event_loop, get_runtime
-from dataclay.utils.contextvars import dc_to_thread, run_in_context
+from dataclay.config import get_runtime
+from dataclay.dataclay_object import DataClayObject
+from dataclay.event_loop import dc_to_thread, get_dc_event_loop, run_dc_coroutine
+
+if TYPE_CHECKING:
+    from dataclay.dataclay_object import DataClayObject
 
 logger = logging.getLogger(__name__)
 
@@ -21,20 +26,7 @@ class DataClayPickler(pickle.Pickler):
     def reducer_override(self, obj):
         if isinstance(obj, DataClayObject):
             if not obj._dc_is_registered:
-                # Option 0 (no async)
-                # obj.make_persistent()
-
-                # Option 1 - run_in_executor
                 obj.make_persistent()
-                # loop = get_dc_event_loop()
-                # t = asyncio.run_coroutine_threadsafe(obj.make_persistent(), loop)
-                # t.result()
-
-                # Option 2 - post make_persistent
-                # if self.pending_make_persistent is None:
-                #     self.pending_make_persistent = []
-                # if obj not in self.pending_make_persistent:
-                #     self.pending_make_persistent.append(obj)
             return obj.get_by_id, (obj._dc_meta.id,)
         else:
             return NotImplemented
@@ -75,7 +67,6 @@ class RecursiveDataClayPickler(DataClayPickler):
                 if obj._dc_meta.id not in self.visited_local_objects:
                     self.visited_local_objects[obj._dc_meta.id] = obj
                     if not obj._dc_is_loaded:
-                        # get_runtime().data_manager.load_object(obj)
                         run_dc_coroutine(get_runtime().data_manager.load_object, obj)
 
                     f = io.BytesIO()
@@ -120,13 +111,8 @@ async def recursive_dcdumps(
         remote_objects = {}
     local_objects[instance._dc_meta.id] = instance
 
-    # TODO: Use an executor to all pickle.dump (to release GIL?)
-    # Serialize the object state (__dict__ or __getstate__), and its referees
+    # NOTE: Executor needed to allow loading objects in parallel (async call inside non-async)
     file = io.BytesIO()
-    # RecursiveDataClayPickler(
-    #     file, local_objects, remote_objects, serialized_local_objects, make_persistent
-    # ).dump(instance._dc_state)
-
     await dc_to_thread(
         RecursiveDataClayPickler(
             file, local_objects, remote_objects, serialized_local_objects, make_persistent
@@ -164,8 +150,6 @@ async def recursive_dcloads(object_binary, unserialized_objects: dict[UUID, Data
     loop = get_dc_event_loop()
     object_dict, state = await loop.run_in_executor(
         None,
-        # run_in_context,
-        # contextvars.copy_context(),
         RecursiveDataClayObjectUnpickler(io.BytesIO(object_binary), unserialized_objects).load,
     )
 
@@ -198,19 +182,8 @@ async def dcdumps(obj):
     # NOTE: Executor needed to avoid blocking the event loop in `make_persistent`
     # The context needs to be propagated to access the session_var
     file = io.BytesIO()
-    loop = get_dc_event_loop()
-    await loop.run_in_executor(
-        None, run_in_context, contextvars.copy_context(), DataClayPickler(file).dump, obj
-    )
+    await dc_to_thread(DataClayPickler(file).dump, obj)
     return file.getvalue()
-
-    # Option 2 - post make_persistent
-    # pending_make_persistent: list[DataClayObject] = []
-    # DataClayPickler(f, pending_make_persistent=pending_make_persistent).dump(obj)
-    # logger.warning(f"++++++ pending_make_persistent: {pending_make_persistent}")
-    # for obj in pending_make_persistent:
-    #     await obj.make_persistent()
-    # return f.getvalue()
 
 
 async def dcloads(binary):
@@ -222,8 +195,7 @@ async def dcloads(binary):
         binary: The binary to deserialize. Should be the result of dcdumps.
     """
     logger.debug("Deserializing binary in executor")
-    # TODO: Be sure contextvars won't be need. If so, use run_in_context
-    # (session_var is not used in deserialization, so it should be fine)
+    # NOTE: session_var is not used in deserialization. No need to propagate context
     loop = get_dc_event_loop()
     result = await loop.run_in_executor(None, pickle.loads, binary)
     return result

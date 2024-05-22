@@ -5,6 +5,8 @@ Note that importing this module has a basic semantic: it prepares the dataClay
 core and sets the "client" mode for the library.
 """
 
+from __future__ import annotations
+
 __all__ = ["init", "finish", "DataClayObject"]
 
 import asyncio
@@ -13,23 +15,22 @@ import logging.config
 from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
-from dataclay.backend.client import BackendClient
-from dataclay.config import ClientSettings, settings
-from dataclay.dataclay_object import DataClayObject, run_dc_coroutine
-from dataclay.runtime import (
-    get_dc_event_loop,
+from dataclay.config import (
+    ClientSettings,
     get_runtime,
     session_var,
-    set_dc_event_loop,
     set_runtime,
+    settings,
 )
-from dataclay.runtime.client import ClientRuntime
+from dataclay.event_loop import get_dc_event_loop, run_dc_coroutine, set_dc_event_loop
+from dataclay.runtime import ClientRuntime
 from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
     from uuid import UUID
 
     from dataclay.backend.client import BackendClient
+    from dataclay.dataclay_object import DataClayObject
 
 # This will be populated during initialization
 # LOCAL = _UNDEFINED_LOCAL
