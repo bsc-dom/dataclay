@@ -22,8 +22,8 @@ def get_dc_event_loop() -> Union[None, AbstractEventLoop]:
 
 def run_dc_coroutine(func: Awaitable, *args, **kwargs):
     loop = get_dc_event_loop()
+    # If the event loop is running, we can't call run_until_complete.
     if loop.is_running():
-        # If the event loop is running, we can't call run_until_complete.
         if loop._thread_id == threading.get_ident():
             # From the same thread must use the async version of the method
             # Happens only(?) inside inner dataClay code.

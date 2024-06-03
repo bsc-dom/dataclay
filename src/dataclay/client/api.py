@@ -236,7 +236,7 @@ class AsyncClient(Client):
     """
 
     @tracer.start_as_current_span("start")
-    async def start(self):
+    def start(self):
         """Start the client runtime"""
 
         if self.is_active:
@@ -279,11 +279,38 @@ class AsyncClient(Client):
 
         self.is_active = True
 
+    @tracer.start_as_current_span("stop")
+    async def stop(self):
+        """Stop the client runtime"""
+        if not self.is_active:
+            logger.warning("Client is not active. Ignoring")
+            return
+
+        logger.info("Stopping client runtime")
+        await self.runtime.stop
+        settings.client = self.previous_settings
+        set_runtime(self.previous_runtime)
+        self.is_active = False
+
+    def __del__(self):
+        pass
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    async def __aenter__(self):
+        self.start()
+        return self
+
+    async def __aexit__(self, *excinfo):
+        await self.stop()
+
     @tracer.start_as_current_span("get_backends")
     async def get_backends(self) -> dict[UUID, BackendClient]:
         if not self.is_active:
             raise RuntimeError("Client is not active")
-        self.runtime.backend_clients.update()
+        await self.runtime.backend_clients.update()
         return self.runtime.backend_clients
 
 
