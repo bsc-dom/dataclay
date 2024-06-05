@@ -58,10 +58,11 @@ class ClientSettings(BaseSettings):
     local_backend: Optional[str] = None
     dataclay_host: str = Field(
         default="localhost",
-        alias=AliasChoices("dc_host", "dataclay_metadata_host", "dataclay_host"),
+        validation_alias=AliasChoices("dc_host", "dataclay_metadata_host", "dataclay_host"),
     )
     dataclay_port: int = Field(
-        default=16587, alias=AliasChoices("dc_port", "dataclay_metadata_port", "dataclay_port")
+        default=16587,
+        validation_alias=AliasChoices("dc_port", "dataclay_metadata_port", "dataclay_port"),
     )
     proxy_enabled: bool = False
     proxy_host: str = "127.0.0.1"

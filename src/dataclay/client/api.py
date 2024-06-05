@@ -22,7 +22,7 @@ from dataclay.config import (
     set_runtime,
     settings,
 )
-from dataclay.event_loop import get_dc_event_loop, set_dc_event_loop, EventLoopThread
+from dataclay.event_loop import EventLoopThread, get_dc_event_loop, set_dc_event_loop
 from dataclay.runtime import ClientRuntime
 from dataclay.utils.telemetry import trace
 

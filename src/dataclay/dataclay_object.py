@@ -9,6 +9,7 @@ related to classes and function call parameters.
 
 from __future__ import annotations
 
+import asyncio
 import functools
 import inspect
 import logging
@@ -16,7 +17,6 @@ import threading
 import traceback
 from collections import ChainMap
 from typing import TYPE_CHECKING, Annotated, Any, Optional, Type, TypeVar, get_origin
-import asyncio
 
 from dataclay.annotated import LocalOnly, PropertyTransformer
 from dataclay.config import get_runtime
