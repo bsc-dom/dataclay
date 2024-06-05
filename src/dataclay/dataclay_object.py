@@ -9,9 +9,11 @@ related to classes and function call parameters.
 
 from __future__ import annotations
 
+import asyncio
 import functools
 import inspect
 import logging
+import threading
 import traceback
 from collections import ChainMap
 from typing import TYPE_CHECKING, Annotated, Any, Optional, Type, TypeVar, get_origin
@@ -74,10 +76,10 @@ def activemethod(func):
                     # TODO: I think this gives problems, in test_remote_method.test_remote_make_persistent()
                     return get_runtime().call_remote_method(self, func.__name__, args, kwargs)
                 else:
-                    loop = get_dc_event_loop()
-                    return loop.run_until_complete(
-                        get_runtime().call_remote_method(self, func.__name__, args, kwargs)
-                    )
+                    return asyncio.run_coroutine_threadsafe(
+                        get_runtime().call_remote_method(self, func.__name__, args, kwargs),
+                        get_dc_event_loop(),
+                    ).result()
         except Exception:
             traceback.print_exc()
             raise
@@ -121,7 +123,10 @@ class DataClayProperty:
             if not instance._dc_is_loaded:
                 # NOTE: Should be called from another thread.
                 # Should only happen inside activemethods.
-                run_dc_coroutine(get_runtime().data_manager.load_object, instance)
+                assert get_dc_event_loop()._thread_id != threading.get_ident()
+                asyncio.run_coroutine_threadsafe(
+                    get_runtime().data_manager.load_object(instance), get_dc_event_loop()
+                ).result()
             try:
                 attr = getattr(instance, self.dc_property_name)
             except AttributeError as e:
@@ -135,19 +140,10 @@ class DataClayProperty:
                 return self.transformer.getter(attr)
         else:
             logger.debug("remote get")
-            loop = get_dc_event_loop()
-            if loop.is_running():
-                # NOTE: This will make attribute access for a user's AsyncClient or from our
-                # inner code, to be async. This could not be desired in the future, since
-                # it is not the expected behaviour of python properties.
-                # TODO: Find a better way to handle this.
-                return get_runtime().call_remote_method(
-                    instance, "__getattribute__", (self.name,), {}
-                )
-            else:
-                return loop.run_until_complete(
-                    get_runtime().call_remote_method(instance, "__getattribute__", (self.name,), {})
-                )
+            return asyncio.run_coroutine_threadsafe(
+                get_runtime().call_remote_method(instance, "__getattribute__", (self.name,), {}),
+                get_dc_event_loop(),
+            ).result()
 
     def __set__(self, instance: DataClayObject, value):
         """Setter for the dataClay property
@@ -165,26 +161,19 @@ class DataClayProperty:
         if instance._dc_is_local:
             logger.debug("local set")
             if not instance._dc_is_loaded:
-                # NOTE: (Same as in __get__ method)
-                run_dc_coroutine(get_runtime().data_manager.load_object, instance)
+                assert get_dc_event_loop()._thread_id != threading.get_ident()
+                asyncio.run_coroutine_threadsafe(
+                    get_runtime().data_manager.load_object(instance), get_dc_event_loop()
+                ).result()
             if self.transformer is not None:
                 value = self.transformer.setter(value)
             setattr(instance, self.dc_property_name, value)
         else:
             logger.debug("remote set")
-            loop = get_dc_event_loop()
-            if loop.is_running():
-                # NOTE: Same problem as in __get__ method.
-                # TODO: Find a better way to handle this.
-                return get_runtime().call_remote_method(
-                    instance, "__setattr__", (self.name, value), {}
-                )
-            else:
-                return loop.run_until_complete(
-                    get_runtime().call_remote_method(
-                        instance, "__setattr__", (self.name, value), {}
-                    )
-                )
+            return asyncio.run_coroutine_threadsafe(
+                get_runtime().call_remote_method(instance, "__setattr__", (self.name, value), {}),
+                get_dc_event_loop(),
+            ).result()
 
     def __delete__(self, instance: DataClayObject):
         """Deleter for the dataClay property"""
@@ -198,20 +187,18 @@ class DataClayProperty:
         if instance._dc_is_local:
             logger.debug("local delete")
             if not instance._dc_is_loaded:
-                # NOTE: (Same as in __get__ method)
-                run_dc_coroutine(get_runtime().data_manager.load_object, instance)
+                assert get_dc_event_loop()._thread_id != threading.get_ident()
+                asyncio.run_coroutine_threadsafe(
+                    get_runtime().data_manager.load_object(instance), get_dc_event_loop()
+                ).result()
 
             delattr(instance, self.dc_property_name)
         else:
             logger.debug("remote delete")
-            loop = get_dc_event_loop()
-            if loop.is_running():
-                # NOTE: Same problem as in __get__ method.
-                return get_runtime().call_remote_method(instance, "__delattr__", (self.name,), {})
-            else:
-                return loop.run_until_complete(
-                    get_runtime().call_remote_method(instance, "__delattr__", (self.name,), {})
-                )
+            return asyncio.run_coroutine_threadsafe(
+                get_runtime().call_remote_method(instance, "__delattr__", (self.name,), {}),
+                get_dc_event_loop(),
+            )
 
 
 class DataClayObject:
@@ -343,7 +330,7 @@ class DataClayObject:
             return None
 
     @tracer.start_as_current_span("sync")
-    async def a_sync(self):
+    async def _sync(self):
         """Synchronizes the object metadata
 
         It will always retrieve the current metadata from the kv database.
@@ -359,15 +346,22 @@ class DataClayObject:
             raise ObjectIsMasterError(self._dc_meta.id)
         await get_runtime().sync_object_metadata(self)
 
+    async def a_sync(self):
+        loop = get_dc_event_loop()
+        future = asyncio.run_coroutine_threadsafe(self._sync(), loop)
+        return await asyncio.wrap_future(future)
+
     def sync(self):
-        return run_dc_coroutine(self.a_sync)
+        loop = get_dc_event_loop()
+        future = asyncio.run_coroutine_threadsafe(self.a_sync(), loop)
+        return future.result()
 
     ###########################
     # Object Oriented Methods #
     ###########################
 
     @tracer.start_as_current_span("make_persistent")
-    async def a_make_persistent(
+    async def _make_persistent(
         self, alias: Optional[str] = None, backend_id: Optional[UUID] = None
     ):
         """Makes the object persistent.
@@ -389,12 +383,23 @@ class DataClayObject:
         else:
             await get_runtime().make_persistent(self, alias=alias, backend_id=backend_id)
 
+    async def a_make_persistent(
+        self, alias: Optional[str] = None, backend_id: Optional[UUID] = None
+    ):
+        future = asyncio.run_coroutine_threadsafe(
+            self._make_persistent(alias, backend_id), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
+
     def make_persistent(self, alias: Optional[str] = None, backend_id: Optional[UUID] = None):
-        return run_dc_coroutine(self.a_make_persistent, alias, backend_id)
+        future = asyncio.run_coroutine_threadsafe(
+            self._make_persistent(alias, backend_id), get_dc_event_loop()
+        )
+        return future.result()
 
     @classmethod
     @tracer.start_as_current_span("get_by_id")
-    async def a_get_by_id(cls, object_id: UUID) -> DataClayObject:
+    async def _get_by_id(cls, object_id: UUID) -> DataClayObject:
         """Returns the object with the given id.
 
         Args:
@@ -409,6 +414,11 @@ class DataClayObject:
         return await get_runtime().get_object_by_id(object_id)
 
     @classmethod
+    async def a_get_by_id(cls, object_id: UUID) -> DataClayObject:
+        future = asyncio.run_coroutine_threadsafe(cls._get_by_id(object_id), get_dc_event_loop())
+        return await asyncio.wrap_future(future)
+
+    @classmethod
     def get_by_id(cls, object_id: UUID) -> DataClayObject:
 
         # WARNING: This method must not be called from the same thread as the running event loop
@@ -417,11 +427,12 @@ class DataClayObject:
         # "pickle.loads" of dataClay objects is calling this method behind. With `dcloads` this method
         # will be called in another thread, so it will not block the event loop.
 
-        return run_dc_coroutine(cls.a_get_by_id, object_id)
+        future = asyncio.run_coroutine_threadsafe(cls._get_by_id(object_id), get_dc_event_loop())
+        return future.result()
 
     @classmethod
     @tracer.start_as_current_span("get_by_alias")
-    async def a_get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
+    async def _get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
         """Returns the object with the given alias.
 
         Args:
@@ -438,11 +449,21 @@ class DataClayObject:
         return await get_runtime().get_object_by_alias(alias, dataset_name)
 
     @classmethod
+    async def a_get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
+        future = asyncio.run_coroutine_threadsafe(
+            cls._get_by_alias(alias, dataset_name), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
+
+    @classmethod
     def get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
-        return run_dc_coroutine(cls.a_get_by_alias, alias, dataset_name)
+        future = asyncio.run_coroutine_threadsafe(
+            cls._get_by_alias(alias, dataset_name), get_dc_event_loop()
+        )
+        return future.result()
 
     @tracer.start_as_current_span("add_alias")
-    async def a_add_alias(self, alias: str):
+    async def _add_alias(self, alias: str):
         """Adds an alias to the object.
 
         Args:
@@ -455,21 +476,31 @@ class DataClayObject:
         """
         await get_runtime().add_alias(self, alias)
 
+    async def a_add_alias(self, alias: str):
+        future = asyncio.run_coroutine_threadsafe(self._add_alias(alias), get_dc_event_loop())
+        return await asyncio.wrap_future(future)
+
     def add_alias(self, alias: str):
-        return run_dc_coroutine(self.a_add_alias, alias)
+        future = asyncio.run_coroutine_threadsafe(self._add_alias(alias), get_dc_event_loop())
+        return future.result()
 
     @tracer.start_as_current_span("get_aliases")
-    async def a_get_aliases(self) -> set[str]:
+    async def _get_aliases(self) -> set[str]:
         """Returns a set with all the aliases of the object."""
         aliases = await get_runtime().get_all_alias(self._dc_meta.dataset_name, self._dc_meta.id)
         return set(aliases)
 
+    async def a_get_aliases(self) -> set[str]:
+        future = asyncio.run_coroutine_threadsafe(self._get_aliases(), get_dc_event_loop())
+        return await asyncio.wrap_future(future)
+
     def get_aliases(self) -> set[str]:
-        return run_dc_coroutine(self.a_get_aliases)
+        future = asyncio.run_coroutine_threadsafe(self._get_aliases(), get_dc_event_loop())
+        return future.result()
 
     @classmethod
     @tracer.start_as_current_span("delete_alias")
-    async def a_delete_alias(cls, alias: str, dataset_name: str = None):
+    async def _delete_alias(cls, alias: str, dataset_name: str = None):
         """Removes the alias linked to an object.
 
         If this object is not referenced starting from a root object and no active session is
@@ -486,11 +517,21 @@ class DataClayObject:
         await get_runtime().delete_alias(alias, dataset_name=dataset_name)
 
     @classmethod
+    async def a_delete_alias(cls, alias: str, dataset_name: str = None):
+        future = asyncio.run_coroutine_threadsafe(
+            cls._delete_alias(alias, dataset_name), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
+
+    @classmethod
     def delete_alias(cls, alias: str, dataset_name: str = None):
-        return run_dc_coroutine(cls.a_delete_alias, alias, dataset_name)
+        future = asyncio.run_coroutine_threadsafe(
+            cls._delete_alias(alias, dataset_name), get_dc_event_loop()
+        )
+        return future.result()
 
     @tracer.start_as_current_span("move")
-    async def a_move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
+    async def _move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
         """Moves the object to the specified backend.
 
         If the object is not registered, it will be registered with all its references
@@ -511,15 +552,24 @@ class DataClayObject:
         else:
             await get_runtime().send_objects([self], backend_id, False, recursive, remotes)
 
+    async def a_move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
+        future = asyncio.run_coroutine_threadsafe(
+            self._move(backend_id, recursive, remotes), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
+
     def move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
-        return run_dc_coroutine(self.a_move, backend_id, recursive, remotes)
+        future = asyncio.run_coroutine_threadsafe(
+            self._move(backend_id, recursive, remotes), get_dc_event_loop()
+        )
+        return future.result()
 
     ##############
     # Versioning #
     ##############
 
     @tracer.start_as_current_span("new_version")
-    async def a_new_version(
+    async def _new_version(
         self, backend_id: UUID = None, recursive: bool = False
     ) -> DataClayObject:
         """Create a new version of the current object.
@@ -537,11 +587,22 @@ class DataClayObject:
         """
         return await get_runtime().new_object_version(self, backend_id)
 
+    async def a_new_version(
+        self, backend_id: UUID = None, recursive: bool = False
+    ) -> DataClayObject:
+        future = asyncio.run_coroutine_threadsafe(
+            self._new_version(backend_id, recursive), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
+
     def new_version(self, backend_id: UUID = None, recursive: bool = False) -> DataClayObject:
-        return run_dc_coroutine(self.a_new_version, backend_id, recursive)
+        future = asyncio.run_coroutine_threadsafe(
+            self._new_version(backend_id, recursive), get_dc_event_loop()
+        )
+        return future.result()
 
     @tracer.start_as_current_span("consolidate_version")
-    async def a_consolidate_version(self):
+    async def _consolidate_version(self):
         """Consolidate the current version of the object with the original one.
 
         Raises:
@@ -549,21 +610,37 @@ class DataClayObject:
         """
         await get_runtime().consolidate_version(self)
 
+    async def a_consolidate_version(self):
+        future = asyncio.run_coroutine_threadsafe(self._consolidate_version(), get_dc_event_loop())
+        return await asyncio.wrap_future(future)
+
     def consolidate_version(self):
-        return run_dc_coroutine(self.a_consolidate_version)
+        future = asyncio.run_coroutine_threadsafe(self._consolidate_version(), get_dc_event_loop())
+        return future.result()
 
     ###########
     # Replica #
     ###########
 
     @tracer.start_as_current_span("new_replica")
-    async def a_new_replica(
+    async def _new_replica(
         self, backend_id: UUID = None, recursive: bool = False, remotes: bool = True
     ):
         await get_runtime().new_object_replica(self, backend_id, recursive, remotes)
 
+    async def a_new_replica(
+        self, backend_id: UUID = None, recursive: bool = False, remotes: bool = True
+    ):
+        future = asyncio.run_coroutine_threadsafe(
+            self._new_replica(backend_id, recursive, remotes), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
+
     def new_replica(self, backend_id: UUID = None, recursive: bool = False, remotes: bool = True):
-        return run_dc_coroutine(self.a_new_replica, backend_id, recursive, remotes)
+        future = asyncio.run_coroutine_threadsafe(
+            self._new_replica(backend_id, recursive, remotes), get_dc_event_loop()
+        )
+        return future.result()
 
     ########################
     # Object Store Methods #

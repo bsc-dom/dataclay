@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import contextvars
+import asyncio
 import io
 import logging
 import pickle
@@ -67,7 +67,9 @@ class RecursiveDataClayPickler(DataClayPickler):
                 if obj._dc_meta.id not in self.visited_local_objects:
                     self.visited_local_objects[obj._dc_meta.id] = obj
                     if not obj._dc_is_loaded:
-                        run_dc_coroutine(get_runtime().data_manager.load_object, obj)
+                        asyncio.run_coroutine_threadsafe(
+                            get_runtime().data_manager.load_object(obj), get_dc_event_loop()
+                        ).result()
 
                     f = io.BytesIO()
                     RecursiveDataClayPickler(

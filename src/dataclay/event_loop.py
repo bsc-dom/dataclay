@@ -20,6 +20,17 @@ def get_dc_event_loop() -> Union[None, AbstractEventLoop]:
     return dc_event_loop
 
 
+class EventLoopThread(threading.Thread):
+    def __init__(self, loop):
+        super().__init__(daemon=True, name="EventLoopThread")
+        self.loop = loop
+
+    def run(self):
+        print("Thread started: " + self.name)
+        self.loop.run_forever()
+        print("Thread finished: " + self.name)
+
+
 def run_dc_coroutine(func: Awaitable, *args, **kwargs):
     loop = get_dc_event_loop()
     # If the event loop is running, we can't call run_until_complete.
@@ -35,6 +46,8 @@ def run_dc_coroutine(func: Awaitable, *args, **kwargs):
             # Event loop is running in another thread
             # Only(?) happens when backend run dataClay methods inside an activemethod
             # And when serializing dataClay objects with pickle
+            # WARNING: Don't use python threading to run in another thread.
+            # It will block the event loop anyway. Use loop.run_in_executor or asyncio.to_thread instead.
             future = asyncio.run_coroutine_threadsafe(func(*args, **kwargs), loop)
             return future.result()
     else:
