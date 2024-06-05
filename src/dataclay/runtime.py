@@ -48,20 +48,10 @@ class _DummyInmemoryHitsTotal:
 
 
 class DataClayRuntime(ABC):
-    def __init__(self, metadata_service: MetadataAPI | MetadataClient, backend_id: UUID = None):
+    def __init__(self, backend_id: UUID = None):
         # self._dataclay_id = None
         self.backend_id = backend_id
         self.is_backend = bool(backend_id)
-        self.metadata_service = metadata_service
-
-        # Initialize BackendClientsManager and Data Manager
-        self.backend_clients = BackendClientsManager(metadata_service)
-        self.data_manager = DataManager()
-        self.backend_clients.start_update_loop()
-
-        if self.is_backend:
-            self.backend_clients.start_subscribe()
-            self.data_manager.start_memory_monitor()
 
         # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
         self.inmemory_objects: WeakValueDictionary[UUID, DataClayObject] = WeakValueDictionary()
@@ -74,6 +64,18 @@ class DataClayRuntime(ABC):
             self.dataclay_inmemory_hits_total = metrics.dataclay_inmemory_hits_total
         else:
             self.dataclay_inmemory_hits_total = _DummyInmemoryHitsTotal()
+
+    def start(self, metadata_service: MetadataAPI):
+        # NOTE: Moved from __init__ to initialize the MetadataService in the dc_event_loop
+        # this is restriction from Async gRPC
+        # Initialize BackendClientsManager and Data Manager
+        self.backend_clients = BackendClientsManager(metadata_service)
+        self.data_manager = DataManager()
+        self.backend_clients.start_update_loop()
+
+        if self.is_backend:
+            self.backend_clients.start_subscribe()
+            self.data_manager.start_memory_monitor()
 
     ##############
     # Properties #
@@ -718,14 +720,15 @@ class DataClayRuntime(ABC):
 
 class ClientRuntime(DataClayRuntime):
     def __init__(self, metadata_service_host: str, metadata_service_port: int):
-        metadata_service = MetadataClient(metadata_service_host, metadata_service_port)
-        super().__init__(metadata_service)
+        self.metadata_host = metadata_service_host
+        self.metadata_port = metadata_service_port
+        super().__init__()
 
-    # NOTE: Previous commits contained deprecated syncronize, federate and unfederate methods
-
-    ############
-    # Shutdown #
-    ############
+    async def start(self):
+        # NOTE: Moved from __init__ to initialize the MetadataService in the dc_event_loop
+        # this is restriction from Async gRPC
+        self.metadata_service = MetadataClient(self.metadata_host, self.metadata_port)
+        super().start(self.metadata_service)
 
     async def stop(self):
         await self.backend_clients.stop()
@@ -734,13 +737,14 @@ class ClientRuntime(DataClayRuntime):
 
 class BackendRuntime(DataClayRuntime):
     def __init__(self, kv_host: str, kv_port: int, backend_id: UUID):
+        self.metadata_host = kv_host
+        self.metadata_port = kv_port
         # Initialize Metadata Service
-        metadata_service = MetadataAPI(kv_host, kv_port)
-        super().__init__(metadata_service, backend_id)
-
+        super().__init__(backend_id)
         self.backend_id = backend_id
-
-        # NOTE: Previous commits contained deprecated gc code for session and references
+        # NOTE: Backend is already running in dc_event_loop, no need to divide
+        self.metadata_service = MetadataAPI(self.metadata_host, self.metadata_port)
+        super().start(self.metadata_service)
 
     async def stop(self):
         # Stop all backend clients

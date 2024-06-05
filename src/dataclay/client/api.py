@@ -22,7 +22,7 @@ from dataclay.config import (
     set_runtime,
     settings,
 )
-from dataclay.event_loop import get_dc_event_loop, run_dc_coroutine, set_dc_event_loop
+from dataclay.event_loop import get_dc_event_loop, set_dc_event_loop, EventLoopThread
 from dataclay.runtime import ClientRuntime
 from dataclay.utils.telemetry import trace
 
@@ -157,12 +157,14 @@ class Client:
         logger.info("Starting client runtime")
 
         # Create new event loop (if not AsyncClient)
-        # TODO: Should we add the loop to a background thread?
         # TODO: Should we replace the loop for each client?
-        if get_dc_event_loop() is None:
-            self.loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(self.loop)
-            set_dc_event_loop(self.loop)
+
+        loop = asyncio.new_event_loop()
+        set_dc_event_loop(loop)
+        thread = EventLoopThread(loop)
+        thread.start()
+
+        # TODO: Event ready
 
         # Replace settings
         self.previous_settings = settings.client
@@ -183,6 +185,9 @@ class Client:
                 settings.client.dataclay_host, settings.client.dataclay_port
             )
 
+        future = asyncio.run_coroutine_threadsafe(self.runtime.start(), loop)
+        future.result()
+
         set_runtime(self.runtime)
 
         session_var.set(
@@ -202,7 +207,7 @@ class Client:
             return
 
         logger.info("Stopping client runtime")
-        run_dc_coroutine(self.runtime.stop)
+        asyncio.run_coroutine_threadsafe(self.runtime.stop(), get_dc_event_loop()).result()
         settings.client = self.previous_settings
         set_runtime(self.previous_runtime)
         self.is_active = False
@@ -221,7 +226,9 @@ class Client:
     def get_backends(self) -> dict[UUID, BackendClient]:
         if not self.is_active:
             raise RuntimeError("Client is not active")
-        run_dc_coroutine(self.runtime.backend_clients.update)
+        asyncio.run_coroutine_threadsafe(
+            self.runtime.backend_clients.update(), get_dc_event_loop()
+        ).result()
         return self.runtime.backend_clients
 
 
@@ -245,9 +252,12 @@ class AsyncClient(Client):
 
         logger.info("Starting client runtime")
 
-        # Get the current event loop (if not Client)
-        self.loop = asyncio.get_running_loop()
-        set_dc_event_loop(self.loop)  # TODO: find a cleaner architecture
+        loop = asyncio.new_event_loop()
+        set_dc_event_loop(loop)
+        thread = EventLoopThread(loop)
+        thread.start()
+
+        # TODO: Change to event instead of sleep
 
         # Replace settings
         self.previous_settings = settings.client
@@ -264,9 +274,12 @@ class AsyncClient(Client):
             )
             self.runtime = ClientRuntime(settings.client.proxy_host, settings.client.proxy_port)
         else:
+
             self.runtime = ClientRuntime(
                 settings.client.dataclay_host, settings.client.dataclay_port
             )
+            future = asyncio.run_coroutine_threadsafe(self.runtime.start(), loop)
+            future.result()
 
         set_runtime(self.runtime)
 
@@ -287,7 +300,8 @@ class AsyncClient(Client):
             return
 
         logger.info("Stopping client runtime")
-        await self.runtime.stop
+        future = asyncio.run_coroutine_threadsafe(self.runtime.stop(), get_dc_event_loop())
+        await asyncio.wrap_future(future)
         settings.client = self.previous_settings
         set_runtime(self.previous_runtime)
         self.is_active = False
@@ -310,7 +324,10 @@ class AsyncClient(Client):
     async def get_backends(self) -> dict[UUID, BackendClient]:
         if not self.is_active:
             raise RuntimeError("Client is not active")
-        await self.runtime.backend_clients.update()
+        future = asyncio.run_coroutine_threadsafe(
+            self.runtime.backend_clients.update(), get_dc_event_loop()
+        )
+        await asyncio.wrap_future(future)
         return self.runtime.backend_clients
 
 
