@@ -1,4 +1,5 @@
 import datetime
+import datetime
 from uuid import UUID
 
 import jwt
@@ -49,3 +50,13 @@ def jwt_validation(username, token):
         raise e
     except jwt.InvalidTokenError as e:
         raise e
+
+
+def generate_jwt(secret_key: str = "", user: str = "dataclay", TOKEN_EXPIRATION: int = 24 * 30):
+    # TODO: Store the username & password in a database in order to check it later
+    payload = {
+        "username": user,
+        "exp": datetime.datetime.now() + datetime.timedelta(hours=TOKEN_EXPIRATION),
+    }
+    token = jwt.encode(payload, secret_key, algorithm="HS256")
+    return token
