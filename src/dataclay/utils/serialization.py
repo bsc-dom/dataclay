@@ -165,7 +165,7 @@ async def recursive_dcloads(object_binary, unserialized_objects: dict[UUID, Data
         unserialized_objects[object_id] = proxy_object
 
     vars(proxy_object).update(object_dict)
-    if state:
+    if state is not None:
         proxy_object.__setstate__(state)
     return proxy_object
 

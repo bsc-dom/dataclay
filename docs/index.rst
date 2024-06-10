@@ -8,6 +8,7 @@ dataClay
 
    user-guide
    main-concepts
+   virtual-objects
    advanced-usage 
    examples/index
 

@@ -81,7 +81,7 @@ def activemethod(func):
                         get_dc_event_loop(),
                     ).result()
         except Exception:
-            traceback.print_exc()
+            logger.debug("Error calling activemethod '%s'", func.__name__, exc_info=True)
             raise
 
     # wrapper.is_activemethod = True
