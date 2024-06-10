@@ -24,7 +24,6 @@ from dataclay.config import (
 )
 from dataclay.event_loop import EventLoopThread, get_dc_event_loop, set_dc_event_loop
 from dataclay.proxy import generate_jwt
-from dataclay.proxy import generate_jwt
 from dataclay.runtime import ClientRuntime
 from dataclay.utils.telemetry import trace
 
@@ -198,11 +197,6 @@ class Client:
         set_runtime(self.runtime)
 
         session_var.set(
-            {
-                "dataset_name": settings.client.dataset,
-                "username": settings.client.username,
-                "token": self._token,
-            }
             {
                 "dataset_name": settings.client.dataset,
                 "username": settings.client.username,

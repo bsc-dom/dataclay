@@ -152,7 +152,6 @@ class BackendClient:
             ("dataset-name", current_context["dataset_name"]),
             ("username", current_context["username"]),
             ("authorization", current_context["token"]),
-            ("authorization", current_context["token"]),
         ]
 
         response = await self.stub.CallActiveMethod(request, metadata=metadata)
