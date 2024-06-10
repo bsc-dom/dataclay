@@ -1,5 +1,6 @@
 """ Class description goes here. """
 
+import asyncio
 import logging
 import os
 
@@ -47,7 +48,9 @@ def getByID(object_md_json: str):
     """
     loop = get_dc_event_loop()
     object_md = ObjectMetadata.model_validate_json(object_md_json)
-    return loop.run_until_complete(get_runtime().get_object_by_id(object_md.id, object_md))
+    return asyncio.run_coroutine_threadsafe(
+        get_runtime().get_object_by_id(object_md.id, object_md), loop
+    ).result()
 
 
 def initWorker(config_file_path, **kwargs):

@@ -20,28 +20,23 @@ def get_dc_event_loop() -> Union[None, AbstractEventLoop]:
     return dc_event_loop
 
 
+class EventLoopThread(threading.Thread):
+    def __init__(self, loop):
+        super().__init__(daemon=True, name="EventLoopThread")
+        self.loop = loop
+        self.ready = threading.Event()
+
+    def run(self):
+        print("Starting event loop in new thread")
+        self.ready.set()
+        self.loop.run_forever()
+        print("Event loop stopped")
+
+
 def run_dc_coroutine(func: Awaitable, *args, **kwargs):
     loop = get_dc_event_loop()
-    # If the event loop is running, we can't call run_until_complete.
-    if loop.is_running():
-        if loop._thread_id == threading.get_ident():
-            # From the same thread must use the async version of the method
-            # Happens only(?) inside inner dataClay code.
-            raise RuntimeError(
-                "Trying to run non-async dataClay API method from inside the event loop."
-                "Use the async version of the method or run it from outside the event loop."
-            )
-        else:
-            # Event loop is running in another thread
-            # Only(?) happens when backend run dataClay methods inside an activemethod
-            # And when serializing dataClay objects with pickle
-            future = asyncio.run_coroutine_threadsafe(func(*args, **kwargs), loop)
-            return future.result()
-    else:
-        # If the event loop is not running, we can call run_until_complete.
-        # This should only happen from user SyncClient calls. All inner code
-        # should be async with a running event loop.
-        return loop.run_until_complete(func(*args, **kwargs))
+    future = asyncio.run_coroutine_threadsafe(func(*args, **kwargs), loop)
+    return future.result()
 
 
 # Based on asyncio.to_thread
