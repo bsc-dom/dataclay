@@ -4,8 +4,8 @@ from middleware import ActiveMethodWhitelist
 interceptors = []
 
 middleware_backend = [
-    ActiveMethodWhitelist(user="alice", methods=["add_element"]),
-    ActiveMethodWhitelist(user="bob", methods=["public_data"]),
+    ActiveMethodWhitelist(user="alice", methods=["add_element", "get"]),
+    ActiveMethodWhitelist(user="bob", methods=["public_data", "set", "get"]),
     ActiveMethodWhitelist(user="charlie", methods=[]),
 ]
 

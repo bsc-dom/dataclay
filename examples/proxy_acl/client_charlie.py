@@ -2,7 +2,7 @@ from model.datum import SensorValues
 
 from dataclay import Client
 
-client = Client(proxy_host="127.0.0.1", username="charlie", password="s3cret", dataset="testdata")
+client = Client(proxy_host="127.0.0.1", username="charlie", password="s3cret")
 client.start()
 
 values = SensorValues.get_by_alias("demo")

@@ -37,6 +37,7 @@ dependencies = [
     "pydantic-settings>=2.0.3",
     "redis>=5.0.1",
     "get-annotations;python_version<\"3.10\"",
+    "PyJWT>=2.8.0",
 ]
 dynamic = ["version"]
 
