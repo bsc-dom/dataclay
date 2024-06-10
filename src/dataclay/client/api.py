@@ -156,9 +156,7 @@ class Client:
 
         logger.info("Starting client runtime")
 
-        # Create new event loop (if not AsyncClient)
-        # TODO: Should we replace the loop for each client?
-
+        # Create new event loop in a new thread
         loop = asyncio.new_event_loop()
         set_dc_event_loop(loop)
         thread = EventLoopThread(loop)
@@ -222,6 +220,13 @@ class Client:
     def __exit__(self, *args):
         self.stop()
 
+    async def __aenter__(self):
+        self.start()
+        return self
+
+    async def __aexit__(self, *excinfo):
+        self.stop()
+
     @tracer.start_as_current_span("get_backends")
     def get_backends(self) -> dict[UUID, BackendClient]:
         if not self.is_active:
@@ -231,97 +236,8 @@ class Client:
         ).result()
         return self.runtime.backend_clients
 
-
-class AsyncClient(Client):
-    """AsyncClient API for dataClay.
-
-    Usually you create client instance and call start() method to initialize it.
-
-        from dataclay import AsyncClient
-        client = AsyncClient(host="127.0.0.1")
-        await client.start()
-    """
-
-    @tracer.start_as_current_span("start")
-    def start(self):
-        """Start the client runtime"""
-
-        if self.is_active:
-            logger.warning("Client already active. Ignoring")
-            return
-
-        logger.info("Starting client runtime")
-
-        loop = asyncio.new_event_loop()
-        set_dc_event_loop(loop)
-        thread = EventLoopThread(loop)
-        thread.start()
-
-        # TODO: Change to event instead of sleep
-
-        # Replace settings
-        self.previous_settings = settings.client
-        settings.client = self.settings
-
-        # Create and replace runtime
-        self.previous_runtime = get_runtime()
-
-        if settings.client.proxy_enabled:
-            logger.debug(
-                "Using proxy connection to %s:%s",
-                settings.client.proxy_host,
-                settings.client.proxy_port,
-            )
-            self.runtime = ClientRuntime(settings.client.proxy_host, settings.client.proxy_port)
-        else:
-
-            self.runtime = ClientRuntime(
-                settings.client.dataclay_host, settings.client.dataclay_port
-            )
-            future = asyncio.run_coroutine_threadsafe(self.runtime.start(), loop)
-            future.result()
-
-        set_runtime(self.runtime)
-
-        session_var.set(
-            {"dataset_name": settings.client.dataset, "username": settings.client.username}
-        )
-
-        # Cache the dataclay_id, to avoid later request
-        # self.runtime.dataclay_id
-
-        self.is_active = True
-
-    @tracer.start_as_current_span("stop")
-    async def stop(self):
-        """Stop the client runtime"""
-        if not self.is_active:
-            logger.warning("Client is not active. Ignoring")
-            return
-
-        logger.info("Stopping client runtime")
-        future = asyncio.run_coroutine_threadsafe(self.runtime.stop(), get_dc_event_loop())
-        await asyncio.wrap_future(future)
-        settings.client = self.previous_settings
-        set_runtime(self.previous_runtime)
-        self.is_active = False
-
-    def __del__(self):
-        pass
-
-    def __enter__(self):
-        self.start()
-        return self
-
-    async def __aenter__(self):
-        self.start()
-        return self
-
-    async def __aexit__(self, *excinfo):
-        await self.stop()
-
-    @tracer.start_as_current_span("get_backends")
-    async def get_backends(self) -> dict[UUID, BackendClient]:
+    @tracer.start_as_current_span("a_get_backends")
+    async def a_get_backends(self) -> dict[UUID, BackendClient]:
         if not self.is_active:
             raise RuntimeError("Client is not active")
         future = asyncio.run_coroutine_threadsafe(
