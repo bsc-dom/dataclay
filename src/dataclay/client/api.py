@@ -159,10 +159,9 @@ class Client:
         # Create new event loop in a new thread
         loop = asyncio.new_event_loop()
         set_dc_event_loop(loop)
-        thread = EventLoopThread(loop)
-        thread.start()
-
-        # TODO: Event ready
+        event_loop_thread = EventLoopThread(loop)
+        event_loop_thread.start()
+        event_loop_thread.ready.wait()
 
         # Replace settings
         self.previous_settings = settings.client

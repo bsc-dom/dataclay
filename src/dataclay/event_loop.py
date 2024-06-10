@@ -24,11 +24,13 @@ class EventLoopThread(threading.Thread):
     def __init__(self, loop):
         super().__init__(daemon=True, name="EventLoopThread")
         self.loop = loop
+        self.ready = threading.Event()
 
     def run(self):
-        print("Thread started: " + self.name)
+        print("Starting event loop in new thread")
+        self.ready.set()
         self.loop.run_forever()
-        print("Thread finished: " + self.name)
+        print("Event loop stopped")
 
 
 def run_dc_coroutine(func: Awaitable, *args, **kwargs):
