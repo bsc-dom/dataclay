@@ -4,13 +4,13 @@ The dataClay documentation is generated using [Sphinx](https://www.sphinx-doc.or
 
 ## Manual Deployment
 
-In order to generate the documentation, you need to install the following dependencies:
+In order to generate the documentation, you need to install the following dependencies (note that the command must be run from the root of the repository):
 
 ```bash
 pip install -e .[docs]
 ```
 
-Then, you can generate the documentation by running:
+Then, you can generate the documentation by running (from the `dataclay/docs` directory):
 
 ```bash
 make html

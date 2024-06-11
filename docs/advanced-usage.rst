@@ -112,6 +112,42 @@ It is also possible to create versions from other versions::
 .. example with compss @task
 
 
+
+Asynchronous Operations
+-----------------------
+
+The dataClay runtime is asynchronous by default. This means that all dataClay operations are 
+executed as tasks in an event loop which is running in a separate thread. 
+In the previous examples, we have seen the synchronous version of the dataClay operations,
+which block the current thread until the operation is completed. This may be sufficient for
+most use cases, but in some cases, it may be necessary to execute multiple operations concurrently
+to improve performance for I/O-bound applications.
+
+All DataClayObject methods have an asynchronous version that can be called using the ``await`` keyword::
+
+    async def main():
+        client = Client()
+        client.start()
+
+        # Print the available backends using the asynchronous version of the method
+        print(await client.a_get_backends())
+
+        employee_1 = Employee("John", 1000.0)
+        employee_2 = Employee("Jane", 2000.0)
+
+        # Use gather to execute multiple make_persistent concurrently
+        await asyncio.gather(
+            employee_1.a_make_persistent(),
+            employee_2.a_make_persistent()
+        )
+
+    if __name__ == "__main__":
+        asyncio.run(main())
+
+.. example for async attribute access
+.. example for async activemethod
+
+
 Multithreading
 --------------
 
