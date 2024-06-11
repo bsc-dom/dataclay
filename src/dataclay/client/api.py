@@ -208,9 +208,14 @@ class Client:
         settings.client = self.previous_settings
         set_runtime(self.previous_runtime)
         self.is_active = False
+        logger.info("Client runtime stopped")
 
     def __del__(self):
-        self.stop()
+        # BUG: When calling stop() from __del__, it hangs the program at `run_coroutine_threadsafe`
+        # self.stop()
+        if self.is_active:
+            logger.warning("Client instance deleted without calling stop() for a clean shutdown")
+        pass
 
     def __enter__(self):
         self.start()
