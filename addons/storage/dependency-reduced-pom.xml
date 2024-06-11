@@ -113,10 +113,10 @@
     </dependency>
   </dependencies>
   <properties>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <maven.compiler.source>1.8</maven.compiler.source>
     <protoc.version>3.22.3</protoc.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <grpc.version>1.56.0</grpc.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
 </project>

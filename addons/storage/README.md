@@ -12,7 +12,7 @@ java -cp target/StorageItf-1.0-SNAPSHOT.jar storage.StorageItf
 First load dataclay
 
 ```bash
-module load DATACLAY
+module load dataclay
 module load COMPSs
 ```
 
@@ -24,7 +24,8 @@ enqueue_compss \
 --storage_props=$DATACLAY_HOME/storage/storage_props_example \
 --classpath=$DATACLAY_HOME/storage/StorageItf-1.0.jar \
 --pythonpath=$DATACLAY_PYTHONPATH \
---qos=debug \
+--project_name="bsc19" \
+--qos=gp_debug \
 client.py
 ```
 
