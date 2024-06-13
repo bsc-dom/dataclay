@@ -14,7 +14,7 @@ ignore_fields = frozenset(["__class__", "__getattr__", "__getattribute__", "__se
                            "__reduce_ex__", "__dict__", "__module__"])
 
 local_fields = frozenset(["_dc_meta", "_dc_is_local", "_dc_is_loaded", "_dc_is_registered",
-                          "_dc_is_replica"])
+                          "_dc_is_replica", "__dict__"])
 
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ class AlienDataClayObject(DataClayObject, Generic[T]):
         methods.
         """
         try:
-            return cls._dc_proxy_classes_cache[cls]
+            return cls._dc_proxy_classes_cache[extraneous_class]
         except KeyError:
             cls_namespace = {}
             for name in dir(extraneous_class):
@@ -115,12 +115,12 @@ class AlienDataClayObject(DataClayObject, Generic[T]):
                 asyncio.run_coroutine_threadsafe(
                     get_runtime().data_manager.load_object(self), get_dc_event_loop()
                 ).result()
-            return object.__getattribute__(self, name)
+            return getattr(self._dc_base_object, name)
         else:
             logger.debug("local get")
 
             return asyncio.run_coroutine_threadsafe(
-                get_runtime().call_remote_method(self, "__getattribute__", (self.name,), {}),
+                get_runtime().call_remote_method(self, "__getattribute__", (name,), {}),
                 get_dc_event_loop(),
             ).result()
         
@@ -133,7 +133,7 @@ class AlienDataClayObject(DataClayObject, Generic[T]):
                 asyncio.run_coroutine_threadsafe(
                     get_runtime().data_manager.load_object(self), get_dc_event_loop()
                 ).result()
-            return object.__setattr__(self, name, value)
+            setattr(self._dc_base_object, name, value)
         else:
             logger.debug("remote set")
             return asyncio.run_coroutine_threadsafe(
@@ -150,7 +150,7 @@ class AlienDataClayObject(DataClayObject, Generic[T]):
                 asyncio.run_coroutine_threadsafe(
                     get_runtime().data_manager.load_object(self), get_dc_event_loop()
                 ).result()
-            return object.__delattr__(self, name)
+            delattr(self._dc_base_object, name)
         else:
             logger.debug("remote del")
             return asyncio.run_coroutine_threadsafe(
