@@ -6,5 +6,5 @@ API Reference
    dataclay.dataclay_object
    dataclay.client
    dataclay.backend
-   virtual_dco
+   aliendco
    annotations

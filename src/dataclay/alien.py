@@ -1,16 +1,11 @@
 import asyncio
 import functools
-import inspect
 import logging
-import traceback
 from typing import Generic, Type, TypeVar, ClassVar
 
 from .dataclay_object import DataClayObject
-
 from .event_loop import get_dc_event_loop
-
 from .config import get_runtime
-from dataclay.metadata.kvdata import ObjectMetadata
 
 
 ignore_fields = frozenset(["__class__", "__getattr__", "__getattribute__", "__setattr__", 
@@ -25,14 +20,14 @@ local_fields = frozenset(["_dc_meta", "_dc_is_local", "_dc_is_loaded", "_dc_is_r
 logger = logging.getLogger(__name__)
 
 def virtualactivemethod(func):
-    """Internal decorator for VirtualDataClayObject methods.
+    """Internal decorator for AlienDataClayObject methods.
     
     This is based on activemethod but with slight changes to accomodate its
     usage.
     """
 
     @functools.wraps(func)
-    def wrapper(self: VirtualDataClayObject, *args, **kwargs):
+    def wrapper(self: AlienDataClayObject, *args, **kwargs):
         try:
             # Example to make __init__ active:
             # if func.__name__ == "__init__" and not self._dc_is_registered:
@@ -66,8 +61,8 @@ def virtualactivemethod(func):
 
 T = TypeVar("T")
 
-class VirtualDataClayObject(DataClayObject, Generic[T]):
-    """Base class for having Virtual Persistent Objects.
+class AlienDataClayObject(DataClayObject, Generic[T]):
+    """Base class for having Alien Persistent Objects.
 
     This class is used to create a proxy-like Python object and leverage
     dataClay features on non-DataClayObject instances.
@@ -77,7 +72,7 @@ class VirtualDataClayObject(DataClayObject, Generic[T]):
     inappropriate. For example, this class can accommodate the use of NumPy
     arrays or Pandas DataFrames.
     """
-    _dc_virtual_classes_cache: ClassVar[dict] = dict()
+    _dc_proxy_classes_cache: ClassVar[dict] = dict()
     _dc_base_object: T
 
     @classmethod
@@ -85,12 +80,12 @@ class VirtualDataClayObject(DataClayObject, Generic[T]):
         """Create a new class (type instance) for an extraneous class.
         
         This class method will be called once per class to create the
-        specialized virtual class mimicking the extraneous one. This method
+        specialized proxy class mimicking the extraneous one. This method
         introspects the extraneous class and creates the appropriate active
         methods.
         """
         try:
-            return cls._dc_virtual_classes_cache[cls]
+            return cls._dc_proxy_classes_cache[cls]
         except KeyError:
             cls_namespace = {}
             for name in dir(extraneous_class):
@@ -99,15 +94,15 @@ class VirtualDataClayObject(DataClayObject, Generic[T]):
                     cls_namespace[name] = virtualactivemethod(subject)
 
             new_cls = type("%s[%s.%s]" % (cls.__name__, extraneous_class.__module__, extraneous_class.__name__), (cls,), cls_namespace)
-            cls._dc_virtual_classes_cache[extraneous_class] = new_cls
+            cls._dc_proxy_classes_cache[extraneous_class] = new_cls
             return new_cls
     
     def __new__(cls, obj: T, *args, **kwargs):
-        """Creates a VirtualDataClayObject instance referencing `obj`."""
+        """Creates a AlienDataClayObject instance referencing `obj`."""
         proxy_class = cls._create_class_proxy(obj.__class__)
 
         instance = DataClayObject.__new__(proxy_class)
-        object.__getattribute__(instance, "_dc_meta").class_name = f"VirtualDataClayObject[{type(obj).__module__}.{type(obj).__name__}]"
+        object.__getattribute__(instance, "_dc_meta").class_name = f"AlienDataClayObject[{type(obj).__module__}.{type(obj).__name__}]"
         object.__setattr__(instance, "_dc_base_object", obj)
         return instance
     
@@ -168,7 +163,3 @@ class VirtualDataClayObject(DataClayObject, Generic[T]):
 
     def __setstate__(self, state):
         object.__setattr__(self, "_dc_base_object", state)
-
-    def __repr__(self):
-        return f"<VirtualDataClayObject[{type(self._dc_base_object).__module__}" \
-               f".{type(self._dc_base_object).__name__}] instance with ObjectID={self._dc_meta.id}>"
