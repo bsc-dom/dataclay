@@ -14,7 +14,6 @@ import functools
 import inspect
 import logging
 import threading
-import traceback
 from collections import ChainMap
 from typing import TYPE_CHECKING, Annotated, Any, Optional, Type, TypeVar, get_origin
 
