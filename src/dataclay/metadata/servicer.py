@@ -49,7 +49,7 @@ async def serve():
         )
     except AlreadyExistError:
         logger.info("MetadataService already registered with id %s", settings.dataclay_id)
-        settings.dataclay_id = await metadata_api.get_dataclay("this").id
+        settings.dataclay_id = (await metadata_api.get_dataclay("this")).id
     else:
         await metadata_api.new_superuser(
             settings.root_username, settings.root_password, settings.root_dataset
