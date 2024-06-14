@@ -1,0 +1,54 @@
+services:
+  redis:
+    image: redis:latest
+    volumes:
+      - ./redis-data:/data
+
+  metadata-service:
+    image: "ghcr.io/bsc-dom/dataclay:edge"
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_ID=e93305a3-aa81-4796-87fa-380572eb3744
+      - DATACLAY_METADATA_PORT=16587
+    command: python -m dataclay.metadata
+
+  backend_alpha:
+    image: "ghcr.io/bsc-dom/dataclay:edge"
+    depends_on:
+      - redis
+      - metadata-service
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_BACKEND_ID=278011a0-b532-481e-a4fc-b83dec6b1fc8
+      - DATACLAY_BACKEND_NAME=BackendAlpha
+    command: python -m dataclay.backend
+    volumes:
+      - ./model:/workdir/model:ro
+      - ./backend-alpha-data:/data/storage
+
+  backend_bravo:
+    image: "ghcr.io/bsc-dom/dataclay:edge"
+    depends_on:
+      - redis
+      - metadata-service
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_BACKEND_ID=756ce396-b0fa-47a8-b501-26943d343b79
+      - DATACLAY_BACKEND_NAME=BackendBravo
+    command: python -m dataclay.backend
+    volumes:
+      - ./model:/workdir/model:ro
+      - ./backend-bravo-data:/data/storage
+    
+  proxy:
+    image: "ghcr.io/bsc-dom/dataclay:edge"
+    depends_on:
+      - metadata-service
+    ports:
+      - 8676:8676
+    environment:
+      - DATACLAY_PROXY_MDS_HOST=metadata-service
+      - DATACLAY_KV_HOST=redis
+    command: python -m dataclay.proxy
