@@ -23,6 +23,7 @@ from dataclay.config import (
     settings,
 )
 from dataclay.event_loop import EventLoopThread, get_dc_event_loop, set_dc_event_loop
+from dataclay.proxy import generate_jwt
 from dataclay.runtime import ClientRuntime
 from dataclay.utils.telemetry import trace
 
@@ -100,6 +101,9 @@ class Client:
 
     is_active: bool = False
 
+    _token: bytes
+    _TOKEN_EXPIRATION = 24 * 30
+
     def __init__(
         self,
         host: Optional[str] = None,
@@ -132,6 +136,7 @@ class Client:
             settings_kwargs["proxy_port"] = proxy_port
             settings_kwargs["proxy_enabled"] = True
 
+        self._token = b""
         self.settings = ClientSettings(**settings_kwargs)
 
         start_telemetry()
@@ -177,6 +182,10 @@ class Client:
                 settings.client.proxy_port,
             )
             self.runtime = ClientRuntime(settings.client.proxy_host, settings.client.proxy_port)
+            # Generate the JWT(JSON web token)
+            self._token = generate_jwt(
+                settings.client.password, settings.client.username, self._TOKEN_EXPIRATION
+            )
         else:
             self.runtime = ClientRuntime(
                 settings.client.dataclay_host, settings.client.dataclay_port
@@ -188,7 +197,11 @@ class Client:
         set_runtime(self.runtime)
 
         session_var.set(
-            {"dataset_name": settings.client.dataset, "username": settings.client.username}
+            {
+                "dataset_name": settings.client.dataset,
+                "username": settings.client.username,
+                "token": self._token,
+            }
         )
 
         # Cache the dataclay_id, to avoid later request

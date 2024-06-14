@@ -7,7 +7,7 @@ services:
       - 6379:6379
 
   proxy:
-    image: "ghcr.io/bsc-dom/dataclay:edge"
+    image: "ghcr.io/bsc-dom/dataclay:dev"
     ports:
       - 8676:8676
     depends_on:
@@ -22,22 +22,19 @@ services:
     volumes:
       - ./proxy_config.py:/workdir/proxy_config.py
       - ./middleware.py:/workdir/middleware.py
+      - ./data:/data
 
   metadata-service:
-    image: "ghcr.io/bsc-dom/dataclay:edge"
+    image: "ghcr.io/bsc-dom/dataclay:dev"
     depends_on:
       - redis
     environment:
       - DATACLAY_KV_HOST=redis
-      - DATACLAY_PASSWORD=s3cret
-      - DATACLAY_USERNAME=testuser
-      - DATACLAY_DATASET=testdata
-      - DATACLAY_METADATA_ENABLE_HEALTHCHECK=True
-      - DATACLAY_LOGLEVEL=INFO
+      - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.metadata
 
   backend:
-    image: "ghcr.io/bsc-dom/dataclay:edge"
+    image: "ghcr.io/bsc-dom/dataclay:dev"
     depends_on:
       - redis
     environment:

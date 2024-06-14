@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from uuid import UUID
 
@@ -14,6 +15,9 @@ BACKEND_METHODS = [
     "RegisterObjects",
     "MakePersistent",
     "CallActiveMethod",
+    "GetObjectAttribute",
+    "SetObjectAttribute",
+    "DelObjectAttribute",
     "GetObjectProperties",
     "UpdateObjectProperties",
     "NewObjectVersion",
@@ -79,7 +83,7 @@ class BackendMeta(type):
                     logger.info("Middleware %r has blocked method %s" % (mid, method_name))
                     return Empty()
                 else:
-                    stub = self._get_stub(context)
+                    stub = asyncio.run(self._get_stub(context))
                     method_to_call = getattr(stub, method_name)
                     return method_to_call(request)
 

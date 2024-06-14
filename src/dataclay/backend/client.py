@@ -151,6 +151,7 @@ class BackendClient:
         metadata = self.metadata_call + [
             ("dataset-name", current_context["dataset_name"]),
             ("username", current_context["username"]),
+            ("authorization", current_context["token"]),
         ]
 
         response = await self.stub.CallActiveMethod(request, metadata=metadata)
@@ -166,7 +167,18 @@ class BackendClient:
             object_id=str(object_id),
             attribute=attribute,
         )
-        response = await self.stub.GetObjectAttribute(request, metadata=self.metadata_call)
+        current_context = session_var.get()
+        metadata = self.metadata_call + [
+            ("username", current_context["username"]),
+            ("authorization", current_context["token"]),
+        ]
+        response = await self.stub.GetObjectAttribute(request, metadata=metadata)
+        current_context = session_var.get()
+        metadata = self.metadata_call + [
+            ("username", current_context["username"]),
+            ("authorization", current_context["token"]),
+        ]
+        response = await self.stub.GetObjectAttribute(request, metadata=metadata)
         return response.value, response.is_exception
 
     @grpc_aio_error_handler
@@ -178,7 +190,12 @@ class BackendClient:
             attribute=attribute,
             serialized_attribute=serialized_attribute,
         )
-        response = await self.stub.SetObjectAttribute(request, metadata=self.metadata_call)
+        current_context = session_var.get()
+        metadata = self.metadata_call + [
+            ("username", current_context["username"]),
+            ("authorization", current_context["token"]),
+        ]
+        response = await self.stub.SetObjectAttribute(request, metadata=metadata)
         return response.value, response.is_exception
 
     @grpc_aio_error_handler
@@ -187,7 +204,12 @@ class BackendClient:
             object_id=str(object_id),
             attribute=attribute,
         )
-        response = await self.stub.DelObjectAttribute(request, metadata=self.metadata_call)
+        current_context = session_var.get()
+        metadata = self.metadata_call + [
+            ("username", current_context["username"]),
+            ("authorization", current_context["token"]),
+        ]
+        response = await self.stub.DelObjectAttribute(request, metadata=metadata)
         return response.value, response.is_exception
 
     @grpc_aio_error_handler
