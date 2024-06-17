@@ -21,4 +21,18 @@ Highlights
 - New experimental feature: :class:`~dataclay.alien.AlienDataClayObject`. See :doc:`/alien-objects` for a detailed
   explanation.
 - New microservice: the proxy. This can be used to circumvent NAT networks (e.g. Docker deployments) and also
-  provides a more secure way to access the dataClay services. 
+  provides a more secure way to access the dataClay services. See :doc:`/deployment/proxy` for more information.
+
+Other changes
+~~~~~~~~~~~~~
+
+- Basic support for JWT tokens in the proxy.
+- Starting the client automatically starts a new thread and an event loop within. This is used internally to
+  handle the asynchronous calls and gRPC clients.
+- Updates in the orchestration scripts.
+- Added explicit ``get_attribute``, ``set_attribute`` and ``del_attribute`` RPC calls on the backend.
+  This is transparent for the applications (read, set and delete of attributes continue to work),
+  but allows the introduction of fine-grain mechanisms on the proxy and also makes the debugging process clearer.
+- Offering a new :doc:`Zenoh bridging mechanism </contrib/zenoh>` (similar to the :doc:`MQTT </contrib/mqtt>` one).
+- Removed the session and password authentication. This feature will be handled by the proxy going forward.
+- Added healthcheck mechanisms (at the gRPC level) to monitor the status of the dataClay services.
