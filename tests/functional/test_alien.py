@@ -1,8 +1,10 @@
-import pytest
 from datetime import datetime
 
-from dataclay import DataClayObject, AlienDataClayObject
-from dataclay.contrib.modeltest.alien import Person, Dog
+import pytest
+
+from dataclay import AlienDataClayObject, DataClayObject
+from dataclay.contrib.modeltest.alien import Dog, Person
+
 
 def test_alien_builtin(client):
     """Test a simple make_persistent on a builtin type"""
