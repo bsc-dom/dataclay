@@ -36,6 +36,7 @@ dataClay
 
    reference/index
    contrib/index
+   grpc_api
 
 .. toctree::
    :hidden:

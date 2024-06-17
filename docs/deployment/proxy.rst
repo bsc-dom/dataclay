@@ -24,3 +24,6 @@ The following environment variables **must** be defined:
 You can subclass the :class:`~dataclay.proxy.MiddlewareBase` class to define a specific behavior of the proxy service. See
 the `proxy_acl example <https://github.com/bsc-dom/dataclay/tree/main/examples/proxy_acl>`_ for a more convoluted example
 of how to use the proxy service with custom middleware definitions.
+
+The complete list of gRPC calls (i.e. the ones that the proxy service can handle) is detailed in
+:doc:`/grpc_api`.
