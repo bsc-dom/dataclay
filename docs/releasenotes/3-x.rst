@@ -23,7 +23,7 @@ Other changes
 - Support to tracing with OpenTelemetry.
 - Other minor optimizations and bug fixes.
 
-3.1 (Novembre 2023)
+3.1 (November 2023)
 -------------------
 
 Highlights
