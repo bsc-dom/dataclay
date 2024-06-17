@@ -1,0 +1,24 @@
+dataClay Claystone (4.x)
+========================
+
+We will be naming our major releases, starting now. So welcome to the new version `Claystone`,
+which is dataClay 4.x.
+
+4.0 (June 2024)
+---------------
+
+It has been a year of dataClay 3.x. This 4.0 version brings almost no breaking changes, but there
+are notorious architecture changes and new features.
+
+Highlights
+~~~~~~~~~~
+
+- Internal refactor to leverage the ``asyncio`` library (along the asynchronous implementation
+  of the gRPC library, i.e. `gRPC AsyncIO API <https://grpc.github.io/grpc/python/grpc_asyncio.html>`_).
+  These changes should be retrocompatible, but you can take advantage of the new asynchronous mechanisms
+  by using the homonomous methods in the client API (e.g. :meth:`~dataclay.DataClayObject.a_make_persistent`
+  instead of :meth:`~dataclay.DataClayObject.make_persistent`).
+- New experimental feature: :class:`~dataclay.alien.AlienDataClayObject`. See :doc:`/alien-objects` for a detailed
+  explanation.
+- New microservice: the proxy. This can be used to circumvent NAT networks (e.g. Docker deployments) and also
+  provides a more secure way to access the dataClay services. 

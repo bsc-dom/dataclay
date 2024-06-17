@@ -1,12 +1,9 @@
 """
-Non-Volatile Memory support
-===========================
-
 dataClay includes support for non-volatile memory and in-memory processing.
 
 If you want to manually set up the placement of data you can implement it
 within active methods and the data model implementation. However, dataClay 
-ships the :class:`~InNVM` annotation; this offers a transparent and automatic
+ships the :class:`InNVM` annotation; this offers a transparent and automatic
 in-NVM placement for class attributes.
 """
 from dataclay.annotated import PropertyTransformer

@@ -330,6 +330,19 @@ class DataClayObject:
 
     @tracer.start_as_current_span("sync")
     async def _sync(self):
+        if not self._dc_is_registered:
+            raise ObjectNotRegisteredError(self._dc_meta.id)
+        if self._dc_is_local and not self._dc_is_replica:
+            raise ObjectIsMasterError(self._dc_meta.id)
+        await get_runtime().sync_object_metadata(self)
+
+    async def a_sync(self):
+        """Async version of :meth:`sync`."""
+        loop = get_dc_event_loop()
+        future = asyncio.run_coroutine_threadsafe(self._sync(), loop)
+        return await asyncio.wrap_future(future)
+
+    def sync(self):
         """Synchronizes the object metadata
 
         It will always retrieve the current metadata from the kv database.
@@ -339,18 +352,6 @@ class DataClayObject:
             ObjectNotRegisteredError: If the object is not registered.
             ObjectIsMasterError: If the object is the master.
         """
-        if not self._dc_is_registered:
-            raise ObjectNotRegisteredError(self._dc_meta.id)
-        if self._dc_is_local and not self._dc_is_replica:
-            raise ObjectIsMasterError(self._dc_meta.id)
-        await get_runtime().sync_object_metadata(self)
-
-    async def a_sync(self):
-        loop = get_dc_event_loop()
-        future = asyncio.run_coroutine_threadsafe(self._sync(), loop)
-        return await asyncio.wrap_future(future)
-
-    def sync(self):
         loop = get_dc_event_loop()
         future = asyncio.run_coroutine_threadsafe(self.a_sync(), loop)
         return future.result()
@@ -363,16 +364,6 @@ class DataClayObject:
     async def _make_persistent(
         self, alias: Optional[str] = None, backend_id: Optional[UUID] = None
     ):
-        """Makes the object persistent.
-
-        Args:
-            alias: Alias of the object. If None, the object will not have an alias.
-            backend_id: ID of the backend where the object will be stored. If None, the object
-                will be stored in a random backend.
-
-        Raises:
-            KeyError: If the backend_id is not registered in dataClay.
-        """
         if self._dc_is_registered:
             logger.info("(%s) Object is already registered", self._dc_meta.id)
             if backend_id:
@@ -385,12 +376,21 @@ class DataClayObject:
     async def a_make_persistent(
         self, alias: Optional[str] = None, backend_id: Optional[UUID] = None
     ):
+        """Async version of :meth:`make_persistent`."""
         future = asyncio.run_coroutine_threadsafe(
             self._make_persistent(alias, backend_id), get_dc_event_loop()
         )
         return await asyncio.wrap_future(future)
 
     def make_persistent(self, alias: Optional[str] = None, backend_id: Optional[UUID] = None):
+        """Makes the object persistent.
+
+        :param alias: Alias of the object. If None, the object will not have an alias.
+        :param backend_id: ID of the backend where the object will be stored. If None, the object
+            will be stored in a random backend.
+
+        :raises: KeyError: If the backend_id is not registered in dataClay.
+        """
         future = asyncio.run_coroutine_threadsafe(
             self._make_persistent(alias, backend_id), get_dc_event_loop()
         )
@@ -399,6 +399,16 @@ class DataClayObject:
     @classmethod
     @tracer.start_as_current_span("get_by_id")
     async def _get_by_id(cls, object_id: UUID) -> DataClayObject:
+        return await get_runtime().get_object_by_id(object_id)
+
+    @classmethod
+    async def a_get_by_id(cls, object_id: UUID) -> DataClayObject:
+        """Async version of :meth:`get_by_id`."""
+        future = asyncio.run_coroutine_threadsafe(cls._get_by_id(object_id), get_dc_event_loop())
+        return await asyncio.wrap_future(future)
+
+    @classmethod
+    def get_by_id(cls, object_id: UUID) -> DataClayObject:
         """Returns the object with the given id.
 
         Args:
@@ -410,15 +420,6 @@ class DataClayObject:
         Raises:
             DoesNotExistError: If the object does not exist.
         """
-        return await get_runtime().get_object_by_id(object_id)
-
-    @classmethod
-    async def a_get_by_id(cls, object_id: UUID) -> DataClayObject:
-        future = asyncio.run_coroutine_threadsafe(cls._get_by_id(object_id), get_dc_event_loop())
-        return await asyncio.wrap_future(future)
-
-    @classmethod
-    def get_by_id(cls, object_id: UUID) -> DataClayObject:
 
         # WARNING: This method must not be called from the same thread as the running event loop
         # or it will block the event loop. When unserializing dataClay objects, use "await dcloads"
@@ -432,6 +433,18 @@ class DataClayObject:
     @classmethod
     @tracer.start_as_current_span("get_by_alias")
     async def _get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
+        return await get_runtime().get_object_by_alias(alias, dataset_name)
+
+    @classmethod
+    async def a_get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
+        """Async version of :meth:`get_by_alias`."""
+        future = asyncio.run_coroutine_threadsafe(
+            cls._get_by_alias(alias, dataset_name), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
+
+    @classmethod
+    def get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
         """Returns the object with the given alias.
 
         Args:
@@ -445,17 +458,6 @@ class DataClayObject:
             DoesNotExistError: If the alias does not exist.
             DatasetIsNotAccessibleError: If the dataset is not accessible.
         """
-        return await get_runtime().get_object_by_alias(alias, dataset_name)
-
-    @classmethod
-    async def a_get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
-        future = asyncio.run_coroutine_threadsafe(
-            cls._get_by_alias(alias, dataset_name), get_dc_event_loop()
-        )
-        return await asyncio.wrap_future(future)
-
-    @classmethod
-    def get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
         future = asyncio.run_coroutine_threadsafe(
             cls._get_by_alias(alias, dataset_name), get_dc_event_loop()
         )
@@ -463,6 +465,14 @@ class DataClayObject:
 
     @tracer.start_as_current_span("add_alias")
     async def _add_alias(self, alias: str):
+        await get_runtime().add_alias(self, alias)
+
+    async def a_add_alias(self, alias: str):
+        """Async version of :meth:`add_alias`."""
+        future = asyncio.run_coroutine_threadsafe(self._add_alias(alias), get_dc_event_loop())
+        return await asyncio.wrap_future(future)
+
+    def add_alias(self, alias: str):
         """Adds an alias to the object.
 
         Args:
@@ -473,33 +483,39 @@ class DataClayObject:
             AttributeError: If the alias is an empty string.
             DataClayException: If the alias already exists.
         """
-        await get_runtime().add_alias(self, alias)
-
-    async def a_add_alias(self, alias: str):
-        future = asyncio.run_coroutine_threadsafe(self._add_alias(alias), get_dc_event_loop())
-        return await asyncio.wrap_future(future)
-
-    def add_alias(self, alias: str):
         future = asyncio.run_coroutine_threadsafe(self._add_alias(alias), get_dc_event_loop())
         return future.result()
 
     @tracer.start_as_current_span("get_aliases")
     async def _get_aliases(self) -> set[str]:
-        """Returns a set with all the aliases of the object."""
         aliases = await get_runtime().get_all_alias(self._dc_meta.dataset_name, self._dc_meta.id)
         return set(aliases)
 
     async def a_get_aliases(self) -> set[str]:
+        """Async version of :meth:`get_aliases`."""
         future = asyncio.run_coroutine_threadsafe(self._get_aliases(), get_dc_event_loop())
         return await asyncio.wrap_future(future)
 
     def get_aliases(self) -> set[str]:
+        """Returns a set with all the aliases of the object."""
         future = asyncio.run_coroutine_threadsafe(self._get_aliases(), get_dc_event_loop())
         return future.result()
 
     @classmethod
     @tracer.start_as_current_span("delete_alias")
     async def _delete_alias(cls, alias: str, dataset_name: str = None):
+        await get_runtime().delete_alias(alias, dataset_name=dataset_name)
+
+    @classmethod
+    async def a_delete_alias(cls, alias: str, dataset_name: str = None):
+        """Async version of :meth:`delete_alias`."""
+        future = asyncio.run_coroutine_threadsafe(
+            cls._delete_alias(alias, dataset_name), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
+
+    @classmethod
+    def delete_alias(cls, alias: str, dataset_name: str = None):
         """Removes the alias linked to an object.
 
         If this object is not referenced starting from a root object and no active session is
@@ -513,17 +529,6 @@ class DataClayObject:
             DoesNotExistError: If the alias does not exist.
             DatasetIsNotAccessibleError: If the dataset is not accessible.
         """
-        await get_runtime().delete_alias(alias, dataset_name=dataset_name)
-
-    @classmethod
-    async def a_delete_alias(cls, alias: str, dataset_name: str = None):
-        future = asyncio.run_coroutine_threadsafe(
-            cls._delete_alias(alias, dataset_name), get_dc_event_loop()
-        )
-        return await asyncio.wrap_future(future)
-
-    @classmethod
-    def delete_alias(cls, alias: str, dataset_name: str = None):
         future = asyncio.run_coroutine_threadsafe(
             cls._delete_alias(alias, dataset_name), get_dc_event_loop()
         )
@@ -531,6 +536,19 @@ class DataClayObject:
 
     @tracer.start_as_current_span("move")
     async def _move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
+        if not self._dc_is_registered:
+            await self.a_make_persistent(backend_id=backend_id)
+        else:
+            await get_runtime().send_objects([self], backend_id, False, recursive, remotes)
+
+    async def a_move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
+        """Async version of :meth:`move`."""
+        future = asyncio.run_coroutine_threadsafe(
+            self._move(backend_id, recursive, remotes), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
+
+    def move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
         """Moves the object to the specified backend.
 
         If the object is not registered, it will be registered with all its references
@@ -546,18 +564,6 @@ class DataClayObject:
         Raises:
             KeyError: If the backend_id is not registered in dataClay.
         """
-        if not self._dc_is_registered:
-            await self.a_make_persistent(backend_id=backend_id)
-        else:
-            await get_runtime().send_objects([self], backend_id, False, recursive, remotes)
-
-    async def a_move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
-        future = asyncio.run_coroutine_threadsafe(
-            self._move(backend_id, recursive, remotes), get_dc_event_loop()
-        )
-        return await asyncio.wrap_future(future)
-
-    def move(self, backend_id: UUID, recursive: bool = False, remotes: bool = True):
         future = asyncio.run_coroutine_threadsafe(
             self._move(backend_id, recursive, remotes), get_dc_event_loop()
         )
@@ -571,6 +577,18 @@ class DataClayObject:
     async def _new_version(
         self, backend_id: UUID = None, recursive: bool = False
     ) -> DataClayObject:
+        return await get_runtime().new_object_version(self, backend_id)
+
+    async def a_new_version(
+        self, backend_id: UUID = None, recursive: bool = False
+    ) -> DataClayObject:
+        """Async version of :meth:`new_version`."""
+        future = asyncio.run_coroutine_threadsafe(
+            self._new_version(backend_id, recursive), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
+
+    def new_version(self, backend_id: UUID = None, recursive: bool = False) -> DataClayObject:
         """Create a new version of the current object.
 
         Args:
@@ -584,17 +602,6 @@ class DataClayObject:
             ObjectNotRegisteredError: If the object is not registered in dataClay.
             KeyError: If the backend_id is not registered in dataClay.
         """
-        return await get_runtime().new_object_version(self, backend_id)
-
-    async def a_new_version(
-        self, backend_id: UUID = None, recursive: bool = False
-    ) -> DataClayObject:
-        future = asyncio.run_coroutine_threadsafe(
-            self._new_version(backend_id, recursive), get_dc_event_loop()
-        )
-        return await asyncio.wrap_future(future)
-
-    def new_version(self, backend_id: UUID = None, recursive: bool = False) -> DataClayObject:
         future = asyncio.run_coroutine_threadsafe(
             self._new_version(backend_id, recursive), get_dc_event_loop()
         )
@@ -602,18 +609,19 @@ class DataClayObject:
 
     @tracer.start_as_current_span("consolidate_version")
     async def _consolidate_version(self):
+        await get_runtime().consolidate_version(self)
+
+    async def a_consolidate_version(self):
+        """Async version of :meth:`consolidate_version`."""
+        future = asyncio.run_coroutine_threadsafe(self._consolidate_version(), get_dc_event_loop())
+        return await asyncio.wrap_future(future)
+
+    def consolidate_version(self):
         """Consolidate the current version of the object with the original one.
 
         Raises:
             ObjectIsNotVersionError: If the object is not a version.
         """
-        await get_runtime().consolidate_version(self)
-
-    async def a_consolidate_version(self):
-        future = asyncio.run_coroutine_threadsafe(self._consolidate_version(), get_dc_event_loop())
-        return await asyncio.wrap_future(future)
-
-    def consolidate_version(self):
         future = asyncio.run_coroutine_threadsafe(self._consolidate_version(), get_dc_event_loop())
         return future.result()
 
