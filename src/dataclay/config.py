@@ -6,18 +6,19 @@ import socket
 import uuid
 from typing import TYPE_CHECKING, Annotated, Literal, Optional, Union
 
-from pydantic import AliasChoices, Field, StringConstraints
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseSettings, Field, SecretStr, constr
 
 if TYPE_CHECKING:
     from dataclay.runtime import BackendRuntime, ClientRuntime
 
 
 class BackendSettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="dataclay_backend_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
-    )
-    id: Optional[uuid.UUID] = None
+    class Config:
+        env_prefix = "dataclay_backend_"
+        env_file = ".env"
+        secrets_dir = "/run/secrets"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4)
     name: Optional[str] = None
     host: str = socket.gethostbyname(socket.gethostname())
     port: int = 6867
@@ -26,9 +27,11 @@ class BackendSettings(BaseSettings):
 
 
 class MetadataSettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="dataclay_metadata_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
-    )
+    class Config:
+        env_prefix = "dataclay_metadata_"
+        env_file = ".env"
+        secrets_dir = "/run/secrets"
+
     host: str = socket.gethostbyname(socket.gethostname())
     port: int = 16587
     listen_address: str = "0.0.0.0"
@@ -36,9 +39,11 @@ class MetadataSettings(BaseSettings):
 
 
 class ProxySettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="dataclay_proxy_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
-    )
+    class Config:
+        env_prefix = "dataclay_proxy_"
+        env_file = ".env"
+        secrets_dir = "/run/secrets"
+
     port: int = 8676
     listen_address: str = "0.0.0.0"
     mds_host: str
@@ -49,38 +54,35 @@ class ProxySettings(BaseSettings):
 
 
 class ClientSettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="dc_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
-    )
+    class Config:
+        env_prefix = "dc_"
+        env_file = ".env"
+        secrets_dir = "/run/secrets"
+
     password: str = "admin"
     username: str = "admin"
     dataset: str = "admin"
     local_backend: Optional[str] = None
-    dataclay_host: str = Field(
-        default="localhost",
-        validation_alias=AliasChoices("dc_host", "dataclay_metadata_host", "dataclay_host"),
-    )
-    dataclay_port: int = Field(
-        default=16587,
-        validation_alias=AliasChoices("dc_port", "dataclay_metadata_port", "dataclay_port"),
-    )
+    dataclay_host: str = Field(default="localhost", alias="dc_host")
+    dataclay_port: int = Field(default=16587, alias="dc_port")
+
     proxy_enabled: bool = False
     proxy_host: str = "127.0.0.1"
     proxy_port: int = 8676
-    async_enabled: bool = False
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="dataclay_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
-    )
+    class Config:
+        env_prefix = "dataclay_"
+        env_file = ".env"
+        secrets_dir = "/run/secrets"
 
     # Other
     dataclay_id: Optional[uuid.UUID] = Field(default=None, alias="dataclay_id")
     storage_path: str = "/data/storage/"
     thread_pool_max_workers: Optional[int] = None
     healthcheck_max_workers: Optional[int] = None
-    loglevel: Annotated[str, StringConstraints(strip_whitespace=True, to_upper=True)] = "INFO"
+    loglevel: constr(strip_whitespace=True, to_upper=True) = "INFO"
     ephemeral: bool = False
 
     # Timeouts
@@ -97,15 +99,15 @@ class Settings(BaseSettings):
     ssl_target_authority: str = "proxy"
     ssl_target_ee_alias: str = "6867"
 
+    # root account
+    password: str = Field(default="admin")
+    username: str = Field(default="admin")
+    dataset: str = Field(default="admin")
+
     # Memory
     memory_threshold_high: float = 0.75
     memory_threshold_low: float = 0.50
     memory_check_interval: int = 10
-
-    # Root account
-    root_password: str = Field(default="admin", alias="dataclay_password")
-    root_username: str = Field(default="admin", alias="dataclay_username")
-    root_dataset: str = Field(default="admin", alias="dataclay_dataset")
 
     # Tracing
     service_name: Optional[str] = None

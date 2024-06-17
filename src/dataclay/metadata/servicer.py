@@ -51,9 +51,7 @@ async def serve():
         logger.info("MetadataService already registered with id %s", settings.dataclay_id)
         settings.dataclay_id = (await metadata_api.get_dataclay("this")).id
     else:
-        await metadata_api.new_superuser(
-            settings.root_username, settings.root_password, settings.root_dataset
-        )
+        await metadata_api.new_superuser(settings.username, settings.password, settings.dataset)
 
     # Initialize the servicer
     server = grpc.aio.server()

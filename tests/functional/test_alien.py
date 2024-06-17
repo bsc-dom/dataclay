@@ -54,10 +54,10 @@ def test_alien_pydantic_model(client):
     assert p.name == "Alice"
     assert p.age == 30
 
-    assert p.model_dump() == {"name": "Alice", "age": 30}
+    assert p.dict() == {"name": "Alice", "age": 30}
 
     same_person_json = {"name": "Alice", "age": 30}
-    same_person = AlienDataClayObject(Person.model_validate(same_person_json))
+    same_person = AlienDataClayObject(Person.parse_obj(same_person_json))
     same_person.make_persistent()
 
     assert same_person.name == p.name

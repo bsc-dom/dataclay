@@ -8,7 +8,12 @@ from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb
 
 
 class BackendServiceStub(object):
-    """Missing associated documentation comment in .proto file."""
+    """The BackendService provides the storage and active features of dataClay.
+
+    A typical dataClay deployment will have one or several backends depending on the available
+    resources of the system. Each backend is responsible for storing objects and executing methods
+    on them.
+    """
 
     def __init__(self, channel):
         """Constructor.
@@ -104,34 +109,80 @@ class BackendServiceStub(object):
 
 
 class BackendServiceServicer(object):
-    """Missing associated documentation comment in .proto file."""
+    """The BackendService provides the storage and active features of dataClay.
+
+    A typical dataClay deployment will have one or several backends depending on the available
+    resources of the system. Each backend is responsible for storing objects and executing methods
+    on them.
+    """
 
     def MakePersistent(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        MakePersistent(pickled_obj: list[bytes])
+
+        :param pickled_obj: List of pickled objects to make persistent.
+
+        Given a set of objects, store them inside dataClay (make them persistent).
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def CallActiveMethod(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        CallActiveMethod(object_id: str, method_name: str, args: bytes, kwargs: bytes) -> (bytes, bool)
+
+        :param object_id: ID of the object to call the method.
+        :param method_name: Name of the method to call.
+        :param args: Pickled arguments for the method.
+        :param kwargs: Pickled keyword arguments for the method.
+        :return: Pickled result of the method call and a flag to indicate that the result is an exception.
+
+        Call a method on an object stored in dataClay.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetObjectAttribute(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        GetObjectAttribute(object_id: str, attribute: str) -> (bytes, bool)
+
+        :param object_id: ID of the object to get the attribute.
+        :param attribute: Name of the attribute to get.
+        :return: Pickled value of the attribute and a flag to indicate if the result is an exception.
+
+        Get an attribute from an object stored in dataClay.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def SetObjectAttribute(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        SetObjectAttribute(object_id: str, attribute: str, serialized_attribute: bytes) -> (bytes, bool)
+
+        :param object_id: ID of the object to set the attribute.
+        :param attribute: Name of the attribute to set.
+        :param serialized_attribute: Pickled value of the attribute.
+        :return: Pickled result of the setter operation and a flag to indicate if the result is an exception.
+
+        Set an attribute into an object stored in dataClay.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def DelObjectAttribute(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        DelObjectAttribute(object_id: str, attribute: str) -> (bytes, bool)
+
+        :param object_id: ID of the object to delete the attribute.
+        :param attribute: Name of the attribute to delete.
+        :return: Pickled result of the delete operation and a flag to indicate if the result is an exception.
+
+        Delete an attribute from an object stored in dataClay.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -304,7 +355,12 @@ def add_BackendServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class BackendService(object):
-    """Missing associated documentation comment in .proto file."""
+    """The BackendService provides the storage and active features of dataClay.
+
+    A typical dataClay deployment will have one or several backends depending on the available
+    resources of the system. Each backend is responsible for storing objects and executing methods
+    on them.
+    """
 
     @staticmethod
     def MakePersistent(request,
