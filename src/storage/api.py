@@ -48,7 +48,7 @@ def getByID(object_md_json: str):
         The DataClayObject identified by the given object_md_json
     """
     loop = get_dc_event_loop()
-    object_md = ObjectMetadata.model_validate_json(object_md_json)
+    object_md = ObjectMetadata.parse_raw(object_md_json)
     return asyncio.run_coroutine_threadsafe(
         get_runtime().get_object_by_id(object_md.id, object_md), loop
     ).result()

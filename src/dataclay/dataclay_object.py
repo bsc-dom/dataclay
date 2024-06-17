@@ -368,7 +368,7 @@ class DataClayObject:
         If the object is NOT persistent, then this method returns None.
         """
         if self._dc_is_registered:
-            return self._dc_meta.model_dump_json()
+            return self._dc_meta.json()
         else:
             return None
 

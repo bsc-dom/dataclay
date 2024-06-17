@@ -134,9 +134,9 @@ class Client:
         # Set settings
         settings_kwargs = {}
         if host:
-            settings_kwargs["dataclay_host"] = host
+            settings_kwargs["dc_host"] = host
         if port:
-            settings_kwargs["dataclay_port"] = port
+            settings_kwargs["dc_port"] = port
         if username:
             settings_kwargs["username"] = username
         if password:
