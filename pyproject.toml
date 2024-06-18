@@ -66,6 +66,7 @@ telemetry = [
     "opentelemetry-instrumentation-grpc",
     "opentelemetry-instrumentation-redis",
 ]
+rest = ["fastapi", "uvicorn", "pydantic"]
 
 [project.scripts]
 dataclayctl = "dataclay.control.ctl:run"
