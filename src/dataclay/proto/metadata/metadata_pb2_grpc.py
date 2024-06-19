@@ -33,7 +33,14 @@ if _version_not_supported:
 
 
 class MetadataServiceStub(object):
-    """Missing associated documentation comment in .proto file."""
+    """
+    The Metadata Service is the interface between the Client and the metadata of the system.
+
+    All metadata operations (request and requests) performed by the client go through the Metadata Service.
+
+    Note that the actual metadata is persisted in a database, outside of this service. This service
+    is mostly stateless.
+    """
 
     def __init__(self, channel):
         """Constructor.
@@ -104,7 +111,14 @@ class MetadataServiceStub(object):
 
 
 class MetadataServiceServicer(object):
-    """Missing associated documentation comment in .proto file."""
+    """
+    The Metadata Service is the interface between the Client and the metadata of the system.
+
+    All metadata operations (request and requests) performed by the client go through the Metadata Service.
+
+    Note that the actual metadata is persisted in a database, outside of this service. This service
+    is mostly stateless.
+    """
 
     def NewAccount(self, request, context):
         """Account Manager
@@ -127,7 +141,10 @@ class MetadataServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def GetAllBackends(self, request, context):
-        """EE-SL information
+        """
+        GetAllBackends(from_backend: bool, force: bool) -> dict[str, Backend]
+
+        Get all backends registered in the system.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -179,7 +196,11 @@ class MetadataServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def Stop(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        Stop() -> None
+
+        Stop the Metadata Service. Finish all pending operations and close all connections.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -256,7 +277,14 @@ def add_MetadataServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class MetadataService(object):
-    """Missing associated documentation comment in .proto file."""
+    """
+    The Metadata Service is the interface between the Client and the metadata of the system.
+
+    All metadata operations (request and requests) performed by the client go through the Metadata Service.
+
+    Note that the actual metadata is persisted in a database, outside of this service. This service
+    is mostly stateless.
+    """
 
     @staticmethod
     def NewAccount(request,

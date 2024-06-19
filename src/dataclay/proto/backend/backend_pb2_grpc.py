@@ -213,73 +213,159 @@ class BackendServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def GetObjectProperties(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        GetObjectProperties(object_id: str) -> (bytes)
+
+        :param object_id: ID of the object to get the properties.
+        :return: Pickled properties of the object.
+
+        Get all the properties (i.e. attributes) of an object stored in dataClay.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def UpdateObjectProperties(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        UpdateObjectProperties(object_id: str, serialized_properties: bytes) -> None
+
+        :param object_id: ID of the object to update the properties.
+        :param serialized_properties: Pickled properties to update.
+
+        Update the properties (i.e. attributes) of an object stored in dataClay.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def SendObjects(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        SendObjects(object_ids: list[str], backend_id: str, make_replica: bool, recursive: bool, remotes: bool) -> None
+
+        :param object_ids: List of object IDs to send, from this backend to the backend specified by backend_id.
+        :param backend_id: ID of the backend to send the objects to.
+        :param make_replica: Flag to indicate if this operation is creating a replica.
+        :param recursive: Flag to indicate if the operation should be recursive.
+        :param remotes: Flag to indicate if the operation should include remote objects. If not set, only local objects are sent.
+
+        Start a send operation from this backend to a target backend.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def RegisterObjects(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        RegisterObjects(dict_bytes: list[bytes], make_replica: bool) -> None
+
+        :param dict_bytes: List of pickled dictionaries with object information to register.
+        :param make_replica: Flag to indicate if this operation is creating a replica.
+
+        Register a set of objects in this dataClay backend (and, consequently, trigger a metadata update).
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def NewObjectVersion(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        NewObjectVersion(object_id: str) -> str
+
+        :param object_id: ID of the object to create a new version.
+        :return: Information of the newly created object (i.e. new version object).
+
+        Create a new version of an object stored in dataClay.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ConsolidateObjectVersion(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        ConsolidateObjectVersion(object_id: str) -> None
+
+        :param object_id: ID of the object to consolidate.
+
+        Consolidate the versions of an object stored in dataClay. The ``object_id`` must be a version
+        object. All other versions will be invalidated after this.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ProxifyObject(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        ProxifyObject(object_id: str, new_object_id: str) -> None
+
+        :param object_id: ID of the object to proxify.
+        :param new_object_id: ID of the new object to create as a proxy.
+
+        Create a proxy object for an object stored in dataClay. It is used for internal purposes related 
+        to the versioning system.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ChangeObjectId(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        ChangeObjectId(object_id: str, new_object_id: str) -> None
+
+        :param object_id: ID of the object to change the ID.
+        :param new_object_id: New ID for the object.
+
+        Change the ID of an object stored in dataClay. It is used for internal purposes related to the 
+        versioning system.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def NewObjectReplica(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        NewObjectReplica(object_id: str, backend_id: str, recursive: bool, remotes: bool) -> None
+
+        :param object_id: ID of the object to create a replica.
+        :param backend_id: ID of the backend to create the replica.
+        :param recursive: Flag to indicate if the operation should be recursive.
+        :param remotes: Flag to indicate if the operation should include remote objects. If not set, only local objects are replicated.
+
+        Create a replica of an object stored in dataClay. As a result, this backend will contact the target backend
+        and create a replica there for the specified objects.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def FlushAll(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        FlushAll() -> None
+
+        Flush all the objects stored in this backend. This ensures that all in-memory state is persisted to the storage and
+        unloads all the objects from memory (freeing resources).
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def Stop(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        Stop() -> None
+
+        Cleanly stop the backend. This operation ensures tha all in-memory state is persisted and then
+        stops the running service (finishing the application).
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def Drain(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        Drain() -> None
+
+        Drain the backend. Transfer all the objects stored in this backend to other backends in the system.
+        This can be used to decomission a backend without losing any data.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
