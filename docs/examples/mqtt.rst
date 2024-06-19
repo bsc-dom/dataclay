@@ -24,7 +24,7 @@ Mosquitto configuration:
 In this example we will be using the mosquitto broker with the lowest level of configuration.
 
 .. literalinclude:: /../examples/mqtt/config/mosquitto.conf
-   :language: configuration
+   :language: apacheconf
    :caption: mosquitto.conf
 
 Then we can deploy dataclay using docker-compose. 

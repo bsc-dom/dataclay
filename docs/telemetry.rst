@@ -5,9 +5,6 @@ dataClay is instrumented with `OpenTelemetry <https://opentelemetry.io/>`_ to al
 distributed traces, metrics and logs.
 
 
-
-
-
 .. list-table::
    :header-rows: 1
 

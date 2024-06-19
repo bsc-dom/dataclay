@@ -9,7 +9,8 @@ dataClay
    user-guide
    main-concepts
    alien-objects
-   advanced-usage 
+   advanced-usage
+   telemetry
    examples/index
 
 .. toctree::
@@ -36,7 +37,6 @@ dataClay
 
    reference/index
    contrib/index
-   grpc_api
 
 .. toctree::
    :hidden:

@@ -95,6 +95,8 @@ class Client:
        client = Client(host="127.0.0.1")
        client.start()
 
+    All the Client configuration variables are detailed in :class:`ClientSettings`.
+
     :param host: Metadata Service host. It is mutually exclusive with `proxy_host`.
     :param port: Metadata Service port. Optional. Use if you want to override the default port.
     :param username: Username. Authentication and authorization happens only at the Proxy.

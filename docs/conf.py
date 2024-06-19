@@ -28,8 +28,8 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
+autodoc_member_order = "bysource"
 add_module_names = False
-
 
 # def linkcode_resolve(domain, info):
 #     if domain != "py":

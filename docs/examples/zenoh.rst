@@ -25,7 +25,7 @@ Zenoh configuration:
 In this example we will be using a configuration which will let Zenoh store the last value of each topic.
 
 .. literalinclude:: /../examples/zenoh/zenoh_docker/zenoh-conf.json5
-   :language: json5
+   :language: jsonnet
    :caption: zenoh-conf.json5
 
 Then we can deploy dataclay using docker-compose. 
