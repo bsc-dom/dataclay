@@ -89,9 +89,23 @@ class Client:
 
     Usually you create client instance and call start() method to initialize it.
 
-        from dataclay import client
-        client = dataclay.client(host="127.0.0.1")
-        client.start()
+    .. code-block:: python
+
+       from dataclay import Client
+       client = Client(host="127.0.0.1")
+       client.start()
+
+    All the Client configuration variables are detailed in :class:`ClientSettings`.
+
+    :param host: Metadata Service host. It is mutually exclusive with `proxy_host`.
+    :param port: Metadata Service port. Optional. Use if you want to override the default port.
+    :param username: Username. Authentication and authorization happens only at the Proxy.
+    :param password: `DEPRECATED`
+    :param dataset: Dataset name. All objects created by this client will be associated with this dataset.
+    :param local_backend: Name of the local backend. If set, the client will use this backend for all operations.
+    :param proxy_host: Proxy host. It is mutually exclusive with `host`. If this is set, this client will
+        connect to the proxy instead for communicating with the metadata service or any backend.
+    :param proxy_port: Proxy port. Optional. Use if you want to override the default port.
     """
 
     settings: ClientSettings
@@ -246,6 +260,11 @@ class Client:
 
     @tracer.start_as_current_span("get_backends")
     def get_backends(self) -> dict[UUID, BackendClient]:
+        """Get all backends available in the system.
+        
+        This method connects to the metadata service and retrieves an up-to-date
+        list of backends.
+        """
         if not self.is_active:
             raise RuntimeError("Client is not active")
         asyncio.run_coroutine_threadsafe(
@@ -255,6 +274,7 @@ class Client:
 
     @tracer.start_as_current_span("a_get_backends")
     async def a_get_backends(self) -> dict[UUID, BackendClient]:
+        """Asynchronous version of :meth:`get_backends`"""
         if not self.is_active:
             raise RuntimeError("Client is not active")
         future = asyncio.run_coroutine_threadsafe(

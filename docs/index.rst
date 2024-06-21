@@ -8,8 +8,9 @@ dataClay
 
    user-guide
    main-concepts
-   virtual-objects
-   advanced-usage 
+   alien-objects
+   advanced-usage
+   telemetry
    examples/index
 
 .. toctree::
@@ -18,9 +19,17 @@ dataClay
 
    deployment/envvars
    deployment/management
+   deployment/proxy
    deployment/docker-deployment
    deployment/hpc-manual-deployment
    deployment/compile-redis
+
+.. toctree::
+   :hidden:
+   :caption: Release Notes
+
+   releasenotes/3-x
+   releasenotes/4-x
 
 .. toctree::
    :hidden:
