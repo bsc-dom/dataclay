@@ -23,10 +23,11 @@ if TYPE_CHECKING:
 
 class BackendSettings(BaseSettings):
     """These settings are exclusive to the Backend service.
-    
+
     The configuration fields can be established through environment variables with the prefix ``DATACLAY_BACKEND_``.
     For example, to set the :attr:`host` field, you can set the environment variable ``DATACLAY_BACKEND_HOST``.
     """
+
     model_config = SettingsConfigDict(
         env_prefix="dataclay_backend_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
     )
@@ -52,6 +53,7 @@ class MetadataSettings(BaseSettings):
     The configuration fields can be established through environment variables with the prefix ``DATACLAY_METADATA_``.
     For example, to set the :attr:`host` field, you can set the environment variable ``DATACLAY_METADATA_HOST``.
     """
+
     model_config = SettingsConfigDict(
         env_prefix="dataclay_metadata_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
     )
@@ -68,9 +70,10 @@ class MetadataSettings(BaseSettings):
 
 class ProxySettings(BaseSettings):
     """These settings are exclusive to the Proxy service.
-    
+
     The configuration fields can be established through environment variables with the prefix ``DATACLAY_PROXY_``.
     For example, to set the :attr:`mds_host` field, you can set the environment variable ``DATACLAY_PROXY_MDS_HOST``."""
+
     model_config = SettingsConfigDict(
         env_prefix="dataclay_proxy_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
     )
@@ -90,10 +93,11 @@ class ProxySettings(BaseSettings):
 
 class ClientSettings(BaseSettings):
     """These settings are consumed by the dataClay :class:`~dataclay.client.api.Client`.
-    
+
     The configuration fields can be established through environment variables with the prefix ``DC_``.
     For example, to set the :attr:`dataset` field, you can set the environment variable ``DC_DATASET``.
     """
+
     model_config = SettingsConfigDict(
         env_prefix="dc_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
     )
@@ -132,6 +136,7 @@ class ClientSettings(BaseSettings):
 
 class Settings(BaseSettings):
     """Global configuration settings for dataClay."""
+
     model_config = SettingsConfigDict(
         env_prefix="dataclay_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
     )

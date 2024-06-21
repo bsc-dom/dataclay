@@ -261,7 +261,7 @@ class Client:
     @tracer.start_as_current_span("get_backends")
     def get_backends(self) -> dict[UUID, BackendClient]:
         """Get all backends available in the system.
-        
+
         This method connects to the metadata service and retrieves an up-to-date
         list of backends.
         """
