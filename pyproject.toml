@@ -54,6 +54,7 @@ dev = [
     "grpcio-tools",
     "black",
     "isort",
+    "coverage[toml]",
 ]
 bsc_mn = ["ansible", "ansible_runner", "python-dotenv"]
 docs = ["furo", "sphinx-copybutton"]
@@ -81,3 +82,17 @@ extend-exclude = "src/dataclay/proto"
 
 [tool.pylint.format]
 max-line-length = 100
+
+[tool.coverage.paths]
+source = [
+    "src/",
+    "/app/src/",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "if TYPE_CHECKING:"
+]
+omit = [
+    "src/dataclay/proto/*",
+]

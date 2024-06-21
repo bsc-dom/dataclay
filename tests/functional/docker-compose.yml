@@ -20,9 +20,10 @@ services:
       - DATACLAY_KV_PORT=6379
       - DATACLAY_METADATA_PORT=16587
       - DATACLAY_LOGLEVEL=DEBUG
-    command: python -m dataclay.metadata
+      - COVERAGE_FILE=/app/.coverage.metadata
+    command: coverage run --append -m dataclay.metadata
     volumes:
-      - ../../:/app:ro
+      - ../../:/app
 
   backend_1:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -32,9 +33,10 @@ services:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
       - DATACLAY_LOGLEVEL=DEBUG
-    command: python -m dataclay.backend
+      - COVERAGE_FILE=/app/.coverage.backend1
+    command: coverage run --append -m dataclay.backend
     volumes:
-      - ../../:/app:ro
+      - ../../:/app
 
   backend_2:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -44,9 +46,10 @@ services:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
       - DATACLAY_LOGLEVEL=DEBUG
-    command: python -m dataclay.backend
+      - COVERAGE_FILE=/app/.coverage.backend2
+    command: coverage run --append -m dataclay.backend
     volumes:
-      - ../../:/app:ro
+      - ../../:/app
 
   backend_3:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -56,6 +59,7 @@ services:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
       - DATACLAY_LOGLEVEL=DEBUG
-    command: python -m dataclay.backend
+      - COVERAGE_FILE=/app/.coverage.backend3
+    command: coverage run --append -m dataclay.backend
     volumes:
-      - ../../:/app:ro
+      - ../../:/app
