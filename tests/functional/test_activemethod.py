@@ -1,7 +1,7 @@
 import pytest
 
 from dataclay.contrib.modeltest.family import Dog, Family, Person
-from dataclay.contrib.modeltest.test_remote import TestActivemethod
+from dataclay.contrib.modeltest.remote import ActivemethodTestClass
 
 
 def test_activemethod_argument_make_persistent(client):
@@ -76,6 +76,6 @@ def test_remote_activemethod(client):
     """
     Test activemethod in a remote object
     """
-    test_activemethod = TestActivemethod()
+    test_activemethod = ActivemethodTestClass()
     test_activemethod.make_persistent()
     test_activemethod.test_activemethod()
