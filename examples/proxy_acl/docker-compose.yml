@@ -22,7 +22,6 @@ services:
     volumes:
       - ./proxy_config.py:/workdir/proxy_config.py
       - ./middleware.py:/workdir/middleware.py
-      - ./data:/data
 
   metadata-service:
     image: "ghcr.io/bsc-dom/dataclay:dev"

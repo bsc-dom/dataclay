@@ -65,3 +65,13 @@ Federation
 ----------
 
 In some scenarios, such as edge-to-cloud deployments, part of the data stored in a dataClay instance has to be shared with another dataClay instance running in a different device. An example can be found in the context of smart cities where, for instance, part of the data residing in a car is temporarily shared with the city the car is traversing. This partial, and possibly temporal, integration of data between independent dataClay instances is implemented by means of dataClay’s federation mechanism. More precisely, federation consists in replicating an object (either simple or complex, such as a collection of objects) in an independent dataClay instance so that the recipient dataClay can access the object without the need to contact the owner dataClay. This provides immediate access to the object, avoiding communications when the object is requested and overcoming the possible unavailability of the data source.
+
+Persistence
+-----------
+
+DataClay handles objects which have been persisted, it means that these objects are saved and maintained within the dataClay environment, which includes a backend system responsible for managing these objects.
+Once an object has been persisted in dataClay, all its methods decorated with "@activemethod" decorator will be executed within a backend, and the objects will be stored as well in there (as long as the backend is not shut down). The storage path can be found in the `config.py <https://github.com/bsc-dom/dataclay/blob/f0017f0f76c57899c02c2d7a4e6230b0d5b9c248/src/dataclay/config.py>`_ file: 
+
+.. code-block:: python
+
+   storage_path: str = "/_storage_/_path_"
