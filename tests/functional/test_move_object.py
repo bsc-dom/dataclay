@@ -1,5 +1,5 @@
 from dataclay.contrib.modeltest.family import Dog, Family, Person
-from dataclay.contrib.modeltest.test_remote import TestMoveObject
+from dataclay.contrib.modeltest.remote import MoveObjectTestClass
 from dataclay.event_loop import run_dc_coroutine
 
 

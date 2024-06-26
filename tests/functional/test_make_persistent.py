@@ -1,7 +1,7 @@
 import pytest
 
 from dataclay.contrib.modeltest.family import Dog, Family, Person
-from dataclay.contrib.modeltest.test_remote import TestMakePersistent
+from dataclay.contrib.modeltest.remote import MakePersistentTestClass
 
 
 def test_make_persistent_basic(client):
@@ -13,6 +13,52 @@ def test_make_persistent_basic(client):
     assert person._dc_is_registered == True
     assert person.name == "Marc"
     assert person.age == 24
+
+    person.age = 55
+    assert person.age == 55
+
+
+@pytest.mark.asyncio
+async def test_make_persistent_async(client):
+    """Test a simple make_persistent call"""
+    person = Person("Marc", 24)
+    assert person._dc_is_registered == False
+
+    await person.a_make_persistent()
+    assert person._dc_is_registered == True
+    assert person.name == "Marc"
+    assert person.age == 24
+
+    person.age = 55
+    assert person.age == 55
+
+
+def test_make_persistent_alias(client):
+    person = Person("Marc", 24)
+    assert person._dc_is_registered == False
+
+    person.make_persistent(alias="test_make_persistent_alias")
+    assert person._dc_is_registered == True
+
+    persistent_person = person.get_by_alias("test_make_persistent_alias")
+    assert persistent_person.name == person.name
+    assert persistent_person.age == person.age
+
+    person.age = 55
+    assert person.age == 55
+
+
+@pytest.mark.asyncio
+async def test_make_persistent_alias_async(client):
+    person = Person("Marc", 24)
+    assert person._dc_is_registered == False
+
+    await person.a_make_persistent(alias="test_make_persistent_alias_async")
+    assert person._dc_is_registered == True
+
+    persistent_person = await person.a_get_by_alias("test_make_persistent_alias_async")
+    assert persistent_person.name == person.name
+    assert persistent_person.age == person.age
 
     person.age = 55
     assert person.age == 55
@@ -108,24 +154,24 @@ def test_persistent_references(client):
 
 
 def test_remote_automatic_register(client):
-    test_remote_method = TestMakePersistent()
+    test_remote_method = MakePersistentTestClass()
     test_remote_method.make_persistent()
     test_remote_method.test_remote_automatic_register()
 
 
 def test_remote_make_persistent(client):
-    test_remote_method = TestMakePersistent()
+    test_remote_method = MakePersistentTestClass()
     test_remote_method.make_persistent()
     test_remote_method.test_remote_make_persistent()
 
 
 def test_remote_make_persistent_alias(client):
-    test_remote_method = TestMakePersistent()
+    test_remote_method = MakePersistentTestClass()
     test_remote_method.make_persistent()
     test_remote_method.test_remote_make_persistent_alias()
 
 
 def test_remote_make_persistent_backend(client):
-    test_remote_method = TestMakePersistent()
+    test_remote_method = MakePersistentTestClass()
     test_remote_method.make_persistent()
     test_remote_method.test_remote_make_persistent_backend()

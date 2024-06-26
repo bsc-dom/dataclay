@@ -50,6 +50,7 @@ dynamic = ["version"]
 dev = [
     "tox",
     "pytest",
+    "pytest-asyncio",
     "pytest-docker",
     "grpcio-tools",
     "black",
@@ -95,4 +96,10 @@ exclude_lines = [
 ]
 omit = [
     "src/dataclay/proto/*",
+]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
 ]
