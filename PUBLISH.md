@@ -10,15 +10,17 @@
    - Add `Released YYYY-MM-DD` to `CHANGES.rst`
 
 3. Create and push a new tag:
+
    ```bash
    git tag -a <VERSION> -m "Release <VERSION>"
    git push origin <VERSION>
    ```
-4. Follow the instructions to create a [new release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) in GitHub.
 
+4. Follow the instructions to create a [new release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) in GitHub.
 
 5. Publish the `dataclay:latest` docker image:
     1. First, set up your personal access token and log in to GitHub Packages (ghcr.io):
+
         ```bash
         export CR_PAT=<YOUR_TOKEN>
         echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
@@ -26,15 +28,21 @@
         # Or just log if the token is already stored
         docker login ghcr.io
         ```
+
     2. Build and publish the docker image. To use `buildx` you may need to `sudo apt install qemu-user-static`:
+
         ```bash
         # Set the version variable
         VERSION=<VERSION>
 
+        # Create a new builder instance
+        export DOCKER_BUILDKIT=1
+        docker buildx create --use
+
         # Build and push Python 3.10 bullseye
         docker buildx build --platform linux/amd64,linux/arm64 \
         -t ghcr.io/bsc-dom/dataclay:$VERSION-py3.10-bullseye \
-        -t ghcr.io/bsc-dom/dataclay:$VERSION \
+        -t ghcr.io/bsc-dom/dataclay:$`VERSION` \
         -t ghcr.io/bsc-dom/dataclay:latest \
         --build-arg PYTHON_VERSION=3.10-bullseye --push .
         ```
@@ -69,7 +77,6 @@
 
 8. Update the _active versions_ on ReadTheDocs, i.e. go to the [versions page](https://readthedocs.org/projects/dataclay/versions/) and activate/deactivate versions accordingly. You probably must add the newly added release, and maybe you will need to deactivate patch versions that are irrelevant.
 
-
 ## Publish a development distribution to TestPyPI
 
 To build and publish a development distribution:
@@ -97,7 +104,6 @@ python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-u
 
 - `--index-url` tells pip to download the package form TestPyPI instead of PyPI
 - `--extra-index-url` is used to install the package dependencies from PyPI
-
 
 ## Build the dataclay dev image for testing
 
