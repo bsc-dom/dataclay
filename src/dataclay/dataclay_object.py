@@ -739,6 +739,32 @@ class DataClayObject:
 
         await get_runtime().replace_object_properties(self, from_object)
 
+    @tracer.start_as_current_span("dc_update_properties")
+    async def _dc_update_properties(self, new_properties: dict[str, Any]):
+        # TODO: Check that the new properties are the same and of the same type as the current object
+        await get_runtime().update_object_properties(self, new_properties)
+
+    async def a_dc_update_properties(self, new_properties: dict[str, Any]):
+        """Async version of :meth:`dc_update_properties`."""
+        future = asyncio.run_coroutine_threadsafe(
+            self._dc_update_properties(new_properties), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
+
+    def dc_update_properties(self, new_properties: dict[str, Any]):
+        """Updates current object with the new properties.
+
+        Args:
+            new_properties: dictionary with the new properties to update current object.
+
+        Raises:
+            TypeError: If the objects are not of the same type.
+        """
+        future = asyncio.run_coroutine_threadsafe(
+            self._dc_update_properties(new_properties), get_dc_event_loop()
+        )
+        return future.result()
+
     @tracer.start_as_current_span("dc_put")
     async def dc_put(self, alias: str, backend_id: UUID = None):
         """Makes the object persistent in the specified backend.
