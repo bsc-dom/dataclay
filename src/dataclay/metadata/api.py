@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 from uuid import UUID
 
 from dataclay.exceptions import AccountError, AccountInvalidCredentialsError
@@ -186,10 +186,18 @@ class MetadataAPI:
     ###################
 
     @tracer.start_as_current_span("get_all_objects")
-    async def get_all_objects(self) -> dict[UUID, ObjectMetadata]:
+    async def get_all_objects(
+        self, filter_func: Optional[Callable[[ObjectMetadata], bool]] = None
+    ) -> dict[UUID, ObjectMetadata]:
         logger.debug("Getting all objects from kv store")
         result = await self.kv_manager.getprefix(ObjectMetadata, "/object/")
-        return {UUID(k): v for k, v in result.items()}
+
+        if filter_func is None:
+            # No filter function provided, return all results
+            return {UUID(k): v for k, v in result.items()}
+
+        # Apply filter function to results
+        return {UUID(k): v for k, v in result.items() if filter_func(v)}
 
     @tracer.start_as_current_span("upsert_object")
     async def upsert_object(self, object_md: ObjectMetadata):
