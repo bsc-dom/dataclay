@@ -256,7 +256,7 @@ class DataClayRuntime(ABC):
         else:
             backend_client = await self.backend_clients.get(instance._dc_meta.master_backend_id)
             serialized_properties = await backend_client.get_object_properties(instance._dc_meta.id)
-            return pickle.loads(serialized_properties)
+            return await dcloads(serialized_properties)
 
     async def make_object_copy(
         self, instance: DataClayObject, recursive: bool = False, is_proxy: bool = False
