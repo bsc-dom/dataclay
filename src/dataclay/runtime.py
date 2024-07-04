@@ -604,8 +604,9 @@ class DataClayRuntime(ABC):
         logger.debug("(%s) Updating object properties", instance._dc_meta.id)
 
         if instance._dc_is_local:
+            if not instance._dc_is_loaded:
+                await self.data_manager.load_object(instance)
             vars(instance).update(new_properties)
-            instance._dc_is_loaded = True
         else:
             backend_client = await self.backend_clients.get(instance._dc_meta.master_backend_id)
             await backend_client.update_object_properties(
