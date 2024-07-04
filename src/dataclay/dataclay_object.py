@@ -317,6 +317,19 @@ class DataClayObject:
             k: v for k, v in vars(self).items() if not k.startswith(DC_PROPERTY_PREFIX)
         }
 
+    async def _get_properties(self) -> dict[str, Any]:
+        return await get_runtime().get_object_properties(self)
+
+    async def a_get_properties(self) -> dict[str, Any]:
+        """Async version of :meth:`get_properties`."""
+        future = asyncio.run_coroutine_threadsafe(self._get_properties(), get_dc_event_loop())
+        return await asyncio.wrap_future(future)
+
+    def get_properties(self) -> dict[str, Any]:
+        """Returns the properties of the object."""
+        future = asyncio.run_coroutine_threadsafe(self._get_properties(), get_dc_event_loop())
+        return future.result()
+
     @tracer.start_as_current_span("getID")
     def getID(self) -> Optional[str]:
         """Return the JSON-encoded metadata of the persistent object for COMPSs.

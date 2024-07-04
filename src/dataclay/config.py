@@ -6,6 +6,7 @@ services as well as by the :class:`~dataclay.client.api.Client`.
 All the configuration can be set through environment variables. This is true for dataClay
 deployment (i.e. services, so Backend, Metadata and Proxy) as well as for the client application.
 """
+
 from __future__ import annotations
 
 import contextvars
@@ -72,7 +73,8 @@ class ProxySettings(BaseSettings):
     """These settings are exclusive to the Proxy service.
 
     The configuration fields can be established through environment variables with the prefix ``DATACLAY_PROXY_``.
-    For example, to set the :attr:`mds_host` field, you can set the environment variable ``DATACLAY_PROXY_MDS_HOST``."""
+    For example, to set the :attr:`mds_host` field, you can set the environment variable ``DATACLAY_PROXY_MDS_HOST``.
+    """
 
     model_config = SettingsConfigDict(
         env_prefix="dataclay_proxy_", env_file=".env", secrets_dir="/run/secrets", extra="ignore"
