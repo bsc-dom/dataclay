@@ -134,10 +134,10 @@ async def flush_all(host, port):
     await backend_client.flush_all()
 
 
-def get_objects(host, port):
+async def get_objects(host, port):
     logger.info("Getting objects from %s:%s", host, port)
     metadata_client = MetadataClient(host, port)
-    object_mds = metadata_client.get_all_objects()
+    object_mds = await metadata_client.get_all_objects()
     for v in object_mds.values():
         print(json.dumps(v.__dict__, cls=UUIDEncoder, indent=2))
 
@@ -294,7 +294,7 @@ async def main():
         await get_backends(args.host, args.port)
 
     elif args.function == "get_objects":
-        get_objects(args.host, args.port)
+        await get_objects(args.host, args.port)
 
 
 def run():
