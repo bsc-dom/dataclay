@@ -51,3 +51,7 @@ We welcome contributions to dataClay. Please see the [Contributing](https://data
 ## Other resources
 
 [BSC official website](https://www.bsc.es/dataclay)
+
+## Acknolwedgments
+
+See the [full list of acknowledgments](ACKNOWLEDGMENTS.md)
