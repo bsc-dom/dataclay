@@ -21,7 +21,7 @@ async def test_get_by_alias_async(client):
 
 def test_delete_alias(client):
     person = Person("Marc", 24)
-    person.a_make_persistent("test_delete_alias")
+    person.make_persistent("test_delete_alias")
 
     Person.delete_alias("test_delete_alias")
     with pytest.raises(DataClayException) as excinfo:
