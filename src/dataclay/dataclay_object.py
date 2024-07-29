@@ -83,7 +83,7 @@ def activemethod(func):
             logger.debug("Error calling activemethod '%s'", func.__name__, exc_info=True)
             raise
 
-    # wrapper.is_activemethod = True
+    wrapper._is_activemethod = True
     return wrapper
 
 
@@ -831,16 +831,6 @@ class DataClayObject:
     # FIXME: Think another solution, the user may want to override the method
     def __hash__(self):
         return hash(self._dc_meta.id)
-
-    @activemethod
-    def __setUpdate__(
-        self, obj: "Any", property_name: str, value: "Any", beforeUpdate: str, afterUpdate: str
-    ):
-        if beforeUpdate is not None:
-            getattr(self, beforeUpdate)(property_name, value)
-        object.__setattr__(obj, "%s%s" % ("_dataclay_property_", property_name), value)
-        if afterUpdate is not None:
-            getattr(self, afterUpdate)(property_name, value)
 
     def __copy__(self):
         # NOTE: A shallow copy cannot be performed, or has no sense.
