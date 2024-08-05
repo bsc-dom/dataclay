@@ -118,8 +118,6 @@ class Client:
     _token: bytes
     _TOKEN_EXPIRATION = 24 * 30
 
-    loop = None
-
     def __init__(
         self,
         host: Optional[str] = None,
