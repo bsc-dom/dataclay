@@ -21,3 +21,4 @@ tests/mock/client.properties
 /pyclay.iml
 /.vscode
 .coverage*
+coverage.xml
