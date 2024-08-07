@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import logging
 import pickle
 import time
 import traceback
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Optional
+
+from threadpoolctl import threadpool_limits
 
 from dataclay import utils
 from dataclay.config import set_runtime, settings
@@ -152,21 +155,27 @@ class BackendAPI:
         # Deserialize arguments
         args, kwargs = await asyncio.gather(dcloads(args), dcloads(kwargs))
 
-        try:
-            # Call activemethod in another thread
-            logger.debug("(%s) *** Starting activemethod '%s' in executor", object_id, method_name)
-            result = await dc_to_thread(getattr(instance, method_name), *args, **kwargs)
-            logger.debug("(%s) *** Finished activemethod '%s' in executor", object_id, method_name)
+        # Call activemethod in another thread
+        logger.debug("(%s) *** Starting activemethod '%s' in executor", object_id, method_name)
+        with threadpool_limits(limits=None):
+            try:
+                func = getattr(instance, method_name)
+                if asyncio.iscoroutinefunction(func):
+                    logger.debug("Activemethod '%s' is a coroutine", method_name)
+                    result = await func(*args, **kwargs)
+                else:
+                    result = await dc_to_thread(func, *args, **kwargs)
+            except Exception as e:
+                # If an exception was raised, serialize it and return it to be raised by the client
+                logger.debug("(%s) *** Exception in activemethod '%s'", object_id, method_name)
+                return pickle.dumps(e), True
+        logger.debug("(%s) *** Finished activemethod '%s' in executor", object_id, method_name)
 
-            # Serialize the result if not None
-            if result is None:
-                return result, False
-            else:
-                result_bytes = await dcdumps(result)
-                return result_bytes, False
-        except Exception as e:
-            # If an exception was raised, serialize it and return it to be raised by the client
-            return pickle.dumps(e), True
+        # Serialize the result if not None
+        if result is not None:
+            result = await dcdumps(result)
+
+        return result, False
 
     # Store Methods
 

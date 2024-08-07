@@ -49,6 +49,28 @@ def activemethod(func):
     """Decorator for DataClayObject active methods."""
 
     @functools.wraps(func)
+    async def awrapper(self: DataClayObject, *args, **kwargs):
+        try:
+            if self._dc_is_local:
+                logger.debug(
+                    "(%s) Calling async activemethod '%s' locally", self._dc_meta.id, func.__name__
+                )
+                return await func(self, *args, **kwargs)
+            else:
+                logger.debug(
+                    "(%s) Calling async activemethod '%s' remotely", self._dc_meta.id, func.__name__
+                )
+
+                future = asyncio.run_coroutine_threadsafe(
+                    get_runtime().call_remote_method(self, func.__name__, args, kwargs),
+                    get_dc_event_loop(),
+                )
+                return await asyncio.wrap_future(future)
+        except Exception:
+            logger.debug("Error calling activemethod '%s'", func.__name__, exc_info=True)
+            raise
+
+    @functools.wraps(func)
     def wrapper(self: DataClayObject, *args, **kwargs):
         try:
             # Example to make __init__ active:
@@ -63,28 +85,27 @@ def activemethod(func):
                 # NOTE: Decided to remove reader lock. It is too complex and not necessary, since
                 # the method can be executed even if the object is not loaded. The object will be
                 # loaded again when accessing the properties.
-                # BUG: If the object has non-dc_properties, thise could be problematic, if the
+                # BUG: If the object has non-dc_properties, could be problematic, if the
                 # object is unloaded while executing the method.
                 return func(self, *args, **kwargs)
             else:
                 logger.debug(
                     "(%s) Calling activemethod '%s' remotely", self._dc_meta.id, func.__name__
                 )
-
-                if inspect.iscoroutinefunction(func):
-                    # TODO: I think this gives problems, in test_remote_method.test_remote_make_persistent()
-                    return get_runtime().call_remote_method(self, func.__name__, args, kwargs)
-                else:
-                    return asyncio.run_coroutine_threadsafe(
-                        get_runtime().call_remote_method(self, func.__name__, args, kwargs),
-                        get_dc_event_loop(),
-                    ).result()
+                return asyncio.run_coroutine_threadsafe(
+                    get_runtime().call_remote_method(self, func.__name__, args, kwargs),
+                    get_dc_event_loop(),
+                ).result()
         except Exception:
             logger.debug("Error calling activemethod '%s'", func.__name__, exc_info=True)
             raise
 
-    wrapper._is_activemethod = True
-    return wrapper
+    if inspect.iscoroutinefunction(func):
+        awrapper._is_activemethod = True
+        return awrapper
+    else:
+        wrapper._is_activemethod = True
+        return wrapper
 
 
 class DataClayProperty:
