@@ -175,12 +175,17 @@ class Client:
 
         logger.info("Starting client runtime")
 
-        # Create new event loop in a new thread
-        loop = asyncio.new_event_loop()
-        set_dc_event_loop(loop)
-        event_loop_thread = EventLoopThread(loop)
-        event_loop_thread.start()
-        event_loop_thread.ready.wait()
+        loop = get_dc_event_loop()
+        if loop == None:
+            logger.info("Create_new_loop")
+            # Create new event loop in a new thread
+            loop = asyncio.new_event_loop()
+            set_dc_event_loop(loop)
+            event_loop_thread = EventLoopThread(loop)
+            event_loop_thread.start()
+            event_loop_thread.ready.wait()
+        else:
+            logger.info("Already_had_a_loop")
 
         # Replace settings
         self.previous_settings = settings.client
