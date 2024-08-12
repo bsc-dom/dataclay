@@ -171,11 +171,10 @@ class DataClayProperty:
         See the __get__ method for the basic behavioural explanation.
         """
         logger.debug(
-            "(%s) Setting dc_property '%s.%s=%s'",
+            "(%s) Setting dc_property '%s.%s'",
             instance._dc_meta.id,
             instance.__class__.__name__,
             self.name,
-            value,
         )
 
         if instance._dc_is_local:

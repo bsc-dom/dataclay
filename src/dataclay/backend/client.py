@@ -137,13 +137,14 @@ class BackendClient:
 
     @grpc_aio_error_handler
     async def call_active_method(
-        self, object_id: UUID, method_name: str, args: bytes, kwargs: bytes
+        self, object_id: UUID, method_name: str, args: bytes, kwargs: bytes, max_threads: int
     ) -> tuple[bytes, bool]:
         request = backend_pb2.CallActiveMethodRequest(
             object_id=str(object_id),
             method_name=method_name,
             args=args,
             kwargs=kwargs,
+            max_threads=max_threads,
         )
 
         current_context = session_var.get()

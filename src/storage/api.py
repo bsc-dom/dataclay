@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import os
+from typing import Any
 
 from dotenv import dotenv_values
 
@@ -12,7 +13,7 @@ from dataclay.client.api import Client
 
 # Also "publish" the split method
 # from dataclay.contrib.splitting import split
-from dataclay.config import get_runtime
+from dataclay.config import get_runtime, constraints_var
 from dataclay.event_loop import get_dc_event_loop
 from dataclay.metadata.kvdata import ObjectMetadata
 
@@ -180,6 +181,23 @@ class TaskContext(object):
         # Finished
         self.logger.info("Ending task")
         logger.info("Ending task")
+
+
+class ConstraintsContext:
+    def __init__(self, new_config: dict[str, Any]):
+        self.new_config = new_config
+        self.token = None
+        self.old_config = None
+
+    def __enter__(self):
+        self.old_config = constraints_var.get().copy()
+        updated_config = self.old_config.copy()
+        updated_config.update(self.new_config)
+        self.token = constraints_var.set(updated_config)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        constraints_var.reset(self.token)
 
 
 if os.getenv("DEACTIVATE_STORAGE_LIBRARY", "false").lower() == "true":

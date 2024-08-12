@@ -192,6 +192,7 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
                 request.method_name,
                 request.args,
                 request.kwargs,
+                request.max_threads,
             )
             return backend_pb2.CallActiveMethodResponse(value=value, is_exception=is_exception)
         except Exception as e:

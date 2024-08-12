@@ -120,7 +120,7 @@ class BackendAPI:
 
     @tracer.start_as_current_span("call_active_method")
     async def call_active_method(
-        self, object_id: UUID, method_name: str, args: tuple, kwargs: dict
+        self, object_id: UUID, method_name: str, args: tuple, kwargs: dict, max_threads: int
     ) -> tuple[bytes, bool]:
         """Entry point for calling an active method of a DataClayObject"""
 
@@ -157,11 +157,12 @@ class BackendAPI:
 
         # Call activemethod in another thread
         logger.debug("(%s) *** Starting activemethod '%s' in executor", object_id, method_name)
-        with threadpool_limits(limits=None):
+        logger.debug("(%s) Using %d threads", object_id, max_threads)
+        with threadpool_limits(limits=max_threads):
             try:
                 func = getattr(instance, method_name)
                 if asyncio.iscoroutinefunction(func):
-                    logger.debug("Activemethod '%s' is a coroutine", method_name)
+                    logger.debug("(%s) Activemethod '%s' is a coroutine", object_id, method_name)
                     result = await func(*args, **kwargs)
                 else:
                     result = await dc_to_thread(func, *args, **kwargs)
