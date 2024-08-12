@@ -218,7 +218,7 @@ session_var = contextvars.ContextVar("session")
 
 current_runtime: Union[ClientRuntime, BackendRuntime, None] = None
 
-constraints_var = contextvars.ContextVar(
+exec_constraints_var = contextvars.ContextVar(
     "constraints", default={"max_threads": None, "max_memory": "1GB"}
 )
 

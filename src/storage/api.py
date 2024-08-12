@@ -13,7 +13,7 @@ from dataclay.client.api import Client
 
 # Also "publish" the split method
 # from dataclay.contrib.splitting import split
-from dataclay.config import constraints_var, get_runtime
+from dataclay.config import exec_constraints_var, get_runtime
 from dataclay.event_loop import get_dc_event_loop
 from dataclay.metadata.kvdata import ObjectMetadata
 
@@ -184,20 +184,26 @@ class TaskContext(object):
 
 
 class ConstraintsContext:
+    """Context manager to set constraints for a block of code of active methods.
+
+    The available constraints are:
+    - max_threads (int): Maximum number of threads that can be used in parallel. Defaults to None (unlimited).
+    """
+
     def __init__(self, new_config: dict[str, Any]):
         self.new_config = new_config
         self.token = None
         self.old_config = None
 
     def __enter__(self):
-        self.old_config = constraints_var.get().copy()
+        self.old_config = exec_constraints_var.get().copy()
         updated_config = self.old_config.copy()
         updated_config.update(self.new_config)
-        self.token = constraints_var.set(updated_config)
+        self.token = exec_constraints_var.set(updated_config)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        constraints_var.reset(self.token)
+        exec_constraints_var.reset(self.token)
 
 
 if os.getenv("DEACTIVATE_STORAGE_LIBRARY", "false").lower() == "true":

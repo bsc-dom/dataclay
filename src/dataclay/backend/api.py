@@ -9,14 +9,18 @@ import pickle
 import time
 import traceback
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from threadpoolctl import threadpool_limits
 
 from dataclay import utils
 from dataclay.config import set_runtime, settings
 from dataclay.event_loop import dc_to_thread
-from dataclay.exceptions import DoesNotExistError, ObjectWithWrongBackendIdError
+from dataclay.exceptions import (
+    DataClayException,
+    DoesNotExistError,
+    ObjectWithWrongBackendIdError,
+)
 from dataclay.lock_manager import lock_manager
 from dataclay.runtime import BackendRuntime
 from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcloads
@@ -28,7 +32,7 @@ if TYPE_CHECKING:
     from dataclay.dataclay_object import DataClayObject
 
 tracer = trace.get_tracer(__name__)
-logger = utils.LoggerEvent(logging.getLogger(__name__))
+logger: logging.Logger = utils.LoggerEvent(logging.getLogger(__name__))
 
 
 class BackendAPI:
@@ -120,7 +124,12 @@ class BackendAPI:
 
     @tracer.start_as_current_span("call_active_method")
     async def call_active_method(
-        self, object_id: UUID, method_name: str, args: tuple, kwargs: dict, max_threads: int
+        self,
+        object_id: UUID,
+        method_name: str,
+        args: tuple[Any],
+        kwargs: dict[str, Any],
+        exec_constraints: dict[str, Any],
     ) -> tuple[bytes, bool]:
         """Entry point for calling an active method of a DataClayObject"""
 
@@ -156,8 +165,11 @@ class BackendAPI:
         args, kwargs = await asyncio.gather(dcloads(args), dcloads(kwargs))
 
         # Call activemethod in another thread
-        logger.debug("(%s) *** Starting activemethod '%s' in executor", object_id, method_name)
-        logger.debug("(%s) Using %d threads", object_id, max_threads)
+        logger.info("(%s) *** Starting activemethod '%s' in executor", object_id, method_name)
+        max_threads = (
+            None if exec_constraints["max_threads"] == 0 else exec_constraints["max_threads"]
+        )
+        logger.info("(%s) Max threads: %s", object_id, max_threads)
         with threadpool_limits(limits=max_threads):
             try:
                 func = getattr(instance, method_name)
@@ -170,7 +182,7 @@ class BackendAPI:
                 # If an exception was raised, serialize it and return it to be raised by the client
                 logger.debug("(%s) *** Exception in activemethod '%s'", object_id, method_name)
                 return pickle.dumps(e), True
-        logger.debug("(%s) *** Finished activemethod '%s' in executor", object_id, method_name)
+        logger.info("(%s) *** Finished activemethod '%s' in executor", object_id, method_name)
 
         # Serialize the result if not None
         if result is not None:

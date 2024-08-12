@@ -6,7 +6,7 @@ import contextvars
 import time
 
 from dataclay import Client
-from dataclay.config import constraints_var
+from dataclay.config import exec_constraints_var
 from dataclay.contrib.modeltest.compss import CPUIntensiveTask
 from storage.api import ConstraintsContext
 

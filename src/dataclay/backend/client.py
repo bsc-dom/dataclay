@@ -1,10 +1,11 @@
 import logging
 import traceback
-from typing import Iterable, Optional
+from typing import Any, Iterable, Optional
 from uuid import UUID
 
 import grpc
-from google.protobuf.empty_pb2 import Empty
+from google.protobuf import any_pb2, empty_pb2
+from google.protobuf.wrappers_pb2 import BoolValue, FloatValue, Int32Value, StringValue
 from grpc._cython.cygrpc import ChannelArgKey
 
 import dataclay
@@ -137,14 +138,38 @@ class BackendClient:
 
     @grpc_aio_error_handler
     async def call_active_method(
-        self, object_id: UUID, method_name: str, args: bytes, kwargs: bytes, max_threads: int
+        self,
+        object_id: UUID,
+        method_name: str,
+        args: bytes,
+        kwargs: bytes,
+        exec_constraints: dict[str, Any],
     ) -> tuple[bytes, bool]:
+
+        converted_exec_constraints = {}
+        for key, value in exec_constraints.items():
+            any_value = any_pb2.Any()
+
+            if isinstance(value, int) or value is None:
+                wrapped_value = Int32Value(value=value)
+            elif isinstance(value, float):
+                wrapped_value = FloatValue(value=value)
+            elif isinstance(value, str):
+                wrapped_value = StringValue(value=value)
+            elif isinstance(value, bool):
+                wrapped_value = BoolValue(value=value)
+            else:
+                raise TypeError(f"Unsupported type {type(value)} for exec_constraints key '{key}'")
+
+            any_value.Pack(wrapped_value)
+            converted_exec_constraints[key] = any_value
+
         request = backend_pb2.CallActiveMethodRequest(
             object_id=str(object_id),
             method_name=method_name,
             args=args,
             kwargs=kwargs,
-            max_threads=max_threads,
+            exec_constraints=converted_exec_constraints,
         )
 
         current_context = session_var.get()
@@ -281,15 +306,15 @@ class BackendClient:
 
     @grpc_aio_error_handler
     async def flush_all(self):
-        await self.stub.FlushAll(Empty())
+        await self.stub.FlushAll(empty_pb2.Empty())
 
     @grpc_aio_error_handler
     async def stop(self):
-        await self.stub.Stop(Empty())
+        await self.stub.Stop(empty_pb2.Empty())
 
     @grpc_aio_error_handler
     async def drain(self):
-        await self.stub.Drain(Empty())
+        await self.stub.Drain(empty_pb2.Empty())
 
     # @grpc_aio_error_handler
     # def new_object_replica(self, object_id: UUID, backend_id: UUID, recursive: bool, remotes: bool):

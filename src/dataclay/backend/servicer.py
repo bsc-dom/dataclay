@@ -10,7 +10,13 @@ from uuid import UUID, uuid4
 
 import grpc
 from google.protobuf.empty_pb2 import Empty
-from google.protobuf.wrappers_pb2 import BytesValue
+from google.protobuf.wrappers_pb2 import (
+    BoolValue,
+    BytesValue,
+    FloatValue,
+    Int32Value,
+    StringValue,
+)
 from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
 from dataclay.backend.api import BackendAPI
@@ -187,12 +193,33 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
     async def CallActiveMethod(self, request, context):
         self._check_context(context)
         try:
+            exec_constraints = {}
+            for key, any_value in request.exec_constraints.items():
+                if any_value.Is(Int32Value.DESCRIPTOR):
+                    value = Int32Value()
+                    any_value.Unpack(value)
+                    exec_constraints[key] = value.value
+                elif any_value.Is(FloatValue.DESCRIPTOR):
+                    value = FloatValue()
+                    any_value.Unpack(value)
+                    exec_constraints[key] = value.value
+                elif any_value.Is(StringValue.DESCRIPTOR):
+                    value = StringValue()
+                    any_value.Unpack(value)
+                    exec_constraints[key] = value.value
+                elif any_value.Is(BoolValue.DESCRIPTOR):
+                    value = BoolValue()
+                    any_value.Unpack(value)
+                    exec_constraints[key] = value.value
+                else:
+                    raise ValueError(f"Unknown type for {key}: {any_value}")
+
             value, is_exception = await self.backend.call_active_method(
                 UUID(request.object_id),
                 request.method_name,
                 request.args,
                 request.kwargs,
-                request.max_threads,
+                exec_constraints,
             )
             return backend_pb2.CallActiveMethodResponse(value=value, is_exception=is_exception)
         except Exception as e:

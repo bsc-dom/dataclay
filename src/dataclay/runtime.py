@@ -14,7 +14,7 @@ from uuid import UUID
 from weakref import WeakValueDictionary
 
 from dataclay import utils
-from dataclay.config import constraints_var, session_var, settings
+from dataclay.config import exec_constraints_var, session_var, settings
 from dataclay.data_manager import DataManager
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import (
@@ -412,13 +412,13 @@ class DataClayRuntime(ABC):
                         )
                     else:
                         # Print the constraings
-                        logger.debug("Method Constraints: %s", constraints_var.get())
+                        logger.debug("Method Constraints: %s", exec_constraints_var.get())
                         serialized_response, is_exception = await backend_client.call_active_method(
                             object_id=instance._dc_meta.id,
                             method_name=method_name,
                             args=serialized_args,
                             kwargs=serialized_kwargs,
-                            max_threads=constraints_var.get()["max_threads"],
+                            exec_constraints=exec_constraints_var.get(),
                         )
                 except DataClayException as e:
                     if "failed to connect" in str(e):
