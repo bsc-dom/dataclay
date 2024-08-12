@@ -13,7 +13,7 @@ from dataclay.client.api import Client
 
 # Also "publish" the split method
 # from dataclay.contrib.splitting import split
-from dataclay.config import get_runtime, constraints_var
+from dataclay.config import constraints_var, get_runtime
 from dataclay.event_loop import get_dc_event_loop
 from dataclay.metadata.kvdata import ObjectMetadata
 

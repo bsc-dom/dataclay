@@ -14,7 +14,7 @@ from uuid import UUID
 from weakref import WeakValueDictionary
 
 from dataclay import utils
-from dataclay.config import session_var, settings, constraints_var
+from dataclay.config import constraints_var, session_var, settings
 from dataclay.data_manager import DataManager
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import (
