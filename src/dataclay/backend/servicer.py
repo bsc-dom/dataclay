@@ -7,6 +7,7 @@ import signal
 import traceback
 from concurrent import futures
 from functools import wraps
+from typing import Optional
 from uuid import UUID, uuid4
 
 import grpc
@@ -144,7 +145,7 @@ class ServicerMethod:
         self.ret_factory = ret_factory
 
     @staticmethod
-    def _validate_context(servicer, context):
+    def _validate_context(servicer, context) -> Optional[str]:
         metadata = dict(context.invocation_metadata())
 
         # Check if the backend-id metadata field matches this backend
@@ -153,14 +154,12 @@ class ServicerMethod:
         # warrants at least an error log.
         if "backend-id" in metadata:
             if metadata["backend-id"] != str(servicer.backend.backend_id):
-                context.set_code(grpc.StatusCode.INVALID)
-                context.set_details("Invalid backend-id")
                 logger.error(
                     "The gRPC call was intended for backend_id=%s. We are %s. Failure.",
                     metadata["backend-id"],
                     servicer.backend.backend_id,
                 )
-                return False
+                return "Invalid backend-id"
         else:
             logger.debug("No backend-id metadata header in the call.")
 
@@ -169,6 +168,7 @@ class ServicerMethod:
             session_var.set(
                 {"dataset_name": metadata["dataset-name"], "username": metadata["username"]}
             )
+        return None
 
     def __call__(self, func):
         @wraps(func)
