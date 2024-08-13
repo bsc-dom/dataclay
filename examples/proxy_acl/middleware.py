@@ -1,8 +1,7 @@
 import logging
-import pickle
-from pprint import pprint
 
-from dataclay.proxy import MiddlewareBase, MiddlewareException, jwt_validation
+from dataclay.proxy import jwt_validation
+from dataclay.proxy.middleware import MiddlewareBase, MiddlewareException
 
 logger = logging.getLogger(__name__)
 

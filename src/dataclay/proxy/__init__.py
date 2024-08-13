@@ -1,15 +1,10 @@
 import datetime
+import logging
 from uuid import UUID
 
 import jwt
 
 from . import servicer
-from .base_classes import MiddlewareBase
-from .exceptions import MiddlewareException
-
-__all__ = ["MiddlewareBase", "MiddlewareException"]
-
-import logging
 
 logger = logging.getLogger(__name__)
 

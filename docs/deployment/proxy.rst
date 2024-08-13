@@ -23,7 +23,7 @@ The following environment variables **must** be defined:
 
 See :class:`~dataclay.config.ProxyConfig` for a comprehensive description of all the available configuration variables.
 
-You can subclass the :class:`~dataclay.proxy.MiddlewareBase` class to define a specific behavior of the proxy service. See
+You can subclass the :class:`~dataclay.proxy.middleware.MiddlewareBase` class to define a specific behavior of the proxy service. See
 the `proxy_acl example <https://github.com/bsc-dom/dataclay/tree/main/examples/proxy_acl>`_ for a more convoluted example
 of how to use the proxy service with custom middleware definitions.
 

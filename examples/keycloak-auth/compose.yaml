@@ -1,0 +1,51 @@
+services:
+  redis:
+    image: redis:latest
+
+  proxy:
+    image: "ghcr.io/bsc-dom/dataclay:edge"
+    ports:
+      - 8676:8676
+    depends_on:
+      - metadata-service
+      - backend
+    environment:
+      - DATACLAY_PROXY_MDS_HOST=metadata-service
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_LOGLEVEL=DEBUG
+      - DATACLAY_PROXY_OIDC_DISCOVERY_URL=http://keycloak:8080/realms/dataclay/.well-known/openid-configuration
+    command: python -m dataclay.proxy
+
+  metadata-service:
+    image: "ghcr.io/bsc-dom/dataclay:edge"
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_PASSWORD=s3cret
+      - DATACLAY_USERNAME=testuser
+      - DATACLAY_DATASET=testdata
+      - DATACLAY_LOGLEVEL=INFO
+    command: python -m dataclay.metadata
+
+  backend:
+    image: "ghcr.io/bsc-dom/dataclay:edge"
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_LOGLEVEL=INFO
+    command: python -m dataclay.backend
+    volumes:
+      - ./model:/workdir/model:ro
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - ./keycloak-data:/opt/keycloak/data/import
+    ports:
+      - 8080:8080
+    command: start-dev --import-realm 

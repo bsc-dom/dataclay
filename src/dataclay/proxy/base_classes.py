@@ -9,7 +9,7 @@ from dataclay.metadata.api import MetadataAPI
 from dataclay.proto.backend import backend_pb2_grpc
 from dataclay.proto.metadata import metadata_pb2_grpc
 
-from .exceptions import MiddlewareException
+from .middleware import MiddlewareException
 
 BACKEND_METHODS = [
     "RegisterObjects",
@@ -46,22 +46,6 @@ METADATA_METHODS = [
 ]
 
 logger = logging.getLogger(__name__)
-
-
-class MiddlewareBase:
-    """Base class to be used for middlewares.
-
-    To implement a middleware, create a new class by deriving this
-    MiddlewareBase and implement the methods that you need.
-    """
-
-    def __call__(self, method_name, request, context):
-        try:
-            m = getattr(self, method_name)
-        except AttributeError:
-            return
-        logger.debug("Middleware %r is processing method %s" % (self, method_name))
-        m(request, context)
 
 
 class BackendMeta(type):
