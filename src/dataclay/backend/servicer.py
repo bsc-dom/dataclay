@@ -6,6 +6,8 @@ import os.path
 import signal
 import traceback
 from concurrent import futures
+from functools import wraps
+from typing import Optional
 from uuid import UUID, uuid4
 
 import grpc
@@ -138,13 +140,12 @@ async def serve():
     await backend.stop()
 
 
-class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
-    def __init__(self, backend: BackendAPI, server: grpc.aio.Server):
-        """Execution environment being managed"""
-        self.backend = backend
-        self.server = server
+class ServicerMethod:
+    def __init__(self, ret_factory):
+        self.ret_factory = ret_factory
 
-    def _check_context(self, context):
+    @staticmethod
+    def _validate_context(servicer, context) -> Optional[str]:
         metadata = dict(context.invocation_metadata())
 
         # Check if the backend-id metadata field matches this backend
@@ -152,13 +153,13 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
         # is not an issue. However, a mismatch is a strange scenario, which
         # warrants at least an error log.
         if "backend-id" in metadata:
-            if metadata["backend-id"] != str(self.backend.backend_id):
+            if metadata["backend-id"] != str(servicer.backend.backend_id):
                 logger.error(
-                    "The gRPC call was intended for backend_id=%s. We are %s. "
-                    "Ignoring it and proceeding (may fail).",
+                    "The gRPC call was intended for backend_id=%s. We are %s. Failure.",
                     metadata["backend-id"],
-                    self.backend.backend_id,
+                    servicer.backend.backend_id,
                 )
+                return "Invalid backend-id"
         else:
             logger.debug("No backend-id metadata header in the call.")
 
@@ -167,253 +168,174 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             session_var.set(
                 {"dataset_name": metadata["dataset-name"], "username": metadata["username"]}
             )
+        return None
 
+    def __call__(self, func):
+        @wraps(func)
+        async def wrapper(servicer, request, context):
+            if error_details := self._validate_context(servicer, context):
+                context.set_details(error_details)
+                context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+                return self.ret_factory()
+            try:
+                return await func(servicer, request, context)
+            except Exception as e:
+                context.set_details(str(e))
+                context.set_code(grpc.StatusCode.INTERNAL)
+                logger.info("Exception during gRPC call\n", exc_info=True)
+                return self.ret_factory()
+
+        return wrapper
+
+
+class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
+    def __init__(self, backend: BackendAPI, server: grpc.aio.Server):
+        """Execution environment being managed"""
+        self.backend = backend
+        self.server = server
+
+    @ServicerMethod(Empty)
     async def RegisterObjects(self, request, context):
-        self._check_context(context)
-        try:
-            await self.backend.register_objects(request.dict_bytes, request.make_replica)
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        await self.backend.register_objects(request.dict_bytes, request.make_replica)
         return Empty()
 
+    @ServicerMethod(Empty)
     async def MakePersistent(self, request, context):
-        self._check_context(context)
-        try:
-            await self.backend.make_persistent(request.pickled_obj)
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        await self.backend.make_persistent(request.pickled_obj)
         return Empty()
 
+    @ServicerMethod(backend_pb2.CallActiveMethodResponse)
     async def CallActiveMethod(self, request, context):
-        self._check_context(context)
-        try:
-            exec_constraints = {}
-            for key, any_value in request.exec_constraints.items():
-                if any_value.Is(Int32Value.DESCRIPTOR):
-                    value = Int32Value()
-                    any_value.Unpack(value)
-                    exec_constraints[key] = value.value
-                elif any_value.Is(FloatValue.DESCRIPTOR):
-                    value = FloatValue()
-                    any_value.Unpack(value)
-                    exec_constraints[key] = value.value
-                elif any_value.Is(StringValue.DESCRIPTOR):
-                    value = StringValue()
-                    any_value.Unpack(value)
-                    exec_constraints[key] = value.value
-                elif any_value.Is(BoolValue.DESCRIPTOR):
-                    value = BoolValue()
-                    any_value.Unpack(value)
-                    exec_constraints[key] = value.value
-                else:
-                    raise ValueError(f"Unknown type for {key}: {any_value}")
+        exec_constraints = {}
+        for key, any_value in request.exec_constraints.items():
+            if any_value.Is(Int32Value.DESCRIPTOR):
+                value = Int32Value()
+                any_value.Unpack(value)
+                exec_constraints[key] = value.value
+            elif any_value.Is(FloatValue.DESCRIPTOR):
+                value = FloatValue()
+                any_value.Unpack(value)
+                exec_constraints[key] = value.value
+            elif any_value.Is(StringValue.DESCRIPTOR):
+                value = StringValue()
+                any_value.Unpack(value)
+                exec_constraints[key] = value.value
+            elif any_value.Is(BoolValue.DESCRIPTOR):
+                value = BoolValue()
+                any_value.Unpack(value)
+                exec_constraints[key] = value.value
+            else:
+                raise ValueError(f"Unknown type for {key}: {any_value}")
 
-            value, is_exception = await self.backend.call_active_method(
-                UUID(request.object_id),
-                request.method_name,
-                request.args,
-                request.kwargs,
-                exec_constraints,
-            )
-            return backend_pb2.CallActiveMethodResponse(value=value, is_exception=is_exception)
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return backend_pb2.CallActiveMethodResponse()
+        value, is_exception = await self.backend.call_active_method(
+            UUID(request.object_id),
+            request.method_name,
+            request.args,
+            request.kwargs,
+            exec_constraints,
+        )
+        return backend_pb2.CallActiveMethodResponse(value=value, is_exception=is_exception)
 
     #################
     # Store Methods #
     #################
 
+    @ServicerMethod(backend_pb2.GetObjectAttributeResponse)
     async def GetObjectAttribute(self, request, context):
-        self._check_context(context)
-        try:
-            value, is_exception = await self.backend.get_object_attribute(
-                UUID(request.object_id),
-                request.attribute,
-            )
-            return backend_pb2.GetObjectAttributeResponse(value=value, is_exception=is_exception)
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return backend_pb2.GetObjectAttributeResponse()
+        value, is_exception = await self.backend.get_object_attribute(
+            UUID(request.object_id),
+            request.attribute,
+        )
+        return backend_pb2.GetObjectAttributeResponse(value=value, is_exception=is_exception)
 
+    @ServicerMethod(backend_pb2.SetObjectAttributeResponse)
     async def SetObjectAttribute(self, request, context):
-        self._check_context(context)
-        try:
-            value, is_exception = await self.backend.set_object_attribute(
-                UUID(request.object_id),
-                request.attribute,
-                request.serialized_attribute,
-            )
-            return backend_pb2.SetObjectAttributeResponse(value=value, is_exception=is_exception)
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return backend_pb2.SetObjectAttributeResponse()
+        value, is_exception = await self.backend.set_object_attribute(
+            UUID(request.object_id),
+            request.attribute,
+            request.serialized_attribute,
+        )
+        return backend_pb2.SetObjectAttributeResponse(value=value, is_exception=is_exception)
 
+    @ServicerMethod(backend_pb2.DelObjectAttributeResponse)
     async def DelObjectAttribute(self, request, context):
-        self._check_context(context)
-        try:
-            value, is_exception = await self.backend.del_object_attribute(
-                UUID(request.object_id),
-                request.attribute,
-            )
-            return backend_pb2.DelObjectAttributeResponse(value=value, is_exception=is_exception)
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return backend_pb2.DelObjectAttributeResponse()
+        value, is_exception = await self.backend.del_object_attribute(
+            UUID(request.object_id),
+            request.attribute,
+        )
+        return backend_pb2.DelObjectAttributeResponse(value=value, is_exception=is_exception)
 
+    @ServicerMethod(BytesValue)
     async def GetObjectProperties(self, request, context):
-        self._check_context(context)
-        try:
-            result = await self.backend.get_object_properties(UUID(request.object_id))
-            return BytesValue(value=result)
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return BytesValue()
+        result = await self.backend.get_object_properties(UUID(request.object_id))
+        return BytesValue(value=result)
 
+    @ServicerMethod(Empty)
     async def UpdateObjectProperties(self, request, context):
-        self._check_context(context)
-        try:
-            await self.backend.update_object_properties(
-                UUID(request.object_id), request.serialized_properties
-            )
-            return Empty()
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        await self.backend.update_object_properties(
+            UUID(request.object_id), request.serialized_properties
+        )
+        return Empty()
 
+    @ServicerMethod(backend_pb2.NewObjectVersionResponse)
     async def NewObjectVersion(self, request, context):
-        self._check_context(context)
-        try:
-            result = await self.backend.new_object_version(UUID(request.object_id))
-            return backend_pb2.NewObjectVersionResponse(object_info=result)
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return backend_pb2.NewObjectVersionResponse()
+        result = await self.backend.new_object_version(UUID(request.object_id))
+        return backend_pb2.NewObjectVersionResponse(object_info=result)
 
+    @ServicerMethod(Empty)
     async def ConsolidateObjectVersion(self, request, context):
-        self._check_context(context)
-        try:
-            await self.backend.consolidate_object_version(UUID(request.object_id))
-            return Empty()
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        await self.backend.consolidate_object_version(UUID(request.object_id))
+        return Empty()
 
+    @ServicerMethod(Empty)
     async def ProxifyObject(self, request, context):
-        self._check_context(context)
-        try:
-            await self.backend.proxify_object(UUID(request.object_id), UUID(request.new_object_id))
-            return Empty()
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        await self.backend.proxify_object(UUID(request.object_id), UUID(request.new_object_id))
+        return Empty()
 
+    @ServicerMethod(Empty)
     async def ChangeObjectId(self, request, context):
-        self._check_context(context)
-        try:
-            await self.backend.change_object_id(
-                UUID(request.object_id), UUID(request.new_object_id)
-            )
-            return Empty()
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        await self.backend.change_object_id(UUID(request.object_id), UUID(request.new_object_id))
+        return Empty()
 
+    @ServicerMethod(Empty)
     async def SendObjects(self, request, context):
-        self._check_context(context)
-        try:
-            await self.backend.send_objects(
-                map(UUID, request.object_ids),
-                UUID(request.backend_id),
-                request.make_replica,
-                request.recursive,
-                request.remotes,
-            )
-            return Empty()
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        await self.backend.send_objects(
+            map(UUID, request.object_ids),
+            UUID(request.backend_id),
+            request.make_replica,
+            request.recursive,
+            request.remotes,
+        )
+        return Empty()
 
+    @ServicerMethod(Empty)
     async def FlushAll(self, request, context):
-        self._check_context(context)
-        try:
-            logger.info("Flushing all objects")
-            await self.backend.flush_all()
-            return Empty()
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        logger.info("Flushing all objects")
+        await self.backend.flush_all()
+        return Empty()
 
+    @ServicerMethod(Empty)
     async def Stop(self, request, context):
-        self._check_context(context)
-        try:
-            logger.info("Stopping backend. Grace period: %ss", settings.shutdown_grace_period)
-            get_dc_event_loop().create_task(self.server.stop(settings.shutdown_grace_period))
-            return Empty()
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        logger.info("Stopping backend. Grace period: %ss", settings.shutdown_grace_period)
+        get_dc_event_loop().create_task(self.server.stop(settings.shutdown_grace_period))
+        return Empty()
 
+    @ServicerMethod(Empty)
     async def Drain(self, request, context):
-        self._check_context(context)
-        try:
-            logger.info("Draining backend. Grace period: %ss", settings.shutdown_grace_period)
-            await self.backend.move_all_objects()
-            get_dc_event_loop().create_task(self.server.stop(settings.shutdown_grace_period))
-            return Empty()
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        logger.info("Draining backend. Grace period: %ss", settings.shutdown_grace_period)
+        await self.backend.move_all_objects()
+        get_dc_event_loop().create_task(self.server.stop(settings.shutdown_grace_period))
+        return Empty()
 
+    @ServicerMethod(Empty)
     async def NewObjectReplica(self, request, context):
-        self._check_context(context)
-        try:
-            await self.backend.new_object_replica(
-                UUID(request.object_id),
-                UUID(request.backend_id),
-                request.recursive,
-                request.remotes,
-            )
-            return Empty()
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        await self.backend.new_object_replica(
+            UUID(request.object_id),
+            UUID(request.backend_id),
+            request.recursive,
+            request.remotes,
+        )
+        return Empty()
 
     ###########
     # END NEW #
