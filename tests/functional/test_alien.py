@@ -70,6 +70,16 @@ def test_alien_pydantic_model(client):
     assert same_person.age != p.age
 
 
+def test_alien_pydantic_methods(client):
+    reference = Person(name="Alice", age=30)
+
+    p = AlienDataClayObject(Person(name="Alice", age=30))
+    p.make_persistent()
+
+    assert p.model_dump() == reference.model_dump()
+    assert p.model_dump_json() == reference.model_dump_json()
+
+
 def test_alien_getsetdelitem(client):
     p = AlienDataClayObject({"a": 1, "b": 2})
 
