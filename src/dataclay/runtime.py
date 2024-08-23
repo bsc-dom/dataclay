@@ -181,7 +181,7 @@ class DataClayRuntime(ABC):
     ##################
 
     async def get_object_by_id(
-        self, object_id: UUID, object_md: ObjectMetadata = None
+        self, object_id: UUID, object_md: Optional[ObjectMetadata] = None
     ) -> DataClayObject:
         """Get dataclay object from inmemory_objects. If not present, get object metadata
         and create new proxy object.
