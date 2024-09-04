@@ -166,7 +166,11 @@ class ServicerMethod:
         # set the current_context
         if "dataset-name" in metadata and "username" in metadata:
             session_var.set(
-                {"dataset_name": metadata["dataset-name"], "username": metadata["username"]}
+                {
+                    "dataset_name": metadata["dataset-name"],
+                    "username": metadata["username"],
+                    "token": b"",
+                }
             )
         return None
 

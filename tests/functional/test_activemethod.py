@@ -69,6 +69,40 @@ def test_activemethod_inner_make_persistent(client):
     assert puppy.age == 0
 
 
+def test_activemethod_nested_getattribute(client):
+    """
+    An activemethod that calls multiple getattribute inside
+    """
+    family = Family()
+    family.make_persistent()
+
+    # Technically, there is a change that all the following objects
+    # are made persistent in a single backend and thus this test
+    # may be inconclusive. The chance is (1/n_backends)^(n_objects - 1).
+
+    # Increment either n to feel safer, or change the make_persistent
+    # to be deterministically correct.
+
+    person = Person("Marc", 24)
+    person.make_persistent()
+    family.add(person)
+    person = Person("Anna", 24)
+    person.make_persistent()
+    family.add(person)
+    dog = Dog("Duna", 6)
+    dog.make_persistent()
+    family.add(dog)
+    dog = Dog("Luna", 6)
+    dog.make_persistent()
+    family.add(dog)
+
+    family_str = str(family)  # This calls the __str__ activemethod
+    assert "Marc" in family_str
+    assert "Anna" in family_str
+    assert "Duna" in family_str
+    assert "Luna" in family_str
+
+
 # Remote methods
 
 
