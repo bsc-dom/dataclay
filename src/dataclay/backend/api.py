@@ -167,7 +167,7 @@ class BackendAPI:
         # Call activemethod in another thread
         logger.info("(%s) *** Starting activemethod '%s' in executor", object_id, method_name)
         max_threads = (
-            None if exec_constraints["max_threads"] == 0 else exec_constraints["max_threads"]
+            None if exec_constraints.get("max_threads", 0) == 0 else exec_constraints["max_threads"]
         )
         logger.info("(%s) Max threads: %s", object_id, max_threads)
         with threadpool_limits(limits=max_threads):
