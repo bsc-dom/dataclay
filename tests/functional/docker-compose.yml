@@ -8,10 +8,10 @@ services:
   metadata-service:
     image: "ghcr.io/bsc-dom/dataclay:dev"
     # NOTE: Comment the *build* section for faster testing. It will use the image from the registry.
-    # Uncomment it if changing the project dependencies.
-    build:
-      context: ../../
-      dockerfile: Dockerfile.dev
+    # Rebuilding is necessary when changing the project dependencies.
+    # build:
+    #   context: ../../
+    #   dockerfile: Dockerfile.dev
     depends_on:
       - redis
     ports:
