@@ -9,9 +9,10 @@ services:
     image: "ghcr.io/bsc-dom/dataclay:dev"
     # NOTE: Comment the *build* section for faster testing. It will use the image from the registry.
     # Rebuilding is necessary when changing the project dependencies.
-    # build:
-    #   context: ../../
-    #   dockerfile: Dockerfile.dev
+    # WARNING: Don't commit the commented *build* section. It will break the GitHub Actions CI/CD pipeline.
+    build:
+      context: ../../
+      dockerfile: Dockerfile.dev
     depends_on:
       - redis
     ports:
