@@ -1,56 +1,49 @@
-import datetime
 import logging
-from uuid import UUID
-
+import requests
 import jwt
+from dataclay.exceptions import DataClayException
+from dataclay.proxy.middleware import MiddlewareBase, MiddlewareException
 
-from . import servicer
 
 logger = logging.getLogger(__name__)
 
 
-def get_session(request):
-    raise Exception("This method should be replaced by jwt token validation in the future.")
-    """Retrieve Session information from the request.session_id field of the gRPC method."""
-    if servicer.global_metadata_api is None:
-        raise SystemError("get_session is only available from within a Proxy running environment")
+def jwt_validation(username, password, roles):
+    
+    from base64 import b64decode
+    from cryptography.hazmat.primitives import serialization
+
+    USER_AUTH = {
+        "client_id": "direct-access-demo",
+        "username":username,
+        "password":password,
+        "grant_type": "password",
+    }
 
     try:
-        session_id = UUID(request.session_id)
-    except AttributeError:
-        raise ValueError("This method did not have a syntactically valid SessionID")
-
-    return servicer.global_metadata_api.get_session(session_id)
-
-
-def generate_jwt(secret_key: str = "", user: str = "dataclay", TOKEN_EXPIRATION: int = 24 * 30):
-    # TODO: Store the username & password in a database in order to check it later
-    payload = {
-        "username": user,
-        "exp": datetime.datetime.now() + datetime.timedelta(hours=TOKEN_EXPIRATION),
-    }
-    token = jwt.encode(payload, secret_key, algorithm="HS256")
-    return token
-
-
-def jwt_validation(username, token):
-    # TODO: Username & password should br required to validate the token
-    password = "s3cret"
-    try:
-        decoded_payload = jwt.decode(token, password, algorithms=["HS256"])
-        if decoded_payload.get("username") != username:
-            raise Exception("Wrong username")
-    except jwt.ExpiredSignatureError as e:
+        r = requests.post(
+        "http://keycloak:8080/realms/dataclay/protocol/openid-connect/token", data=USER_AUTH
+        )
+        r.raise_for_status()
+    except requests.exceptions.RequestException as e:
         raise e
-    except jwt.InvalidTokenError as e:
-        raise e
+    logger.info(r.json())
+    token = r.json()["access_token"]
 
+    r = requests.get("http://keycloak:8080/realms/dataclay/")
+    r.raise_for_status()
+    key_der_base64 = r.json()["public_key"]
 
-def generate_jwt(secret_key: str = "", user: str = "dataclay", TOKEN_EXPIRATION: int = 24 * 30):
-    # TODO: Store the username & password in a database in order to check it later
-    payload = {
-        "username": user,
-        "exp": datetime.datetime.now() + datetime.timedelta(hours=TOKEN_EXPIRATION),
-    }
-    token = jwt.encode(payload, secret_key, algorithm="HS256")
-    return token
+    key_der = b64decode(key_der_base64.encode())
+
+    public_key = serialization.load_der_public_key(key_der)
+
+    decoded_payload = jwt.decode(token, public_key, algorithms=["RS256"])
+
+    if "realm_access" in decoded_payload:
+        for role in roles:
+            if role in decoded_payload["realm_access"]["roles"]:
+                return
+    raise MiddlewareException(f"The user '{username}' does not have the required role to access the database")
+    
+

@@ -177,7 +177,7 @@ class BackendClient:
         metadata = self.metadata_call + [
             ("dataset-name", current_context["dataset_name"]),
             ("username", current_context["username"]),
-            ("authorization", current_context["token"]),
+            ("password", current_context["password"]),
         ]
 
         response = await self.stub.CallActiveMethod(request, metadata=metadata)
@@ -195,14 +195,9 @@ class BackendClient:
         )
         current_context = session_var.get()
         metadata = self.metadata_call + [
+            ("dataset-name", current_context["dataset_name"]),
             ("username", current_context["username"]),
-            ("authorization", current_context["token"]),
-        ]
-        response = await self.stub.GetObjectAttribute(request, metadata=metadata)
-        current_context = session_var.get()
-        metadata = self.metadata_call + [
-            ("username", current_context["username"]),
-            ("authorization", current_context["token"]),
+            ("password", current_context["password"]),
         ]
         response = await self.stub.GetObjectAttribute(request, metadata=metadata)
         return response.value, response.is_exception
@@ -218,8 +213,9 @@ class BackendClient:
         )
         current_context = session_var.get()
         metadata = self.metadata_call + [
+            ("dataset-name", current_context["dataset_name"]),
             ("username", current_context["username"]),
-            ("authorization", current_context["token"]),
+            ("password", current_context["password"]),
         ]
         response = await self.stub.SetObjectAttribute(request, metadata=metadata)
         return response.value, response.is_exception
@@ -232,8 +228,9 @@ class BackendClient:
         )
         current_context = session_var.get()
         metadata = self.metadata_call + [
+            ("dataset-name", current_context["dataset_name"]),
             ("username", current_context["username"]),
-            ("authorization", current_context["token"]),
+            ("password", current_context["password"]),
         ]
         response = await self.stub.DelObjectAttribute(request, metadata=metadata)
         return response.value, response.is_exception

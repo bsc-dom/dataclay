@@ -22,13 +22,7 @@ class ActiveMethodWhitelist(MiddlewareBase):
         
         if request.method_name in self._method_names:
             # Method in whitelist
-            logger.info("EEEEEEEEEEEEEEEEEEEEEEPAAAAAAAAAAAAA")
-            logger.info(metadata.get("username"))
-            logger.info(metadata.get("password"))
-            logger.info(metadata.get("dataset-name"))
-            #logger.info(self._role_dataset())
             if metadata.get("dataset-name") in self._role_dataset:
-                #logger.info(self._role_dataset[metadata.get("dataset-name")])
                 jwt_validation(metadata.get("username"), metadata.get("password"), self._role_dataset[metadata.get("dataset-name")])
                 #User has the necessary role to access the dataset
             return
@@ -45,10 +39,7 @@ class ActiveMethodWhitelist(MiddlewareBase):
         for method in gets:
             if method in self._method_names:
                 # Method in whitelist
-                logger.info(metadata.get("dataset-name"))
-                #logger.info(self._role_dataset())
                 if metadata.get("dataset-name") in self._role_dataset:
-                    #logger.info(self._role_dataset[metadata.get("dataset-name")])
                     jwt_validation(metadata.get("username"), metadata.get("password"), self._role_dataset[metadata.get("dataset-name")])
                     #User has the necessary role to access the dataset
                 return
@@ -65,10 +56,7 @@ class ActiveMethodWhitelist(MiddlewareBase):
         for method in sets:
             if method in self._method_names:
                 # Method in whitelist
-                logger.info(metadata.get("dataset-name"))
-                #logger.info(self._role_dataset())
                 if metadata.get("dataset-name") in self._role_dataset:
-                    #logger.info(self._role_dataset[metadata.get("dataset-name")])
                     jwt_validation(metadata.get("username"), metadata.get("password"), self._role_dataset[metadata.get("dataset-name")])
                     #User has the necessary role to access the dataset
                 return
@@ -85,10 +73,7 @@ class ActiveMethodWhitelist(MiddlewareBase):
         for method in dels:
             if method in self._method_names:
                 # Method in whitelist
-                logger.info(metadata.get("dataset-name"))
-                #logger.info(self._role_dataset())
                 if metadata.get("dataset-name") in self._role_dataset:
-                    #logger.info(self._role_dataset[metadata.get("dataset-name")])
                     jwt_validation(metadata.get("username"), metadata.get("password"), self._role_dataset[metadata.get("dataset-name")])
                     #User has the necessary role to access the dataset
                 return
