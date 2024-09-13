@@ -1,9 +1,38 @@
-services:
+version: '3.9'
+services: 
+
   redis:
     image: redis:latest
 
+  metadata-service:
+    image: "ghcr.io/bsc-dom/dataclay:dev"
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_PASSWORD=s3cret
+      - DATACLAY_USERNAME=testuser
+      - DATACLAY_DATASET=testdata
+      - DATACLAY_LOGLEVEL=INFO
+    command: python -m dataclay.metadata
+
+
+
+
+  backend:
+    image: "ghcr.io/bsc-dom/dataclay:dev"
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_LOGLEVEL=INFO
+    command: python -m dataclay.backend
+    volumes:
+      - ./model:/workdir/model:ro
+
+
   proxy:
-    image: "ghcr.io/bsc-dom/dataclay:edge"
+    image: "ghcr.io/bsc-dom/dataclay:dev"
     ports:
       - 8676:8676
     depends_on:
@@ -15,29 +44,12 @@ services:
       - DATACLAY_LOGLEVEL=DEBUG
       - DATACLAY_PROXY_OIDC_DISCOVERY_URL=http://keycloak:8080/realms/dataclay/.well-known/openid-configuration
     command: python -m dataclay.proxy
-
-  metadata-service:
-    image: "ghcr.io/bsc-dom/dataclay:edge"
-    depends_on:
-      - redis
-    environment:
-      - DATACLAY_KV_HOST=redis
-      - DATACLAY_PASSWORD=s3cret
-      - DATACLAY_USERNAME=testuser
-      - DATACLAY_DATASET=testdata
-      - DATACLAY_LOGLEVEL=INFO
-    command: python -m dataclay.metadata
-
-  backend:
-    image: "ghcr.io/bsc-dom/dataclay:edge"
-    depends_on:
-      - redis
-    environment:
-      - DATACLAY_KV_HOST=redis
-      - DATACLAY_LOGLEVEL=INFO
-    command: python -m dataclay.backend
     volumes:
-      - ./model:/workdir/model:ro
+      - ./proxy_config.py:/workdir/proxy_config.py
+      - ./middleware.py:/workdir/middleware.py
+
+
+
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
@@ -48,4 +60,6 @@ services:
       - ./keycloak-data:/opt/keycloak/data/import
     ports:
       - 8080:8080
-    command: start-dev --import-realm 
+    command: start-dev --import-realm
+    
+
