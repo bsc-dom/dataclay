@@ -11,6 +11,7 @@ dataClay
    alien-objects
    advanced-usage
    telemetry
+   hpc-tracing
    examples/index
 
 .. toctree::
