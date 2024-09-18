@@ -39,6 +39,8 @@ dependencies = [
     "get-annotations;python_version<\"3.10\"",
     "PyJWT>=2.8.0",
     "threadpoolctl>=3.5.0",
+    "requests>=2.31.0",
+    "cryptography",
 ]
 dynamic = ["version"]
 

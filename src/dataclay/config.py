@@ -91,6 +91,8 @@ class ProxySettings(BaseSettings):
     config_module: str = (
         "proxy_config"  # Could use ImportString, but ATM default values are not imported
     )
+    #: Indicates if a JWT needs to be validated. Defaults to False.
+    jwt_validate: bool = False
 
 
 class ClientSettings(BaseSettings):
