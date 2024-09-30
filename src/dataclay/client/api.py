@@ -177,15 +177,14 @@ class Client:
 
         loop = get_dc_event_loop()
         if loop == None:
-            logger.info("Create_new_loop")
-            # Create new event loop in a new thread
+            logger.info("Creating event loop in new thread")
             loop = asyncio.new_event_loop()
             set_dc_event_loop(loop)
             event_loop_thread = EventLoopThread(loop)
             event_loop_thread.start()
             event_loop_thread.ready.wait()
         else:
-            logger.info("Already_had_a_loop")
+            logger.info("Using existing event loop")
 
         # Replace settings
         self.previous_settings = settings.client
@@ -210,6 +209,7 @@ class Client:
                 settings.client.dataclay_host, settings.client.dataclay_port
             )
 
+        logger.info("Starting client runtime coroutine in event loop")
         future = asyncio.run_coroutine_threadsafe(self.runtime.start(), loop)
         future.result()
 
@@ -227,6 +227,7 @@ class Client:
         # self.runtime.dataclay_id
 
         self.is_active = True
+        logger.info("Client runtime started")
 
     @tracer.start_as_current_span("stop")
     def stop(self):

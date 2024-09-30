@@ -138,7 +138,7 @@ class DataClayProperty:
         )
 
         if instance._dc_is_local:
-            logger.debug("local get")
+            logger.debug("(%s) Calling local __getattribute__", instance._dc_meta.id)
             # If the object is local and loaded, we can access the attribute directly
             if not instance._dc_is_loaded:
                 # NOTE: Should be called from another thread.
@@ -159,7 +159,7 @@ class DataClayProperty:
             else:
                 return self.transformer.getter(attr)
         else:
-            logger.debug("remote get")
+            logger.debug("(%s) Calling remote __getattribute__", instance._dc_meta.id)
             return asyncio.run_coroutine_threadsafe(
                 get_runtime().call_remote_method(instance, "__getattribute__", (self.name,), {}),
                 get_dc_event_loop(),
@@ -178,7 +178,7 @@ class DataClayProperty:
         )
 
         if instance._dc_is_local:
-            logger.debug("local set")
+            logger.debug("(%s) Calling local __setattr__", instance._dc_meta.id)
             if not instance._dc_is_loaded:
                 assert get_dc_event_loop()._thread_id != threading.get_ident()
                 asyncio.run_coroutine_threadsafe(
@@ -188,7 +188,7 @@ class DataClayProperty:
                 value = self.transformer.setter(value)
             setattr(instance, self.dc_property_name, value)
         else:
-            logger.debug("remote set")
+            logger.debug("(%s) Calling remote __setattr__", instance._dc_meta.id)
             return asyncio.run_coroutine_threadsafe(
                 get_runtime().call_remote_method(instance, "__setattr__", (self.name, value), {}),
                 get_dc_event_loop(),
@@ -204,7 +204,7 @@ class DataClayProperty:
         )
 
         if instance._dc_is_local:
-            logger.debug("local delete")
+            logger.debug("(%s) Calling local __delattr__", instance._dc_meta.id)
             if not instance._dc_is_loaded:
                 assert get_dc_event_loop()._thread_id != threading.get_ident()
                 asyncio.run_coroutine_threadsafe(
@@ -213,7 +213,7 @@ class DataClayProperty:
 
             delattr(instance, self.dc_property_name)
         else:
-            logger.debug("remote delete")
+            logger.debug("(%s) Calling remote __delattr__", instance._dc_meta.id)
             return asyncio.run_coroutine_threadsafe(
                 get_runtime().call_remote_method(instance, "__delattr__", (self.name,), {}),
                 get_dc_event_loop(),

@@ -133,7 +133,7 @@ class BackendAPI:
     ) -> tuple[bytes, bool]:
         """Entry point for calling an active method of a DataClayObject"""
 
-        logger.debug("(%s) Receiving call to activemethod '%s'", object_id, method_name)
+        logger.debug("(%s) Receiving remote call to activemethod '%s'", object_id, method_name)
 
         instance = await self.runtime.get_object_by_id(object_id)
 
@@ -146,11 +146,10 @@ class BackendAPI:
             # by passing the backend_id of the new object to the proxy, but this can create
             # problems with race conditions (e.g. a move before the consolidation). Therefore,
             # we check to the metadata which is more reliable.
+            logger.warning("(%s) Wrong backend", object_id)
             await self.runtime.sync_object_metadata(instance)
             logger.warning(
-                "(%s) Wrong backend. Update to %s",
-                object_id,
-                instance._dc_meta.master_backend_id,
+                "(%s) Update backend to %s", object_id, instance._dc_meta.master_backend_id
             )
             return (
                 pickle.dumps(
@@ -169,18 +168,19 @@ class BackendAPI:
         max_threads = (
             None if exec_constraints.get("max_threads", 0) == 0 else exec_constraints["max_threads"]
         )
-        logger.info("(%s) Max threads: %s", object_id, max_threads)
+        logger.info("(%s) Max threads for activemethod: %s", object_id, max_threads)
         with threadpool_limits(limits=max_threads):
             try:
                 func = getattr(instance, method_name)
                 if asyncio.iscoroutinefunction(func):
-                    logger.debug("(%s) Activemethod '%s' is a coroutine", object_id, method_name)
+                    logger.debug("(%s) Awaiting activemethod coroutine", object_id)
                     result = await func(*args, **kwargs)
                 else:
+                    logger.debug("(%s) Running activemethod in new thread", object_id)
                     result = await dc_to_thread(func, *args, **kwargs)
             except Exception as e:
                 # If an exception was raised, serialize it and return it to be raised by the client
-                logger.debug("(%s) *** Exception in activemethod '%s'", object_id, method_name)
+                logger.info("(%s) *** Exception in activemethod '%s'", object_id, method_name)
                 return pickle.dumps(e), True
         logger.info("(%s) *** Finished activemethod '%s' in executor", object_id, method_name)
 
@@ -192,7 +192,6 @@ class BackendAPI:
 
     # Store Methods
 
-    # TODO: Rename to get_object_property
     @tracer.start_as_current_span("get_object_attribute")
     async def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         """Returns value of the object attibute with ID provided
@@ -203,14 +202,13 @@ class BackendAPI:
             The pickled value of the object attibute.
             If it's an exception or not
         """
-        logger.debug("(%s) Receiving get attribute '%s'", object_id, attribute)
+        logger.debug("(%s) Receiving remote call to __getattribute__ '%s'", object_id, attribute)
         instance = await self.runtime.get_object_by_id(object_id)
         if not instance._dc_is_local:
+            logger.warning("(%s) Wrong backend", object_id)
             await self.runtime.sync_object_metadata(instance)
             logger.warning(
-                "(%s) Wrong backend. Update to %s",
-                object_id,
-                instance._dc_meta.master_backend_id,
+                "(%s) Update backend to %s", object_id, instance._dc_meta.master_backend_id
             )
             return (
                 pickle.dumps(
@@ -232,16 +230,14 @@ class BackendAPI:
         self, object_id: UUID, attribute: str, serialized_attribute: bytes
     ) -> tuple[bytes, bool]:
         """Updates an object attibute with ID provided"""
-        logger.debug("(%s) Receiving set attribute '%s'", object_id, attribute)
+        logger.debug("(%s) Receiving remote call to __setattr__ '%s'", object_id, attribute)
         instance = await self.runtime.get_object_by_id(object_id)
         if not instance._dc_is_local:
+            logger.warning("(%s) Wrong backend", object_id)
             await self.runtime.sync_object_metadata(instance)
             logger.warning(
-                "(%s) Wrong backend. Update to %s",
-                object_id,
-                instance._dc_meta.master_backend_id,
+                "(%s) Update backend to %s", object_id, instance._dc_meta.master_backend_id
             )
-
             return (
                 pickle.dumps(
                     ObjectWithWrongBackendIdError(
@@ -260,13 +256,13 @@ class BackendAPI:
     @tracer.start_as_current_span("del_object_attribute")
     async def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         """Deletes an object attibute with ID provided"""
+        logger.debug("(%s) Receiving remote call to __delattr__'%s'", object_id, attribute)
         instance = await self.runtime.get_object_by_id(object_id)
         if not instance._dc_is_local:
+            logger.warning("(%s) Wrong backend", object_id)
             await self.runtime.sync_object_metadata(instance)
             logger.warning(
-                "(%s) Wrong backend. Update to %s",
-                object_id,
-                instance._dc_meta.master_backend_id,
+                "(%s) Update backend to %s", object_id, instance._dc_meta.master_backend_id
             )
             return (
                 pickle.dumps(

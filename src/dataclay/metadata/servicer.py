@@ -89,6 +89,7 @@ async def serve():
         )
 
     # Wait for the server to stop
+    logger.info("MetadataService started")
     await server.wait_for_termination()
     logger.info("MetadataService stopped")
     await metadata_servicer.backend_clients.stop()

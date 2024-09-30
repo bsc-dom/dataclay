@@ -72,6 +72,8 @@ def _get_or_generate_backend_id() -> UUID:
 
 
 async def serve():
+
+    # Set the event loop created by `asyncio.run` as the dataclay event loop
     set_dc_event_loop(asyncio.get_running_loop())
 
     backend_id = _get_or_generate_backend_id()
@@ -135,6 +137,7 @@ async def serve():
         )
 
     # Wait for the server to stop
+    logger.info("Backend service started")
     await server.wait_for_termination()
     logger.info("Backend service stopped")
     await backend.stop()

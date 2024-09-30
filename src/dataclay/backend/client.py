@@ -199,12 +199,6 @@ class BackendClient:
             ("authorization", current_context["token"]),
         ]
         response = await self.stub.GetObjectAttribute(request, metadata=metadata)
-        current_context = session_var.get()
-        metadata = self.metadata_call + [
-            ("username", current_context["username"]),
-            ("authorization", current_context["token"]),
-        ]
-        response = await self.stub.GetObjectAttribute(request, metadata=metadata)
         return response.value, response.is_exception
 
     @grpc_aio_error_handler
