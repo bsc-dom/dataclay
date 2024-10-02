@@ -39,11 +39,11 @@ services:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_LOGLEVEL=DEBUG
       - DATACLAY_PROXY_OIDC_DISCOVERY_URL=http://keycloak:8080/realms/dataclay/.well-known/openid-configuration
-      - DATACLAY_PROXY_JWT_VALIDATE=True
     command: python -m dataclay.proxy
     volumes:
       - ./proxy_config.py:/workdir/proxy_config.py
       - ./middleware.py:/workdir/middleware.py
+      - ./middleware_val.py:/workdir/middleware_val.py
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest

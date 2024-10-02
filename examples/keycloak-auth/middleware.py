@@ -7,14 +7,12 @@ logger = logging.getLogger(__name__)
 
 class ActiveMethodWhitelist(MiddlewareBase):
 
-    def __init__(self, user, methods, role_dataset):
+    def __init__(self, user, methods):
         self._user = user
         self._method_names = methods
-        super().__init__(role_dataset)
 
-    def CallActiveMethod(self, request, context):
+    async def CallActiveMethod(self, request, context):
         metadata = dict(context.invocation_metadata())
-        
         if metadata.get("username") != self._user:
             # Not the user we filter
             return
@@ -24,7 +22,7 @@ class ActiveMethodWhitelist(MiddlewareBase):
             return
         raise MiddlewareException("Method not allowed")
 
-    def GetObjectAttribute(self, request, context):
+    async def GetObjectAttribute(self, request, context):
         metadata = dict(context.invocation_metadata())
 
         if metadata.get("username") != self._user:
@@ -38,7 +36,7 @@ class ActiveMethodWhitelist(MiddlewareBase):
                 return
         raise MiddlewareException("Method GetObjectAttribute not allowed")
 
-    def SetObjectAttribute(self, request, context):
+    async def SetObjectAttribute(self, request, context):
         metadata = dict(context.invocation_metadata())
 
         if metadata.get("username") != self._user:
@@ -52,7 +50,7 @@ class ActiveMethodWhitelist(MiddlewareBase):
                 return
         raise MiddlewareException("Method SetObjectAttribute not allowed")
 
-    def DelObjectAttribute(self, request, context):
+    async def DelObjectAttribute(self, request, context):
         metadata = dict(context.invocation_metadata())
 
         if metadata.get("username") != self._user:

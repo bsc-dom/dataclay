@@ -1,19 +1,26 @@
+import asyncio
 from dataclay import Client
 from dataclay.contrib.modeltest.family import Person
 
-client = Client(proxy_host="127.0.0.1", username="testuser", password="s3cret", dataset="public_dataset")
-client.start()
+async def main():
+    client = Client(proxy_host="127.0.0.1", username="testuser", password="s3cret", dataset="public_dataset")
+    client.start()
 
-person = Person("testuser", 5)
+    person = Person("testuser", 5)
 
-person.make_persistent(alias="testuser")
+    person.make_persistent(alias="testuser")
 
-print("Age: ",person.age)
+    print("Age: ",person.age)
 
-person.add_year()
+    person.add_year()
 
-print("#Next year#")
+    print("#Next year#")
 
-age = person.age
+    age = person.age
 
-print("Age: ",age)
+    print("Age: ",age)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+

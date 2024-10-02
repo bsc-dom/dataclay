@@ -12,9 +12,7 @@ from typing import Awaitable, Callable
 import requests
 import jwt
 import grpc
-
-
-
+from dataclay.proxy.middleware import middleware_context
 
 logger = logging.getLogger(__name__)
 
@@ -39,53 +37,74 @@ class OIDCInterceptor(grpc.aio.ServerInterceptor):
         continuation: Callable[[grpc.HandlerCallDetails], Awaitable[grpc.RpcMethodHandler]],
         handler_call_details: grpc.HandlerCallDetails,
     ) -> grpc.RpcMethodHandler:
-        logger.debug("Intercepting call to %s", handler_call_details.method)
+        """Interceptor function. Populates middleware_context according to whether:
+            -The user can't be authenticated:
+                -With the grpc context
+            -The user can be authenticated but has no roles:
+                -With the grpc context + preferred_username
+            -The user can be authenticated and has roles:
+                -With the grpc context + preferred_username + {roles}
 
-        raise NotImplementedError("OIDCInterceptor is not implemented yet")
+        Args:
+            continuation (Callable[[grpc.HandlerCallDetails], Awaitable[grpc.RpcMethodHandler]]): Continuation of the grpc functionality
+            handler_call_details (grpc.HandlerCallDetails): Details sent in the grpc call
+
+        Returns: 
+            Returns the result of the continuation
+        """
+        logger.info("Intercepting call to %s", handler_call_details.method)
+        from base64 import b64decode
+        from cryptography.hazmat.primitives import serialization
+
+        #raise NotImplementedError("OIDCInterceptor is not implemented yet")
     
         # Check if the request has a token, and validate its signature and validity
         # through the OpenID endpoints (endpoints inferred through the discovery_url).
 
-        current_mwc = middleware_context.get()
-        current_mwc["oidc_user"] = ...  # None if not authenticated
-        current_mwc["oidc_roles"] = ...  # Empty list if not authenticated
+    
+        current_mwc = dict(handler_call_details.invocation_metadata)
+        if "username" not in current_mwc: 
+            middleware_context.set(current_mwc)
+            return await continuation(handler_call_details)
 
+        if "token" not in current_mwc:
+            USER_AUTH = {
+            "client_id": "direct-access-demo",
+            "username":current_mwc["username"],
+            "password":current_mwc["password"],
+            "grant_type": "password",
+            }
+
+            try:
+                r = requests.post(
+                self.discovery_url+"/realms/dataclay/protocol/openid-connect/token", data=USER_AUTH
+                )
+                r.raise_for_status()
+            except requests.exceptions.RequestException:
+                middleware_context.set(current_mwc)
+                return await continuation(handler_call_details)
+
+            token = r.json()["access_token"]
+
+        try:
+            r = requests.get(self.discovery_url+"/realms/dataclay/")#"http://keycloak:8080/realms/dataclay/"
+            r.raise_for_status()
+            key_der_base64 = r.json()["public_key"]
+
+            key_der = b64decode(key_der_base64.encode())
+
+            public_key = serialization.load_der_public_key(key_der)
+
+            decoded_payload = jwt.decode(token, public_key, algorithms=["RS256"])
+        except:
+            middleware_context.set(current_mwc)
+            return await continuation(handler_call_details)
+
+
+        current_mwc["oidc_user"] = decoded_payload["preferred_username"]
+
+        if "realm_access" in decoded_payload:
+            current_mwc["oidc_roles"] = decoded_payload["realm_access"]["roles"]
+
+        middleware_context.set(current_mwc)
         return await continuation(handler_call_details)
-
-def jwt_validation(username, password, roles):
-    
-    from base64 import b64decode
-    from cryptography.hazmat.primitives import serialization
-
-    USER_AUTH = {
-        "client_id": "direct-access-demo",
-        "username":username,
-        "password":password,
-        "grant_type": "password",
-    }
-
-    try:
-        r = requests.post(
-        "http://keycloak:8080/realms/dataclay/protocol/openid-connect/token", data=USER_AUTH
-        )
-        r.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        raise e
-    token = r.json()["access_token"]
-
-    r = requests.get("http://keycloak:8080/realms/dataclay/")
-    r.raise_for_status()
-    key_der_base64 = r.json()["public_key"]
-
-    key_der = b64decode(key_der_base64.encode())
-
-    public_key = serialization.load_der_public_key(key_der)
-
-    decoded_payload = jwt.decode(token, public_key, algorithms=["RS256"])
-
-    if "realm_access" in decoded_payload:
-        for role in roles:
-            if role in decoded_payload["realm_access"]["roles"]:
-                return
-    raise Exception(f"The user '{username}' does not have the required role to access the database")
-    

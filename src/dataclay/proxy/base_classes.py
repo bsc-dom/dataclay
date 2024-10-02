@@ -29,6 +29,7 @@ BACKEND_METHODS = [
     "Stop",
     "Drain",
     "NewObjectReplica",
+    "RoleValidation",
 ]
 
 METADATA_METHODS = [
@@ -52,7 +53,7 @@ class BackendMeta(type):
     def __init__(cls, name, bases, dct):
         for method_name in BACKEND_METHODS:
 
-            def dynamic_method(self, request, context, *, method_name=method_name):
+            async def dynamic_method(self, request, context, *, method_name=method_name):
                 logger.info("Ready to proxy backend method %s", method_name)
                 try:
                     # Note to future readers:
@@ -60,14 +61,14 @@ class BackendMeta(type):
                     # bound through the scope. You need to bound it to a local variable (hence the
                     # method_name with a default value).
                     for mid in self.middleware:
-                        mid(method_name, request, context)
+                        await mid(method_name, request, context)
                 except MiddlewareException as e:
                     context.set_details(str(e))
                     context.set_code(e.status_code or grpc.StatusCode.PERMISSION_DENIED)
                     logger.info("Middleware %r has blocked method %s" % (mid, method_name))
                     return Empty()
                 else:
-                    stub = asyncio.run(self._get_stub(context))
+                    stub = await (self._get_stub(context))
                     method_to_call = getattr(stub, method_name)
                     return method_to_call(request)
 
@@ -79,7 +80,7 @@ class MetadataMeta(type):
     def __init__(cls, name, bases, dct):
         for method_name in METADATA_METHODS:
 
-            def dynamic_method(self, request, context, *, method_name=method_name):
+            async def dynamic_method(self, request, context, *, method_name=method_name):
                 logger.info("Ready to proxy metadata method %s", method_name)
                 try:
                     # Note to future readers:
@@ -87,7 +88,7 @@ class MetadataMeta(type):
                     # bound through the scope. You need to bound it to a local variable (hence the
                     # method_name with a default value).
                     for mid in self.middleware:
-                        mid(method_name, request, context)
+                        await mid(method_name, request, context)
                 except MiddlewareException as e:
                     context.set_details(str(e))
                     context.set_code(e.status_code or grpc.StatusCode.PERMISSION_DENIED)
@@ -113,6 +114,7 @@ class BackendProxyBase(backend_pb2_grpc.BackendServiceServicer, metaclass=Backen
             self.backend_stubs[k] = backend_pb2_grpc.BackendServiceStub(ch)
 
     async def _get_stub(self, context):
+        
         """Get a channel to a specific backend.
 
         Metadata header (retrieved through the context) *must* contain the

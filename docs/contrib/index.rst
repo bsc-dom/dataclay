@@ -6,3 +6,5 @@ Extras (contrib)
    mqtt
    zenoh
    nvm
+   oidc
+   middleware
