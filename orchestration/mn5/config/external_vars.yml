@@ -14,6 +14,7 @@ global_env:
   DATACLAY_TRACING: "{{ lookup('env', 'DATACLAY_TRACING') | default('false', true) }}"
   DATACLAY_TRACING_HOST: "{{ lookup('env', 'DATACLAY_TRACING_HOST') }}"
   DATACLAY_JOB_PATH: "{{ job_path }}" # Used in otel-json-exporter.yaml
+  DATACLAY_IO_BOUND_MULTIPLIER: "{{ lookup('env', 'DATACLAY_IO_BOUND_MULTIPLIER') | default(2, true) }}"
 
 backend_properties:
   DATACLAY_BACKEND_PORT: "{{ lookup('env', 'DATACLAY_BACKEND_PORT') | default(6867, true) }}"

@@ -146,10 +146,15 @@ class Settings(BaseSettings):
     # Other
     dataclay_id: Optional[uuid.UUID] = Field(default=None, alias="dataclay_id")
     storage_path: str = "/data/storage/"
-    thread_pool_max_workers: Optional[int] = None
-    healthcheck_max_workers: Optional[int] = None
     loglevel: Annotated[str, StringConstraints(strip_whitespace=True, to_upper=True)] = "INFO"
     ephemeral: bool = False
+
+    # Threads
+    #: Multiplier for I/O-bound tasks
+    io_bound_multiplier: int = 2
+    # TODO: Rename it with proxy...
+    thread_pool_max_workers: Optional[int] = None
+    healthcheck_max_workers: Optional[int] = None
 
     # Timeouts
     grpc_check_alive_timeout: int = 60

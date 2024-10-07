@@ -394,7 +394,7 @@ class DataClayRuntime(ABC):
                 try:
                     if method_name == "__getattribute__":
                         logger.debug(
-                            "(%s) Getting remote attribute %s", instance._dc_meta.id, args[0]
+                            "(%s) Getting remote attribute '%s'", instance._dc_meta.id, args[0]
                         )
                         (
                             serialized_response,
@@ -405,7 +405,7 @@ class DataClayRuntime(ABC):
                         )
                     elif method_name == "__setattr__":
                         logger.debug(
-                            "(%s) Setting remote attribute %s", instance._dc_meta.id, args[0]
+                            "(%s) Setting remote attribute '%s'", instance._dc_meta.id, args[0]
                         )
                         (
                             serialized_response,
@@ -417,7 +417,7 @@ class DataClayRuntime(ABC):
                         )
                     elif method_name == "__delattr__":
                         logger.debug(
-                            "(%s) Deleting remote attribute %s", instance._dc_meta.id, args[0]
+                            "(%s) Deleting remote attribute '%s'", instance._dc_meta.id, args[0]
                         )
                         (
                             serialized_response,
@@ -428,7 +428,7 @@ class DataClayRuntime(ABC):
                         )
                     else:
                         logger.debug(
-                            "(%s) Executing remote method %s with constraints %s",
+                            "(%s) Executing remote method '%s' with constraints %s",
                             instance._dc_meta.id,
                             method_name,
                             exec_constraints_var.get(),
@@ -468,14 +468,16 @@ class DataClayRuntime(ABC):
                 # If the response is an exception, it is raised
                 if is_exception:
                     logger.debug(
-                        "(%s) Remote method %s raised an exception",
+                        "(%s) Remote method '%s' raised an exception",
                         instance._dc_meta.id,
                         method_name,
                     )
                     raise response
 
                 logger.info(
-                    "(%s) Remote method %s executed successfully", instance._dc_meta.id, method_name
+                    "(%s) Remote method '%s' executed successfully",
+                    instance._dc_meta.id,
+                    method_name,
                 )
                 return response
 

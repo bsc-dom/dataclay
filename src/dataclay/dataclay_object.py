@@ -160,6 +160,7 @@ class DataClayProperty:
                 return self.transformer.getter(attr)
         else:
             logger.debug("(%s) Calling remote __getattribute__", instance._dc_meta.id)
+            assert get_dc_event_loop()._thread_id != threading.get_ident()
             return asyncio.run_coroutine_threadsafe(
                 get_runtime().call_remote_method(instance, "__getattribute__", (self.name,), {}),
                 get_dc_event_loop(),
@@ -189,6 +190,7 @@ class DataClayProperty:
             setattr(instance, self.dc_property_name, value)
         else:
             logger.debug("(%s) Calling remote __setattr__", instance._dc_meta.id)
+            assert get_dc_event_loop()._thread_id != threading.get_ident()
             return asyncio.run_coroutine_threadsafe(
                 get_runtime().call_remote_method(instance, "__setattr__", (self.name, value), {}),
                 get_dc_event_loop(),
@@ -214,6 +216,7 @@ class DataClayProperty:
             delattr(instance, self.dc_property_name)
         else:
             logger.debug("(%s) Calling remote __delattr__", instance._dc_meta.id)
+            assert get_dc_event_loop()._thread_id != threading.get_ident()
             return asyncio.run_coroutine_threadsafe(
                 get_runtime().call_remote_method(instance, "__delattr__", (self.name,), {}),
                 get_dc_event_loop(),
@@ -460,6 +463,8 @@ class DataClayObject:
         # "pickle.loads" of dataClay objects is calling this method behind. With `dcloads` this method
         # will be called in another thread, so it will not block the event loop.
 
+        logger.debug("(%s) Calling get_by_id", object_id)
+        assert get_dc_event_loop()._thread_id != threading.get_ident()
         future = asyncio.run_coroutine_threadsafe(cls._get_by_id(object_id), get_dc_event_loop())
         return future.result()
 

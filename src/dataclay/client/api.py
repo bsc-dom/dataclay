@@ -7,6 +7,8 @@ core and sets the "client" mode for the library.
 
 from __future__ import annotations
 
+import threading
+
 __all__ = ["init", "finish", "DataClayObject"]
 
 import asyncio
@@ -210,6 +212,7 @@ class Client:
             )
 
         logger.info("Starting client runtime coroutine in event loop")
+        assert loop._thread_id != threading.get_ident()  # Redundancy check
         future = asyncio.run_coroutine_threadsafe(self.runtime.start(), loop)
         future.result()
 

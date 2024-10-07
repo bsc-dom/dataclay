@@ -15,7 +15,7 @@ from threadpoolctl import threadpool_limits
 
 from dataclay import utils
 from dataclay.config import set_runtime, settings
-from dataclay.event_loop import dc_to_thread
+from dataclay.event_loop import dc_to_thread_io
 from dataclay.exceptions import (
     DataClayException,
     DoesNotExistError,
@@ -169,6 +169,8 @@ class BackendAPI:
             None if exec_constraints.get("max_threads", 0) == 0 else exec_constraints["max_threads"]
         )
         logger.info("(%s) Max threads for activemethod: %s", object_id, max_threads)
+        # TODO: Check that the threadpool_limit is not limiting our internal pool of threads.
+        # like when we are serializing dataclay objects.
         with threadpool_limits(limits=max_threads):
             try:
                 func = getattr(instance, method_name)
@@ -177,7 +179,7 @@ class BackendAPI:
                     result = await func(*args, **kwargs)
                 else:
                     logger.debug("(%s) Running activemethod in new thread", object_id)
-                    result = await dc_to_thread(func, *args, **kwargs)
+                    result = await dc_to_thread_io(func, *args, **kwargs)
             except Exception as e:
                 # If an exception was raised, serialize it and return it to be raised by the client
                 logger.info("(%s) *** Exception in activemethod '%s'", object_id, method_name)
@@ -219,12 +221,11 @@ class BackendAPI:
                 False,
             )
         try:
-            value = await dc_to_thread(getattr, instance, attribute)
+            value = await dc_to_thread_io(getattr, instance, attribute)
             return await dcdumps(value), False
         except Exception as e:
             return pickle.dumps(e), True
 
-    # TODO: Rename to set_object_property
     @tracer.start_as_current_span("set_object_attribute")
     async def set_object_attribute(
         self, object_id: UUID, attribute: str, serialized_attribute: bytes
@@ -248,7 +249,7 @@ class BackendAPI:
             )
         try:
             object_attribute = await dcloads(serialized_attribute)
-            await dc_to_thread(setattr, instance, attribute, object_attribute)
+            await dc_to_thread_io(setattr, instance, attribute, object_attribute)
             return None, False
         except Exception as e:
             return pickle.dumps(e), True
@@ -273,7 +274,7 @@ class BackendAPI:
                 False,
             )
         try:
-            await dc_to_thread(delattr, instance, attribute)
+            await dc_to_thread_io(delattr, instance, attribute)
             return None, False
         except Exception as e:
             return pickle.dumps(e), True
