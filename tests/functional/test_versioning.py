@@ -1,7 +1,7 @@
 import pytest
 
 import storage.api
-from dataclay.contrib.modeltest.family import Dog, Family, Person
+from dataclay.contrib.modeltest.family import Family, Person
 from dataclay.event_loop import run_dc_coroutine
 
 

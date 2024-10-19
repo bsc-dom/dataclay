@@ -5,16 +5,13 @@ import io
 import logging
 import pickle
 import threading
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 from uuid import UUID
 
 from dataclay import utils
 from dataclay.config import get_runtime
 from dataclay.dataclay_object import DataClayObject
-from dataclay.event_loop import dc_to_thread_cpu, get_dc_event_loop, run_dc_coroutine
-
-if TYPE_CHECKING:
-    from dataclay.dataclay_object import DataClayObject
+from dataclay.event_loop import dc_to_thread_cpu, get_dc_event_loop
 
 logger = logging.getLogger(__name__)
 
@@ -50,18 +47,19 @@ class RecursiveDataClayPickler(DataClayPickler):
 
     def persistent_id(self, obj):
         """
-        This method is called to get the persistent id of an object.
-        If the object is a non registered DataClayObject, then it returns a tuple with the following elements:
-        - "unregistered" tag
-        - object id
-        - object class
+        Retrieves the persistent ID for an object.
 
-        If the object is a persistent DataClayObject, then it returns None. And the reducer_override method is called.
-        The reducer_override will serialize the object as a tuple with the following elements:
-        - get_by_id_sync method
-        - object id
+        If the object is an unregistered DataClayObject, returns a tuple containing:
+        - A tag "unregistered"
+        - The object's ID
+        - The object's class
 
-        If the object is not a DataClayObject, then it returns None.
+        If the object is a registered persistent DataClayObject, returns None and triggers
+        the 'reducer_override' method. This method serializes the object as a tuple with:
+        - The get_by_id_sync method
+        - The object's ID
+
+        If the object is not a DataClayObject, returns None.
         """
         if isinstance(obj, DataClayObject):
             if obj._dc_is_local and not obj._dc_is_replica:
@@ -172,10 +170,12 @@ async def recursive_dcloads(object_binary, unserialized_objects: dict[UUID, Data
 
 
 async def dcdumps(obj):
-    """Serialize the object using DataClayPickler. It will manage the serialization of DataClayObjects.
+    """Serialize the object using DataClayPickler.
+    It will manage the serialization of DataClayObjects.
 
     Args:
-        obj: The object to serialize. Should never be a DataClayObject, but the _dc_state attribute of it.
+        obj: The object to serialize. Should never be a DataClayObject,
+        but the _dc_state attribute of it.
     """
     logger.debug("Serializing object in executor")
     # TODO: Avoid calling dc_to_thread_cpu if not needed. Dunnot how, but optimize!
@@ -187,7 +187,8 @@ async def dcdumps(obj):
 
 
 async def dcloads(binary):
-    """Deserialize the object using pickle.loads. It will manage the deserialization of DataClayObjects.
+    """Deserialize the object using pickle.loads.
+    It will manage the deserialization of DataClayObjects.
 
     Args:
         binary: The binary to deserialize. Should be the result of dcdumps.

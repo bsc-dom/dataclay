@@ -72,7 +72,8 @@ class RedisManager:
     async def set_new(self, kv_object: KeyValue):
         """Sets a new key, failing if already exists.
 
-        Use "set" if the key is using a UUID (should avoid conflict), in order to optimize for etcd (if used)
+        Use "set" if the key is using a UUID (should avoid conflict),
+        in order to optimize for etcd (if used)
         """
         if not await self._client.set(kv_object.key, kv_object.value, nx=True):
             raise AlreadyExistError(kv_object.key)

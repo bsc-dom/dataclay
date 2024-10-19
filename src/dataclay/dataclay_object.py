@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Annotated, Any, Optional, Type, TypeVar, get_o
 
 from dataclay.annotated import LocalOnly, PropertyTransformer
 from dataclay.config import get_runtime
-from dataclay.event_loop import get_dc_event_loop, run_dc_coroutine
+from dataclay.event_loop import get_dc_event_loop
 from dataclay.exceptions import ObjectIsMasterError, ObjectNotRegisteredError
 from dataclay.metadata.kvdata import ObjectMetadata
 from dataclay.utils.telemetry import trace
@@ -268,25 +268,26 @@ class DataClayObject:
         obj._dc_meta = ObjectMetadata(class_name=cls.__module__ + "." + cls.__name__)
 
         logger.debug(
-            "(%s) Creating new dc_object '%s' args=%s, kwargs=%s",
+            "(%s) Creating new DataClayObject '%s' with args=%s, kwargs=%s",
             obj._dc_meta.id,
             cls.__name__,
             args,
             kwargs,
         )
 
-        # If the object is being created in a backend, it should be made persistent immediately
-        # This should only happen when instantiating a dataClay object from an activemethod,
-        # The activemethod must had been called in another thread using an executor. Therefore,
-        # there is not running event loop in the current thread, and we can use run_coroutine_threadsafe
-        # to the main dc_running_loop.
-        # TODO: This same logic applies to all DataClayObject methods that are called withing an activemethod.
+        # If the object is created on a backend, it should be made persistent immediately.
+        # This happens when a DataClay object is instantiated from an activemethod.
+        # Since activemethods are executed in another thread (using an executor),
+        # there is no active event loop in the current thread. Therefore, we can safely use
+        # run_coroutine_threadsafe to interact with the main event loop (dc_running_loop).
+        # TODO: Apply this logic to all DataClayObject methods invoked within activemethods.
         if get_runtime() and get_runtime().is_backend:
             logger.debug("(%s) Calling implicit make_persistent", obj._dc_meta.id)
 
-            # TODO: Option to make an eventual call to make_persistent async
-            # loop.create_task(obj.a_make_persistent())
+            # TODO: Consider making make_persistent an asynchronous call
+            # Example: loop.create_task(obj.a_make_persistent())
             obj.make_persistent()
+            # Alternatively, use the event loop for async behavior:
             # loop = get_dc_event_loop()
             # t = asyncio.run_coroutine_threadsafe(obj.make_persistent(), loop)
             # t.result()
@@ -460,8 +461,8 @@ class DataClayObject:
         # WARNING: This method must not be called from the same thread as the running event loop
         # or it will block the event loop. When unserializing dataClay objects, use "await dcloads"
         # if possible. Only use "pickle.loads" if you are sure that the event loop is not running.
-        # "pickle.loads" of dataClay objects is calling this method behind. With `dcloads` this method
-        # will be called in another thread, so it will not block the event loop.
+        # "pickle.loads" of dataClay objects is calling this method behind. With `dcloads` this
+        # method will be called in another thread, so it will not block the event loop.
 
         logger.debug("(%s) Calling get_by_id", object_id)
         assert get_dc_event_loop()._thread_id != threading.get_ident()
@@ -483,18 +484,20 @@ class DataClayObject:
 
     @classmethod
     def get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
-        """Returns the object with the given alias.
+        """
+        Retrieve an object by its alias.
 
         Args:
-            alias: Alias of the object.
-            dataset_name: Name of the dataset where the alias is stored. If None, the active dataset is used.
+            alias: The alias of the object to retrieve.
+            dataset_name: Optional. The name of the dataset where the alias is stored.
+                          If not provided, the active dataset is used.
 
         Returns:
-            The object with the given alias.
+            The object associated with the given alias.
 
         Raises:
-            DoesNotExistError: If the alias does not exist.
-            DatasetIsNotAccessibleError: If the dataset is not accessible.
+            DoesNotExistError: If no object with the given alias exists.
+            DatasetIsNotAccessibleError: If the specified dataset is not accessible.
         """
         future = asyncio.run_coroutine_threadsafe(
             cls._get_by_alias(alias, dataset_name), get_dc_event_loop()
@@ -561,7 +564,8 @@ class DataClayObject:
 
         Args:
             alias: Alias to be removed.
-            dataset_name: Name of the dataset where the alias is stored. If None, the active dataset is used.
+            dataset_name: Name of the dataset where the alias is stored.
+                          If None, the active dataset is used.
 
         Raises:
             DoesNotExistError: If the alias does not exist.
@@ -751,22 +755,23 @@ class DataClayObject:
 
     @tracer.start_as_current_span("dc_update")
     async def dc_update(self, from_object: DataClayObject):
-        """Updates current object with contents of from_object.
+        """Updates the current object with the properties of from_object.
 
         Args:
-            from_object: object with the new values to update current object.
+            from_object: The object with the new values to update current object.
 
         Raises:
             TypeError: If the objects are not of the same type.
         """
-        if type(self) != type(from_object):
+        if not isinstance(from_object, type(self)):
             raise TypeError("Objects must be of the same type")
 
         await get_runtime().replace_object_properties(self, from_object)
 
     @tracer.start_as_current_span("dc_update_properties")
     async def _dc_update_properties(self, new_properties: dict[str, Any]):
-        # TODO: Check that the new properties are the same and of the same type as the current object
+        # TODO: Check that the new properties are the same and
+        # of the same type as the current object
         await get_runtime().update_object_properties(self, new_properties)
 
     async def a_dc_update_properties(self, new_properties: dict[str, Any]):
@@ -810,39 +815,13 @@ class DataClayObject:
             raise AttributeError("Alias cannot be null or empty")
         await self.a_make_persistent(alias=alias, backend_id=backend_id)
 
-    ##############
-    # Federation #
-    ##############
-
-    def federate_to_backend(self, ext_execution_env_id, recursive=True):
-        get_runtime().federate_to_backend(self, ext_execution_env_id, recursive)
-
-    def federate(self, ext_dataclay_id, recursive=True):
-        get_runtime().federate_object(self, ext_dataclay_id, recursive)
-
-    def unfederate_from_backend(self, ext_execution_env_id, recursive=True):
-        get_runtime().unfederate_from_backend(self, ext_execution_env_id, recursive)
-
-    def unfederate(self, ext_dataclay_id=None, recursive=True):
-        # FIXME: unfederate only from specific ext dataClay
-        get_runtime().unfederate_object(self, ext_dataclay_id, recursive)
-
-    def synchronize(self, field_name, value):
-        # from dataclay.DataClayObjProperties import DCLAY_SETTER_PREFIX
-        raise Exception("Synchronize need refactor")
-        return get_runtime().synchronize(self, DCLAY_SETTER_PREFIX + field_name, value)
+    #################
+    # Magic Methods #
+    #################
 
     def __repr__(self):
-        if self._dc_is_registered:
-            return "<%s instance with ObjectID=%s>" % (
-                self._dc_meta.class_name,
-                self._dc_meta.id,
-            )
-        else:
-            return "<%s volatile instance with ObjectID=%s>" % (
-                self._dc_meta.class_name,
-                self._dc_meta.id,
-            )
+        status = "instance" if self._dc_is_registered else "volatile instance"
+        return f"<{self._dc_meta.class_name} {status} with ObjectID={self._dc_meta.id}>"
 
     def __eq__(self, other):
         if not isinstance(other, DataClayObject):

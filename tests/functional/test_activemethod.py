@@ -1,5 +1,3 @@
-import pytest
-
 from dataclay.contrib.modeltest.family import Dog, Family, Person
 from dataclay.contrib.modeltest.remote import ActivemethodTestClass
 
@@ -12,10 +10,10 @@ def test_activemethod_argument_make_persistent(client):
     family = Family()
     family.make_persistent()
     person = Person("Marc", 24)
-    assert person._dc_is_registered == False
+    assert person._dc_is_registered is False
 
     family.add(person)
-    assert person._dc_is_registered == True
+    assert person._dc_is_registered is True
     assert person == family.members[0]
 
 
@@ -33,7 +31,8 @@ def test_activemethod_persistent_argument(client):
 
 def test_activemethod_defined_properties(client):
     """
-    Object properties defined in class annotations are sychronized between the client and backend
+    Object properties defined in class annotations are sychronized
+    between the client and backend
     """
     person = Person("Marc", 24)
     assert person.age == 24
@@ -45,7 +44,8 @@ def test_activemethod_defined_properties(client):
 
 def test_activemethod_non_defined_properties(client):
     """
-    Object properties not defined in class annotations are not synchronized between the client and backend
+    Object properties not defined in class annotations are not synchronized
+    between the client and backend
     """
     dog = Dog("Duna", 6)
     assert dog.dog_age == 6 * 7
@@ -63,7 +63,7 @@ def test_activemethod_inner_make_persistent(client):
     dog = Dog("Duna", 6)
     dog.make_persistent()
     puppy = dog.new_puppy("Rio")
-    assert puppy._dc_is_registered == True
+    assert puppy._dc_is_registered is True
     assert puppy == dog.puppies[0]
     assert puppy.name == "Rio"
     assert puppy.age == 0
