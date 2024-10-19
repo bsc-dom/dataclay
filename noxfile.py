@@ -22,7 +22,7 @@ def tests(session):
 def lint(session):
     """Lint the codebase using flake8."""
     session.install("flake8")
-    session.run("flake8", "dataclay", "tests")
+    session.run("flake8", "src/dataclay", "tests")
 
 
 @nox.session(python=LATEST_PYTHON_VERSION)
