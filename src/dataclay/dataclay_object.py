@@ -20,7 +20,11 @@ from typing import TYPE_CHECKING, Annotated, Any, Optional, Type, TypeVar, get_o
 from dataclay.annotated import LocalOnly, PropertyTransformer
 from dataclay.config import get_runtime
 from dataclay.event_loop import get_dc_event_loop, run_dc_coroutine
-from dataclay.exceptions import ObjectIsMasterError, ObjectNotRegisteredError
+from dataclay.exceptions import (
+    AliasDoesNotExistError,
+    ObjectIsMasterError,
+    ObjectNotRegisteredError,
+)
 from dataclay.metadata.kvdata import ObjectMetadata
 from dataclay.utils.telemetry import trace
 
@@ -466,7 +470,10 @@ class DataClayObject:
     @classmethod
     @tracer.start_as_current_span("get_by_alias")
     async def _get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
-        return await get_runtime().get_object_by_alias(alias, dataset_name)
+        try:
+            return await get_runtime().get_object_by_alias(alias, dataset_name)
+        except:
+            raise AliasDoesNotExistError(alias, dataset_name)
 
     @classmethod
     async def a_get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
@@ -799,7 +806,6 @@ class DataClayObject:
             AttributeError: if alias is null or empty.
             AlreadyExistError: If the alias already exists.
             KeyError: If the backend_id is not registered in dataClay.
-            ObjectAlreadyRegisteredError: If the object is already registered in dataClay.
         """
         if not alias:
             raise AttributeError("Alias cannot be null or empty")
