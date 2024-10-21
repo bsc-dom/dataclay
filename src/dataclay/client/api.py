@@ -18,6 +18,7 @@ from uuid import UUID
 from dataclay.config import (
     ClientSettings,
     get_runtime,
+    loggerConfig,
     session_var,
     set_runtime,
     settings,
@@ -168,6 +169,8 @@ class Client:
     @tracer.start_as_current_span("start")
     def start(self):
         """Start the client runtime"""
+
+        loggerConfig(level=settings.loglevel)
 
         if self.is_active:
             logger.warning("Client already active. Ignoring")
