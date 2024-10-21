@@ -21,6 +21,7 @@ services:
       - DATACLAY_TRACING_EXPORTER=otlp
       - DATACLAY_SERVICE_NAME=metadata
       - DATACLAY_TRACING_HOST=otel-collector
+      - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.metadata
     volumes:
       - ../../../:/app:ro
@@ -36,14 +37,22 @@ services:
       - DATACLAY_TRACING_EXPORTER=otlp
       - DATACLAY_SERVICE_NAME=backend
       - DATACLAY_TRACING_HOST=otel-collector
+      - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
       - ../../../:/app:ro
 
   otel-collector:
-    image: otel/opentelemetry-collector:latest
-    command: [ "--config=/etc/otel-collector.yaml" ]
+    image: otel/opentelemetry-collector-contrib:latest
     volumes:
-      - ./otel-json-exporter.yaml:/etc/otel-collector.yaml
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
       - ./traces/:/traces/
+    ports:
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the Collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension
 

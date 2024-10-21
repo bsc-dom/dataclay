@@ -183,7 +183,7 @@ class Settings(BaseSettings):
     # Tracing
     service_name: Optional[str] = None
     tracing: bool = False
-    tracing_exporter: Literal["otlp", "jaeger", "zipkin", "none"] = "otlp"
+    tracing_exporter: Literal["otlp", "console", "none"] = "otlp"
     tracing_host: str = "localhost"
     tracing_port: int = 4317
 

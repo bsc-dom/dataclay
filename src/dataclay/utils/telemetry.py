@@ -56,12 +56,14 @@ def set_tracing(service_name, host, port, exporter="otlp"):
             OTLPSpanExporter,
         )
 
+        logger.debug("Setting OTLP exporter")
         otlp_exporter = OTLPSpanExporter(endpoint=f"{host}:{port}", insecure=True)
         processor = BatchSpanProcessor(otlp_exporter)
 
     elif exporter == "console":
         from opentelemetry.sdk.trace.export import ConsoleSpanExporter
 
+        logger.debug("Setting Console exporter")
         processor = BatchSpanProcessor(ConsoleSpanExporter())
 
     trace.get_tracer_provider().add_span_processor(processor)
@@ -76,3 +78,5 @@ def set_tracing(service_name, host, port, exporter="otlp"):
 
         GrpcInstrumentorServer().instrument()
         RedisInstrumentor().instrument()
+
+    logger.info("Tracer %s set for service %s", exporter, service_name)
