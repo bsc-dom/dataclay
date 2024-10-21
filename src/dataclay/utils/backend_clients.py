@@ -13,7 +13,6 @@ from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.kvdata import Backend
 
 if TYPE_CHECKING:
-    from dataclay.metadata.api import MetadataAPI
     from dataclay.metadata.client import MetadataClient
 
 logger = logging.getLogger(__name__)
@@ -116,7 +115,7 @@ class BackendClientsManager(collections.abc.MutableMapping):
             del self._backend_clients[backend_info.id]
 
     def start_subscribe(self):
-        """Subscribe to the new-backend-client and del-backend-client pub/sub topics. Only for backends"""
+        """Subscribe to the new-backend-client and del-backend-client pub/sub topics"""
         if not isinstance(self.metadata_api, MetadataAPI):
             logger.warning("Pub/sub not available. Access to kv data is not allowed for clients.")
             return

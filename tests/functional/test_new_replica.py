@@ -1,6 +1,6 @@
 import pytest
 
-from dataclay.contrib.modeltest.family import Dog, Family, Person
+from dataclay.contrib.modeltest.family import Person
 
 
 def test_new_replica(client):

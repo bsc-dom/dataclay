@@ -4,6 +4,8 @@ import re
 from dataclay.alien import AlienDataClayObject
 from dataclay.utils.telemetry import LoggerEvent
 
+__all__ = ["LoggerEvent"]
+
 ALIENDCO_BASE_CLASS = re.compile(r"AlienDataClayObject\[([a-zA-Z0-9_.]+)\]")
 
 

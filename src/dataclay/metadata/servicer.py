@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import signal
-import traceback
 from concurrent import futures
 from functools import wraps
 from uuid import UUID, uuid4
@@ -151,7 +150,8 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
             for id, backend in backends.items():
                 response[str(id)] = backend.get_proto()
         else:
-            # Using a cached version of the backends to avoid querying the KV store for each client request
+            # Using a cached version of the backends to avoid querying the KV store for
+            # each client request
             for id, backend_client in self.backend_clients.items():
                 backend = Backend(
                     id=id,

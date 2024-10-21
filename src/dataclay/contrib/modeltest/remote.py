@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from dataclay import DataClayObject, activemethod
 from dataclay.config import get_runtime
-from dataclay.contrib.modeltest.family import Dog, Family, Person
+from dataclay.contrib.modeltest.family import Person
 
 
 class MakePersistentTestClass(DataClayObject):
@@ -15,7 +15,7 @@ class MakePersistentTestClass(DataClayObject):
     def test_remote_automatic_register(self):
         """DataClay objects are persistent automatically in the backend"""
         person = Person("Marc", 24)
-        assert person.is_persistent == True
+        assert person.is_persistent is True
         assert person.name == "Marc"
         assert person.age == 24
         assert person._dc_meta.master_backend_id == get_runtime().backend_id
@@ -27,9 +27,9 @@ class MakePersistentTestClass(DataClayObject):
     def test_remote_make_persistent(self):
         """A call to make_persistent won't have any effect"""
         person = Person("Marc", 24)
-        assert person.is_persistent == True
+        assert person.is_persistent is True
         person.make_persistent()
-        assert person.is_persistent == True
+        assert person.is_persistent is True
         assert person.name == "Marc"
         assert person.age == 24
         assert person._dc_meta.master_backend_id == get_runtime().backend_id
@@ -38,9 +38,9 @@ class MakePersistentTestClass(DataClayObject):
     def test_remote_make_persistent_alias(self):
         """A call to make_persistent with an alias will add the alias to the object"""
         person = Person("Marc", 24)
-        assert person.is_persistent == True
+        assert person.is_persistent is True
         person.make_persistent()
-        assert person.is_persistent == True
+        assert person.is_persistent is True
 
         person.make_persistent(alias="test_remote_make_persistent_alias")
         # person.sync()  # Sync to update object metadata
@@ -50,9 +50,9 @@ class MakePersistentTestClass(DataClayObject):
     def test_remote_make_persistent_backend(self):
         """A call to make_persistent with a backend_id will move the object to the specified backend"""
         person = Person("Marc", 24)
-        assert person.is_persistent == True
+        assert person.is_persistent is True
         person.make_persistent()
-        assert person.is_persistent == True
+        assert person.is_persistent is True
 
         get_runtime().backend_clients.update()
         backend_ids = list(get_runtime().backend_clients)

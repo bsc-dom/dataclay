@@ -3,6 +3,7 @@
 Importing this class happens inside conditionals that check for the value of settings.metrics.
 If metrics are not enabled, this class will not be imported and the code will not be executed.
 """
+
 import os
 import threading
 import time

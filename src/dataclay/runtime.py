@@ -6,7 +6,6 @@ import asyncio
 import collections
 import copy
 import logging
-import pickle
 import random
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Optional
@@ -53,7 +52,7 @@ class DataClayRuntime(ABC):
         self.backend_id = backend_id
         self.is_backend = bool(backend_id)
 
-        # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
+        # Dictionary of all runtime memory objects stored as weakrefs.
         self.inmemory_objects: WeakValueDictionary[UUID, DataClayObject] = WeakValueDictionary()
 
         if settings.metrics:
@@ -89,17 +88,16 @@ class DataClayRuntime(ABC):
         alias: Optional[str] = None,
         backend_id: Optional[str] = None,
     ):
-        """This method creates a new Persistent Object using the provided stub
-        instance and, if indicated, all its associated objects also Logic module API used for communication
-        This function is called from a stub/execution class
+        """
+        Persist an object and optionally its associated objects.
 
         Args:
-            instance: Instance to make persistent
-            backend_id: Indicates which is the destination backend
-            alias: Alias for the object
+            instance: The object to persist.
+            alias: Optional alias for the object.
+            backend_id: Optional ID of the destination backend.
 
         Returns:
-            ID of the backend in which the object was persisted.
+            The ID of the backend where the object was persisted.
         """
         logger.debug(
             "(%s) Starting make_persistent. Alias=%s, backend_id=%s",
