@@ -8,7 +8,7 @@ services:
   metadata-service:
     image: "ghcr.io/bsc-dom/dataclay:dev"
     build:
-      context: ../../../
+      context: ../../../../
       dockerfile: Dockerfile.dev
     depends_on:
       - redis
@@ -24,7 +24,7 @@ services:
       - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.metadata
     volumes:
-      - ../../../:/app:ro
+      - ../../../../:/app:ro
 
   backend:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -40,13 +40,13 @@ services:
       - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
-      - ../../../:/app:ro
+      - ../../../../:/app:ro
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
-      - ./traces/:/traces/
+      - ../traces/:/traces/
     ports:
       - 1888:1888 # pprof extension
       - 8888:8888 # Prometheus metrics exposed by the Collector
