@@ -69,14 +69,14 @@ def set_tracing(service_name, host, port, exporter="otlp"):
     trace.get_tracer_provider().add_span_processor(processor)
 
     if service_name == "client":
-        from opentelemetry.instrumentation.grpc import GrpcInstrumentorClient
+        from opentelemetry.instrumentation.grpc import GrpcAioInstrumentorClient
 
-        GrpcInstrumentorClient().instrument()
+        GrpcAioInstrumentorClient().instrument()
     else:
-        from opentelemetry.instrumentation.grpc import GrpcInstrumentorServer
+        from opentelemetry.instrumentation.grpc import GrpcAioInstrumentorServer
         from opentelemetry.instrumentation.redis import RedisInstrumentor
 
-        GrpcInstrumentorServer().instrument()
+        GrpcAioInstrumentorServer().instrument()
         RedisInstrumentor().instrument()
 
     logger.info("Tracer %s set for service %s", exporter, service_name)
