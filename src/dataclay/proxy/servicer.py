@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 global_metadata_api = None
 
 
-def serve(
+async def serve(
     md_api: MetadataAPI,
     interceptors: list[grpc.ServerInterceptor],
     middleware_metadata: list,
@@ -27,10 +27,7 @@ def serve(
     global global_metadata_api
     global_metadata_api = md_api
 
-    stop_event = threading.Event()
-
-    server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=settings.thread_pool_max_workers),
+    server = grpc.aio.server(
         options=[("grpc.max_send_message_length", -1), ("grpc.max_receive_message_length", -1)],
         interceptors=interceptors,
     )
@@ -48,14 +45,12 @@ def serve(
 
     address = f"{settings.proxy.listen_address}:{settings.proxy.port}"
     server.add_insecure_port(address)
-    server.start()
+    await server.start()
     logger.info("Proxy service listening on %s", address)
 
-    # Wait until stop_event is set. Then, gracefully stop dataclay backend.
-    stop_event.wait()
+    await server.wait_for_termination()
     logger.info("Stopping proxy service")
 
-    server.stop(5)
 
 
 class BackendProxyServicer(BackendProxyBase):

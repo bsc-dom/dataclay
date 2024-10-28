@@ -17,3 +17,5 @@ values.add_element(44)
 values.add_element(45)
 print("Average: %f" % values.public_data())
 print("Internal data: %s" % (values.values,))
+
+client.stop()
