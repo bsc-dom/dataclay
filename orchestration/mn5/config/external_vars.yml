@@ -1,7 +1,6 @@
-# defaults are necessary here since not defined 
+# defaults are necessary here since not defined
 # environment variables will be replaced by empty strings, causing errors
 global_env:
-
   # system properties
   PATH: "{{ lookup('env', 'PATH') }}"
   PYTHONPATH: "{{ lookup('env', 'PYTHONPATH') }}"
@@ -11,10 +10,15 @@ global_env:
 
   # dataclay properties
   DATACLAY_LOGLEVEL: "{{ lookup('env', 'DATACLAY_LOGLEVEL') | default('WARNING', true) }}"
+  DATACLAY_JOB_PATH: "{{ job_path }}" # Used in otel-json-exporter.yaml
+  # TODO: Check if DATACLAY_IO_BOUND_MULTIPLIER is only used in backends. Is so.. move it.
+  DATACLAY_IO_BOUND_MULTIPLIER: "{{ lookup('env', 'DATACLAY_IO_BOUND_MULTIPLIER') | default(2, true) }}"
+
+  # Tracing properties
   DATACLAY_TRACING: "{{ lookup('env', 'DATACLAY_TRACING') | default('false', true) }}"
   DATACLAY_TRACING_HOST: "{{ lookup('env', 'DATACLAY_TRACING_HOST') }}"
-  DATACLAY_JOB_PATH: "{{ job_path }}" # Used in otel-json-exporter.yaml
-  DATACLAY_IO_BOUND_MULTIPLIER: "{{ lookup('env', 'DATACLAY_IO_BOUND_MULTIPLIER') | default(2, true) }}"
+  DATACLAY_TRACING_PORT: "{{ lookup('env', 'DATACLAY_TRACING_PORT') | default(4317, true) }}"
+  DATACLAY_TRACING_EXPORTER: "{{ lookup('env', 'DATACLAY_TRACING_EXPORTER') | default('otlp', true) }}"
 
 backend_properties:
   DATACLAY_BACKEND_PORT: "{{ lookup('env', 'DATACLAY_BACKEND_PORT') | default(6867, true) }}"

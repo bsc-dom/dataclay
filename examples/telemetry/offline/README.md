@@ -60,6 +60,18 @@ otel/opentelemetry-collector-contrib \
 "--config=/etc/otel-collector.yaml"
 ```
 
+## Copy traces from MareNostrum 5
+
+You can copy traces from MareNostrum 5 to your local machine in order to visualize them in Grafana.
+
+Use `.dataclay/otel-traces.json` for the accumulated traces of several jobs, or `.dataclay/<job-id>/otel-traces.json` for the traces of a specific job.
+
+```bash
+scp transfer1.bsc.es:~/.dataclay/otel-traces.json ./traces/otel-traces.json
+```
+
+Then, you can visualize the traces in Grafana, as explained above.
+
 ## Troubleshooting
 
 If you get a `permission denied` error for the `/traces` folder, then you need to give the permission to the `traces` folder.
