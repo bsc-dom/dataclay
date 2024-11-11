@@ -68,7 +68,7 @@ telemetry = [
     "opentelemetry-exporter-otlp-proto-grpc",
     "opentelemetry-instrumentation-grpc",
     "opentelemetry-instrumentation-redis",
-    "protobuf<5", # Remove when protobuf 5 is supported by opentelemetry
+    "protobuf<5;python_version<\"3.13\"", # Remove when protobuf 5 is supported by opentelemetry
 ]
 
 [project.scripts]
