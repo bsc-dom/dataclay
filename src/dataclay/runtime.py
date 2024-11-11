@@ -472,7 +472,7 @@ class DataClayRuntime(ABC):
                     )
                     raise response
 
-                logger.info(
+                logger.debug(
                     "(%s) Remote method '%s' executed successfully",
                     instance._dc_meta.id,
                     method_name,

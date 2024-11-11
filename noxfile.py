@@ -57,7 +57,7 @@ def dev(session: nox.Session) -> None:
     """
     session.install("virtualenv")
     session.run("virtualenv", ".venv", silent=True)
-    session.run(".venv/bin/pip", "install", "-e", ".[dev]", external=True)
+    session.run(".venv/bin/pip", "install", "-e", ".[telemetry,dev]", external=True)
 
 
 # TODO: Check https://nox.thea.codes/en/stable/cookbook.html#the-auto-release

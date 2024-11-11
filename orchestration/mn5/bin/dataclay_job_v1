@@ -18,6 +18,7 @@ deploy_dataclay \
 
 # Run client
 export DC_HOST=${hostnames[0]} # Used by client.py and ctl.stop_dataclay
+export DATACLAY_TRACING_HOST=${hostnames[0]} # Used by client.py
 python3 -u $1
 
 # Stop dataClay

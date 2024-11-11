@@ -11,10 +11,12 @@ from dataclay.config import settings
 from dataclay.event_loop import get_dc_event_loop
 from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.kvdata import Backend
+from dataclay.utils.telemetry import trace
 
 if TYPE_CHECKING:
     from dataclay.metadata.client import MetadataClient
 
+tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 
@@ -56,6 +58,7 @@ class BackendClientsManager(collections.abc.MutableMapping):
             logger.info("Update loop has been cancelled.")
             raise
 
+    @tracer.start_as_current_span("update")
     async def update(self, force: bool = True):
         """Update the backend clients.
 
