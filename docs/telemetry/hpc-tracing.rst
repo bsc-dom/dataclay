@@ -1,12 +1,9 @@
-===========
 HPC Tracing
 ===========
 
-How to generate paraver traces in MN5
-=====================================
+How to generate paraver traces in MN5 using COMPSs
+--------------------------------------------------
 
-Using COMPSs
-------------
 In order to get the traces we will create a script.
 
 - First we have to import the COMPSs and DataClay modules in order to be able to use them, as well as defining which python version we will be using:
@@ -57,7 +54,8 @@ In order to generate the paraver files, we will call another COMPSs script, "com
 If we run this script in the same directory where we found the traces ($HOME/.COMPSs/[SLURM_JOB_ID]/trace/), the paraver files will appear.
 
 How to inspect the traces in Paraver
-====================================
+------------------------------------
+
 To be able to see these files we will have to open them using the following commands:
 
 .. code-block:: bash

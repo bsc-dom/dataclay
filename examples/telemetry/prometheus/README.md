@@ -1,4 +1,4 @@
-# Prometheus - pushgateway
+# Prometheus
 
 Deploy dataclay with Prometheus and pushgateway:
 

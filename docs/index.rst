@@ -10,8 +10,6 @@ dataClay
    main-concepts
    alien-objects
    advanced-usage
-   telemetry
-   hpc-tracing
    examples/index
 
 .. toctree::
@@ -27,10 +25,20 @@ dataClay
 
 .. toctree::
    :hidden:
+   :caption: Telemetry
+
+   telemetry/configuration
+   telemetry/offline
+   telemetry/real-time
+   telemetry/prometheus
+   telemetry/hpc-tracing
+
+.. toctree::
+   :hidden:
    :caption: Release Notes
 
-   releasenotes/3-x
    releasenotes/4-x
+   releasenotes/3-x
 
 .. toctree::
    :hidden:
