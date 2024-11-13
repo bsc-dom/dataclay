@@ -10,7 +10,7 @@ import psutil
 
 from dataclay.config import settings
 from dataclay.event_loop import get_dc_event_loop
-from dataclay.exceptions import DataClayException
+from dataclay.exceptions import DataClayException, ObjectError
 from dataclay.lock_manager import lock_manager
 from dataclay.utils.serialization import DataClayPickler
 
@@ -143,7 +143,7 @@ class DataManager:
                 )
                 self.dataclay_stored_objects.dec()
             except Exception as e:
-                raise DataClayException("Object not found.") from e
+                raise ObjectError("Object not found.") from e
 
             # Delete outdated metadata (SSOT stored in Redis)
             del state["_dc_meta"]
@@ -198,7 +198,7 @@ class DataManager:
                 DataClayPickler(open(path, "wb")).dump(instance._dc_state)
                 self.dataclay_stored_objects.inc()
             except Exception as e:
-                raise DataClayException("Could not store object.") from e
+                raise ObjectError("Could not store object.") from e
 
             # TODO: Maybe update Redis (since is loaded has changed). For access optimization.
             instance._clean_dc_properties()
