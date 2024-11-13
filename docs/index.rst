@@ -12,6 +12,7 @@ dataClay
    advanced-usage
    telemetry
    hpc-tracing
+   logging
    examples/index
 
 .. toctree::
