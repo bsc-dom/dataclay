@@ -28,12 +28,10 @@ requires-python = ">=3.9"
 dependencies = [
     "aiorwlock>=1.4.0",
     "bcrypt>=4.1.1",
-    "grpcio>=1.59.2;python_version<\"3.13\"",
-    "grpcio>=1.66.2;python_version>=\"3.13\"",
-    "grpcio-health-checking>=1.59.2;python_version<\"3.13\"",
-    "grpcio-health-checking>=1.66.2;python_version>=\"3.13\"",
+    "grpcio>=1.67.1",
+    "grpcio-health-checking>=1.67.1",
     "hiredis>=3.0.0",
-    "opentelemetry-api>=1.27.0",
+    "opentelemetry-api>=1.28.1",
     "protobuf>=4.25.0",
     "psutil>=6.1.0",
     "pydantic-settings>=2.6.0",
@@ -68,7 +66,6 @@ telemetry = [
     "opentelemetry-exporter-otlp-proto-grpc",
     "opentelemetry-instrumentation-grpc",
     "opentelemetry-instrumentation-redis",
-    "protobuf<5;python_version<\"3.13\"", # Remove when protobuf 5 is supported by opentelemetry
 ]
 
 [project.scripts]
