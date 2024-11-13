@@ -1,7 +1,7 @@
 import logging
 import os
 
-from model.client_model import Client_model
+from model.client_model import ClientModel
 
 from dataclay import Client
 
@@ -19,7 +19,7 @@ grpclogger.setLevel(logging.INFO)
 client = Client(host="127.0.0.1", username="testuser", password="s3cret", dataset="testdata")
 client.start()
 
-client_mod = Client_model("Client")
+client_mod = ClientModel("Client")
 client_mod.make_persistent("alias")
 
 name = client_mod.get_name()

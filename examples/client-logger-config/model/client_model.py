@@ -1,7 +1,7 @@
 from dataclay import DataClayObject, activemethod
 
 
-class Client_model(DataClayObject):
+class ClientModel(DataClayObject):
 
     name: str
 
