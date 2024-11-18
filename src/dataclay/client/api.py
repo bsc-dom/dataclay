@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Optional
 from dataclay.config import (
     ClientSettings,
     get_runtime,
+    logger_config,
     session_var,
     set_runtime,
     settings,
@@ -171,6 +172,8 @@ class Client:
     @tracer.start_as_current_span("start")
     def start(self):
         """Start the client runtime"""
+
+        logger_config(level=settings.loglevel)
 
         if self.is_active:
             logger.warning("Client already active. Ignoring")

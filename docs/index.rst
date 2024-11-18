@@ -10,6 +10,7 @@ dataClay
    main-concepts
    alien-objects
    advanced-usage
+   logging
    examples/index
 
 .. toctree::

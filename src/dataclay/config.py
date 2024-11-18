@@ -237,4 +237,8 @@ def set_runtime(new_runtime: Union[ClientRuntime, BackendRuntime]):
     current_runtime = new_runtime
 
 
-logging.basicConfig(level=settings.loglevel)
+def logger_config(**kwargs):
+    logging.basicConfig(**kwargs)
+
+
+logger_config(level=settings.loglevel)
