@@ -1,10 +1,7 @@
 from dataclay import Client
-from dataclay.conf import settings
-from dataclay.contrib.modeltest.family import Dog, Family, Person
+from dataclay.contrib.modeltest.family import Family, Person
 
-settings.metrics = True
-
-client = Client(host="127.0.0.1", username="testuser", password="s3cret", dataset="testdata")
+client = Client()
 client.start()
 
 family = Family()
@@ -21,3 +18,4 @@ person_2 = Family.get_by_alias("Smith").members[0]
 Family.delete_alias("Smith")
 
 assert person is person_2
+client.stop()

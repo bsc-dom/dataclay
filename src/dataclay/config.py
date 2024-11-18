@@ -189,7 +189,7 @@ class Settings(BaseSettings):
 
     # Metrics
     metrics: bool = False
-    metrics_exporter: Literal["http", "prometheus", "none"] = "http"
+    metrics_exporter: Literal["http", "pushgateway", "none"] = "http"
     metrics_host: str = "localhost"
     metrics_port: int = 8000  # 9091 for pushgateway
     metrics_push_interval: int = 10
