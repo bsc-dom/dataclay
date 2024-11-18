@@ -15,7 +15,7 @@ def test_alien_builtin(client):
 
     l.make_persistent()
 
-    assert l._dc_is_registered == True
+    assert l._dc_is_registered is True
     assert len(l) == 3
     assert l.__len__() == 3
 
@@ -42,14 +42,14 @@ def test_alien_python_class(client):
     assert persistent_now == now
     assert now == persistent_now
 
-    assert persistent_now._dc_is_registered == True
+    assert persistent_now._dc_is_registered is True
 
 
 def test_alien_pydantic_model(client):
     p = AlienDataClayObject(Person(name="Alice", age=30))
     p.make_persistent()
 
-    assert p._dc_is_registered == True
+    assert p._dc_is_registered is True
 
     assert p.name == "Alice"
     assert p.age == 30
@@ -68,6 +68,16 @@ def test_alien_pydantic_model(client):
 
     assert same_person.name != p.name
     assert same_person.age != p.age
+
+
+def test_alien_pydantic_methods(client):
+    reference = Person(name="Alice", age=30)
+
+    p = AlienDataClayObject(Person(name="Alice", age=30))
+    p.make_persistent()
+
+    assert p.model_dump() == reference.model_dump()
+    assert p.model_dump_json() == reference.model_dump_json()
 
 
 def test_alien_getsetdelitem(client):

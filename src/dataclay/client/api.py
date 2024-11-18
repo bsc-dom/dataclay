@@ -7,17 +7,19 @@ core and sets the "client" mode for the library.
 
 from __future__ import annotations
 
+import threading
+
 __all__ = ["init", "finish", "DataClayObject"]
 
 import asyncio
 import logging
 import logging.config
 from typing import TYPE_CHECKING, Optional
-from uuid import UUID
 
 from dataclay.config import (
     ClientSettings,
     get_runtime,
+    logger_config,
     session_var,
     set_runtime,
     settings,
@@ -163,11 +165,15 @@ class Client:
         #             LOCAL = ee_id
         #             break
         #     else:
-        #         logger.warning("Backend with name '%s' not found, ignoring", settings.LOCAL_BACKEND)
+        #         logger.warning(
+        #               "Backend with name '%s' not found, ignoring", settings.LOCAL_BACKEND
+        # )
 
     @tracer.start_as_current_span("start")
     def start(self):
         """Start the client runtime"""
+
+        logger_config(level=settings.loglevel)
 
         if self.is_active:
             logger.warning("Client already active. Ignoring")
@@ -176,16 +182,15 @@ class Client:
         logger.info("Starting client runtime")
 
         loop = get_dc_event_loop()
-        if loop == None:
-            logger.info("Create_new_loop")
-            # Create new event loop in a new thread
+        if loop is None:
+            logger.info("Creating event loop in new thread")
             loop = asyncio.new_event_loop()
             set_dc_event_loop(loop)
             event_loop_thread = EventLoopThread(loop)
             event_loop_thread.start()
             event_loop_thread.ready.wait()
         else:
-            logger.info("Already_had_a_loop")
+            logger.info("Using existing event loop")
 
         # Replace settings
         self.previous_settings = settings.client
@@ -210,6 +215,8 @@ class Client:
                 settings.client.dataclay_host, settings.client.dataclay_port
             )
 
+        logger.info("Starting client runtime coroutine in event loop")
+        assert loop._thread_id != threading.get_ident()  # Redundancy check
         future = asyncio.run_coroutine_threadsafe(self.runtime.start(), loop)
         future.result()
 
@@ -227,6 +234,7 @@ class Client:
         # self.runtime.dataclay_id
 
         self.is_active = True
+        logger.info("Client runtime started")
 
     @tracer.start_as_current_span("stop")
     def stop(self):
@@ -287,50 +295,3 @@ class Client:
         )
         await asyncio.wrap_future(future)
         return self.runtime.backend_clients
-
-
-###############
-# To Refactor #
-###############
-
-
-# def register_dataclay(id, host, port):
-#     """Register external dataClay for federation
-#     Args:
-#         host: external dataClay host name
-#         port: external dataClay port
-#     """
-#     return get_runtime().register_external_dataclay(id, host, port)
-
-
-# def unfederate(ext_dataclay_id=None):
-#     """Unfederate all objects belonging to/federated with external data clay with id provided
-#     or with all any external dataclay if no argument provided.
-#     :param ext_dataclay_id: external dataClay id
-#     :return: None
-#     :type ext_dataclay_id: uuid
-#     :rtype: None
-#     """
-#     if ext_dataclay_id is not None:
-#         return get_runtime().unfederate_all_objects(ext_dataclay_id)
-#     else:
-#         return get_runtime().unfederate_all_objects_with_all_dcs()
-
-
-# def migrate_federated_objects(origin_dataclay_id, dest_dataclay_id):
-#     """Migrate federated objects from origin dataclay to destination dataclay
-#     :param origin_dataclay_id: origin dataclay id
-#     :param dest_dataclay_id destination dataclay id
-#     :return: None
-#     :rtype: None
-#     """
-#     return get_runtime().migrate_federated_objects(origin_dataclay_id, dest_dataclay_id)
-
-
-# def federate_all_objects(dest_dataclay_id):
-#     """Federate all objects from current dataclay to destination dataclay
-#     :param dest_dataclay_id destination dataclay id
-#     :return: None
-#     :rtype: None
-#     """
-#     return get_runtime().federate_all_objects(dest_dataclay_id)

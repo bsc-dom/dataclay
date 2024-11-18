@@ -6,7 +6,6 @@ import asyncio
 import collections
 import copy
 import logging
-import pickle
 import random
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Optional
@@ -52,7 +51,7 @@ class DataClayRuntime(ABC):
         self.backend_id = backend_id
         self.is_backend = bool(backend_id)
 
-        # Memory objects. This dictionary must contain all objects in runtime memory (client or server), as weakrefs.
+        # Dictionary of all runtime memory objects stored as weakrefs.
         self.inmemory_objects: WeakValueDictionary[UUID, DataClayObject] = WeakValueDictionary()
 
         if settings.metrics:
@@ -88,17 +87,16 @@ class DataClayRuntime(ABC):
         alias: Optional[str] = None,
         backend_id: Optional[str] = None,
     ):
-        """This method creates a new Persistent Object using the provided stub
-        instance and, if indicated, all its associated objects also Logic module API used for communication
-        This function is called from a stub/execution class
+        """
+        Persist an object and optionally its associated objects.
 
         Args:
-            instance: Instance to make persistent
-            backend_id: Indicates which is the destination backend
-            alias: Alias for the object
+            instance: The object to persist.
+            alias: Optional alias for the object.
+            backend_id: Optional ID of the destination backend.
 
         Returns:
-            ID of the backend in which the object was persisted.
+            The ID of the backend where the object was persisted.
         """
         logger.debug(
             "(%s) Starting make_persistent. Alias=%s, backend_id=%s",
@@ -177,16 +175,17 @@ class DataClayRuntime(ABC):
     ##################
 
     async def get_object_by_id(
-        self, object_id: UUID, object_md: ObjectMetadata = None
+        self, object_id: UUID, object_md: Optional[ObjectMetadata] = None
     ) -> DataClayObject:
         """Get dataclay object from inmemory_objects. If not present, get object metadata
         and create new proxy object.
         """
-        logger.debug("(%s) Getting object by id", object_id)
+        logger.debug("(%s) Getting dataclay object by id", object_id)
 
         try:
             dc_object = self.inmemory_objects[object_id]
             self.dataclay_inmemory_hits_total.inc()
+            logger.debug("(%s) Object found in inmemory_objects", object_id)
             return dc_object
         except KeyError:
             async with lock_manager.get_lock(object_id).writer_lock:
@@ -199,12 +198,11 @@ class DataClayRuntime(ABC):
                     # we get the object metadata from kvstore, and create a new proxy
                     # object from it.
 
-                    logger.debug(
-                        "(%s) Object not in inmemory_objects, creating new proxy", object_id
-                    )
+                    logger.debug("(%s) Object not found in inmemory_objects", object_id)
 
                     # If object metadata is not provided, get it from the metadata service
                     if object_md is None:
+                        logger.debug("(%s) Getting object metadata from MDS", object_id)
                         object_md = await self.metadata_service.get_object_md_by_id(object_id)
 
                     # Create a new proxy object
@@ -233,6 +231,9 @@ class DataClayRuntime(ABC):
                     # if many calls are made to the same object, and this is deleted every time.
                     # TODO: Check if this is really the case. If so, gc should act in a LIFO way.
                     self.inmemory_objects[proxy_object._dc_meta.id] = proxy_object
+                    logger.debug(
+                        "(%s) Proxy object created and added to inmemory_objects", object_id
+                    )
                     return proxy_object
 
     async def get_object_by_alias(self, alias: str, dataset_name: str = None) -> DataClayObject:
@@ -355,14 +356,17 @@ class DataClayRuntime(ABC):
             )
 
             # Fault tolerance loop
+            num_retries = 0
             while True:
+                num_retries += 1
+                logger.debug("(%s) Attempt %s", instance._dc_meta.id, num_retries)
                 # Get the intersection between backend clients and object backends
                 avail_backends = instance._dc_all_backend_ids.intersection(
                     self.backend_clients.keys()
                 )
 
                 # If the intersection is empty (no backends available), update the list of backend
-                # clients and the object backend locations, and try again
+                # clients and the object backend locations, and try again...
                 if not avail_backends:
                     logger.warning("(%s) No backends available. Syncing...", instance._dc_meta.id)
                     await asyncio.gather(self.backend_clients.update(), instance.a_sync())
@@ -378,10 +382,14 @@ class DataClayRuntime(ABC):
                 # Choose a random backend from the available ones
                 backend_id = random.choice(tuple(avail_backends))
                 backend_client = await self.backend_clients.get(backend_id)
+                logger.debug("(%s) Backend %s chosen", instance._dc_meta.id, backend_id)
 
                 # If the connection fails, update the list of backend clients, and try again
                 try:
                     if method_name == "__getattribute__":
+                        logger.debug(
+                            "(%s) Getting remote attribute '%s'", instance._dc_meta.id, args[0]
+                        )
                         (
                             serialized_response,
                             is_exception,
@@ -390,6 +398,9 @@ class DataClayRuntime(ABC):
                             args[0],  # attribute name
                         )
                     elif method_name == "__setattr__":
+                        logger.debug(
+                            "(%s) Setting remote attribute '%s'", instance._dc_meta.id, args[0]
+                        )
                         (
                             serialized_response,
                             is_exception,
@@ -399,6 +410,9 @@ class DataClayRuntime(ABC):
                             await dcdumps(args[1]),  # attribute value
                         )
                     elif method_name == "__delattr__":
+                        logger.debug(
+                            "(%s) Deleting remote attribute '%s'", instance._dc_meta.id, args[0]
+                        )
                         (
                             serialized_response,
                             is_exception,
@@ -407,8 +421,12 @@ class DataClayRuntime(ABC):
                             args[0],  # attribute name
                         )
                     else:
-                        # Print the constraings
-                        logger.debug("Method Constraints: %s", exec_constraints_var.get())
+                        logger.debug(
+                            "(%s) Executing remote method '%s' with constraints %s",
+                            instance._dc_meta.id,
+                            method_name,
+                            exec_constraints_var.get(),
+                        )
                         serialized_response, is_exception = await backend_client.call_active_method(
                             object_id=instance._dc_meta.id,
                             method_name=method_name,
@@ -418,31 +436,44 @@ class DataClayRuntime(ABC):
                         )
                 except DataClayException as e:
                     if "failed to connect" in str(e):
-                        logger.warning("(%s) Connection failed. Syncing...", instance._dc_meta.id)
+                        logger.warning("(%s) Connection failed. Retrying...", instance._dc_meta.id)
                         await self.backend_clients.update()
                         continue
                     else:
                         raise e
 
+                # Deserialize the response if not None
                 if serialized_response:
+                    logger.debug("(%s) Deserializing response", instance._dc_meta.id)
                     response = await dcloads(serialized_response)
-
-                    # If response is ObjectWithWrongBackendIdError, update object metadata and retry
-                    if isinstance(response, ObjectWithWrongBackendIdError):
-                        instance._dc_meta.master_backend_id = response.backend_id
-                        instance._dc_meta.replica_backend_ids = response.replica_backend_ids
-                        continue
-
-                    # If the response is and exception, raise it. Correct workflow.
-                    # NOTE: The exception was raised inside the active method
-                    if is_exception:
-                        raise response
-
-                    return response
-
                 else:
-                    # Void active method returns None
-                    return None
+                    logger.debug("(%s) Response is None", instance._dc_meta.id)
+                    response = None
+
+                # If response is ObjectWithWrongBackendIdError, update object metadata and retry
+                if isinstance(response, ObjectWithWrongBackendIdError):
+                    logger.warning(
+                        "(%s) Object with wrong backend id. Retrying...", instance._dc_meta.id
+                    )
+                    instance._dc_meta.master_backend_id = response.backend_id
+                    instance._dc_meta.replica_backend_ids = response.replica_backend_ids
+                    continue
+
+                # If the response is an exception, it is raised
+                if is_exception:
+                    logger.debug(
+                        "(%s) Remote method '%s' raised an exception",
+                        instance._dc_meta.id,
+                        method_name,
+                    )
+                    raise response
+
+                logger.debug(
+                    "(%s) Remote method '%s' executed successfully",
+                    instance._dc_meta.id,
+                    method_name,
+                )
+                return response
 
     #########
     # Alias #

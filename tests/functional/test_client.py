@@ -1,6 +1,3 @@
-import pytest
-
-import dataclay
 from dataclay import Client
 
 

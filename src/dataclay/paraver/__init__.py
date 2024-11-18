@@ -7,6 +7,7 @@ checks on the generated prv files.
 Additionally, this module defines an application capable of performing several
 Paraver-related routines, like "merge".
 """
+
 from __future__ import print_function
 
 import ctypes

@@ -1,4 +1,3 @@
-version: '3.9'
 services:
 
   redis:
@@ -9,7 +8,8 @@ services:
   metadata-service:
     image: "ghcr.io/bsc-dom/dataclay:dev"
     # NOTE: Comment the *build* section for faster testing. It will use the image from the registry.
-    # Uncomment it if changing the project dependencies.
+    # Rebuilding is necessary when changing the project dependencies.
+    # WARNING: Don't commit the commented *build* section. It will break the GitHub Actions CI/CD pipeline.
     build:
       context: ../../
       dockerfile: Dockerfile.dev

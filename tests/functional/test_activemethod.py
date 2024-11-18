@@ -1,5 +1,3 @@
-import pytest
-
 from dataclay.contrib.modeltest.family import Dog, Family, Person
 from dataclay.contrib.modeltest.remote import ActivemethodTestClass
 
@@ -12,10 +10,10 @@ def test_activemethod_argument_make_persistent(client):
     family = Family()
     family.make_persistent()
     person = Person("Marc", 24)
-    assert person._dc_is_registered == False
+    assert person._dc_is_registered is False
 
     family.add(person)
-    assert person._dc_is_registered == True
+    assert person._dc_is_registered is True
     assert person == family.members[0]
 
 
@@ -33,7 +31,8 @@ def test_activemethod_persistent_argument(client):
 
 def test_activemethod_defined_properties(client):
     """
-    Object properties defined in class annotations are sychronized between the client and backend
+    Object properties defined in class annotations are sychronized
+    between the client and backend
     """
     person = Person("Marc", 24)
     assert person.age == 24
@@ -45,7 +44,8 @@ def test_activemethod_defined_properties(client):
 
 def test_activemethod_non_defined_properties(client):
     """
-    Object properties not defined in class annotations are not synchronized between the client and backend
+    Object properties not defined in class annotations are not synchronized
+    between the client and backend
     """
     dog = Dog("Duna", 6)
     assert dog.dog_age == 6 * 7
@@ -63,10 +63,44 @@ def test_activemethod_inner_make_persistent(client):
     dog = Dog("Duna", 6)
     dog.make_persistent()
     puppy = dog.new_puppy("Rio")
-    assert puppy._dc_is_registered == True
+    assert puppy._dc_is_registered is True
     assert puppy == dog.puppies[0]
     assert puppy.name == "Rio"
     assert puppy.age == 0
+
+
+def test_activemethod_nested_getattribute(client):
+    """
+    An activemethod that calls multiple getattribute inside
+    """
+    family = Family()
+    family.make_persistent()
+
+    # Technically, there is a change that all the following objects
+    # are made persistent in a single backend and thus this test
+    # may be inconclusive. The chance is (1/n_backends)^(n_objects - 1).
+
+    # Increment either n to feel safer, or change the make_persistent
+    # to be deterministically correct.
+
+    person = Person("Marc", 24)
+    person.make_persistent()
+    family.add(person)
+    person = Person("Anna", 24)
+    person.make_persistent()
+    family.add(person)
+    dog = Dog("Duna", 6)
+    dog.make_persistent()
+    family.add(dog)
+    dog = Dog("Luna", 6)
+    dog.make_persistent()
+    family.add(dog)
+
+    family_str = str(family)  # This calls the __str__ activemethod
+    assert "Marc" in family_str
+    assert "Anna" in family_str
+    assert "Duna" in family_str
+    assert "Luna" in family_str
 
 
 # Remote methods

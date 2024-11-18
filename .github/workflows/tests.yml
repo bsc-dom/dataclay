@@ -5,24 +5,25 @@ on:
   - pull_request
 
 jobs:
-  build:
+  generate-jobs:
+    runs-on: ubuntu-latest
+    outputs:
+      session: ${{ steps.set-matrix.outputs.session }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: wntrblm/nox@main
+      - id: set-matrix
+        shell: bash
+        run: echo session=$(nox --json -l -s tests | jq -c '[.[].session]') | tee --append $GITHUB_OUTPUT
+  checks:
+    name: Session ${{ matrix.session }}
+    needs: [generate-jobs]
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
-
+        session: ${{ fromJson(needs.generate-jobs.outputs.session) }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox tox-gh-actions
-          # TODO: when calling pytest, it build a new dev image, but it should build the image
-          # using the specific python version. Before it was working cause the compose was not
-          # building the image, rather the image was built here with the {{ matrix.python-version}}
-      - name: Test with tox
-        run: tox
+      - uses: actions/checkout@v4
+      - uses: wntrblm/nox@main
+      - run: nox -s "${{ matrix.session }}"

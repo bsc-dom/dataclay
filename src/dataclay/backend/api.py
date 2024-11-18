@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 import asyncio
-import inspect
 import logging
 import pickle
 import time
-import traceback
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, Optional
 
@@ -15,7 +13,7 @@ from threadpoolctl import threadpool_limits
 
 from dataclay import utils
 from dataclay.config import set_runtime, settings
-from dataclay.event_loop import dc_to_thread
+from dataclay.event_loop import dc_to_thread_io
 from dataclay.exceptions import (
     DataClayException,
     DoesNotExistError,
@@ -134,7 +132,7 @@ class BackendAPI:
     ) -> tuple[bytes, bool]:
         """Entry point for calling an active method of a DataClayObject"""
 
-        logger.debug("(%s) Receiving call to activemethod '%s'", object_id, method_name)
+        logger.debug("(%s) Receiving remote call to activemethod '%s'", object_id, method_name)
 
         instance = await self.runtime.get_object_by_id(object_id)
 
@@ -147,11 +145,10 @@ class BackendAPI:
             # by passing the backend_id of the new object to the proxy, but this can create
             # problems with race conditions (e.g. a move before the consolidation). Therefore,
             # we check to the metadata which is more reliable.
+            logger.warning("(%s) Wrong backend", object_id)
             await self.runtime.sync_object_metadata(instance)
             logger.warning(
-                "(%s) Wrong backend. Update to %s",
-                object_id,
-                instance._dc_meta.master_backend_id,
+                "(%s) Update backend to %s", object_id, instance._dc_meta.master_backend_id
             )
             return (
                 pickle.dumps(
@@ -168,20 +165,23 @@ class BackendAPI:
         # Call activemethod in another thread
         logger.info("(%s) *** Starting activemethod '%s' in executor", object_id, method_name)
         max_threads = (
-            None if exec_constraints["max_threads"] == 0 else exec_constraints["max_threads"]
+            None if exec_constraints.get("max_threads", 0) == 0 else exec_constraints["max_threads"]
         )
-        logger.info("(%s) Max threads: %s", object_id, max_threads)
+        logger.info("(%s) Max threads for activemethod: %s", object_id, max_threads)
+        # TODO: Check that the threadpool_limit is not limiting our internal pool of threads.
+        # like when we are serializing dataclay objects.
         with threadpool_limits(limits=max_threads):
             try:
                 func = getattr(instance, method_name)
                 if asyncio.iscoroutinefunction(func):
-                    logger.debug("(%s) Activemethod '%s' is a coroutine", object_id, method_name)
+                    logger.debug("(%s) Awaiting activemethod coroutine", object_id)
                     result = await func(*args, **kwargs)
                 else:
-                    result = await dc_to_thread(func, *args, **kwargs)
+                    logger.debug("(%s) Running activemethod in new thread", object_id)
+                    result = await dc_to_thread_io(func, *args, **kwargs)
             except Exception as e:
                 # If an exception was raised, serialize it and return it to be raised by the client
-                logger.debug("(%s) *** Exception in activemethod '%s'", object_id, method_name)
+                logger.info("(%s) *** Exception in activemethod '%s'", object_id, method_name)
                 return pickle.dumps(e), True
         logger.info("(%s) *** Finished activemethod '%s' in executor", object_id, method_name)
 
@@ -193,7 +193,6 @@ class BackendAPI:
 
     # Store Methods
 
-    # TODO: Rename to get_object_property
     @tracer.start_as_current_span("get_object_attribute")
     async def get_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         """Returns value of the object attibute with ID provided
@@ -204,14 +203,13 @@ class BackendAPI:
             The pickled value of the object attibute.
             If it's an exception or not
         """
-        logger.debug("(%s) Receiving get attribute '%s'", object_id, attribute)
+        logger.debug("(%s) Receiving remote call to __getattribute__ '%s'", object_id, attribute)
         instance = await self.runtime.get_object_by_id(object_id)
         if not instance._dc_is_local:
+            logger.warning("(%s) Wrong backend", object_id)
             await self.runtime.sync_object_metadata(instance)
             logger.warning(
-                "(%s) Wrong backend. Update to %s",
-                object_id,
-                instance._dc_meta.master_backend_id,
+                "(%s) Update backend to %s", object_id, instance._dc_meta.master_backend_id
             )
             return (
                 pickle.dumps(
@@ -222,27 +220,24 @@ class BackendAPI:
                 False,
             )
         try:
-            value = await dc_to_thread(getattr, instance, attribute)
+            value = await dc_to_thread_io(getattr, instance, attribute)
             return await dcdumps(value), False
         except Exception as e:
             return pickle.dumps(e), True
 
-    # TODO: Rename to set_object_property
     @tracer.start_as_current_span("set_object_attribute")
     async def set_object_attribute(
         self, object_id: UUID, attribute: str, serialized_attribute: bytes
     ) -> tuple[bytes, bool]:
         """Updates an object attibute with ID provided"""
-        logger.debug("(%s) Receiving set attribute '%s'", object_id, attribute)
+        logger.debug("(%s) Receiving remote call to __setattr__ '%s'", object_id, attribute)
         instance = await self.runtime.get_object_by_id(object_id)
         if not instance._dc_is_local:
+            logger.warning("(%s) Wrong backend", object_id)
             await self.runtime.sync_object_metadata(instance)
             logger.warning(
-                "(%s) Wrong backend. Update to %s",
-                object_id,
-                instance._dc_meta.master_backend_id,
+                "(%s) Update backend to %s", object_id, instance._dc_meta.master_backend_id
             )
-
             return (
                 pickle.dumps(
                     ObjectWithWrongBackendIdError(
@@ -253,7 +248,7 @@ class BackendAPI:
             )
         try:
             object_attribute = await dcloads(serialized_attribute)
-            await dc_to_thread(setattr, instance, attribute, object_attribute)
+            await dc_to_thread_io(setattr, instance, attribute, object_attribute)
             return None, False
         except Exception as e:
             return pickle.dumps(e), True
@@ -261,13 +256,13 @@ class BackendAPI:
     @tracer.start_as_current_span("del_object_attribute")
     async def del_object_attribute(self, object_id: UUID, attribute: str) -> tuple[bytes, bool]:
         """Deletes an object attibute with ID provided"""
+        logger.debug("(%s) Receiving remote call to __delattr__'%s'", object_id, attribute)
         instance = await self.runtime.get_object_by_id(object_id)
         if not instance._dc_is_local:
+            logger.warning("(%s) Wrong backend", object_id)
             await self.runtime.sync_object_metadata(instance)
             logger.warning(
-                "(%s) Wrong backend. Update to %s",
-                object_id,
-                instance._dc_meta.master_backend_id,
+                "(%s) Update backend to %s", object_id, instance._dc_meta.master_backend_id
             )
             return (
                 pickle.dumps(
@@ -278,7 +273,7 @@ class BackendAPI:
                 False,
             )
         try:
-            await dc_to_thread(delattr, instance, attribute)
+            await dc_to_thread_io(delattr, instance, attribute)
             return None, False
         except Exception as e:
             return pickle.dumps(e), True
@@ -409,226 +404,3 @@ class BackendAPI:
     ):
         instance = await self.runtime.get_object_by_id(object_id)
         await self.runtime.new_object_replica(instance, backend_id, recursive, remotes)
-
-    def synchronize(
-        self, session_id, object_id, implementation_id, serialized_value, calling_backend_id=None
-    ):
-        raise Exception("To refactor")
-        # set field
-        logger.debug(
-            "----> Starting synchronization of %s from calling backend %s",
-            object_id,
-            calling_backend_id,
-        )
-
-        self.ds_exec_impl(object_id, implementation_id, serialized_value, session_id)
-        instance = self.get_local_instance(object_id, True)
-        src_exec_env_id = instance._dc_meta.master_backend_id()
-        if src_exec_env_id is not None:
-            logger.debug("Found origin location %s", src_exec_env_id)
-            if calling_backend_id is None or src_exec_env_id != calling_backend_id:
-                # do not synchronize to calling source (avoid infinite loops)
-                dest_backend = self.runtime.get_backend_client(src_exec_env_id)
-                logger.debug(
-                    "----> Propagating synchronization of %s to origin location %s",
-                    object_id,
-                    src_exec_env_id,
-                )
-
-                dest_backend.synchronize(
-                    session_id,
-                    object_id,
-                    implementation_id,
-                    serialized_value,
-                    calling_backend_id=self.backend_id,
-                )
-
-        replica_locations = instance._dc_meta.replica_backend_ids
-        if replica_locations is not None:
-            logger.debug("Found replica locations %s", replica_locations)
-            for replica_location in replica_locations:
-                if calling_backend_id is None or replica_location != calling_backend_id:
-                    # do not synchronize to calling source (avoid infinite loops)
-                    dest_backend = self.runtime.get_backend_client(replica_location)
-                    logger.debug(
-                        "----> Propagating synchronization of %s to replica location %s",
-                        object_id,
-                        replica_location,
-                    )
-                    dest_backend.synchronize(
-                        session_id,
-                        object_id,
-                        implementation_id,
-                        serialized_value,
-                        calling_backend_id=self.backend_id,
-                    )
-        logger.debug("----> Finished synchronization of %s", object_id)
-
-    # Federation
-
-    def federate(self, session_id, object_id, external_execution_env_id, recursive):
-        """Federate object with id provided to external execution env id specified
-
-        Args:
-            session_id: id of the session federating objects
-            object_id: id of object to federate
-            external_execution_id: id of dest external execution environment
-            recursive: indicates if federation is recursive
-        """
-        raise Exception("To refactor")
-        logger.debug("----> Starting federation of %s", object_id)
-
-        object_ids = set()
-        object_ids.add(object_id)
-        # TODO: check that current dataClay/EE has permission to federate the object (refederation use-case)
-        serialized_objs = self.get_objects(
-            session_id, object_ids, set(), recursive, external_execution_env_id, 1
-        )
-        client_backend = self.runtime.get_backend_client(external_execution_env_id)
-        client_backend.notify_federation(session_id, serialized_objs)
-        # TODO: add federation reference to object send ?? how is it working with replicas?
-        logger.debug("<---- Finished federation of %s", object_id)
-
-    def notify_federation(self, session_id, objects_to_persist):
-        """This function will deserialize object "parameters" (i.e. object to persist
-        and subobjects if needed) into dataClay memory heap using the same design as for
-        volatile parameters. This function processes objects recieved from federation calls.
-
-        Args:
-            session_id: ID of session of federation call
-            objects_to_persist: [num_params, imm_objs, lang_objs, vol_params, pers_params]
-        """
-
-        raise Exception("To refactor")
-        self.set_local_session(session_id)
-
-        try:
-            logger.debug("----> Notified federation")
-
-            # No need to provide params specs or param order since objects are not language types
-            federated_objs = self.store_in_memory(objects_to_persist)
-
-            # Register objects with alias (should we?)
-            for object in federated_objs:
-                if object._dc_alias:
-                    self.runtime.metadata_service.upsert_object(object._dc_meta)
-
-            for federated_obj in federated_objs:
-                try:
-                    federated_obj.when_federated()
-                except Exception:
-                    # ignore if method is not implemented
-                    pass
-
-        except Exception as e:
-            traceback.print_exc()
-            raise e
-        logger.debug("<---- Finished notification of federation")
-
-    def unfederate(self, session_id, object_id, external_execution_env_id, recursive):
-        """Unfederate object in external execution environment specified
-
-        Args:
-            session_id: id of session
-            object_id: id of the object
-            external_execution_env_id: external ee
-            recursive: also unfederates sub-objects
-        """
-        # TODO: redirect unfederation to owner if current dataClay is not the owner, check origLoc belongs to current dataClay
-        raise Exception("To refactor")
-        try:
-            logger.debug("----> Starting unfederation of %s", object_id)
-            object_ids = set()
-            object_ids.add(object_id)
-            serialized_objs = self.get_objects(
-                session_id, object_ids, set(), recursive, external_execution_env_id, 2
-            )
-
-            unfederate_per_backend = {}
-
-            for serialized_obj in serialized_objs:
-                replica_locs = serialized_obj.metadata.replica_locations
-                for replica_loc in replica_locs:
-                    exec_env = self.runtime.get_execution_environment_info(replica_loc)
-                    if exec_env.dataclay_instance_id != self.runtime.dataclay_id:
-                        if (
-                            external_execution_env_id is not None
-                            and replica_loc != external_execution_env_id
-                        ):
-                            continue
-                        objs_in_backend = None
-                        if replica_loc not in unfederate_per_backend:
-                            objs_in_backend = set()
-                            unfederate_per_backend[replica_loc] = objs_in_backend
-                        else:
-                            objs_in_backend = unfederate_per_backend[replica_loc]
-                        objs_in_backend.add(serialized_obj.object_id)
-
-            for external_ee_id, objs_in_backend in unfederate_per_backend.items():
-                client_backend = self.runtime.get_backend_client(external_ee_id)
-                client_backend.notify_unfederation(session_id, objs_in_backend)
-
-            logger.debug("<---- Finished unfederation of %s", object_ids)
-
-        except Exception as e:
-            traceback.print_exc()
-            raise e
-
-    def notify_unfederation(self, session_id, object_ids):
-        """This function is called when objects are unfederated.
-
-        Args:
-            session_id: ID of session of federation call
-            object_ids: List of IDs of the objects to unfederate
-        """
-        raise Exception("To refactor")
-        self.set_local_session(session_id)
-        logger.debug("---> Notified unfederation: running when_unfederated")
-        try:
-            for object_id in object_ids:
-                instance = self.get_local_instance(object_id, True)
-
-                try:
-                    instance.when_unfederated()
-                except:
-                    # ignore if method is not implemented
-                    pass
-                instance.set_origin_location(None)
-                try:
-                    if instance._dc_alias is not None and instance._dc_alias != "":
-                        logger.debug("Removing alias %s", instance._dc_alias)
-                        self.self.runtime.delete_alias(instance)
-
-                except Exception as ex:
-                    traceback.print_exc()
-                    logger.debug(
-                        "Caught exception %s, Ignoring if object was not registered yet",
-                        type(ex).__name__,
-                    )
-                    # ignore if object was not registered yet
-                    pass
-        except DataClayException as e:
-            # TODO: better algorithm to avoid unfederation in wrong backend
-            logger.debug(
-                "Caught exception %s, Ignoring if object is not in current backend",
-                type(e).__name__,
-            )
-        except Exception as e:
-            logger.debug("Caught exception %s", type(e).__name__)
-            raise e
-        logger.debug("<--- Finished notification of unfederation")
-
-    # Tracing
-
-    def activate_tracing(self, task_id):
-        if not extrae_tracing_is_enabled():
-            set_current_available_task_id(task_id)
-            initialize_extrae(True)
-
-    def deactivate_tracing(self):
-        if extrae_tracing_is_enabled():
-            finish_tracing(True)
-
-    def get_traces(self):
-        logger.debug("Merging...")
-        return get_traces()
