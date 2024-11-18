@@ -17,8 +17,9 @@ services:
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_METRICS=true
-      - DATACLAY_METRICS_EXPORTER=http
-      - DATACLAY_METRICS_PORT=8000
+      - DATACLAY_METRICS_EXPORTER=pushgateway
+      - DATACLAY_METRICS_HOST=pushgateway
+      - DATACLAY_METRICS_PORT=9091
       - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.metadata
     volumes:
@@ -33,8 +34,9 @@ services:
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_METRICS=true
-      - DATACLAY_METRICS_EXPORTER=http
-      - DATACLAY_METRICS_PORT=8000
+      - DATACLAY_METRICS_EXPORTER=pushgateway
+      - DATACLAY_METRICS_HOST=pushgateway
+      - DATACLAY_METRICS_PORT=9091
       - DATACLAY_LOGLEVEL=DEBUG
     command: python -m dataclay.backend
     volumes:
@@ -50,4 +52,9 @@ services:
       - --config.file=/etc/prometheus.yaml
       - --web.enable-remote-write-receiver #todo: check if this is needed
       - --enable-feature=exemplar-storage #todo: check if this is needed
+
+  pushgateway:
+    image: prom/pushgateway:latest
+    ports:
+      - "9091:9091"
 

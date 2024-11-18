@@ -4,9 +4,13 @@ Importing this class happens inside conditionals that check for the value of set
 If metrics are not enabled, this class will not be imported and the code will not be executed.
 """
 
+import logging
 import os
 import threading
 import time
+
+logger = logging.getLogger(__name__)
+
 
 from prometheus_client import (
     CollectorRegistry,
@@ -20,6 +24,7 @@ from prometheus_client.registry import REGISTRY
 
 def pushgateway_thread(host, port, registry):
     while True:
+        logger.debug("Pushing metrics to gateway in %s:%d", host, port)
         try:
             push_to_gateway(f"{host}:{port}", job="dataclay", registry=registry)
         except Exception as e:
@@ -28,6 +33,7 @@ def pushgateway_thread(host, port, registry):
 
 
 def set_metrics(host, port, exporter):
+    logger.info("Setting metrics exporter %s to %s:%d", exporter, host, port)
     if exporter == "http":
         start_http_server(port)
     elif exporter == "pushgateway":

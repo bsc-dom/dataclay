@@ -66,6 +66,7 @@ telemetry = [
     "opentelemetry-exporter-otlp-proto-grpc",
     "opentelemetry-instrumentation-grpc",
     "opentelemetry-instrumentation-redis",
+    "prometheus-client",
 ]
 
 [project.scripts]

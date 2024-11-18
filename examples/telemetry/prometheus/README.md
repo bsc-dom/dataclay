@@ -1,6 +1,18 @@
 # Prometheus
 
-Deploy dataclay with Prometheus and pushgateway:
+## Metrics
+
+| Metric                       | Description               | Service          |
+|------------------------------|---------------------------|------------------|
+| `dataclay_inmemory_objects`  | Number of objects in memory | backend, client |
+| `dataclay_loaded_objects`    | Number of loaded objects    | backend          |
+| `dataclay_stored_objects`    | Number of stored objects    | backend          |
+| `dataclay_inmemory_misses_total` | Number of inmemory misses | backend, client |
+| `dataclay_inmemory_hits_total`   | Number of inmemory hits   | backend, client |
+
+## Deploy
+
+Run dataClay with Prometheus:
 
 ```bash
 docker compose up -d
@@ -9,16 +21,6 @@ docker compose up -d
 The `metadata-service` and `backends` will post their metrics to `8000` port.
 Prometheus is configured to scrape this port to pull the metrics.
 
-The `client.py` can also push metris using the `pushgateway`:
+Access Prometheus at [http://localhost:9090](http://localhost:9090). You can query the metrics defined above.
 
-```bash
-export DATACLAY_METRICS=true
-export DATACLAY_METRICS_EXPORTER=pushgateway
-export DATACLAY_METRICS_HOST=localhost # the default
-export DATACLAY_METRICS_PORT=9091
-python3 client.py
-```
-
-Go to `localhost:9090/graph` to explore the metrics wiht `Prometheus`.
-
-Note: When using `pushgateway` a new python thread will run to push the metrics every 10 seconds.
+<!-- TODO: Check if can obtain metrics from client running in localhost -->
