@@ -22,9 +22,9 @@ from dataclay.config import get_runtime
 from dataclay.event_loop import get_dc_event_loop, run_dc_coroutine
 from dataclay.exceptions import (
     AliasDoesNotExistError,
+    DoesNotExistError,
     ObjectIsMasterError,
     ObjectNotRegisteredError,
-    DoesNotExistError,
 )
 from dataclay.metadata.kvdata import ObjectMetadata
 from dataclay.utils.telemetry import trace

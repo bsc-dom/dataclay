@@ -257,7 +257,7 @@ class MetadataAPI:
             await self.kv_manager.set_new(alias)
         except AlreadyExistError as e:
             raise AliasAlreadyExistError(alias_name, dataset_name) from e
-        
+
     @tracer.start_as_current_span("get_all_alias")
     async def get_all_alias(
         self, dataset_name: Optional[str] = None, object_id: Optional[UUID] = None

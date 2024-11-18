@@ -1,12 +1,8 @@
 import functools
 
 import grpc
-from dataclay.exceptions import (
-    DataClayException, 
-    DoesNotExistError, 
-    AlreadyExistError,
-)
 
+from dataclay.exceptions import AlreadyExistError, DataClayException, DoesNotExistError
 
 
 def grpc_error_handler(func):
@@ -28,14 +24,22 @@ def grpc_aio_error_handler(func):
         except grpc.aio.AioRpcError as rpc_error:
             if "does not exist" in rpc_error.details():
                 if "Alias" in rpc_error.details():
-                    raise DoesNotExistError(rpc_error.details().replace("Alias ", "").replace(" does not exist", "")) from None
+                    raise DoesNotExistError(
+                        rpc_error.details().replace("Alias ", "").replace(" does not exist", "")
+                    ) from None
                 else:
-                    raise DoesNotExistError(rpc_error.details().replace(" does not exist", "")) from None
+                    raise DoesNotExistError(
+                        rpc_error.details().replace(" does not exist", "")
+                    ) from None
             elif "already exists" in rpc_error.details():
                 if "Alias" in rpc_error.details():
-                    raise AlreadyExistError(rpc_error.details().replace("Alias ", "").replace(" already exists", "")) from None
+                    raise AlreadyExistError(
+                        rpc_error.details().replace("Alias ", "").replace(" already exists", "")
+                    ) from None
                 else:
-                    raise AlreadyExistError(rpc_error.details().replace(" already exists", "")) from None
+                    raise AlreadyExistError(
+                        rpc_error.details().replace(" already exists", "")
+                    ) from None
             else:
                 raise DataClayException(rpc_error.details()) from None
 

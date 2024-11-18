@@ -10,7 +10,7 @@ import psutil
 
 from dataclay.config import settings
 from dataclay.event_loop import get_dc_event_loop
-from dataclay.exceptions import DataClayException, ObjectStorageError, ObjectNotFound
+from dataclay.exceptions import DataClayException, ObjectNotFound, ObjectStorageError
 from dataclay.lock_manager import lock_manager
 from dataclay.utils.serialization import DataClayPickler
 
