@@ -27,12 +27,12 @@ class AlreadyExistError(DataClayException):
 
 
 class DoesNotExistError(DataClayException):
-    """<id> does not exists."""
+    """<id> does not exist."""
     def __init__(self, id):
         self.id = id
 
     def __str__(self):
-        return f"{self.id} does not exists"
+        return f"{self.id} does not exist"
 
 
 ###########
@@ -88,7 +88,7 @@ class AliasError(DataClayException):
 class AliasDoesNotExistError(AliasError):
     """The alias <alias_name> does not exist in the dataset <dataset_name>"""
     def __str__(self):
-        return f"Alias {self.dataset_name}/{self.alias_name} does not exists"
+        return f"Alias {self.dataset_name}/{self.alias_name} does not exist"
 
 
 class AliasAlreadyExistError(AliasError):
@@ -138,6 +138,18 @@ class ObjectIsMasterError(ObjectError):  # TODO: testing
     """The object <object_id> is the master. This means it is registred, it is local and it is not a replica"""
     def __str__(self):
         return f"Object {self.object_id} is the master!"
+    
+
+class ObjectNotFound(ObjectError):
+    """The object <object_id> could not be found"""
+    def __str__(self):
+        return f"Object {self.object_id} not found."
+    
+
+class ObjectStorageError(ObjectError):
+    """The object could not be stored"""
+    def __str__(self):
+        return f"Could not store object {self.object_id}."
 
 
 ###########

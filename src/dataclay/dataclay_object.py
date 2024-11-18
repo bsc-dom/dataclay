@@ -24,6 +24,7 @@ from dataclay.exceptions import (
     AliasDoesNotExistError,
     ObjectIsMasterError,
     ObjectNotRegisteredError,
+    DoesNotExistError,
 )
 from dataclay.metadata.kvdata import ObjectMetadata
 from dataclay.utils.telemetry import trace
@@ -472,8 +473,8 @@ class DataClayObject:
     async def _get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:
         try:
             return await get_runtime().get_object_by_alias(alias, dataset_name)
-        except:
-            raise AliasDoesNotExistError(alias, dataset_name)
+        except DoesNotExistError as e:
+            raise AliasDoesNotExistError(alias, dataset_name) from e
 
     @classmethod
     async def a_get_by_alias(cls: Type[T], alias: str, dataset_name: str = None) -> T:

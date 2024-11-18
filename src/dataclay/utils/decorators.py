@@ -1,8 +1,12 @@
 import functools
 
 import grpc
+from dataclay.exceptions import (
+    DataClayException, 
+    DoesNotExistError, 
+    AlreadyExistError,
+)
 
-from dataclay.exceptions import DataClayException
 
 
 def grpc_error_handler(func):
@@ -22,6 +26,17 @@ def grpc_aio_error_handler(func):
         try:
             return await func(*args, **kwargs)
         except grpc.aio.AioRpcError as rpc_error:
-            raise DataClayException(rpc_error.details()) from None
+            if "does not exist" in rpc_error.details():
+                if "Alias" in rpc_error.details():
+                    raise DoesNotExistError(rpc_error.details().replace("Alias ", "").replace(" does not exist", "")) from None
+                else:
+                    raise DoesNotExistError(rpc_error.details().replace(" does not exist", "")) from None
+            elif "already exists" in rpc_error.details():
+                if "Alias" in rpc_error.details():
+                    raise AlreadyExistError(rpc_error.details().replace("Alias ", "").replace(" already exists", "")) from None
+                else:
+                    raise AlreadyExistError(rpc_error.details().replace(" already exists", "")) from None
+            else:
+                raise DataClayException(rpc_error.details()) from None
 
     return wrapper
