@@ -10,6 +10,7 @@ can ask for the last value stored in an existing subscription using the queries.
 The publisher can send messages to a specific topic.
 
 """
+
 try:
     import zenoh
 except ImportError:

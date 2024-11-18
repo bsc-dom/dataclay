@@ -124,12 +124,15 @@ if __name__ == "__main__":
     # Add the dynamic environment variables
     if metadata_servers:
         env_vars["DATACLAY_METADATA_HOST"] = metadata_servers[0]
+        env_vars["DATACLAY_TRACING_HOST"] = metadata_servers[0]
     elif env_vars.get("DATACLAY_METADATA_HOST") is None:
         logger.warning("DATACLAY_METADATA_HOST not set.")
+
     if redis_servers:
         env_vars["DATACLAY_KV_HOST"] = redis_servers[0]
     elif env_vars.get("DATACLAY_KV_HOST") is None:
         logger.warning("DATACLAY_KV_HOST not set.")
+
     env_vars["PYTHONPATH"] = f"{os.environ.get('PYTHONPATH')}:{os.getcwd()}"
 
     # Create folers

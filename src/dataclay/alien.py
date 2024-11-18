@@ -127,9 +127,9 @@ class AlienDataClayObject(DataClayObject, Generic[T]):
         proxy_class = cls._create_class_proxy(obj.__class__)
 
         instance = DataClayObject.__new__(proxy_class)
-        object.__getattribute__(
-            instance, "_dc_meta"
-        ).class_name = f"AlienDataClayObject[{type(obj).__module__}.{type(obj).__name__}]"
+        object.__getattribute__(instance, "_dc_meta").class_name = (
+            f"AlienDataClayObject[{type(obj).__module__}.{type(obj).__name__}]"
+        )
         object.__setattr__(instance, "_dc_base_object", obj)
         return instance
 

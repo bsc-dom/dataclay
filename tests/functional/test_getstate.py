@@ -1,5 +1,3 @@
-import pytest
-
 from dataclay.contrib.modeltest.classes import Box, TextReader
 from dataclay.event_loop import run_dc_coroutine
 

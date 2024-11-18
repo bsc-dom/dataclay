@@ -146,10 +146,15 @@ class Settings(BaseSettings):
     # Other
     dataclay_id: Optional[uuid.UUID] = Field(default=None, alias="dataclay_id")
     storage_path: str = "/data/storage/"
-    thread_pool_max_workers: Optional[int] = None
-    healthcheck_max_workers: Optional[int] = None
     loglevel: Annotated[str, StringConstraints(strip_whitespace=True, to_upper=True)] = "INFO"
     ephemeral: bool = False
+
+    # Threads
+    #: Multiplier for I/O-bound tasks
+    io_bound_multiplier: int = 2
+    # TODO: Rename it with proxy...
+    thread_pool_max_workers: Optional[int] = None
+    healthcheck_max_workers: Optional[int] = None
 
     # Timeouts
     grpc_check_alive_timeout: int = 60
@@ -178,13 +183,13 @@ class Settings(BaseSettings):
     # Tracing
     service_name: Optional[str] = None
     tracing: bool = False
-    tracing_exporter: Literal["otlp", "jaeger", "zipkin", "none"] = "otlp"
+    tracing_exporter: Literal["otlp", "console", "none"] = "otlp"
     tracing_host: str = "localhost"
     tracing_port: int = 4317
 
     # Metrics
     metrics: bool = False
-    metrics_exporter: Literal["http", "prometheus", "none"] = "http"
+    metrics_exporter: Literal["http", "pushgateway", "none"] = "http"
     metrics_host: str = "localhost"
     metrics_port: int = 8000  # 9091 for pushgateway
     metrics_push_interval: int = 10

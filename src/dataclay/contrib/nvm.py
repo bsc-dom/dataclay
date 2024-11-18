@@ -6,6 +6,7 @@ within active methods and the data model implementation. However, dataClay
 ships the :class:`InNVM` annotation; this offers a transparent and automatic
 in-NVM placement for class attributes.
 """
+
 from dataclay.annotated import PropertyTransformer
 
 try:

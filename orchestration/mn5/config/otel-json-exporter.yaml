@@ -2,13 +2,17 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: "0.0.0.0:4317"
+
 exporters:
   file:
     path: $DATACLAY_JOB_PATH/otel-traces.json
   file/2:
     path: $DATACLAY_JOB_PATH/../otel-traces.json
+
 processors:
   batch:
+
 service:
   pipelines:
     traces:

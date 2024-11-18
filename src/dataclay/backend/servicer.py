@@ -4,7 +4,6 @@ import asyncio
 import logging
 import os.path
 import signal
-import traceback
 from concurrent import futures
 from functools import wraps
 from typing import Optional
@@ -25,7 +24,6 @@ from dataclay.backend.api import BackendAPI
 from dataclay.config import session_var, settings
 from dataclay.event_loop import get_dc_event_loop, set_dc_event_loop
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
-from dataclay.proto.common import common_pb2
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +70,8 @@ def _get_or_generate_backend_id() -> UUID:
 
 
 async def serve():
+
+    # Set the event loop created by `asyncio.run` as the dataclay event loop
     set_dc_event_loop(asyncio.get_running_loop())
 
     backend_id = _get_or_generate_backend_id()
@@ -135,6 +135,7 @@ async def serve():
         )
 
     # Wait for the server to stop
+    logger.info("Backend service started")
     await server.wait_for_termination()
     logger.info("Backend service stopped")
     await backend.stop()
@@ -340,188 +341,3 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             request.remotes,
         )
         return Empty()
-
-    ###########
-    # END NEW #
-    ###########
-
-    def synchronize(self, request, context):
-        raise Exception("To refactor")
-        try:
-            object_id = UUID(request.objectID)
-            implementation_id = UUID(request.implementationID)
-            serialized_params = Utils.get_param_or_return(request.params)
-            session_id = UUID(request.sessionID)
-            calling_backend_id = UUID(request.callingBackendID)
-            self.backend.synchronize(
-                session_id, object_id, implementation_id, serialized_params, calling_backend_id
-            )
-            return common_pb2.ExceptionInfo()
-        except DataClayException as ex:
-            return self.get_exception_info(ex)
-
-    def removeObjects(self, request, context):
-        raise Exception("To refactor")
-        try:
-            object_ids = set()
-
-            for oid in request.getObjectsIDSList():
-                object_ids.add(UUID(oid))
-
-            result = self.client.ds_remove_objects(
-                UUID(request.sessionID),
-                object_ids,
-                request.recursive,
-                request.moving,
-                UUID(request.newHint),
-            )
-
-            rem_obj = {}
-
-            for k, v in result.items():
-                rem_obj[str(k)] = str(v)
-
-            return dataservice_messages_pb2.RemoveObjectsResponse(removedObjects=rem_obj)
-
-        except Exception as ex:
-            return dataservice_messages_pb2.RemoveObjectsResponse(
-                excInfo=self.get_exception_info(ex)
-            )
-
-    def migrateObjectsToBackends(self, request, context):
-        raise Exception("To refactor")
-        try:
-            backends = {}
-
-            for k, v in request.destStorageLocs.items():
-                backends[UUID(k)] = Utils.get_storage_location(v)
-
-            result = self.client.ds_migrate_objects_to_backends(backends)
-
-            migr_obj_res = {}
-
-            for k, v in result[0].items():
-                migrated_obj_list = list()
-
-                for oid in v:
-                    migrated_obj_list.append(Utils.get_msg_id(oid))
-
-                migrated_obj_builder = dataservice_messages_pb2.MigratedObjects(
-                    objs=migrated_obj_list
-                )
-                migr_obj_res[str(k)] = migrated_obj_builder
-
-            non_migrated_objs_list = list()
-
-            for oid in result[1]:
-                non_migrated_objs_list.append(Utils.get_msg_id(oid))
-
-            non_migrated_objs_builder = dataservice_messages_pb2.MigratedObjects(
-                objs=non_migrated_objs_list
-            )
-
-            return dataservice_messages_pb2.MigrateObjectsResponse(
-                migratedObjs=migr_obj_res, nonMigratedObjs=non_migrated_objs_builder
-            )
-
-        except Exception as ex:
-            return dataservice_messages_pb2.MigrateObjectsResponse(
-                excInfo=self.get_exception_info(ex)
-            )
-
-    ##############
-    # Federation #
-    ##############
-
-    def federate(self, request, context):
-        raise Exception("To refactor")
-        try:
-            logger.debug("Federation started")
-            self.backend.federate(
-                UUID(request.sessionID),
-                UUID(request.objectID),
-                UUID(request.externalExecutionEnvironmentID),
-                request.recursive,
-            )
-            logger.debug("Federation finished, sending response")
-            return common_pb2.ExceptionInfo()
-        except Exception as ex:
-            traceback.print_exc()
-            return self.get_exception_info(ex)
-
-    def unfederate(self, request, context):
-        raise Exception("To refactor")
-        try:
-            logger.debug("Unfederation started")
-            self.backend.unfederate(
-                UUID(request.sessionID),
-                UUID(request.objectID),
-                UUID(request.externalExecutionEnvironmentID),
-                request.recursive,
-            )
-            logger.debug("Unfederation finished, sending response")
-            return common_pb2.ExceptionInfo()
-        except Exception as ex:
-            return self.get_exception_info(ex)
-
-    def notifyFederation(self, request, context):
-        raise Exception("To refactor")
-        try:
-            logger.debug("Notify Federation started")
-            objects_to_persist = []
-            for vol_param in request.objects:
-                param = Utils.get_obj_with_data_param_or_return(vol_param)
-                objects_to_persist.append(param)
-            session_id = UUID(request.sessionID)
-            self.backend.notify_federation(session_id, objects_to_persist)
-            logger.debug("Notify Federation finished, sending response")
-            return common_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            return self.get_exception_info(ex)
-
-    def notifyUnfederation(self, request, context):
-        raise Exception("To refactor")
-        try:
-            logger.debug("Notify Unfederation started")
-            session_id = UUID(request.sessionID)
-            object_ids = set()
-            for oid in request.objectIDs:
-                object_ids.add(UUID(oid))
-            self.backend.notify_unfederation(session_id, object_ids)
-            logger.debug("Notify Unfederation finished, sending response")
-            return common_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            traceback.print_exc()
-            return self.get_exception_info(ex)
-
-    ###########
-    # Tracing #
-    ###########
-
-    def activateTracing(self, request, context):
-        raise Exception("To refactor")
-        try:
-            self.backend.activate_tracing(request.taskid)
-            return common_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            return self.get_exception_info(ex)
-
-    def getTraces(self, request, context):
-        raise Exception("To refactor")
-        try:
-            result = self.backend.get_traces()
-            return common_pb2.GetTracesResponse(traces=result)
-        except Exception as ex:
-            return self.get_exception_info(ex)
-
-    def deactivateTracing(self, request, context):
-        raise Exception("To refactor")
-        try:
-            self.backend.deactivate_tracing()
-            return common_pb2.ExceptionInfo()
-
-        except Exception as ex:
-            return self.get_exception_info(ex)
