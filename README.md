@@ -46,7 +46,12 @@ We welcome contributions to dataClay. Please see the [Contributing](https://data
 - [@alexbarcelo](https://github.com/alexbarcelo) (Alex Barcelo)
 - [@aqueralt](https://github.com/aqueralt) (Anna Queralt)
 - [@marcmonfort](https://github.com/marcmonfort) (Marc Monfort)
+- [@Canicula98](https://github.com/Canicula98) (David Cano)
 
 ## Other resources
 
 [BSC official website](https://www.bsc.es/dataclay)
+
+## Acknolwedgments
+
+See the [full list of acknowledgments](ACKNOWLEDGMENTS.md)

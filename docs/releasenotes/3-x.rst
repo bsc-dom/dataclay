@@ -1,0 +1,44 @@
+dataClay 3.x
+============
+
+3.0 (May 2023)
+--------------
+
+Highlights
+~~~~~~~~~~
+
+- Support to Python 3 built-in type annotations.
+- New, simpler, and more efficient class registration process.
+- Enabling multiple client sessions.
+
+Other changes
+~~~~~~~~~~~~~
+
+- Complete refactoring featuring metadata distribution to avoid performance bottlenecks.
+- Migrated Java services and runtime to Python codebase.
+- Optimized object serialization performance.
+- New :meth:`~dataclay.DataClayObject.sync` method to synchronize object metdata.
+- Support to installation with Spack.
+- Support to orchestration with Ansible.
+- Support to tracing with OpenTelemetry.
+- Other minor optimizations and bug fixes.
+
+3.1 (November 2023)
+-------------------
+
+Highlights
+~~~~~~~~~~
+
+- Support to Python versions from 3.9 to 3.12, with the corresponding images available.
+- Support to metadata annotations through ``typing.Annotated``.
+- Annotation :class:`~dataclay.contrib.nvm.InNVM` to store the values of annotated attributes in Non-Volatile Memory devices.
+- Annotation :class:`~dataclay.annotated.LocalOnly` to avoid serialization of annotated attributes.
+
+Other changes
+~~~~~~~~~~~~~
+
+- Support for Redis Cluster infrastructure for metadata.
+- Improved user-defined serialization of objects.
+- Fixes and improvements for multi-threaded and/or distributed applications.
+- Improved settings management and sanity checks during initialization (backend and client).
+- Other minor optimizations and bug fixes.

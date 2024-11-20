@@ -3,8 +3,8 @@ from __future__ import annotations
 import asyncio
 import logging
 import signal
-import traceback
 from concurrent import futures
+from functools import wraps
 from uuid import UUID, uuid4
 
 import grpc
@@ -49,7 +49,7 @@ async def serve():
         )
     except AlreadyExistError:
         logger.info("MetadataService already registered with id %s", settings.dataclay_id)
-        settings.dataclay_id = await metadata_api.get_dataclay("this").id
+        settings.dataclay_id = (await metadata_api.get_dataclay("this")).id
     else:
         await metadata_api.new_superuser(
             settings.root_username, settings.root_password, settings.root_dataset
@@ -88,10 +88,29 @@ async def serve():
         )
 
     # Wait for the server to stop
+    logger.info("MetadataService started")
     await server.wait_for_termination()
     logger.info("MetadataService stopped")
     await metadata_servicer.backend_clients.stop()
     await metadata_api.close()
+
+
+class ServicerMethod:
+    def __init__(self, ret_factory):
+        self.ret_factory = ret_factory
+
+    def __call__(self, func):
+        @wraps(func)
+        async def wrapper(servicer, request, context):
+            try:
+                return await func(servicer, request, context)
+            except Exception as e:
+                context.set_details(str(e))
+                context.set_code(grpc.StatusCode.INTERNAL)
+                logger.info("Exception during gRPC call\n", exc_info=True)
+                return self.ret_factory()
+
+        return wrapper
 
 
 class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
@@ -108,148 +127,95 @@ class MetadataServicer(metadata_pb2_grpc.MetadataServiceServicer):
 
     # TODO: define get_exception_info(..) to serialize excpetions
 
+    @ServicerMethod(Empty)
     async def NewAccount(self, request, context):
-        try:
-            await self.metadata_api.new_account(request.username, request.password)
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        await self.metadata_api.new_account(request.username, request.password)
         return Empty()
 
+    @ServicerMethod(Empty)
     async def NewDataset(self, request, context):
-        try:
-            await self.metadata_api.new_dataset(request.username, request.password, request.dataset)
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        await self.metadata_api.new_dataset(request.username, request.password, request.dataset)
         return Empty()
 
+    @ServicerMethod(common_pb2.Dataclay)
     async def GetDataclay(self, request, context):
-        try:
-            dataclay = await self.metadata_api.get_dataclay(UUID(request.dataclay_id))
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return common_pb2.Dataclay()
+        dataclay = await self.metadata_api.get_dataclay(UUID(request.dataclay_id))
         return dataclay.get_proto()
 
+    @ServicerMethod(metadata_pb2.GetAllBackendsResponse)
     async def GetAllBackends(self, request, context):
-        try:
-            response = {}
-            if request.force:
-                backends = await self.metadata_api.get_all_backends(request.from_backend)
-                for id, backend in backends.items():
-                    response[str(id)] = backend.get_proto()
-            else:
-                # Using a cached version of the backends to avoid querying the KV store for each client request
-                for id, backend_client in self.backend_clients.items():
-                    backend = Backend(
-                        id=id,
-                        host=backend_client.host,
-                        port=backend_client.port,
-                        dataclay_id=id,  # wrong: to change or remove completely
-                    )
-                    response[str(id)] = backend.get_proto()
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return metadata_pb2.GetAllBackendsResponse()
+        response = {}
+        if request.force:
+            backends = await self.metadata_api.get_all_backends(request.from_backend)
+            for id, backend in backends.items():
+                response[str(id)] = backend.get_proto()
+        else:
+            # Using a cached version of the backends to avoid querying the KV store for
+            # each client request
+            for id, backend_client in self.backend_clients.items():
+                backend = Backend(
+                    id=id,
+                    host=backend_client.host,
+                    port=backend_client.port,
+                    dataclay_id=id,  # wrong: to change or remove completely
+                )
+                response[str(id)] = backend.get_proto()
         return metadata_pb2.GetAllBackendsResponse(backends=response)
 
     ###################
     # Object Metadata #
     ###################
 
+    @ServicerMethod(metadata_pb2.GetAllObjectsResponse)
     async def GetAllObjects(self, request, context):
-        try:
-            object_mds = await self.metadata_api.get_all_objects()
-            response = {}
-            for id, object_md in object_mds.items():
-                response[str(id)] = object_md.get_proto()
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return metadata_pb2.GetAllObjectsResponse()
+        object_mds = await self.metadata_api.get_all_objects()
+        response = {}
+        for id, object_md in object_mds.items():
+            response[str(id)] = object_md.get_proto()
         return metadata_pb2.GetAllObjectsResponse(objects=response)
 
+    @ServicerMethod(common_pb2.ObjectMetadata)
     async def GetObjectMDById(self, request, context):
-        try:
-            object_md = await self.metadata_api.get_object_md_by_id(UUID(request.object_id))
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return common_pb2.ObjectMetadata()
+        object_md = await self.metadata_api.get_object_md_by_id(UUID(request.object_id))
         return object_md.get_proto()
 
+    @ServicerMethod(common_pb2.ObjectMetadata)
     async def GetObjectMDByAlias(self, request, context):
-        try:
-            object_md = await self.metadata_api.get_object_md_by_alias(
-                request.alias_name, request.dataset_name
-            )
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return common_pb2.ObjectMetadata()
+        object_md = await self.metadata_api.get_object_md_by_alias(
+            request.alias_name, request.dataset_name
+        )
         return object_md.get_proto()
 
     #########
     # Alias #
     #########
 
+    @ServicerMethod(Empty)
     async def NewAlias(self, request, context):
-        try:
-            await self.metadata_api.new_alias(
-                request.alias_name, request.dataset_name, UUID(request.object_id)
-            )
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        await self.metadata_api.new_alias(
+            request.alias_name, request.dataset_name, UUID(request.object_id)
+        )
         return Empty()
 
+    @ServicerMethod(metadata_pb2.GetAllAliasResponse)
     async def GetAllAlias(self, request, context):
-        try:
-            aliases = await self.metadata_api.get_all_alias(
-                request.dataset_name, str_to_uuid(request.object_id)
-            )
-            response = {}
-            for alias_name, alias in aliases.items():
-                response[alias_name] = alias.get_proto()
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return metadata_pb2.GetAllAliasResponse()
+        aliases = await self.metadata_api.get_all_alias(
+            request.dataset_name, str_to_uuid(request.object_id)
+        )
+        response = {}
+        for alias_name, alias in aliases.items():
+            response[alias_name] = alias.get_proto()
         return metadata_pb2.GetAllAliasResponse(aliases=response)
 
+    @ServicerMethod(Empty)
     async def DeleteAlias(self, request, context):
-        try:
-            await self.metadata_api.delete_alias(request.alias_name, request.dataset_name)
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
-            return Empty()
+        await self.metadata_api.delete_alias(request.alias_name, request.dataset_name)
         return Empty()
 
+    @ServicerMethod(Empty)
     async def Stop(self, request, context):
-        try:
-            logger.warning(
-                "Stopping MetadataService. Grace period: %ss", settings.shutdown_grace_period
-            )
-            get_dc_event_loop().create_task(self.server.stop(settings.shutdown_grace_period))
-        except Exception as e:
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            traceback.print_exc()
+        logger.warning(
+            "Stopping MetadataService. Grace period: %ss", settings.shutdown_grace_period
+        )
+        get_dc_event_loop().create_task(self.server.stop(settings.shutdown_grace_period))
         return Empty()

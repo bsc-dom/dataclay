@@ -1,17 +1,15 @@
 import logging
-import traceback
-from typing import Iterable, Optional
+from typing import Any, Iterable, Optional
 from uuid import UUID
 
 import grpc
-from google.protobuf.empty_pb2 import Empty
+from google.protobuf import any_pb2, empty_pb2
+from google.protobuf.wrappers_pb2 import BoolValue, FloatValue, Int32Value, StringValue
 from grpc._cython.cygrpc import ChannelArgKey
 
 import dataclay
 from dataclay.config import session_var, settings
-from dataclay.exceptions import DataClayException
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
-from dataclay.proto.common import common_pb2
 from dataclay.utils.decorators import grpc_aio_error_handler
 
 logger = logging.getLogger(__name__)
@@ -137,13 +135,38 @@ class BackendClient:
 
     @grpc_aio_error_handler
     async def call_active_method(
-        self, object_id: UUID, method_name: str, args: bytes, kwargs: bytes
+        self,
+        object_id: UUID,
+        method_name: str,
+        args: bytes,
+        kwargs: bytes,
+        exec_constraints: dict[str, Any],
     ) -> tuple[bytes, bool]:
+
+        converted_exec_constraints = {}
+        for key, value in exec_constraints.items():
+            any_value = any_pb2.Any()
+
+            if isinstance(value, int) or value is None:
+                wrapped_value = Int32Value(value=value)
+            elif isinstance(value, float):
+                wrapped_value = FloatValue(value=value)
+            elif isinstance(value, str):
+                wrapped_value = StringValue(value=value)
+            elif isinstance(value, bool):
+                wrapped_value = BoolValue(value=value)
+            else:
+                raise TypeError(f"Unsupported type {type(value)} for exec_constraints key '{key}'")
+
+            any_value.Pack(wrapped_value)
+            converted_exec_constraints[key] = any_value
+
         request = backend_pb2.CallActiveMethodRequest(
             object_id=str(object_id),
             method_name=method_name,
             args=args,
             kwargs=kwargs,
+            exec_constraints=converted_exec_constraints,
         )
 
         current_context = session_var.get()
@@ -167,12 +190,6 @@ class BackendClient:
             object_id=str(object_id),
             attribute=attribute,
         )
-        current_context = session_var.get()
-        metadata = self.metadata_call + [
-            ("username", current_context["username"]),
-            ("authorization", current_context["token"]),
-        ]
-        response = await self.stub.GetObjectAttribute(request, metadata=metadata)
         current_context = session_var.get()
         metadata = self.metadata_call + [
             ("username", current_context["username"]),
@@ -280,199 +297,12 @@ class BackendClient:
 
     @grpc_aio_error_handler
     async def flush_all(self):
-        await self.stub.FlushAll(Empty())
+        await self.stub.FlushAll(empty_pb2.Empty())
 
     @grpc_aio_error_handler
     async def stop(self):
-        await self.stub.Stop(Empty())
+        await self.stub.Stop(empty_pb2.Empty())
 
     @grpc_aio_error_handler
     async def drain(self):
-        await self.stub.Drain(Empty())
-
-    # @grpc_aio_error_handler
-    # def new_object_replica(self, object_id: UUID, backend_id: UUID, recursive: bool, remotes: bool):
-    #     request = backend_pb2.NewObjectReplicaRequest(
-    #         object_id=str(object_id),
-    #         backend_id=str(backend_id),
-    #         recursive=recursive,
-    #         remotes=remotes,
-    #     )
-    #     self.stub.NewObjectReplica(request, metadata=self.metadata_call)
-
-    ###########
-    # END NEW #
-    ###########
-
-    def federate(self, session_id, object_id, external_execution_env_id, recursive):
-        raise Exception("To refactor")
-        try:
-            request = dataservice_messages_pb2.FederateRequest(
-                sessionID=str(session_id),
-                objectID=str(object_id),
-                externalExecutionEnvironmentID=str(external_execution_env_id),
-                recursive=recursive,
-            )
-            response = self.stub.federate(request, metadata=self.metadata_call)
-        except RuntimeError as e:
-            traceback.print_exc()
-            logger.error("Failed to federate", exc_info=True)
-            raise e
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def unfederate(self, session_id, object_id, external_execution_env_id, recursive):
-        raise Exception("To refactor")
-        request = dataservice_messages_pb2.UnfederateRequest(
-            sessionID=str(session_id),
-            objectID=str(object_id),
-            externalExecutionEnvironmentID=str(external_execution_env_id),
-            recursive=recursive,
-        )
-        try:
-            response = self.stub.unfederate(request, metadata=self.metadata_call)
-        except RuntimeError as e:
-            logger.error("Failed to unfederate", exc_info=True)
-            raise e
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def notify_federation(self, session_id, params):
-        raise Exception("To refactor")
-        obj_list = []
-        for entry in params:
-            obj_list.append(Utils.get_obj_with_data_param_or_return(entry))
-
-        request = dataservice_messages_pb2.NotifyFederationRequest(
-            sessionID=str(session_id),
-            objects=obj_list,
-        )
-
-        try:
-            response = self.stub.notifyFederation(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            logger.error("Failed to federate", exc_info=True)
-            raise e
-
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def notify_unfederation(self, session_id, object_ids):
-        raise Exception("To refactor")
-        obj_list = []
-        for entry in object_ids:
-            obj_list.append(str(entry))
-
-        request = dataservice_messages_pb2.NotifyUnfederationRequest(
-            sessionID=str(session_id),
-            objectIDs=obj_list,
-        )
-
-        try:
-            response = self.stub.notifyUnfederation(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            logger.error("Failed to federate", exc_info=True)
-            raise e
-
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def synchronize(self, session_id, object_id, implementation_id, params, calling_backend_id):
-        raise Exception("To refactor")
-        request = dataservice_messages_pb2.SynchronizeRequest(
-            sessionID=str(session_id),
-            objectID=str(object_id),
-            implementationID=str(implementation_id),
-            params=Utils.get_param_or_return(params),
-            callingBackendID=str(calling_backend_id),
-        )
-        try:
-            response = self.stub.synchronize(request, metadata=self.metadata_call)
-        except RuntimeError as e:
-            raise e
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def ds_migrate_objects_to_backends(self, back_ends):
-        raise ("To refactor")
-
-        back_ends_dict = {}
-
-        for k, v in back_ends.items():
-            back_ends_dict[k] = Utils.get_storage_location(v)
-
-        request = dataservice_messages_pb2.MigrateObjectsRequest(destStorageLocs=back_ends_dict)
-
-        try:
-            response = self.stub.migrateObjectsToBackends(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            raise e
-
-        if response.excInfo.isException:
-            raise DataClayException(response.excInfo.exceptionMessage)
-
-        result = {}
-
-        for k, v in response.migratedObjs.items():
-            m_objs = v
-            oids = set()
-
-            for oid in m_objs.getObjsList():
-                oids.add(UUID(oid))
-
-            result[UUID(k)] = oids
-
-        non_migrated = set()
-
-        for oid in response.nonMigratedObjs.getObjsList():
-            non_migrated.add(UUID(oid))
-
-        t = (result, non_migrated)
-
-        return t
-
-    def activate_tracing(self, task_id):
-        raise Exception("To refactor")
-        request = dataservice_messages_pb2.ActivateTracingRequest(taskid=task_id)
-
-        try:
-            response = self.stub.activateTracing(request, metadata=self.metadata_call)
-
-        except RuntimeError as e:
-            raise e
-
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def deactivate_tracing(self):
-        raise Exception("To refactor")
-        try:
-            response = self.stub.deactivateTracing(
-                common_pb2.EmptyMessage(), metadata=self.metadata_call
-            )
-
-        except RuntimeError as e:
-            raise e
-
-        if response.isException:
-            raise DataClayException(response.exceptionMessage)
-
-    def get_traces(self):
-        raise Exception("To refactor")
-        try:
-            response = self.stub.getTraces(common_pb2.EmptyMessage(), metadata=self.metadata_call)
-        except RuntimeError as e:
-            raise e
-
-        result = {}
-        for k, v in response.stubs.items():
-            result[k] = v
-
-        return result
-
-    ################## EXTRAE IGNORED FUNCTIONS ###########################
-    # deactivate_tracing.do_not_trace = True
-    # activate_tracing.do_not_trace = True
+        await self.stub.Drain(empty_pb2.Empty())

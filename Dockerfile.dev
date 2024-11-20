@@ -6,11 +6,10 @@ ARG PYTHON_VERSION=3.10-bullseye
 FROM python:$PYTHON_VERSION
 COPY . /app
 RUN python -m pip install --upgrade pip \
-  && python -m pip install -e /app[telemetry]
+  && python -m pip install -e /app[telemetry,dev]
 
 # prepare dataclay storage dir
-RUN mkdir -p /data/storage; \
-  mkdir -p /data/metadata
+RUN mkdir -p /data/storage; 
 
 # set workdir and entrypoint
 WORKDIR /workdir

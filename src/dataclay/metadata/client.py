@@ -8,7 +8,7 @@ from google.protobuf.empty_pb2 import Empty
 from dataclay.metadata.kvdata import Alias, Backend, Dataclay, ObjectMetadata
 from dataclay.proto.metadata import metadata_pb2, metadata_pb2_grpc
 from dataclay.utils.decorators import grpc_aio_error_handler
-from dataclay.utils.uuid import str_to_uuid, uuid_to_str
+from dataclay.utils.uuid import uuid_to_str
 
 logger = logging.getLogger(__name__)
 

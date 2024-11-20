@@ -9,8 +9,7 @@ RUN python -m pip install --upgrade pip \
   && python -m pip install /app[telemetry]
 
 # prepare dataclay storage dir
-RUN mkdir -p /data/storage; \
-  mkdir -p /data/metadata
+RUN mkdir -p /data/storage; 
 
 # set workdir and entrypoint
 WORKDIR /workdir

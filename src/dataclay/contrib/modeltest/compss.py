@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 import numpy as np
 
 try:
@@ -107,3 +109,23 @@ class Counter(DataClayObject):
     @activemethod
     def inc(self):
         self.count += 1
+
+
+class CPUIntensiveTask(DataClayObject):
+
+    matrix1: np.ndarray
+    matrix2: np.ndarray
+
+    def __init__(self, size=5000):
+        self.matrix1 = np.random.rand(size, size)
+        self.matrix2 = np.random.rand(size, size)
+
+    @activemethod
+    async def a_cpu_intensive_task(self):
+        result = np.dot(self.matrix1, self.matrix2)
+        return result
+
+    @activemethod
+    def cpu_intensive_task(self):
+        result = np.dot(self.matrix1, self.matrix2)
+        return result

@@ -8,7 +8,9 @@ dataClay
 
    user-guide
    main-concepts
-   advanced-usage 
+   alien-objects
+   advanced-usage
+   logging
    examples/index
 
 .. toctree::
@@ -17,9 +19,27 @@ dataClay
 
    deployment/envvars
    deployment/management
+   deployment/proxy
    deployment/docker-deployment
    deployment/hpc-manual-deployment
    deployment/compile-redis
+
+.. toctree::
+   :hidden:
+   :caption: Telemetry
+
+   telemetry/configuration
+   telemetry/offline
+   telemetry/real-time
+   telemetry/prometheus
+   telemetry/hpc-tracing
+
+.. toctree::
+   :hidden:
+   :caption: Release Notes
+
+   releasenotes/4-x
+   releasenotes/3-x
 
 .. toctree::
    :hidden:

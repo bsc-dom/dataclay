@@ -1,4 +1,3 @@
-version: '3.9'
 services:
 
   redis:
@@ -8,6 +7,9 @@ services:
 
   metadata-service:
     image: "ghcr.io/bsc-dom/dataclay:dev"
+    # NOTE: Comment the *build* section for faster testing. It will use the image from the registry.
+    # Rebuilding is necessary when changing the project dependencies.
+    # WARNING: Don't commit the commented *build* section. It will break the GitHub Actions CI/CD pipeline.
     build:
       context: ../../
       dockerfile: Dockerfile.dev
@@ -20,9 +22,10 @@ services:
       - DATACLAY_KV_PORT=6379
       - DATACLAY_METADATA_PORT=16587
       - DATACLAY_LOGLEVEL=DEBUG
-    command: python -m dataclay.metadata
+      - COVERAGE_FILE=/app/.coverage.metadata
+    command: coverage run --append -m dataclay.metadata
     volumes:
-      - ../../:/app:ro
+      - ../../:/app
 
   backend_1:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -32,9 +35,10 @@ services:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
       - DATACLAY_LOGLEVEL=DEBUG
-    command: python -m dataclay.backend
+      - COVERAGE_FILE=/app/.coverage.backend1
+    command: coverage run --append -m dataclay.backend
     volumes:
-      - ../../:/app:ro
+      - ../../:/app
 
   backend_2:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -44,9 +48,10 @@ services:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
       - DATACLAY_LOGLEVEL=DEBUG
-    command: python -m dataclay.backend
+      - COVERAGE_FILE=/app/.coverage.backend2
+    command: coverage run --append -m dataclay.backend
     volumes:
-      - ../../:/app:ro
+      - ../../:/app
 
   backend_3:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -56,9 +61,10 @@ services:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
       - DATACLAY_LOGLEVEL=DEBUG
-    command: python -m dataclay.backend
+      - COVERAGE_FILE=/app/.coverage.backend3
+    command: coverage run --append -m dataclay.backend
     volumes:
-      - ../../:/app:ro
+      - ../../:/app
 
   proxy:
       image: "ghcr.io/bsc-dom/dataclay:dev"

@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Optional
 import psutil
 
 from dataclay.config import settings
-from dataclay.event_loop import get_dc_event_loop
+from dataclay.event_loop import dc_to_thread_cpu, get_dc_event_loop
 from dataclay.exceptions import DataClayException
 from dataclay.lock_manager import lock_manager
 from dataclay.utils.serialization import DataClayPickler
@@ -38,10 +38,11 @@ class DataManager:
 
     def __init__(self):
         # Loaded objects so they cannot be GC by PythonGC.
-        # It is very important to be a sorted dict (guaranteed in py3.7), so first elements to arrive are cleaned before,
-        # n any deserialization from DB or parameter, objects deserialized first are referrers to
-        # objects deserialized later. Second ones cannot be GC if first ones are not cleaned.
-        # During GC,we should know that somehow. It's a hint but improves GC a lot.
+        # It is very important to be a sorted dict (guaranteed in py3.7), so first elements
+        # to arrive are cleaned before, n any deserialization from DB or parameter, objects
+        # deserialized first are referrers to objects deserialized later. Second ones cannot
+        # be GC if first ones are not cleaned. During GC,we should know that somehow. It's a
+        # hint but improves GC a lot.
         self.loaded_objects: dict[UUID, DataClayObject] = {}
         self.memory_lock = asyncio.Lock()
         self.memory_task = None
@@ -138,9 +139,9 @@ class DataManager:
             # Load object from disk
             try:
                 path = f"{settings.storage_path}/{object_id}"
-                state, getstate = await get_dc_event_loop().run_in_executor(
-                    None, pickle.load, open(path, "rb")
-                )
+                # TODO: Is it necessary dc_to_thread_cpu? Should be blocking
+                # to avoid bugs with parallel loads?
+                state, getstate = await dc_to_thread_cpu(pickle.load, open(path, "rb"))
                 self.dataclay_stored_objects.dec()
             except Exception as e:
                 raise DataClayException("Object not found.") from e
@@ -149,7 +150,8 @@ class DataManager:
             del state["_dc_meta"]
             vars(instance).update(state)
 
-            # NOTE: We need to set _dc_is_loaded before calling __setstate__ to avoid infinite recursion
+            # NOTE: We need to set _dc_is_loaded before calling __setstate__
+            # to avoid infinite recursion
             instance._dc_is_loaded = True
             if getstate is not None:
                 instance.__setstate__(getstate)
@@ -227,7 +229,8 @@ class DataManager:
 
         Args:
             unload_timeout (Optional[str]): The timeout to acquire the lock.
-            force_unload (bool): If True, the objects will be unloaded even if the lock cannot be acquired.
+            force_unload (bool): If True, the objects will be unloaded
+                                 even if the lock cannot be acquired.
         """
 
         if unload_timeout is None:

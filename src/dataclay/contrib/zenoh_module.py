@@ -1,16 +1,16 @@
 """
-Zenoh bridging
-==============
-
 dataClay includes support for publisher/subscriber communication via Zenoh.
 
-In order to use this functionality, the client class has to inherit the ZenohMixin class. Communications can 
+In order to use this functionality, the client class has to inherit the :class:`ZenohMixin` class. Communications can 
 be established using pub/sub and queries. 
+
 The subscriber can specify how the messages will be handled and to which topics it will be subscribed. Also, it 
 can ask for the last value stored in an existing subscription using the queries.
+
 The publisher can send messages to a specific topic.
 
 """
+
 try:
     import zenoh
 except ImportError:
