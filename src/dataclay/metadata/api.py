@@ -2,7 +2,13 @@ import logging
 from typing import Callable, Optional, Union
 from uuid import UUID
 
-from dataclay.exceptions import AccountError, AccountInvalidCredentialsError
+from dataclay.exceptions import (
+    AccountError,
+    AccountInvalidCredentialsError,
+    AliasAlreadyExistError,
+    AliasDoesNotExistError,
+    AlreadyExistError,
+)
 from dataclay.metadata.kvdata import (
     Account,
     Alias,
@@ -247,7 +253,10 @@ class MetadataAPI:
             "Creating new alias '%s.%s' for object %s", dataset_name, alias_name, object_id
         )
         alias = Alias(name=alias_name, dataset_name=dataset_name, object_id=object_id)
-        await self.kv_manager.set_new(alias)
+        try:
+            await self.kv_manager.set_new(alias)
+        except AlreadyExistError as e:
+            raise AliasAlreadyExistError(alias_name, dataset_name) from e
 
     @tracer.start_as_current_span("get_all_alias")
     async def get_all_alias(

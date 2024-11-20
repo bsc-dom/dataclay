@@ -9,8 +9,10 @@ from typing import TYPE_CHECKING, Optional
 import psutil
 
 from dataclay.config import settings
+
 from dataclay.event_loop import dc_to_thread_cpu, get_dc_event_loop
-from dataclay.exceptions import DataClayException
+from dataclay.exceptions import DataClayException, ObjectNotFound, ObjectStorageError
+
 from dataclay.lock_manager import lock_manager
 from dataclay.utils.serialization import DataClayPickler
 
@@ -144,7 +146,7 @@ class DataManager:
                 state, getstate = await dc_to_thread_cpu(pickle.load, open(path, "rb"))
                 self.dataclay_stored_objects.dec()
             except Exception as e:
-                raise DataClayException("Object not found.") from e
+                raise ObjectNotFound(object_id) from e
 
             # Delete outdated metadata (SSOT stored in Redis)
             del state["_dc_meta"]
@@ -200,7 +202,7 @@ class DataManager:
                 DataClayPickler(open(path, "wb")).dump(instance._dc_state)
                 self.dataclay_stored_objects.inc()
             except Exception as e:
-                raise DataClayException("Could not store object.") from e
+                raise ObjectStorageError(object_id) from e
 
             # TODO: Maybe update Redis (since is loaded has changed). For access optimization.
             instance._clean_dc_properties()

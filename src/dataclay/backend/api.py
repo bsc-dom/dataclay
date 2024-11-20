@@ -18,6 +18,7 @@ from dataclay.exceptions import (
     DataClayException,
     DoesNotExistError,
     ObjectWithWrongBackendIdError,
+    NoOtherBackendsAvailable
 )
 from dataclay.lock_manager import lock_manager
 from dataclay.runtime import BackendRuntime
@@ -364,7 +365,7 @@ class BackendAPI:
         backends = self.runtime.backend_clients
 
         if len(backends) <= 1:
-            raise DataClayException("No other backend to drain to. Abort!")
+            raise NoOtherBackendsAvailable()
 
         num_objects = len(dc_objects)
         mean = -(num_objects // -(len(backends) - 1))

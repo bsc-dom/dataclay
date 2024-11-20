@@ -18,7 +18,6 @@ from dataclay.data_manager import DataManager
 from dataclay.dataclay_object import DataClayObject
 from dataclay.exceptions import (
     DataClayException,
-    ObjectAlreadyRegisteredError,
     ObjectIsNotVersionError,
     ObjectNotRegisteredError,
     ObjectWithWrongBackendIdError,
@@ -105,9 +104,6 @@ class DataClayRuntime(ABC):
             alias,
             backend_id,
         )
-
-        if instance._dc_is_registered:
-            raise ObjectAlreadyRegisteredError(instance._dc_meta.id)
 
         # Check necessary for BackendAPI.new_object_version. This allows to set the dataset
         # before calling make_persistent, which is useful for registering a new version with
