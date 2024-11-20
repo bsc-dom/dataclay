@@ -2,6 +2,7 @@
 
 import importlib
 import logging
+import asyncio
 
 from dataclay.config import ProxySettings, settings
 from dataclay.metadata.api import MetadataAPI
@@ -70,4 +71,4 @@ else:
     except AttributeError:
         pass
 
-servicer.serve(md_api, interceptors, middleware_metadata, middleware_backend)
+asyncio.run(servicer.serve(md_api, interceptors, middleware_metadata, middleware_backend))

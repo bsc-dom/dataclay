@@ -65,3 +65,19 @@ services:
     command: coverage run --append -m dataclay.backend
     volumes:
       - ../../:/app
+
+  proxy:
+      image: "ghcr.io/bsc-dom/dataclay:dev"
+      ports:
+        - 8676:8676
+      depends_on:
+        - metadata-service
+        - backend_1
+      environment:
+        - DATACLAY_PROXY_MDS_HOST=metadata-service
+        - DATACLAY_KV_HOST=redis
+        - DATACLAY_LOGLEVEL=DEBUG
+      command: python -m dataclay.proxy
+      volumes:
+        - ./proxy_conf/proxy_config.py:/workdir/proxy_config.py
+        - ./proxy_conf/middleware.py:/workdir/middleware.py
