@@ -4,10 +4,9 @@
 
 **Prerequisite**: Have a dataClay's pypi and testpypi account with owner access.
 
-1. Run `tox` to format and check tests.
+1. Run `nox` to format and check tests.
 2. Push a new commit `release version <VERSION>` where you:
    - Update `dataclay.__version__` from `dataclay.__init__` to `<VERSION>`
-   - Add `Released YYYY-MM-DD` to `CHANGES.rst`
 
 3. Create and push a new tag:
 
