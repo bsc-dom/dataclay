@@ -1,15 +1,9 @@
-""" All dataClay exceptions are colected in this file. """
+"""In general, dataClay will prefer to raise the exceptions defined below."""
 
 
 class DataClayException(Exception):
     """Base class for exceptions in this module."""
-
     pass
-
-
-##################
-# NEW EXCEPTIONS #
-##################
 
 
 ##############
