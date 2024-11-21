@@ -36,3 +36,23 @@ Other changes
 - Offering a new :doc:`Zenoh bridging mechanism </contrib/zenoh>` (similar to the :doc:`MQTT </contrib/mqtt>` one).
 - Removed the session and password authentication. This feature will be handled by the proxy going forward.
 - Added healthcheck mechanisms (at the gRPC level) to monitor the status of the dataClay services.
+
+4.1 (November 2024)
+-------------------
+
+This minor release brings some bug fixes to the features introduced in 4.0, and also some new features.
+
+Highlights
+~~~~~~~~~~
+
+- Official support for Python 3.13.
+- Improved granularity and semantic of raised exceptions. The list and description of all the current
+  exceptions can be found in the :doc:`/reference/dataclay.exceptions` reference page.
+- Fixed behavior of the proxy. Now the code works properly in an async configuration.
+- More detailed examples and utility functions to support JWT tokens in the proxy side.
+- Better defaults for the logging system.
+- Improved and expanded documentation for Telemetry.
+- Build system is now using `nox <https://nox.thea.codes>`_.
+- Support for PyCOMPSs 
+  `constraints <https://compss-doc.readthedocs.io/en/stable/Sections/09_PyCOMPSs_Notebooks/syntax/5_UsingConstraints.html>`_.
+  Should work out of the box with dataClay 4.1 and the upcoming COMPSs version.
