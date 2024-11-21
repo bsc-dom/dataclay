@@ -4,7 +4,7 @@
 
 **Prerequisite**: Have a dataClay's pypi and testpypi account with owner access.
 
-1. Run `nox` to format and check tests.
+1. Run `nox` to check lint and tests.
 2. Push a new commit `release version <VERSION>` where you:
    - Update `dataclay.__version__` from `dataclay.__init__` to `<VERSION>`
 
@@ -18,17 +18,21 @@
 4. Follow the instructions to create a [new release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) in GitHub.
 
 5. Publish the `dataclay:latest` docker image:
-    1. First, set up your personal access token and log in to GitHub Packages (ghcr.io):
+
+    1. First, generate a Personal Access Token (PAT) on GitHub (if you don't have):
+        - Go to [GitHub Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens).
+        - Select **Tokens (classic)** or fine-grained tokens (depending on GitHub updates).
+        - Click **Generate new token** and configure:
+            - **Scopes**: At least select the `read:packages` and `write:packages`.
+        - Generate the token and copy it (you’ll need it for the login).
+
+    2. Then, log in to GitHub Packages (ghcr.io) with your account name and token:
 
         ```bash
-        export CR_PAT=<YOUR_TOKEN>
-        echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
-
-        # Or just log if the token is already stored
         docker login ghcr.io
         ```
 
-    2. Build and publish the docker image. To use `buildx` you may need to `sudo apt install qemu-user-static`:
+    3. Build and publish the docker image. To use `buildx` you may need to `sudo apt install qemu-user-static`:
 
         ```bash
         # Set the version variable
@@ -38,12 +42,32 @@
         export DOCKER_BUILDKIT=1
         docker buildx create --use
 
-        # Build and push Python 3.10 bullseye
+        # Build and push Python 3.9 bookworm
         docker buildx build --platform linux/amd64,linux/arm64 \
-        -t ghcr.io/bsc-dom/dataclay:$VERSION-py3.10-bullseye \
-        -t ghcr.io/bsc-dom/dataclay:$`VERSION` \
+        -t ghcr.io/bsc-dom/dataclay:$VERSION-py3.9-bookworm \
+        --build-arg PYTHON_VERSION=3.9-bookworm --push .
+
+        # Build and push Python 3.10 bookworm
+        docker buildx build --platform linux/amd64,linux/arm64 \
+        -t ghcr.io/bsc-dom/dataclay:$VERSION-py3.10-bookworm \
+        -t ghcr.io/bsc-dom/dataclay:$VERSION \
         -t ghcr.io/bsc-dom/dataclay:latest \
-        --build-arg PYTHON_VERSION=3.10-bullseye --push .
+        --build-arg PYTHON_VERSION=3.10-bookworm --push .
+
+        # Build and push Python 3.11 bookworm
+        docker buildx build --platform linux/amd64,linux/arm64 \
+        -t ghcr.io/bsc-dom/dataclay:$VERSION-py3.11-bookworm \
+        --build-arg PYTHON_VERSION=3.11-bookworm --push .
+
+        # Build and push Python 3.12 bookworm
+        docker buildx build --platform linux/amd64,linux/arm64 \
+        -t ghcr.io/bsc-dom/dataclay:$VERSION-py3.12-bookworm \
+        --build-arg PYTHON_VERSION=3.12-bookworm --push .
+
+        # Build and push Python 3.13 bookworm
+        docker buildx build --platform linux/amd64,linux/arm64 \
+        -t ghcr.io/bsc-dom/dataclay:$VERSION-py3.13-bookworm \
+        --build-arg PYTHON_VERSION=3.13-bookworm --push .
         ```
 
 6. Publish the release distribution to PyPI:
@@ -71,7 +95,6 @@
 
 7. Push a new commit `start version <NEW_VERSION>` where you:
    - Update `dataclay.__version__` from `dataclay.__init__` to `<NEW_VERSION>.dev`
-   - Add new entry to `CHANGES.rst` with `<NEW_VERSION>`
    - Update orchestration/spack to point the new version in PyPI
 
 8. Update the _active versions_ on ReadTheDocs, i.e. go to the [versions page](https://readthedocs.org/projects/dataclay/versions/) and activate/deactivate versions accordingly. You probably must add the newly added release, and maybe you will need to deactivate patch versions that are irrelevant.
