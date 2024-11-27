@@ -5,13 +5,8 @@ from typing import Annotated, ClassVar, Optional, Union
 from uuid import UUID, uuid4
 
 import bcrypt
-<<<<<<< HEAD
-from google.protobuf.json_format import MessageToDict
-from pydantic import BaseModel, BeforeValidator, Field
-=======
 from google.protobuf.json_format import MessageToDict, ParseDict
 from pydantic import BaseModel, Field
->>>>>>> 09cda3b (relaxing, downgrading requirements and fixing. Rebased onto main)
 
 from dataclay.proto.common import common_pb2
 
