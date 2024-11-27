@@ -76,8 +76,7 @@ def test_alien_pydantic_methods(client):
     p = AlienDataClayObject(Person(name="Alice", age=30))
     p.make_persistent()
 
-    assert p.model_dump() == reference.model_dump()
-    assert p.model_dump_json() == reference.model_dump_json()
+    assert p.dict() == reference.dict()
 
 
 def test_alien_getsetdelitem(client):

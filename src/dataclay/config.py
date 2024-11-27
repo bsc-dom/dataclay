@@ -89,8 +89,8 @@ class ClientSettings(BaseSettings):
     #: Specifying this option will result in most client operations to be performed against this
     #: _local_ backend instead of being performed to a random backend.
     local_backend: Optional[str] = None
-    dataclay_host: str = Field(default="localhost", alias="dc_host")
-    dataclay_port: int = Field(default=16587, alias="dc_port")
+    dataclay_host: str = Field(default="localhost", alias="dc_host", env="dc_host")
+    dataclay_port: int = Field(default=16587, alias="dc_port", env="dc_port")
 
     proxy_enabled: bool = False
     #: Hostname or IP address for the proxy service. Defaults to 127.0.0.1 (but proxy won't be used unless
@@ -107,7 +107,7 @@ class Settings(BaseSettings):
         secrets_dir = "/run/secrets"
 
     # Other
-    dataclay_id: Optional[uuid.UUID] = Field(default=None, alias="dataclay_id")
+    dataclay_id: Optional[uuid.UUID] = Field(default=None, env="dataclay_id")
     storage_path: str = "/data/storage/"
     loglevel: constr(strip_whitespace=True, to_upper=True) = "INFO"
     ephemeral: bool = False

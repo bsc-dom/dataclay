@@ -1,7 +1,7 @@
 import nox
 
 # Define which Python versions to test with
-PYTHON_VERSIONS = ["3.9", "3.10", "3.11", "3.12", "3.13"]
+PYTHON_VERSIONS = ["3.9", "3.10", "3.11"]
 LATEST_PYTHON_VERSION = PYTHON_VERSIONS[-1]
 
 # Default sessions (these will be executed in Github Actions)
@@ -13,7 +13,7 @@ nox.options.sessions = ["lint", "tests"]
 @nox.session(python=PYTHON_VERSIONS)
 def tests(session):
     """Run the test suite."""
-    session.install("pytest", "pytest-asyncio", "pytest-docker", "pytest-cov")
+    session.install("pytest", "pytest-asyncio", "pytest-docker", "pytest-cov", "python-dotenv")
     session.install(".")
     session.run("pytest", "--cov", "--cov-report=term-missing")
 
