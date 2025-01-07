@@ -39,16 +39,16 @@ def healthcheck(host, port, service, retries=1, retry_interval=1.0):
         )
 
 
-def new_account(username, password, host, port):
+async def new_account(username, password, host, port):
     logger.info("Creating new account %s at %s:%s", username, host, port)
     mds_client = MetadataClient(host, port)
-    mds_client.new_account(username, password)
+    await mds_client.new_account(username, password)
 
 
-def new_dataset(username, password, dataset, host, port):
+async def new_dataset(username, password, dataset, host, port):
     logger.info("Creating new dataset %s/%s at %s:%s", username, dataset, host, port)
     mds_client = MetadataClient(host, port)
-    mds_client.new_dataset(username, password, dataset)
+    await mds_client.new_dataset(username, password, dataset)
 
 
 async def get_backends(host, port):
@@ -273,10 +273,10 @@ async def main():
             healthcheck(args.host, port, "dataclay.proto.metadata.MetadataService")
 
     elif args.function == "new_account":
-        new_account(args.username, args.password, args.host, args.port)
+        await new_account(args.username, args.password, args.host, args.port)
 
     elif args.function == "new_dataset":
-        new_dataset(args.username, args.password, args.dataset, args.host, args.port)
+        await new_dataset(args.username, args.password, args.dataset, args.host, args.port)
 
     elif args.function == "stop_backend":
         await stop_backend(args.host, args.port)

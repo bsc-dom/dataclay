@@ -99,22 +99,21 @@ class MetadataAPI:
             Exception('Account is not valid!'): If wrong credentials
         """
         logger.debug("Creating new dataset with name=%s, owner=%s", dataset_name, username)
-        # Lock to update account.datasets without race condition
-        with await self.kv_manager.lock(Account.path + username):
-            # Validates account credentials
-            account = await self.kv_manager.get_kv(Account, username)
-            if not account.verify(password):
-                raise AccountInvalidCredentialsError(username)
 
-            # Creates new dataset and updates account's list of datasets
-            dataset = Dataset(name=dataset_name, owner=username)
-            account.datasets.append(dataset_name)
+        # Validates account credentials
+        account = await self.kv_manager.get_kv(Account, username)
+        if not account.verify(password):
+            raise AccountInvalidCredentialsError(username)
 
-            # Put new dataset to kv and updates account metadata
-            # Order matters to check that dataset name is not registered
-            await self.kv_manager.set_new(dataset)
-            await self.kv_manager.update(account)
-            logger.info("New dataset with name=%s, owner=%s", dataset_name, username)
+        # Creates new dataset and updates account's list of datasets
+        dataset = Dataset(name=dataset_name, owner=username)
+        account.datasets.append(dataset_name)
+
+        # Put new dataset to kv and updates account metadata
+        # Order matters to check that dataset name is not registered
+        await self.kv_manager.set_new(dataset)
+        await self.kv_manager.update(account)
+        logger.info("New dataset with name=%s, owner=%s", dataset_name, username)
 
     @tracer.start_as_current_span("add_account_to_dataset")
     async def add_account_to_dataset(
