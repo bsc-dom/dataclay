@@ -1,4 +1,4 @@
-from dataclay import DataClayObject, dclayMethod
+from dataclay import DataClayObject, activemethod
 
 
 class StorageDict(DataClayObject):
@@ -10,59 +10,59 @@ class StorageDict(DataClayObject):
     @ClassField _dict anything
     """
 
-    @dclayMethod()
+    @activemethod()
     def __init__(self):
         self._dict = dict()
 
-    @dclayMethod(return_="int")
+    @activemethod(return_="int")
     def __len__(self):
         return len(self._dict)
 
-    @dclayMethod(key="anything", return_="anything")
+    @activemethod(key="anything", return_="anything")
     def __getitem__(self, key):
         return self._dict[key]
 
-    @dclayMethod(key="anything", value="anything")
+    @activemethod(key="anything", value="anything")
     def __setitem__(self, key, value):
         self._dict[key] = value
 
-    @dclayMethod(key="anything")
+    @activemethod(key="anything")
     def __delitem__(self, key):
         del self._dict[key]
 
     # Local because iterators are typically non-serializable
-    @dclayMethod(_local=True, return_="anything")
+    @activemethod(_local=True, return_="anything")
     def __iter__(self):
         return iter(self._dict)
 
-    @dclayMethod(key="anything", return_="bool")
+    @activemethod(key="anything", return_="bool")
     def __contains__(self, key):
         return key in self._dict
 
     # Local because dict.keys() returns a non-serializable object
     # (although it could be converted into a set or list)
-    @dclayMethod(_local=True, return_="anything")
+    @activemethod(_local=True, return_="anything")
     def keys(self):
         return self._dict.keys()
 
     # Local because dict.items() returns a non-serializable object
     # (although it could be converted into a list)
-    @dclayMethod(_local=True, return_="anything")
+    @activemethod(_local=True, return_="anything")
     def items(self):
         return self._dict.items()
 
     # Local because dict.values() returns a non-serializable object
     # (although it could be converted into a list)
-    @dclayMethod(_local=True, return_="anything")
+    @activemethod(_local=True, return_="anything")
     def values(self):
         return self._dict.values()
 
     # Local because optional parameters for remote methods are not supported
-    @dclayMethod(_local=True, key="anything", default="anything", return_="anything")
+    @activemethod(_local=True, key="anything", default="anything", return_="anything")
     def get(self, key, default=None):
         return self._dict.get(key, default)
 
-    @dclayMethod(return_="anything")
+    @activemethod(return_="anything")
     def split(self):
         # Ugly split-in-two, for demonstration purposes only
         from itertools import cycle
@@ -75,6 +75,6 @@ class StorageDict(DataClayObject):
 
         return (out_a, out_b)
 
-    @dclayMethod(return_="str")
+    @activemethod(return_="str")
     def __str__(self):
         return "StorageDict(%s)" % str(self._dict)
