@@ -23,6 +23,7 @@ class ActiveMethodWhitelist(MiddlewareBase):
         raise MiddlewareException("Method not allowed")
 
     async def GetObjectAttribute(self, request, context):
+        logger.info("QUE ES AQUIIIIIIIIIIIIIIIIIIIIIIIIIIIIII")
         metadata = dict(context.invocation_metadata())
 
         if metadata.get("username") != self._user:

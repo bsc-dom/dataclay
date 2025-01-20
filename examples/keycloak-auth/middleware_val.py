@@ -10,7 +10,7 @@ class MyValidation(MiddlewareValidation):
         context = middleware_context.get()
         user = dict(context).get('oidc_user')
         user_roles = dict(context).get("oidc_roles")
-        dataset = dict(context).get("dataset-name")
+        dataset = dict(context).get("dataset_name")
         try:
             return await self.validate(dataset,user,user_roles,method_name,request,context)
         except Exception as e:

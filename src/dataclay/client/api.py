@@ -279,6 +279,32 @@ class Client:
         await asyncio.wrap_future(future)
         return self.runtime.backend_clients
 
+    @tracer.start_as_current_span("set_mw_path")
+    def set_mw_path(self,path):
+        session_var.set(
+            {
+                **session_var.get(),
+                "path": path,
+            }
+        )
+    
+    @tracer.start_as_current_span("set_mw_token")
+    def set_mw_token(self,token):
+        session_var.set(
+            {
+                **session_var.get(),
+                "token": token,
+            }
+        )
+
+    @tracer.start_as_current_span("per_mi")
+    def per_mi(self,key):
+        session_var.set(
+            {
+                **session_var.get(),
+                "key": key,
+            }
+        )
 
 ###############
 # To Refactor #

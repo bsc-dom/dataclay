@@ -12,10 +12,34 @@ from typing import Awaitable, Callable
 import requests
 import jwt
 import grpc
-from dataclay.proxy.middleware import middleware_context
+from dataclay.proxy.middleware import middleware_context, MiddlewareException
 import keycloak
 from keycloak import KeycloakOpenID
+
 import os
+
+class KeycloakConfig:
+
+    def server_url(self) -> str:
+        return os.getenv("KEYCLOAK_SERVER_URL")
+
+    def realm_name(self) -> str:
+        return os.getenv("KEYCLOAK_REALM_NAME")
+
+    def resource_server_id(self) -> str:
+        return os.getenv("KEYCLOAK_RESOURCE_SERVER_ID")
+
+    def audience(self) -> str:
+        return os.getenv("KEYCLOAK_AUDIENCE")
+
+    def client_id(self) -> str:
+        return os.getenv("KEYCLOAK_CLIENT_ID")
+
+    def client_secret_key(self) -> str:
+        return os.getenv("KEYCLOAK_CLIENT_SECRET_KEY")
+
+KEYCLOAK_CONFIG = KeycloakConfig()
+
 
 
 logger = logging.getLogger(__name__)
@@ -65,23 +89,38 @@ class OIDCInterceptor(grpc.aio.ServerInterceptor):
         # Check if the request has a token, and validate its signature and validity
         # through the OpenID endpoints (endpoints inferred through the discovery_url).
 
-
-        keycloak_openid = KeycloakOpenID(server_url="http://localhost:8080/",
-                                 client_id="direct-access-demo",
-                                 realm_name="dataclay",
-                                 client_secret_key="secret")
+        
     
         current_mwc = dict(handler_call_details.invocation_metadata)
+
+
         if "username" not in current_mwc: 
             middleware_context.set(current_mwc)
             return await continuation(handler_call_details)
 
+        keycloak_open_id = KeycloakOpenID(
+            KEYCLOAK_CONFIG.server_url(),
+            KEYCLOAK_CONFIG.realm_name(),
+            KEYCLOAK_CONFIG.client_id(),
+            current_mwc["key"],
+        )
+
+        if "path" not in current_mwc:
+            raise MiddlewareException("Path cannot be NULL")
+
         if "token" not in current_mwc:
+            logger.info("/////////////MIRA////////////////")
+            logger.info("client_id %s: ", KEYCLOAK_CONFIG.client_id())
+            logger.info("username %s: ", current_mwc["username"])
+            logger.info("password %s: ", current_mwc["password"])
+            logger.info("grant_type %s: ", "password")
+            logger.info("client_secret %s: ", current_mwc["key"])
             USER_AUTH = {
-            "client_id": "direct-access-demo",
+            "client_id": KEYCLOAK_CONFIG.client_id(),
             "username":current_mwc["username"],
             "password":current_mwc["password"],
             "grant_type": "password",
+            "client_secret": current_mwc["key"],
             }
 
             try:
@@ -94,104 +133,14 @@ class OIDCInterceptor(grpc.aio.ServerInterceptor):
                 return await continuation(handler_call_details)
 
             token = r.json()["access_token"]
+        else:
+            token = current_mwc.get("token")
 
-        try:
-            r = requests.get(self.discovery_url+"/realms/dataclay/")#"http://keycloak:8080/realms/dataclay/"
-            r.raise_for_status()
-            key_der_base64 = r.json()["public_key"]
-
-            key_der = b64decode(key_der_base64.encode())
-
-            public_key = serialization.load_der_public_key(key_der)
-
-            decoded_payload = jwt.decode(token, public_key, algorithms=["RS256"])
-        except:
-            middleware_context.set(current_mwc)
-            return await continuation(handler_call_details)
-
-
-        current_mwc["oidc_user"] = decoded_payload["preferred_username"]
-
-        if "realm_access" in decoded_payload:
-            current_mwc["oidc_roles"] = decoded_payload["realm_access"]["roles"]
-
+        
+        permissions = keycloak_open_id.uma_permissions(token)
+        logger.info("~~~~~~~~~~~~~~Aquestes son les permissions: %s", permissions)
+        current_mwc["permissions"] = permissions
+        
         middleware_context.set(current_mwc)
+        logger.info("######################################")
         return await continuation(handler_call_details)
-    
-
-    ########################################################################################################
-
-class KeycloakConfig:
-
-    def server_url(self) -> str:
-        return os.getenv("KEYCLOAK_SERVER_URL")
-
-    def realm_name(self) -> str:
-        return os.getenv("KEYCLOAK_REALM_NAME")
-
-    def resource_server_id(self) -> str:
-        return os.getenv("KEYCLOAK_RESOURCE_SERVER_ID")
-
-    def audience(self) -> str:
-        return os.getenv("KEYCLOAK_AUDIENCE")
-
-    def client_id(self) -> str:
-        return os.getenv("KEYCLOAK_CLIENT_ID")
-
-    def client_secret_key(self) -> str:
-        return os.getenv("KEYCLOAK_CLIENT_SECRET_KEY")
-
-KEYCLOAK_CONFIG = KeycloakConfig()
-
-
-
-class OIDCInterceptor(grpc.aio.ServerInterceptor):
-    def __init__(self, discovery_url: str):
-        self.discovery_url = discovery_url
-
-        # TODO: Fetch the OpenID configuration from the discovery_url
-        # Implementation notes:
-        # `__init__` seems a good place where to conect to the OIDC discovery URL
-        # and retrieve the endpoints that we require (and store those endpoints in
-        # internal variables in this class, failing if the discovery_url is not a valid
-        # URL or does not contain a valid OIDC configuration). Note that downloading the
-        # certificates is something that might be done later (because they can be updated,
-        # maybe we want to cache them, we want to refresh it if the server rekeys, etc).
-        # Eventually, we might give the user the option to either give a discovery_url
-        # or manually provide the endpoints, but that is not a priority right now.
-
-    async def intercept_service(
-        self,
-        continuation: Callable[[grpc.HandlerCallDetails], Awaitable[grpc.RpcMethodHandler]],
-        handler_call_details: grpc.HandlerCallDetails,
-    ) -> grpc.RpcMethodHandler:
-
-        current_mwc = dict(handler_call_details.invocation_metadata)
-        #middleware_context.set(current_mwc)
-        #return await continuation(handler_call_details)
-    
-        keycloak_open_id = KeycloakOpenID(
-            KEYCLOAK_CONFIG.server_url(),
-            KEYCLOAK_CONFIG.realm_name(),
-            KEYCLOAK_CONFIG.client_id(),
-            KEYCLOAK_CONFIG.client_secret_key(),
-        )
-
-
-        request = current_mwc["request"]
-        path = request.url.path
-        token_header = request.headers.get('Authorization')
-        permissions = keycloak_open_id.uma_permissions(token_header.split(" ")[1].strip())
-        for permission in permissions:
-            scopes = permission.get("scopes")
-            auth_status = keycloak.uma_permission.AuthStatus(
-                is_logged_in = True,
-                is_authorized = True if permission.get("scopes") else False,
-                missing_permissions = set())
-            
-
-    # per part nostra
-    #   url
-
-    
-            

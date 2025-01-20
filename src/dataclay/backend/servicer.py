@@ -163,9 +163,9 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             logger.debug("No backend-id metadata header in the call.")
 
         # set the current_context
-        if "dataset-name" in metadata and "username" in metadata:
+        if "dataset_name" in metadata and "username" in metadata:
             session_var.set(
-                {"dataset_name": metadata["dataset-name"], "username": metadata["username"]}
+                {"dataset_name": metadata["dataset_name"], "username": metadata["username"]}
             )
 
     async def RegisterObjects(self, request, context):

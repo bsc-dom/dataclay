@@ -168,16 +168,15 @@ class BackendClient:
             object_id=str(object_id),
             method_name=method_name,
             args=args,
-            kwargs=kwargs,
+            kwargs=kwargs,  
             exec_constraints=converted_exec_constraints,
         )
 
         current_context = session_var.get()
 
         metadata = self.metadata_call + [
-            ("dataset-name", current_context["dataset_name"]),
-            ("username", current_context["username"]),
-            ("password", current_context["password"]),
+            (key, current_context[key])
+            for key in current_context if key and current_context[key]
         ]
 
         response = await self.stub.CallActiveMethod(request, metadata=metadata)
@@ -195,9 +194,8 @@ class BackendClient:
         )
         current_context = session_var.get()
         metadata = self.metadata_call + [
-            ("dataset-name", current_context["dataset_name"]),
-            ("username", current_context["username"]),
-            ("password", current_context["password"]),
+            (key, current_context[key])
+            for key in current_context if key and current_context[key]
         ]
         response = await self.stub.GetObjectAttribute(request, metadata=metadata)
         return response.value, response.is_exception
@@ -212,11 +210,18 @@ class BackendClient:
             serialized_attribute=serialized_attribute,
         )
         current_context = session_var.get()
-        metadata = self.metadata_call + [
-            ("dataset-name", current_context["dataset_name"]),
+        """metadata = self.metadata_call + [
+            ("dataset_name", current_context["dataset_name"]),
             ("username", current_context["username"]),
             ("password", current_context["password"]),
+            ("path", current_context["path"]),
+            ("token", current_context["token"]),
+        ]"""
+        metadata = self.metadata_call + [
+            (key, current_context[key])
+            for key in current_context if key and current_context[key]
         ]
+
         response = await self.stub.SetObjectAttribute(request, metadata=metadata)
         return response.value, response.is_exception
 
@@ -228,9 +233,8 @@ class BackendClient:
         )
         current_context = session_var.get()
         metadata = self.metadata_call + [
-            ("dataset-name", current_context["dataset_name"]),
-            ("username", current_context["username"]),
-            ("password", current_context["password"]),
+            (key, current_context[key])
+            for key in current_context if key and current_context[key]
         ]
         response = await self.stub.DelObjectAttribute(request, metadata=metadata)
         return response.value, response.is_exception
