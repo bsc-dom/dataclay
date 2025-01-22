@@ -144,7 +144,7 @@ class AlienDataClayObject(DataClayObject, Generic[T]):
                 ).result()
             return getattr(self._dc_base_object, name)
         else:
-            logger.debug("local get")
+            logger.debug("remote get")
 
             return asyncio.run_coroutine_threadsafe(
                 get_runtime().call_remote_method(self, "__getattribute__", (name,), {}),
