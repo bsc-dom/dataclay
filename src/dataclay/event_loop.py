@@ -16,7 +16,15 @@ from dataclay.config import settings
 dc_event_loop: AbstractEventLoop = None
 
 # Get available CPUs after numactl restriction
-cpu_count = len(psutil.Process().cpu_affinity())
+try:
+    cpu_count = len(psutil.Process().cpu_affinity())
+except AttributeError:
+    # Fallback to psutil.cpu_count() if cpu_affinity is not available
+    cpu_count = psutil.cpu_count(logical=False) or psutil.cpu_count(logical=True)
+    if cpu_count is None:
+        # Sensible default
+        cpu_count = 4
+
 # For CPU-bound tasks, use the number of CPUs available
 cpu_bound_executor = concurrent.futures.ThreadPoolExecutor(max_workers=cpu_count)
 # For I/O-bound tasks, use a higher multiplier
