@@ -9,60 +9,61 @@ class StorageDict(DataClayObject):
 
     @ClassField _dict anything
     """
+    _dict: dict
 
-    @activemethod()
+    @activemethod
     def __init__(self):
         self._dict = dict()
 
-    @activemethod(return_="int")
+    @activemethod
     def __len__(self):
         return len(self._dict)
 
-    @activemethod(key="anything", return_="anything")
+    @activemethod
     def __getitem__(self, key):
         return self._dict[key]
 
-    @activemethod(key="anything", value="anything")
+    @activemethod
     def __setitem__(self, key, value):
         self._dict[key] = value
 
-    @activemethod(key="anything")
+    @activemethod
     def __delitem__(self, key):
         del self._dict[key]
 
     # Local because iterators are typically non-serializable
-    @activemethod(_local=True, return_="anything")
+    @activemethod
     def __iter__(self):
         return iter(self._dict)
 
-    @activemethod(key="anything", return_="bool")
+    @activemethod
     def __contains__(self, key):
         return key in self._dict
 
     # Local because dict.keys() returns a non-serializable object
     # (although it could be converted into a set or list)
-    @activemethod(_local=True, return_="anything")
+    @activemethod
     def keys(self):
-        return self._dict.keys()
+        return list(self._dict.keys())
 
     # Local because dict.items() returns a non-serializable object
     # (although it could be converted into a list)
-    @activemethod(_local=True, return_="anything")
+    @activemethod
     def items(self):
-        return self._dict.items()
+        return list(self._dict.items())
 
     # Local because dict.values() returns a non-serializable object
     # (although it could be converted into a list)
-    @activemethod(_local=True, return_="anything")
+    @activemethod
     def values(self):
-        return self._dict.values()
+        return list(self._dict.values())
 
     # Local because optional parameters for remote methods are not supported
-    @activemethod(_local=True, key="anything", default="anything", return_="anything")
+    @activemethod
     def get(self, key, default=None):
         return self._dict.get(key, default)
 
-    @activemethod(return_="anything")
+    @activemethod
     def split(self):
         # Ugly split-in-two, for demonstration purposes only
         from itertools import cycle
@@ -75,6 +76,6 @@ class StorageDict(DataClayObject):
 
         return (out_a, out_b)
 
-    @activemethod(return_="str")
+    @activemethod
     def __str__(self):
         return "StorageDict(%s)" % str(self._dict)
