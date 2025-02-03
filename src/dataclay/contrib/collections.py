@@ -54,6 +54,7 @@ class DistributedList(DataClayObject, SplittableCollectionMixin):
     chunk_size: int
 
     def __init__(self, initial_elements: Optional[list] = None, *, chunk_size=500):
+        self.chunk_size = chunk_size
         if initial_elements:
             self.chunks = [ListChunk(initial_elements)]
         else:
