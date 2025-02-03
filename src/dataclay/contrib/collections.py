@@ -161,7 +161,7 @@ class DictChunk(DataClayObject):
 
     @activemethod
     def __len__(self) -> int:
-        return len(self.items)
+        return len(self.elements)
 
 
 class DistributedDict(DataClayObject, SplittableCollectionMixin):
