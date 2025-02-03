@@ -182,7 +182,11 @@ class BackendAPI:
             except Exception as e:
                 # If an exception was raised, serialize it and return it to be raised by the client
                 logger.info("(%s) *** Exception in activemethod '%s'", object_id, method_name)
-                return pickle.dumps(e), True
+                try:
+                    return pickle.dumps(e), True
+                except TypeError:
+                    # If the exception can't be serialized, do your best
+                    return pickle.dumps(type(e)(str(e))), True
         logger.info("(%s) *** Finished activemethod '%s' in executor", object_id, method_name)
 
         # Serialize the result if not None
