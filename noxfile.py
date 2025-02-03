@@ -50,7 +50,7 @@ def safety(session):
     session.run("safety", "check")
 
 
-@nox.session(default=False)
+@nox.session()
 def dev(session: nox.Session) -> None:
     """
     Set up a python development environment for the project at ".venv".
