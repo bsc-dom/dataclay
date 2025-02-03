@@ -1,23 +1,25 @@
 """Basic Synchronization mechanisms."""
 
-from dataclay import dclayMethod
+from dataclay import activemethod
+import os
+from json import dumps
+from kafka import KafkaProducer
+from dataclay.contrib.kafka import KAFKA_PRODUCERS
+import inspect
 
 """ Kafka pool of producers """
 KAFKA_PRODUCERS = dict()
 
-
 class KafkaMixin(object):
     """KAFKA mechanisms"""
-
-    @dclayMethod(data="dict<str, anything>", topic="str")
+    @activemethod
     def produce_kafka_msg(self, data, topic="dataclay"):
-        import os
-        from json import dumps
+        """Kafka message producer function
 
-        from kafka import KafkaProducer
-
-        from dataclay.contrib.kafka import KAFKA_PRODUCERS
-
+        Args:
+            data (_type_): Message
+            topic (str, optional): Topic of the message. Defaults to "dataclay".
+        """
         kafka_address = os.getenv("KAFKA_ADDR", "kafka:9092")
         if kafka_address in KAFKA_PRODUCERS:
             kafka_producer = KAFKA_PRODUCERS[kafka_address]
@@ -29,15 +31,13 @@ class KafkaMixin(object):
             KAFKA_PRODUCERS[kafka_address] = kafka_producer
         kafka_producer.send(topic, value=data)
 
-    @dclayMethod()
+    @activemethod
     def send_to_kafka(self):
-        import inspect
-
+        """Previous function to produce_kafka_msg. Gets all the arguments needed from the calling class."""
         attributes = inspect.getmembers(self.__class__, lambda a: not (inspect.isroutine(a)))
         field_values = {}
         for field in attributes:
             fieldname = field[0]
             if not (fieldname.startswith("_")):
                 field_values[fieldname] = getattr(self, fieldname)
-
         self.produce_kafka_msg(field_values)

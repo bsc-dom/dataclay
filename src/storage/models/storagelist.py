@@ -1,4 +1,4 @@
-from dataclay import DataClayObject, dclayMethod
+from dataclay import DataClayObject, activemethod
 
 
 class StorageList(DataClayObject):
@@ -10,28 +10,28 @@ class StorageList(DataClayObject):
     @ClassField _list anything
     """
 
-    @dclayMethod()
+    @activemethod()
     def __init__(self):
         self._list = list()
 
-    @dclayMethod(return_="int")
+    @activemethod()
     def __len__(self):
         return len(self._list)
 
-    @dclayMethod(item="anything", return_="bool")
+    @activemethod()
     def __contains__(self, item):
         return item in self._list
 
-    @dclayMethod(item="anything")
+    @activemethod()
     def append(self, item):
         self._list.append(item)
 
     # Local because iterators are typically non-serializable
-    @dclayMethod(_local=True, return_="anything")
+    @activemethod()
     def __iter__(self):
         return iter(self._list)
 
-    @dclayMethod(return_="anything")
+    @activemethod()
     def split(self):
         # Ugly split-in-two, for demonstration purposes only
         from itertools import cycle
@@ -44,18 +44,18 @@ class StorageList(DataClayObject):
 
         return (out_a, out_b)
 
-    @dclayMethod(item="anything", return_="anything")
+    @activemethod()
     def __getitem__(self, item):
         return self._list[item]
 
-    @dclayMethod(item="anything", value="anything")
+    @activemethod()
     def __setitem__(self, item, value):
         self._list[item] = value
 
-    @dclayMethod(item="anything")
+    @activemethod()
     def __delitem__(self, item):
         del self._list[item]
 
-    @dclayMethod(return_="str")
+    @activemethod()
     def __str__(self):
         return "StorageList(%s)" % str(self._list)
