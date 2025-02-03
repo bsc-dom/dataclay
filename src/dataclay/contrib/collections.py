@@ -1,60 +1,70 @@
-from __future__ import absolute_import
+"""Easy to use distributable collections for dataClay.
 
-""" Class description goes here. """
+This module provides a set of classes that can be used to store collections of
+objects in a distributed manner. The collections are divided into chunks that
+are stored in different dataClay backends. This allows for the collections to
+grow without bound and still be efficiently accessed.
+"""
 
-from dataclay import StorageObject, dclayMethod
-
+from itertools import chain
+from typing import Any, Optional
+from uuid import UUID
+from dataclay import DataClayObject, activemethod
 from .splitting import SplittableCollectionMixin
 
-__author__ = "Alex Barcelo <alex.barcelo@bsc.es>"
-__copyright__ = "2017 Barcelona Supercomputing Center (BSC-CNS)"
 
-CLASSES_TO_REGISTER = ("StorageList", "ListChunk", "StorageDict", "DictChunk")
+class ListChunk(DataClayObject):
+    """Chunk of a list.
 
-
-class ListChunk(StorageObject):
-    """
-    @ClassField items list<storageobject>
+    This class represents a chunk of a list. It is used to store a part of a
+    list in a distributed manner. The chunk is stored in a single dataClay
+    backend.
     """
 
-    @dclayMethod(elements="list")
-    def __init__(self, elements):
+    items: list
+
+    def __init__(self, elements: list):
         self.items = elements[:]
 
-    @dclayMethod(idx=int, return_="anything")
-    def __getitem__(self, idx):
+    @activemethod
+    def __getitem__(self, idx: int) -> Any:
         return self.items[idx]
 
-    @dclayMethod(return_="anything", _local=True)
-    def __iter__(self):
-        # Note that the following cannot be serialized, hence the `_local` flag.
+    def __iter__(self) -> Any:
+        # Note that the following cannot be serialized, hence the absence of @activemethod.
         return iter(self.items)
 
-    @dclayMethod(return_=int)
-    def __len__(self):
+    @activemethod
+    def __len__(self) -> int:
         return len(self.items)
 
-    @dclayMethod(element="anything")
-    def append(self, element):
+    @activemethod
+    def append(self, element: Any):
         self.items.append(element)
 
 
-class StorageList(StorageObject, SplittableCollectionMixin):
-    """
-    @ClassField chunks list<storageobject>
+class DistributedList(DataClayObject, SplittableCollectionMixin):
+    """Distributed list.
+
+    This class represents a list that is distributed across multiple dataClay
+    backends. The unit of distribution is a "chunk" (see `ListChunk`).
     """
 
-    @dclayMethod()
-    def __init__(self):
-        self.chunks = list()
+    chunks: list[DataClayObject]
+    chunk_size: int
 
-    @dclayMethod(element="anything")
-    def append(self, element):
+    def __init__(self, initial_elements: Optional[list] = None, *, chunk_size=500):
+        if initial_elements:
+            self.chunks = [ListChunk(initial_elements)]
+        else:
+            self.chunks = []
+
+    @activemethod
+    def append(self, element: Any):
         if self.chunks:
             last_chunk = self.chunks[-1]
 
-            # FIXME: remove this MAGIC NUMBER
-            if len(last_chunk) < 500:
+            if len(last_chunk) < self.chunk_size:
                 last_chunk.append(element)
                 return
 
@@ -65,32 +75,27 @@ class StorageList(StorageObject, SplittableCollectionMixin):
         # add the chunk to the list of chunks
         self.chunks.append(new_chunk)
 
-    @dclayMethod(elements="list<storageobject>")
-    def extend(self, elements):
-        self.chunks.append(ListChunk(elements))
+    @activemethod
+    def _add_chunk(self, chunk: DataClayObject):
+        self.chunks.append(chunk)
 
-    @dclayMethod(elements="list<storageobject>", storage_location="anything", _local=True)
-    def extend_on_location(self, elements, storage_location):
+    def extend(self, elements: list, backend_id: Optional[UUID] = None):
         chunk = ListChunk(elements)
-        chunk.make_persistent(backend_id=storage_location)
+        chunk.make_persistent(backend_id=backend_id)
 
         # Required because of the field remoteness
-        chunks = self.chunks
-        chunks.append(chunk)
-        self.chunks = chunks
+        self._add_chunk(chunk)
 
-    @dclayMethod(return_=int)
-    def __len__(self):
-        return sum(len(chunk) for chunk in self.chunks)
+    @activemethod
+    def __len__(self) -> int:
+        return sum(map(len, self.chunks))
 
-    @dclayMethod(_local=True)
     def __iter__(self):
-        from itertools import chain
-
+        # Note that the following cannot be serialized, hence the absence of @activemethod.
         return chain(*self.chunks)
 
-    @dclayMethod(return_="anything", idx=int)
-    def __getitem__(self, idx):
+    @activemethod
+    def __getitem__(self, idx: int) -> Any:
         """Only integer indexes (no slices) are supported."""
         for chunk in self.chunks:
             l = len(chunk)
@@ -101,150 +106,124 @@ class StorageList(StorageObject, SplittableCollectionMixin):
         raise IndexError("index out of range")
 
 
-class DictChunk(StorageObject):
-    """
-    @ClassField elements dict<anything, storageobject>
+class DictChunk(DataClayObject):
+    """Chunk of a dictionary.
+
+    This class represents a chunk of a dictionary. It is used to store a part of
+    a dictionary in a distributed manner. The chunk is stored in a single dataClay
+    backend.
     """
 
-    @dclayMethod(elements="dict")
+    elements: dict
+
     def __init__(self, elements):
         self.elements = {k: v for k, v in elements.items()}
 
-    @dclayMethod(key="anything", return_="anything")
-    def __getitem__(self, key):
+    @activemethod
+    def __getitem__(self, key: Any) -> Any:
         return self.elements[key]
 
-    @dclayMethod(key="anything", value="storageobject")
-    def __setitem__(self, key, value):
+    @activemethod
+    def __setitem__(self, key: Any, value: Any):
         self.elements[key] = value
 
-    @dclayMethod(key="anything")
-    def __delitem__(self, key):
+    @activemethod
+    def __delitem__(self, key: Any):
         del self.elements[key]
 
-    @dclayMethod(return_="anything", _local=True)
     def __iter__(self):
-        # Note that the following cannot be serialized, hence the `_local` flag.
+        # Note that the following cannot be serialized, hence the absence of @activemethod.
         return iter(self.elements.keys())
 
-    @dclayMethod(item="anything", return_=bool)
-    def __contains__(self, item):
+    @activemethod
+    def __contains__(self, item: Any) -> bool:
         return item in self.elements
 
-    @dclayMethod(return_="list<anything>")
-    def keys(self):
+    @activemethod
+    def keys(self) -> list:
         return list(self.elements.keys())
 
-    @dclayMethod(return_="list<anything>")
-    def items(self):
-        return self.elements.items()
+    @activemethod
+    def items(self) -> list:
+        return list(self.elements.items())
 
-    @dclayMethod(return_="list<storageobject>")
-    def values(self):
-        return self.elements.values()
+    @activemethod
+    def values(self) -> list:
+        return list(self.elements.values())
 
-    @dclayMethod(k="anything", return_="storageobject")
-    def get(self, k):
+    @activemethod
+    def get(self, k: Any, default=None) -> Any:
         try:
             return self.elements[k]
         except KeyError:
-            return None
+            return default
 
-    @dclayMethod(return_=int)
-    def __len__(self):
+    @activemethod
+    def __len__(self) -> int:
         return len(self.items)
 
 
-class StorageDict(StorageObject, SplittableCollectionMixin):
-    """
-    ToDo: This hash-based dictionary implementation ignores any rebalancing of
-    the tree. That doesn't seem right for scalability, but leaving that
-    behaviour for the time being.
+class DistributedDict(DataClayObject, SplittableCollectionMixin):
+    """Distributed dictionary.
 
-    @ClassField chunks list<storageobject>
-    @ClassField num_buckets int
+    This class represents a dictionary that is distributed across multiple dataClay
+    backends. The unit of distribution is a "chunk" (see `DictChunk`).
+
+    This hash-based dictionary implementation ignores any rebalancing of
+    the tree. That can be a problem for scalability. This architecture
+    may change in future versions.
     """
 
-    @dclayMethod(iterable="anything")
-    def __init__(self, iterable):
+    chunks: list[DataClayObject]
+    num_buckets: int
+
+    def __init__(self, initial_elements: Optional[dict] = None, *, num_buckets=16):
         # TODO: fix this magic number
-        self.num_buckets = 16
+        self.num_buckets = num_buckets
         self.chunks = [DictChunk({}) for i in range(self.num_buckets)]
         try:
-            data = iterable.items()
+            data = initial_elements.items()
         except AttributeError:
-            data = iter(iterable)
+            data = iter(initial_elements)
 
         for k, v in data:
             self[k] = v
 
-    @dclayMethod(return_="anything", _local=True)
     def __iter__(self):
-        # Note that the following cannot be serialized, hence the `_local` flag.
-        from itertools import chain
-
+        # Note that the following cannot be serialized, hence the absence of @activemethod.
         return chain(iter(c) for c in self.chunks)
 
-    # FIXME: CHECK AND TEST IT (Should change without iter)
-    @dclayMethod(return_="anything", _local=True)
-    def iteritems(self):
-        # Note that the following cannot be serialized, hence the `_local` flag.
-        from itertools import chain
-
+    def items(self):
+        # Note that the following cannot be serialized, hence the absence of @activemethod.
         return chain(c.items() for c in self.chunks)
 
-    @dclayMethod(return_="anything", _local=True)
-    def iterkeys(self):
+    def keys(self):
         # Note that the following cannot be serialized, hence the `_local` flag.
-        from itertools import chain
-
         return chain(c.keys() for c in self.chunks)
 
-    @dclayMethod(return_="anything", _local=True)
-    def itervalues(self):
-        # Note that the following cannot be serialized, hence the `_local` flag.
-        from itertools import chain
-
+    def values(self):
         return chain(c.values() for c in self.chunks)
 
-    @dclayMethod(key="anything", return_="storageobject")
-    def __getitem__(self, key):
+    @activemethod
+    def __getitem__(self, key: Any) -> Any:
         h = hash(key) % self.num_buckets
         return self.chunks[h][key]
 
-    @dclayMethod(key="anything", value="storageobject")
-    def __setitem__(self, key, value):
+    @activemethod
+    def __setitem__(self, key: Any, value: Any):
         h = hash(key) % self.num_buckets
         self.chunks[h][key] = value
 
-    @dclayMethod(key="anything")
-    def __delitem__(self, key):
+    @activemethod
+    def __delitem__(self, key: Any):
         h = hash(key) % self.num_buckets
         del self.chunks[h][key]
 
-    @dclayMethod(key="anything", return_="bool")
-    def __contains__(self, key):
+    @activemethod
+    def __contains__(self, key: Any) -> bool:
         h = hash(key) % self.num_buckets
         return key in self.chunks[h]
 
-    @dclayMethod(return_=int)
-    def len(self):
+    @activemethod
+    def __len__(self) -> int:
         return sum(map(len, self.chunks))
-
-    @dclayMethod(return_="list<anything>")
-    def keys(self):
-        from itertools import chain
-
-        return list(chain(c.keys() for c in self.chunks))
-
-    @dclayMethod(return_="list<anything>")
-    def items(self):
-        from itertools import chain
-
-        return list(chain(c.items() for c in self.chunks))
-
-    @dclayMethod(return_="list<storageobject>")
-    def values(self):
-        from itertools import chain
-
-        return list(chain(c.values() for c in self.chunks))
