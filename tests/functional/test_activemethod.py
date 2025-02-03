@@ -69,9 +69,9 @@ def test_activemethod_inner_make_persistent(client):
     assert puppy.age == 0
 
 
-def test_activemethod_nested_getattribute(client):
+def test_activemethod_nested(client):
     """
-    An activemethod that calls multiple getattribute inside
+    An activemethod that calls multiple getattribute and activemethod inside
     """
     family = Family()
     family.make_persistent()
@@ -101,6 +101,12 @@ def test_activemethod_nested_getattribute(client):
     assert "Anna" in family_str
     assert "Duna" in family_str
     assert "Luna" in family_str
+
+    family.add_year()
+    assert family.members[0].age == 25
+    assert family.members[1].age == 25
+    assert family.members[2].age == 7
+    assert family.members[3].age == 7
 
 
 # Remote methods
