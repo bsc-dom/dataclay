@@ -10,28 +10,28 @@ class StorageList(DataClayObject):
     @ClassField _list anything
     """
 
-    @activemethod()
+    @activemethod
     def __init__(self):
         self._list = list()
 
-    @activemethod()
+    @activemethod
     def __len__(self):
         return len(self._list)
 
-    @activemethod()
+    @activemethod
     def __contains__(self, item):
         return item in self._list
 
-    @activemethod()
+    @activemethod
     def append(self, item):
         self._list.append(item)
 
     # Local because iterators are typically non-serializable
-    @activemethod()
+    @activemethod
     def __iter__(self):
         return iter(self._list)
 
-    @activemethod()
+    @activemethod
     def split(self):
         # Ugly split-in-two, for demonstration purposes only
         from itertools import cycle
@@ -44,18 +44,18 @@ class StorageList(DataClayObject):
 
         return (out_a, out_b)
 
-    @activemethod()
+    @activemethod
     def __getitem__(self, item):
         return self._list[item]
 
-    @activemethod()
+    @activemethod
     def __setitem__(self, item, value):
         self._list[item] = value
 
-    @activemethod()
+    @activemethod
     def __delitem__(self, item):
         del self._list[item]
 
-    @activemethod()
+    @activemethod
     def __str__(self):
         return "StorageList(%s)" % str(self._list)
