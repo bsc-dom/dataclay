@@ -9,5 +9,5 @@ from dataclay.alien import AlienDataClayObject  # isort: skip
 
 StorageObject = DataClayObject
 
-__version__ = "4.1.1.dev"
+__version__ = "4.1.1"
 __all__ = ["Client", "DataClayObject", "AlienDataClayObject", "activemethod", "StorageObject"]
