@@ -1,5 +1,3 @@
-""" Class description goes here. """
-
 from __future__ import annotations
 
 import asyncio
@@ -123,52 +121,58 @@ class DataClayRuntime(ABC):
                 alias, instance._dc_meta.dataset_name, instance._dc_meta.id
             )
 
-        # If called inside backend runtime, default is to register in the current backend
-        # unles another backend is explicitly specified
-        if self.is_backend and (backend_id is None or backend_id == self.backend.id):
-            logger.debug("(%s) Registering the object in this backend", instance._dc_meta.id)
-            instance._dc_meta.master_backend_id = self.backend_id
-            await self.metadata_service.upsert_object(instance._dc_meta)
-            instance._dc_is_registered = True
-            self.inmemory_objects[instance._dc_meta.id] = instance
-            self.data_manager.add_hard_reference(instance)
-            return self.backend_id
+        try:
+            # If called inside backend runtime, default is to register in the current backend
+            # unles another backend is explicitly specified
+            if self.is_backend and (backend_id is None or backend_id == self.backend.id):
+                logger.debug("(%s) Registering the object in this backend", instance._dc_meta.id)
+                instance._dc_meta.master_backend_id = self.backend_id
+                await self.metadata_service.upsert_object(instance._dc_meta)
+                instance._dc_is_registered = True
+                self.inmemory_objects[instance._dc_meta.id] = instance
+                self.data_manager.add_hard_reference(instance)
+                return self.backend_id
 
-        # Called from client runtime, default is to choose a random backend
-        elif backend_id is None:
-            logger.debug(
-                "(%s) Choosing a random backend to register the object", instance._dc_meta.id
-            )
-            # If there is no backend client, update the list of backend clients
-            if not self.backend_clients:
-                await self.backend_clients.update()
+            # Called from client runtime, default is to choose a random backend
+            elif backend_id is None:
+                logger.debug(
+                    "(%s) Choosing a random backend to register the object", instance._dc_meta.id
+                )
+                # If there is no backend client, update the list of backend clients
                 if not self.backend_clients:
-                    raise RuntimeError(
-                        f"({instance._dc_meta.id}) No backends available to register the object"
-                    )
-            # Choose a random backend
-            backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
-        else:
-            backend_client = await self.backend_clients.get(backend_id)
+                    await self.backend_clients.update()
+                    if not self.backend_clients:
+                        raise RuntimeError(
+                            f"({instance._dc_meta.id}) No backends available to register the object"
+                        )
+                # Choose a random backend
+                backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
+            else:
+                backend_client = await self.backend_clients.get(backend_id)
 
-        # Serialize instance with a recursive Pickle
-        visited_objects: dict[UUID, DataClayObject] = {}
-        serialized_objects = await recursive_dcdumps(
-            instance, local_objects=visited_objects, make_persistent=True
-        )
-        # Register the object in the backend
-        await backend_client.make_persistent(serialized_objects)
+            # Serialize instance with a recursive Pickle
+            visited_objects: dict[UUID, DataClayObject] = {}
+            serialized_objects = await recursive_dcdumps(
+                instance, local_objects=visited_objects, make_persistent=True
+            )
+            # Register the object in the backend
+            await backend_client.make_persistent(serialized_objects)
 
-        # Update the object metadata
-        for dc_object in visited_objects.values():
-            dc_object._clean_dc_properties()
-            dc_object._dc_is_registered = True
-            dc_object._dc_is_local = False
-            dc_object._dc_is_loaded = False
-            dc_object._dc_meta.master_backend_id = backend_id
-            self.inmemory_objects[dc_object._dc_meta.id] = dc_object
+            # Update the object metadata
+            for dc_object in visited_objects.values():
+                dc_object._clean_dc_properties()
+                dc_object._dc_is_registered = True
+                dc_object._dc_is_local = False
+                dc_object._dc_is_loaded = False
+                dc_object._dc_meta.master_backend_id = backend_id
+                self.inmemory_objects[dc_object._dc_meta.id] = dc_object
 
-        return instance._dc_meta.master_backend_id
+            return instance._dc_meta.master_backend_id
+        except Exception as e:
+            # If there is an error, delete the alias
+            if alias:
+                await self.metadata_service.delete_alias(alias, instance._dc_meta.dataset_name)
+            raise e
 
     ##################
     # Object methods #

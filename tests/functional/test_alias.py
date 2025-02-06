@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 
 from dataclay.contrib.modeltest.family import Person
@@ -105,3 +107,17 @@ async def test_get_aliases_async(client):
     await Person.a_delete_alias("test_get_aliases_async")
     await Person.a_delete_alias("test_get_aliases_1_async")
     await Person.a_delete_alias("test_get_aliases_2_async")
+
+
+def test_error_alias_creation(client):
+    """
+    If the make_persistent method fails, the alias should not be created
+    """
+    person = Person("Marc", 24)
+    with pytest.raises(KeyError):
+        # Force an error by using an invalid backend_id
+        invalid_backend_id = uuid.uuid4()
+        person.make_persistent(alias="test_error_alias_creation", backend_id=invalid_backend_id)
+    with pytest.raises(DataClayException) as excinfo:
+        Person.get_by_alias("test_error_alias_creation")
+    assert "does not exist" in str(excinfo.value)
