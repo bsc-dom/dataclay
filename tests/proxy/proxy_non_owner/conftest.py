@@ -1,6 +1,5 @@
 import os
-import subprocess
-import time
+import sys
 
 import grpc
 import pytest
@@ -9,8 +8,13 @@ import dataclay
 
 
 @pytest.fixture(scope="session")
-def docker_compose_command():
-    return "docker compose"
+def python_version():
+    return f"{sys.version_info.major}.{sys.version_info.minor}"
+
+
+@pytest.fixture(scope="session")
+def docker_setup(python_version):
+    return [f"build --build-arg PYTHON_VERSION={python_version}-bookworm", "up -d"]
 
 
 @pytest.fixture(scope="session")

@@ -1,7 +1,8 @@
 import nox
 
 # Define which Python versions to test with
-PYTHON_VERSIONS = ["3.9", "3.10", "3.11", "3.12", "3.13"]
+PYPROJECT = nox.project.load_toml("pyproject.toml")
+PYTHON_VERSIONS = nox.project.python_versions(PYPROJECT)
 LATEST_PYTHON_VERSION = PYTHON_VERSIONS[-1]
 
 # Default sessions (these will be executed in Github Actions)
