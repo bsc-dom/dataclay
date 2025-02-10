@@ -1,7 +1,8 @@
 from dataclay import Client, StubDataClayObject
-
 from dataclay.contrib.modeltest.family import Person
 
+client = Client(host="127.0.0.1")
+client.start()
 
 # PersonStub = StubDataClayObject["dataclay.contrib.modeltest.family.Person"]
 PersonStub = StubDataClayObject[

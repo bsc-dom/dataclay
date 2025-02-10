@@ -1,7 +1,9 @@
 import importlib
+import inspect
 import re
 
 from dataclay.alien import AlienDataClayObject
+from dataclay.dataclay_object import DataClayProperty
 from dataclay.utils.telemetry import LoggerEvent
 
 __all__ = ["LoggerEvent"]
@@ -23,3 +25,17 @@ def get_class_by_name(module_class_name: str):
         return AlienDataClayObject._create_class_proxy(klass)
     else:
         return _import_class(module_class_name)
+
+
+def get_class_info(cls):
+    # Retrieve all properties (DataClayProperty instances in the class's __dict__)
+    properties = [name for name, attr in cls.__dict__.items() if isinstance(attr, DataClayProperty)]
+
+    # Retrieve all activemethods (methods decorated with @activemethod in the class's __dict__)
+    activemethods = [
+        name
+        for name, attr in cls.__dict__.items()
+        if inspect.isroutine(attr) and getattr(attr, "_is_activemethod", False)
+    ]
+
+    return properties, activemethods

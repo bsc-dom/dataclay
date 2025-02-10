@@ -2,11 +2,10 @@ import asyncio
 import logging
 from typing import NamedTuple
 
-from .dataclay_object import DataClayObject
-from .event_loop import get_dc_event_loop
-
 # Note that session_var is only needed in _get_by_alias, and maybe should be moved to DataClayRuntime (maybe, TODO, check)
 from .config import get_runtime, session_var
+from .dataclay_object import DataClayObject
+from .event_loop import get_dc_event_loop
 
 local_fields = frozenset(
     [
@@ -50,6 +49,17 @@ class _StubMetaClass(type):
         classname, properties, activemethods = key
         # so only classname is used as the key for the StubDataClayObject["<classname>"]
         if classname not in cls.cached_classes:
+
+            # Retrieve `properties` and `activemethods` from dataClay
+            properties, activemethods = asyncio.run_coroutine_threadsafe(
+                get_runtime().get_class_info(classname),
+                get_dc_event_loop(),
+            ).result()
+
+            # Remove "__init__" from activemethods if it is there
+            if "__init__" in activemethods:
+                activemethods.remove("__init__")
+
             # Prepare the StubInfo tuple
             stub_info = StubInfo(
                 classname=classname,

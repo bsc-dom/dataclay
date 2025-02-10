@@ -750,6 +750,19 @@ class DataClayRuntime(ABC):
     async def stop(self):
         pass
 
+    async def get_class_info(self, class_name: str):
+        logger.debug("Getting class info for %s", class_name)
+        # Retrieve the `properties` and `activemethods` from a dataClay backend
+
+        if not self.backend_clients:
+            await self.backend_clients.update()
+            if not self.backend_clients:
+                raise RuntimeError("No backends available")
+        # Choose a random backend
+        backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
+
+        return await backend_client.get_class_info(class_name)
+
     # NOTE: Previous commits contained deprecated replica, federation, tracing/extrae methods
 
 

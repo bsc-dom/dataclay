@@ -306,3 +306,9 @@ class BackendClient:
     @grpc_aio_error_handler
     async def drain(self):
         await self.stub.Drain(empty_pb2.Empty())
+
+    @grpc_aio_error_handler
+    async def get_class_info(self, class_name):
+        request = backend_pb2.GetClassInfoRequest(class_name=class_name)
+        response = await self.stub.GetClassInfo(request, metadata=self.metadata_call)
+        return response.properties, response.activemethods
