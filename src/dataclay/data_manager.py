@@ -9,10 +9,8 @@ from typing import TYPE_CHECKING, Optional
 import psutil
 
 from dataclay.config import settings
-
 from dataclay.event_loop import dc_to_thread_cpu, get_dc_event_loop
 from dataclay.exceptions import DataClayException, ObjectNotFound, ObjectStorageError
-
 from dataclay.lock_manager import lock_manager
 from dataclay.utils.serialization import DataClayPickler
 

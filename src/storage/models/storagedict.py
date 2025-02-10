@@ -9,6 +9,7 @@ class StorageDict(DataClayObject):
 
     @ClassField _dict anything
     """
+
     _dict: dict
 
     @activemethod

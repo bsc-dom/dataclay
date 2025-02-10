@@ -9,7 +9,9 @@ grow without bound and still be efficiently accessed.
 from itertools import chain
 from typing import Any, Optional
 from uuid import UUID
+
 from dataclay import DataClayObject, activemethod
+
 from .splitting import SplittableCollectionMixin
 
 

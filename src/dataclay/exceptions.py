@@ -3,6 +3,7 @@
 
 class DataClayException(Exception):
     """Base class for exceptions in this module."""
+
     pass
 
 
@@ -203,4 +204,3 @@ class DataclayIdError(DataClayException):
     """Base exception for dataclayId errors."""
 
     pass
-

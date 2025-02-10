@@ -52,7 +52,6 @@ async def serve(
     logger.info("Stopping proxy service")
 
 
-
 class BackendProxyServicer(BackendProxyBase):
     def __init__(self, metadata_client, *middleware):
         self.backend_stubs = dict()

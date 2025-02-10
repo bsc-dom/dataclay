@@ -1,17 +1,21 @@
 """Basic Synchronization mechanisms."""
 
-from dataclay import activemethod
+import inspect
 import os
 from json import dumps
+
 from kafka import KafkaProducer
+
+from dataclay import activemethod
 from dataclay.contrib.kafka import KAFKA_PRODUCERS
-import inspect
 
 """ Kafka pool of producers """
 KAFKA_PRODUCERS = dict()
 
+
 class KafkaMixin(object):
     """KAFKA mechanisms"""
+
     @activemethod
     def produce_kafka_msg(self, data, topic="dataclay"):
         """Kafka message producer function

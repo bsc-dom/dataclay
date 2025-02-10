@@ -4,7 +4,7 @@ dataClay includes support for client communication via MQTT.
 In order to use this functionality, the client class has to inherit the :class:`MQTTMixin` class.
 
 The client will be able to specify how the messages should be handled, which topics will be subscribed to,
-and send messages with a topic. 
+and send messages with a topic.
 """
 
 import inspect

@@ -1,8 +1,8 @@
 """Entry point for the Proxy server."""
 
+import asyncio
 import importlib
 import logging
-import asyncio
 
 from dataclay.config import ProxySettings, settings
 from dataclay.metadata.api import MetadataAPI

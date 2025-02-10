@@ -1,5 +1,3 @@
-""" Class description goes here. """
-
 """Module that implements dummy (no-op) stuff for PyCOMPSs.
 
 What happens:

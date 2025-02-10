@@ -1,5 +1,3 @@
-""" Class description goes here. """
-
 import asyncio
 import logging
 import os.path

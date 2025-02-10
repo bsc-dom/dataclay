@@ -1,5 +1,3 @@
-""" Class description goes here. """
-
 """High level Storage Interface for dataClay.
 
 This package is used by PyCOMPSs, and uses dataclay.api module.

@@ -1,5 +1,3 @@
-""" Class description goes here. """
-
 """Deactivate dataClay to allow sequential un-modified execution.
 
 This will allow some loaded-modules-mangling and make dataClay classes

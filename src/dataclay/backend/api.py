@@ -1,5 +1,3 @@
-""" Class description goes here. """
-
 from __future__ import annotations
 
 import asyncio
@@ -17,8 +15,8 @@ from dataclay.event_loop import dc_to_thread_io
 from dataclay.exceptions import (
     DataClayException,
     DoesNotExistError,
+    NoOtherBackendsAvailable,
     ObjectWithWrongBackendIdError,
-    NoOtherBackendsAvailable
 )
 from dataclay.lock_manager import lock_manager
 from dataclay.runtime import BackendRuntime

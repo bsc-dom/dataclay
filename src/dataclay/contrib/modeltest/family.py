@@ -73,7 +73,7 @@ class Family(DataClayObject):
             result.append(" - Name: %s, age: %d" % (p.name, p.age))
 
         return "\n".join(result)
-    
+
     @activemethod
     def add_year(self):
         for p in self.members:

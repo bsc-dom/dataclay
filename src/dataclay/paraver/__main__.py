@@ -1,7 +1,7 @@
-"""Entry point for easy dump to get extrae values per method and class module. 
+"""Entry point for easy dump to get extrae values per method and class module.
 
-This module can be run as a standalone and will dump a file to be read from all python nodes 
-(must be same event number in all nodes) to be added into PCF paraver file. 
+This module can be run as a standalone and will dump a file to be read from all python nodes
+(must be same event number in all nodes) to be added into PCF paraver file.
 """
 
 __author__ = "Alex Barcelo <alex.barcelo@bsc.es>"

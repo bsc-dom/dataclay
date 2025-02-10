@@ -19,7 +19,6 @@ from typing import TYPE_CHECKING, Annotated, Any, Optional, Type, TypeVar, get_o
 
 from dataclay.annotated import LocalOnly, PropertyTransformer
 from dataclay.config import get_runtime
-
 from dataclay.event_loop import get_dc_event_loop
 from dataclay.exceptions import (
     AliasDoesNotExistError,
@@ -27,7 +26,6 @@ from dataclay.exceptions import (
     ObjectIsMasterError,
     ObjectNotRegisteredError,
 )
-
 from dataclay.metadata.kvdata import ObjectMetadata
 from dataclay.utils.telemetry import trace
 
