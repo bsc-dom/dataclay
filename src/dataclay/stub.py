@@ -68,7 +68,8 @@ class _StubMetaClass(type):
 
             # That should be enough for creating the class
             cls.cached_classes[classname] = type(
-                f"StubDataClayObject[{classname}]",
+                classname,
+                # f"StubDataClayObject[{classname}]",
                 (StubDataClayObject,),
                 clsdict,
             )
@@ -87,7 +88,17 @@ class StubDataClayObject(DataClayObject, metaclass=_StubMetaClass):
     def __init__(self, *args, **kwargs):
         self._check_stub_info()
 
-        raise NotImplementedError("TODO: Remote instantiation is not implemented yet")
+        # We override the class_name to make it work as if it was the original class
+        self._dc_meta.class_name = self._dc_stub_info.classname
+
+        # We need to first create a remote object and then initialize it
+        self.make_persistent()
+        return asyncio.run_coroutine_threadsafe(
+            get_runtime().call_remote_method(self, "__init__", args, kwargs),
+            get_dc_event_loop(),
+        ).result()
+
+        # raise NotImplementedError("TODO: Remote instantiation is not implemented yet")
 
     @classmethod
     async def _get_by_alias(cls, alias: str, dataset_name: str = None):
