@@ -16,7 +16,7 @@ def tests(session):
     """Run the test suite."""
     session.install("pytest", "pytest-asyncio", "pytest-docker", "pytest-cov")
     session.install(".")
-    session.run("pytest", "-x", "--cov", "--cov-report=term-missing")
+    session.run("pytest", "--cov", "--cov-report=term-missing")
 
 
 @nox.session(python=["3.9", "3.10"], tags=["citests"])
@@ -37,7 +37,7 @@ def legacy_deps_tests(session):
         "dataclay-common/dataclay/proto/backend/backend.proto",
         "dataclay-common/dataclay/proto/metadata/metadata.proto",
     )
-    session.run("pytest", "-x", "--disable-warnings", "--cov", "--cov-report=term-missing", "--build-legacy-deps", "tests/functional")
+    session.run("pytest", "--disable-warnings", "--cov", "--cov-report=term-missing", "--build-legacy-deps", "tests/functional")
 
 
 @nox.session(python=DEFAULT_PYTHON)
