@@ -22,9 +22,7 @@ def tests(session):
 @nox.session(python=["3.9", "3.10"], tags=["citests"])
 def legacy_deps_tests(session):
     """Run the test suite with legacy dependencies."""
-    session.install("pytest", "pytest-asyncio", "pytest-docker", "pytest-cov")
-    session.install("grpcio-tools==1.48.2", "-r", "requirements-legacydeps.txt")
-    session.install(".", "--no-deps")
+    session.install("grpcio-tools==1.48.2", "pytest", "pytest-asyncio", "pytest-docker", "pytest-cov", "-r", "requirements-legacydeps.txt")
     session.run(
         # See compile-protos.sh, it should be the same command
         "python3",
@@ -37,6 +35,8 @@ def legacy_deps_tests(session):
         "dataclay-common/dataclay/proto/backend/backend.proto",
         "dataclay-common/dataclay/proto/metadata/metadata.proto",
     )
+
+    session.install(".", "--no-deps")
     session.run("pytest", "--disable-warnings", "--cov", "--cov-report=term-missing", "--build-legacy-deps", "tests/functional")
 
 
