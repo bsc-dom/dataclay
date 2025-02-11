@@ -79,6 +79,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build and push Docker image with legacy dependencies
+        if: matrix.python-version == '3.9' || matrix.python-version == '3.10'
         id: build-and-push-legacydeps
         uses: docker/build-push-action@v6
         with:
