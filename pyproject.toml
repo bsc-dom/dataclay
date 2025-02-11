@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "dataclay"
@@ -73,9 +73,6 @@ telemetry = [
 [project.scripts]
 dataclayctl = "dataclay.control.ctl:run"
 
-[tool.setuptools.dynamic]
-version = {attr = "dataclay.__version__"}
-
 [tool.isort]
 profile = "black"
 extend_skip = "src/dataclay/proto"
@@ -106,3 +103,17 @@ filterwarnings = [
     "error",
     "ignore::UserWarning",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dataclay", "src/storage"]
+dependencies = ["grpcio-tools==1.48.2"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/dataclay", "src/storage", "dataclay-common"]
+
+[tool.hatch.version]
+path = "src/dataclay/__init__.py"
+
+[tool.hatch.build.hooks.custom]
+path = "compile_protos.py"
+dependencies = ["grpcio-tools==1.48.2"]
