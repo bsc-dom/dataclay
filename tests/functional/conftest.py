@@ -4,8 +4,6 @@ import sys
 import grpc
 import pytest
 
-import dataclay
-
 
 @pytest.fixture(scope="session")
 def python_version():
@@ -13,8 +11,17 @@ def python_version():
 
 
 @pytest.fixture(scope="session")
-def docker_setup(python_version):
-    return [f"build --build-arg PYTHON_VERSION={python_version}-bookworm", "up -d"]
+def docker_setup(python_version, request, docker_compose_legacy_deps_file):
+    legacy_deps = request.config.getoption("--build-legacy-deps")
+    f_flag = f"-f {docker_compose_legacy_deps_file} " if legacy_deps else ""
+    return [
+        f"{ f_flag }build --build-arg PYTHON_VERSION={python_version}-bookworm",
+        "up -d",
+    ]
+
+@pytest.fixture(scope="session")
+def docker_compose_legacy_deps_file(pytestconfig):
+    return os.path.join(str(pytestconfig.rootdir), "tests/functional", "docker-compose.legacy-deps.yml")
 
 
 @pytest.fixture(scope="session")
@@ -38,6 +45,8 @@ def deploy_dataclay(docker_ip, docker_services):
 
 @pytest.fixture(scope="session")
 def client(deploy_dataclay):
+    import dataclay
+
     client = dataclay.Client(host="127.0.0.1")
     client.start()
     yield client

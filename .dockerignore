@@ -6,6 +6,10 @@
 # Now un-exclude:
 #
 !src
+!compile-protos.sh
+!dataclay-common
+!requirements-legacydeps.txt
+!requirements-dev.txt
 !pyproject.toml
 !README.md
 !MANIFEST.in

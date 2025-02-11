@@ -18,7 +18,7 @@ from collections import ChainMap
 from typing import TYPE_CHECKING, Annotated, Any, Optional, Type, TypeVar, get_origin
 
 from dataclay.annotated import LocalOnly, PropertyTransformer
-from dataclay.config import get_runtime
+from dataclay.config import LEGACY_DEPS, get_runtime
 from dataclay.event_loop import get_dc_event_loop
 from dataclay.exceptions import (
     AliasDoesNotExistError,
@@ -366,7 +366,10 @@ class DataClayObject:
         If the object is NOT persistent, then this method returns None.
         """
         if self._dc_is_registered:
-            return self._dc_meta.model_dump_json()
+            if LEGACY_DEPS:
+                return self._dc_meta.json()
+            else:
+                return self._dc_meta.model_dump_json()
         else:
             return None
 

@@ -35,6 +35,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: "true"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -72,6 +74,21 @@ jobs:
             PYTHON_VERSION=${{ matrix.python-version }}-bullseye
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Docker image with legacy dependencies
+        id: build-and-push-legacydeps
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.legacy-deps
+          platforms: linux/amd64,linux/arm64
+          build-args: 
+            PYTHON_VERSION=${{ matrix.python-version }}-bullseye
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}-legacydeps
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

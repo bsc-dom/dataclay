@@ -1,0 +1,10 @@
+# Used only for the tests on legacy-deps
+# (build process on Dockerfile.legacy-deps)
+
+pytest
+pytest-asyncio
+pytest-docker
+grpcio-tools
+black
+isort
+coverage[toml]

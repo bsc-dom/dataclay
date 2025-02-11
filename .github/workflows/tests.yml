@@ -14,7 +14,7 @@ jobs:
       - uses: wntrblm/nox@main
       - id: set-matrix
         shell: bash
-        run: echo session=$(nox --json -l -s tests | jq -c '[.[].session]') | tee --append $GITHUB_OUTPUT
+        run: echo session=$(nox --json -l -k citests | jq -c '[.[].session]') | tee --append $GITHUB_OUTPUT
   checks:
     name: Session ${{ matrix.session }}
     needs: [generate-jobs]

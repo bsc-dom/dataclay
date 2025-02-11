@@ -3,7 +3,7 @@ import nox
 # Define which Python versions to test with
 PYPROJECT = nox.project.load_toml("pyproject.toml")
 PYTHON_VERSIONS = nox.project.python_versions(PYPROJECT)
-LATEST_PYTHON_VERSION = PYTHON_VERSIONS[-1]
+DEFAULT_PYTHON = "3.10"  # Arbitrary decision, choose a reliable version
 
 # Default sessions (these will be executed in Github Actions)
 # Maintain a clear separation between code checking and code altering tasks (don't add format)
@@ -11,22 +11,43 @@ nox.options.sessions = ["lint", "tests"]
 # nox.options.reuse_existing_virtualenvs = True # TODO: Check if necessary
 
 
-@nox.session(python=PYTHON_VERSIONS)
+@nox.session(python=PYTHON_VERSIONS, tags=["citests"])
 def tests(session):
     """Run the test suite."""
     session.install("pytest", "pytest-asyncio", "pytest-docker", "pytest-cov")
     session.install(".")
-    session.run("pytest", "--cov", "--cov-report=term-missing")
+    session.run("pytest", "-x", "--cov", "--cov-report=term-missing")
 
 
-@nox.session(python=LATEST_PYTHON_VERSION)
+@nox.session(python=["3.9", "3.10"], tags=["citests"])
+def legacy_deps_tests(session):
+    """Run the test suite with legacy dependencies."""
+    session.install("pytest", "pytest-asyncio", "pytest-docker", "pytest-cov")
+    session.install("grpcio-tools==1.48.2", "-r", "requirements-legacydeps.txt")
+    session.install(".", "--no-deps")
+    session.run(
+        # See compile-protos.sh, it should be the same command
+        "python3",
+        "-m",
+        "grpc_tools.protoc",
+        "--proto_path=dataclay-common",
+        "--python_out=src",
+        "--grpc_python_out=src",
+        "dataclay-common/dataclay/proto/common/common.proto",
+        "dataclay-common/dataclay/proto/backend/backend.proto",
+        "dataclay-common/dataclay/proto/metadata/metadata.proto",
+    )
+    session.run("pytest", "-x", "--disable-warnings", "--cov", "--cov-report=term-missing", "--build-legacy-deps", "tests/functional")
+
+
+@nox.session(python=DEFAULT_PYTHON)
 def lint(session):
     """Lint the codebase using flake8."""
     session.install("flake8")
     session.run("flake8", "src/dataclay", "tests")
 
 
-@nox.session(python=LATEST_PYTHON_VERSION)
+@nox.session(python=DEFAULT_PYTHON)
 def format(session):
     """Automatically format code with black and isort."""
     session.install("black", "isort")
@@ -35,7 +56,7 @@ def format(session):
     session.run("black", ".")
 
 
-@nox.session(python=LATEST_PYTHON_VERSION)
+@nox.session(python=DEFAULT_PYTHON)
 def mypy(session):
     """Run type checks using mypy."""
     session.install(".")
@@ -43,7 +64,7 @@ def mypy(session):
     session.run("mypy", "src/dataclay")
 
 
-@nox.session(python=LATEST_PYTHON_VERSION)
+@nox.session(python=DEFAULT_PYTHON)
 def safety(session):
     """Check for security vulnerabilities."""
     session.install(".")

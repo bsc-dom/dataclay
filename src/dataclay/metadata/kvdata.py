@@ -4,17 +4,26 @@ from typing import Annotated, ClassVar, Optional, Union
 from uuid import UUID, uuid4
 
 import bcrypt
-from google.protobuf.json_format import MessageToDict
-from pydantic import BaseModel, BeforeValidator, Field
+import json
+from google.protobuf.json_format import MessageToDict, ParseDict
+from pydantic import BaseModel, Field, __version__ as pydantic_version
 
 from dataclay.proto.common import common_pb2
 
+if pydantic_version[0] == "1":
+    LEGACY_DEPS = True
+else:
+    LEGACY_DEPS = False
+
 logger = logging.getLogger(__name__)
 
-EmptyNone = Annotated[
-    None,
-    BeforeValidator(lambda x: x if x else None),
-]
+if not LEGACY_DEPS:
+    from pydantic import BeforeValidator
+    
+    EmptyNone = Annotated[
+        None,
+        BeforeValidator(lambda x: x if x else None),
+    ]
 
 
 class KeyValue(BaseModel, ABC):
@@ -25,7 +34,10 @@ class KeyValue(BaseModel, ABC):
 
     @property
     def value(self):
-        return self.model_dump_json()
+        if LEGACY_DEPS:
+            return self.json()
+        else:
+            return self.model_dump_json()
 
     @property
     @abstractmethod
@@ -39,14 +51,24 @@ class KeyValue(BaseModel, ABC):
 
     @classmethod
     def from_json(cls, s):
-        return cls.model_validate_json(s)
+        if LEGACY_DEPS:
+            return cls.parse_raw(s)
+        else:
+            return cls.model_validate_json(s)
 
     @classmethod
     def from_proto(cls, proto):
-        return cls.model_validate(MessageToDict(proto, preserving_proto_field_name=True))
+        if LEGACY_DEPS:
+            return cls.parse_obj(MessageToDict(proto, preserving_proto_field_name=True))
+        else:
+            return cls.model_validate(MessageToDict(proto, preserving_proto_field_name=True))
 
     def get_proto(self):
-        return self.proto_class(**self.model_dump(mode="json"))
+        if LEGACY_DEPS:
+            # Converting to json and back to dict to ensure UUID are bytes (and not UUID instances)
+            return self.proto_class(**json.loads(self.json()))
+        else:
+            return self.proto_class(**self.model_dump(mode="json"))
 
 
 class Dataclay(KeyValue):
@@ -87,7 +109,10 @@ class ObjectMetadata(KeyValue):
     master_backend_id: Optional[UUID] = None
     replica_backend_ids: set[UUID] = Field(default_factory=set)
     is_read_only: bool = False
-    original_object_id: Union[UUID, EmptyNone] = None
+    if LEGACY_DEPS:
+        original_object_id: Optional[UUID] = None
+    else:
+        original_object_id: Union[UUID, EmptyNone] = None
     versions_object_ids: list[UUID] = Field(default_factory=list)
 
     @property
@@ -113,7 +138,7 @@ class Account(KeyValue):
     proto_class: ClassVar = None
 
     username: str
-    hashed_password: str = None
+    hashed_password: Optional[str] = None
     role: str = "NORMAL"
     datasets: list = Field(default_factory=list)
 

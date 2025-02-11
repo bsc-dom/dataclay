@@ -3,15 +3,13 @@ import logging
 import os
 from typing import Any
 
-from dotenv import dotenv_values
-
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
 from dataclay.client.api import Client
 
 # Also "publish" the split method
 # from dataclay.contrib.splitting import split
-from dataclay.config import exec_constraints_var, get_runtime
+from dataclay.config import exec_constraints_var, get_runtime, LEGACY_DEPS
 from dataclay.event_loop import get_dc_event_loop
 from dataclay.metadata.kvdata import ObjectMetadata
 
@@ -46,7 +44,10 @@ def getByID(object_md_json: str):
         The DataClayObject identified by the given object_md_json
     """
     loop = get_dc_event_loop()
-    object_md = ObjectMetadata.model_validate_json(object_md_json)
+    if LEGACY_DEPS:
+        object_md = ObjectMetadata.parse_raw(object_md_json)
+    else:
+        object_md = ObjectMetadata.model_validate_json(object_md_json)
     return asyncio.run_coroutine_threadsafe(
         get_runtime().get_object_by_id(object_md.id, object_md), loop
     ).result()
@@ -71,9 +72,6 @@ def initWorker(config_file_path, **kwargs):
       and/or other Persistent Object Library requirements.
     """
     logger.info("Initialization of worker through storage.api")
-
-    env_vars = dotenv_values(config_file_path)
-    os.environ.update(env_vars)
 
     global _client
     _client = Client()

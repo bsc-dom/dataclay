@@ -11,7 +11,7 @@ import grpc
 from google.protobuf.empty_pb2 import Empty
 from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
-from dataclay.config import settings
+from dataclay.config import settings, LEGACY_DEPS
 from dataclay.event_loop import get_dc_event_loop, set_dc_event_loop
 from dataclay.exceptions import AlreadyExistError
 from dataclay.metadata.api import MetadataAPI
@@ -51,9 +51,12 @@ async def serve():
         logger.info("MetadataService already registered with id %s", settings.dataclay_id)
         settings.dataclay_id = (await metadata_api.get_dataclay("this")).id
     else:
-        await metadata_api.new_superuser(
-            settings.root_username, settings.root_password, settings.root_dataset
-        )
+        if LEGACY_DEPS:
+            await metadata_api.new_superuser(settings.username, settings.password, settings.dataset)
+        else:
+            await metadata_api.new_superuser(
+                settings.root_username, settings.root_password, settings.root_dataset
+            )
 
     # Initialize the servicer
     server = grpc.aio.server()
