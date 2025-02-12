@@ -11,17 +11,13 @@ def python_version():
 
 
 @pytest.fixture(scope="session")
-def docker_setup(python_version, request, docker_compose_legacy_deps_file):
+def docker_setup(python_version, request):
     legacy_deps = request.config.getoption("--build-legacy-deps")
-    f_flag = f"-f {docker_compose_legacy_deps_file} " if legacy_deps else ""
+    legacy_arg = f" --build-arg LEGACY_DEPS=True " if legacy_deps else " "
     return [
-        f"{ f_flag }build --build-arg PYTHON_VERSION={python_version}-bookworm",
+        f"build{ legacy_arg }--build-arg PYTHON_VERSION={python_version}-bookworm",
         "up -d",
     ]
-
-@pytest.fixture(scope="session")
-def docker_compose_legacy_deps_file(pytestconfig):
-    return os.path.join(str(pytestconfig.rootdir), "tests/functional", "docker-compose.legacy-deps.yml")
 
 
 @pytest.fixture(scope="session")
