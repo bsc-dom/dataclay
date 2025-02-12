@@ -26,27 +26,13 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 requires-python = ">=3.9,<3.14"
-dependencies = [
-    "aiorwlock>=1.4.0",
-    "bcrypt>=4.1.1",
-    "grpcio>=1.67.1",
-    "grpcio-health-checking>=1.67.1",
-    "hiredis>=3.0.0",
-    "opentelemetry-api>=1.28.1",
-    "protobuf>=4.25.0",
-    "psutil>=6.1.0",
-    "pydantic-settings>=2.6.0",
-    "redis>=5.1.1",
-    "get-annotations;python_version<\"3.10\"",
-    "PyJWT>=2.9.0",
-    "threadpoolctl>=3.5.0",
-]
-dynamic = ["version"]
+dynamic = ["version", "dependencies"]
 
 [project.urls]
-"Documentation" = "https://dataclay.bsc.es/"
-"Code" = "https://github.com/bsc-dom/dataclay"
-"Issue tracker" = "https://github.com/bsc-dom/dataclay/issues"
+"Homepage" = "https://dataclay.bsc.es/"
+"Documentation" = "https://dataclay.readthedocs.io/"
+"Source" = "https://github.com/bsc-dom/dataclay"
+"Issues" = "https://github.com/bsc-dom/dataclay/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -106,7 +92,7 @@ filterwarnings = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dataclay", "src/storage"]
-dependencies = ["grpcio-tools==1.48.2"]
+ignore-vcs = true
 
 [tool.hatch.build.targets.sdist]
 include = ["src/dataclay", "src/storage", "dataclay-common"]
@@ -116,4 +102,7 @@ path = "src/dataclay/__init__.py"
 
 [tool.hatch.build.hooks.custom]
 path = "compile_protos.py"
-dependencies = ["grpcio-tools==1.48.2"]
+
+[tool.hatch.metadata.hooks.custom]
+path = "dynamic_dependencies.py"
+dependencies = ["packaging"]
