@@ -27,7 +27,7 @@ def find_config_settings_in_hatchling() -> dict[str, Any]:
             and module.__name__.startswith("hatchling.build")
             and "config_settings" in frame.f_locals
         ):
-            return frame.f_locals["config_settings"]
+            return frame.f_locals["config_settings"] or {}
 
     return {}
 
