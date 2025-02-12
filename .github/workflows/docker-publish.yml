@@ -81,7 +81,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           build-args: 
-            PYTHON_VERSION=${{ matrix.python-version }}-bullseye
+            - PYTHON_VERSION=${{ matrix.python-version }}-bullseye
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -96,8 +96,8 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           build-args: 
-            PYTHON_VERSION=${{ matrix.python-version }}-bullseye
-            LEGACY_DEPS=True
+            - PYTHON_VERSION=${{ matrix.python-version }}-bullseye
+            - LEGACY_DEPS=True
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.legacy-deps-meta.outputs.tags }}
           labels: ${{ steps.legacy-deps-meta.outputs.labels }}
