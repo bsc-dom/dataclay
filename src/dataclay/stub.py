@@ -45,8 +45,7 @@ class _StubMetaClass(type):
     cached_classes = {}
 
     def __getitem__(cls, key):
-        # TODO: `properties` and `activemethods` should be retrieved from dataClay
-        classname, properties, activemethods = key
+        classname = key
         # so only classname is used as the key for the StubDataClayObject["<classname>"]
         if classname not in cls.cached_classes:
 
@@ -108,8 +107,6 @@ class StubDataClayObject(DataClayObject, metaclass=_StubMetaClass):
             get_dc_event_loop(),
         ).result()
 
-        # raise NotImplementedError("TODO: Remote instantiation is not implemented yet")
-
     @classmethod
     async def _get_by_alias(cls, alias: str, dataset_name: str = None):
         # This is adapted from DataClayRuntime.get_object_by_alias
@@ -158,8 +155,6 @@ class StubDataClayObject(DataClayObject, metaclass=_StubMetaClass):
                 get_runtime().call_remote_method(self, "__getattribute__", (name,), {}),
                 get_dc_event_loop(),
             ).result()
-        elif name in self._dc_stub_info.activemethods:
-            return StubActiveMethodHelper(self, name)
         else:
             raise AttributeError(
                 f"Property {name} is not defined in {self._dc_stub_info.classname}"
