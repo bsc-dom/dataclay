@@ -4,6 +4,7 @@ import asyncio
 import io
 import logging
 import pickle
+import pickletools
 import threading
 from typing import Optional
 from uuid import UUID
@@ -195,5 +196,13 @@ async def dcloads(binary):
     """
     logger.debug("Deserializing binary in executor")
     # Use dc_to_thread_cpu to avoid blocking the event loop in `get_by_id_sync`
-    result = await dc_to_thread_cpu(pickle.loads, binary)
+    try:
+        result = await dc_to_thread_cpu(pickle.loads, binary)
+    except ModuleNotFoundError:
+        # If the module is not found, it means that the object is a StubDataClayObject
+        # TODO: Obtain the classname of the serialized object
+        # and create the stub object with that classname
+        print(pickletools.dis(binary))
+        raise
+
     return result
