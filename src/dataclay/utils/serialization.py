@@ -25,7 +25,7 @@ class DataClayPickler(pickle.Pickler):
         if isinstance(obj, DataClayObject):
             if not obj._dc_is_registered:
                 obj.make_persistent()
-            return obj.get_by_id, (obj._dc_meta.id,)
+            return DataClayObject.get_by_id, (obj._dc_meta.id,)
         else:
             return NotImplemented
 

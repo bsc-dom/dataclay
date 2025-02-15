@@ -68,34 +68,23 @@ class _StubMetaClass(type):
             )
 
             # Extract original module from classname
-            original_module, basename = classname.rsplit(".", 1)
+            _, basename = classname.rsplit(".", 1)
 
-            # Prepare class dictionary with original module
-            clsdict = {
-                "__module__": original_module,
-            }
             # The class dictionary containing all the methods
-            clsdict.update(
-                {
-                    method_name: stubmethodwrapper(basename, method_name)
-                    for method_name in activemethods
-                }
-            )
+            clsdict = {
+                method_name: stubmethodwrapper(basename, method_name)
+                for method_name in activemethods
+            }
 
             # and also the stub info in its proper place
             clsdict["_dc_stub_info"] = stub_info
 
             # That should be enough for creating the class
             cls.cached_classes[classname] = type(
-                basename,
+                f"StubDataClayObject[{classname}]",
                 (StubDataClayObject,),
                 clsdict,
             )
-
-            # Register the new type in the module's globals so that pickle can find it
-            module = sys.modules.get(original_module)
-            if module is not None:
-                setattr(module, basename, cls.cached_classes[classname])
 
         return cls.cached_classes[classname]
 
