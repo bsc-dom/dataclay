@@ -23,6 +23,7 @@ from dataclay.exceptions import (
 from dataclay.lock_manager import lock_manager
 from dataclay.metadata.api import MetadataAPI
 from dataclay.metadata.client import MetadataClient
+from dataclay.stub import StubDataClayObject
 from dataclay.utils.backend_clients import BackendClientsManager
 from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcdumps
 from dataclay.utils.telemetry import trace
@@ -209,8 +210,14 @@ class DataClayRuntime(ABC):
                         logger.debug("(%s) Getting object metadata from MDS", object_id)
                         object_md = await self.metadata_service.get_object_md_by_id(object_id)
 
+                    # Get the class of the object
+                    try:
+                        cls: DataClayObject = utils.get_class_by_name(object_md.class_name)
+                    except ModuleNotFoundError:
+                        # If the class is not found, use a stub
+                        cls: DataClayObject = StubDataClayObject[object_md.class_name]
+
                     # Create a new proxy object
-                    cls: DataClayObject = utils.get_class_by_name(object_md.class_name)
                     proxy_object = cls.new_proxy_object()
                     proxy_object._dc_meta = object_md
 
