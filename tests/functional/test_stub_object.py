@@ -66,3 +66,13 @@ def test_stub_object_getstate_setstate(client):
 
     assert text_reader.lineno == 0
     assert text_reader.filename == "test.txt"
+
+
+def test_stub_object_new_puppy(client):
+    """Test the new_puppy method of a stub object"""
+    DogStub = StubDataClayObject["dataclay.contrib.modeltest.family.Dog"]
+    dog = DogStub(name="Rex", age=5)
+    puppy = dog.new_puppy("Bobby")
+
+    assert puppy.name == "Bobby"
+    assert puppy in dog.puppies
