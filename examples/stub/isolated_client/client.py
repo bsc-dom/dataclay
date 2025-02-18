@@ -44,3 +44,12 @@ person_by_alias = PersonStub.get_by_alias("person_alias")
 
 # Check the person is the same as the original
 assert person_by_alias == person
+
+# Set a puppy to the dog
+puppy = dog.new_puppy("Bobby")
+
+# Check the puppy is created correctly
+assert puppy.name == "Bobby"
+
+# Check the puppy is added to the dog
+assert puppy in dog.puppies
