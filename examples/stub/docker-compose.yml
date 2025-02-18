@@ -18,6 +18,8 @@ services:
       - DATACLAY_DATASET=testdata
       - DATACLAY_LOGLEVEL=debug
     command: python -m dataclay.metadata
+    volumes:
+      - ../..:/app:ro
 
   backend:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -29,3 +31,4 @@ services:
     command: python -m dataclay.backend
     volumes:
       - ./model:/workdir/model:ro
+      - ../..:/app:ro
