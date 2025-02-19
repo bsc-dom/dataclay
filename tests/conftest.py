@@ -21,13 +21,13 @@ def docker_setup(python_version, request):
 @pytest.fixture(scope="session")
 def proxy_connection(docker_ip, docker_services):
     proxy_port = docker_services.port_for("proxy", 8676)
-    return "127.0.0.1", proxy_port
+    return docker_ip, proxy_port
 
 
 @pytest.fixture(scope="session")
 def mds_connection(docker_ip, docker_services):
     mds_port = docker_services.port_for("metadata-service", 16587)
-    return "127.0.0.1", mds_port
+    return docker_ip, mds_port
 
 
 def pytest_addoption(parser):
