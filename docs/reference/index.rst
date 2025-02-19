@@ -9,4 +9,5 @@ API Reference
    dataclay.metadata
    dataclay.exceptions
    aliendco
+   stubdco
    annotations

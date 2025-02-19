@@ -47,6 +47,8 @@ class _DummyInmemoryHitsTotal:
 class DataClayRuntime(ABC):
     def __init__(self, backend_id: UUID = None):
         # self._dataclay_id = None
+
+        # The Backend ID is only set in the BackendRuntime subclass
         self.backend_id = backend_id
         self.is_backend = bool(backend_id)
 
@@ -757,16 +759,18 @@ class DataClayRuntime(ABC):
     async def stop(self):
         pass
 
-    async def get_class_info(self, class_name: str):
+    async def get_class_info(self, class_name: str, backend_id: Optional[UUID] = None):
         logger.debug("Getting class info for %s", class_name)
-        # Retrieve the `properties` and `activemethods` from a dataClay backend
 
-        if not self.backend_clients:
-            await self.backend_clients.update()
+        if backend_id is None:
             if not self.backend_clients:
-                raise RuntimeError("No backends available")
-        # Choose a random backend
-        backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
+                await self.backend_clients.update()
+                if not self.backend_clients:
+                    raise RuntimeError("No backends available")
+            # Choose a random backend
+            backend_id, backend_client = random.choice(tuple(self.backend_clients.items()))
+        else:
+            backend_client = await self.backend_clients.get(backend_id)
 
         return await backend_client.get_class_info(class_name)
 
