@@ -1,27 +1,7 @@
 import os
-import sys
 
 import grpc
 import pytest
-
-
-@pytest.fixture(scope="session")
-def python_version():
-    return f"{sys.version_info.major}.{sys.version_info.minor}"
-
-
-@pytest.fixture(scope="session")
-def docker_setup(python_version, request, docker_compose_legacy_deps_file):
-    legacy_deps = request.config.getoption("--build-legacy-deps")
-    f_flag = f"-f {docker_compose_legacy_deps_file} " if legacy_deps else ""
-    return [
-        f"{ f_flag }build --build-arg PYTHON_VERSION={python_version}-bookworm",
-        "up -d",
-    ]
-
-@pytest.fixture(scope="session")
-def docker_compose_legacy_deps_file(pytestconfig):
-    return os.path.join(str(pytestconfig.rootdir), "tests/functional", "docker-compose.legacy-deps.yml")
 
 
 @pytest.fixture(scope="session")
@@ -30,11 +10,11 @@ def docker_compose_file(pytestconfig):
 
 
 @pytest.fixture(scope="session")
-def deploy_dataclay(docker_ip, docker_services):
+def wait_dataclay(mds_connection):
     """Ensure that services are up and responsive."""
 
-    mds_port = docker_services.port_for("metadata-service", 16587)
-    grpc.channel_ready_future(grpc.insecure_channel(f"127.0.0.1:{mds_port}")).result(timeout=10)
+    mds_host, mds_port = mds_connection
+    grpc.channel_ready_future(grpc.insecure_channel(f"{mds_host}:{mds_port}")).result(timeout=10)
 
     # TODO: Wait for the backend to be ready before starting the tests
     # NOTE: Below code is not working since it is not the correct ip
@@ -44,10 +24,11 @@ def deploy_dataclay(docker_ip, docker_services):
 
 
 @pytest.fixture(scope="session")
-def client(deploy_dataclay):
+def client(wait_dataclay, mds_connection):
     import dataclay
 
-    client = dataclay.Client(host="127.0.0.1")
+    mds_host, mds_port = mds_connection
+    client = dataclay.Client(host=mds_host, port=mds_port)
     client.start()
     yield client
     client.stop()

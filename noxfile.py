@@ -3,11 +3,11 @@ import nox
 # Define which Python versions to test with
 PYPROJECT = nox.project.load_toml("pyproject.toml")
 PYTHON_VERSIONS = nox.project.python_versions(PYPROJECT)
-DEFAULT_PYTHON = "3.10"  # Arbitrary decision, choose a reliable version
+DEFAULT_PYTHON = "3.10"  # Modern-ish version compatible with the legacy-deps
 
 # Default sessions (these will be executed in Github Actions)
 # Maintain a clear separation between code checking and code altering tasks (don't add format)
-nox.options.sessions = ["lint", "tests"]
+nox.options.sessions = ["lint", "tests", "legacy_deps_tests"]
 # nox.options.reuse_existing_virtualenvs = True # TODO: Check if necessary
 
 
@@ -22,21 +22,9 @@ def tests(session):
 @nox.session(python=["3.9", "3.10"], tags=["citests"])
 def legacy_deps_tests(session):
     """Run the test suite with legacy dependencies."""
-    session.install("grpcio-tools==1.48.2", "pytest", "pytest-asyncio", "pytest-docker", "pytest-cov", "-r", "requirements-legacydeps.txt")
-    session.run(
-        # See compile-protos.sh, it should be the same command
-        "python3",
-        "-m",
-        "grpc_tools.protoc",
-        "--proto_path=dataclay-common",
-        "--python_out=src",
-        "--grpc_python_out=src",
-        "dataclay-common/dataclay/proto/common/common.proto",
-        "dataclay-common/dataclay/proto/backend/backend.proto",
-        "dataclay-common/dataclay/proto/metadata/metadata.proto",
-    )
+    session.install("pytest", "pytest-asyncio", "pytest-docker", "pytest-cov")
 
-    session.install(".", "--no-deps")
+    session.install("--config-settings=LEGACY_DEPS=True", ".")
     session.run("pytest", "--disable-warnings", "--cov", "--cov-report=term-missing", "--build-legacy-deps", "tests/functional")
 
 

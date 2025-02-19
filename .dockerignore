@@ -6,13 +6,17 @@
 # Now un-exclude:
 #
 !src
-!compile-protos.sh
+!compile_protos.py
+!dynamic_dependencies.py
 !dataclay-common
+!requirements.txt
 !requirements-legacydeps.txt
-!requirements-dev.txt
 !pyproject.toml
 !README.md
 !MANIFEST.in
 !tests
 !tox.ini
 .dockerignore
+
+# Reexclude protos
+src/dataclay/proto

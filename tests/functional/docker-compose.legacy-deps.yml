@@ -1,6 +1,0 @@
-services:
-  metadata-service:
-    image: "ghcr.io/bsc-dom/dataclay:dev"
-    build:
-      context: ../../
-      dockerfile: Dockerfile.legacy-deps.dev

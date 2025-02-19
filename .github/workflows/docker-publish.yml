@@ -63,6 +63,16 @@ jobs:
             type=edge,suffix=-py${{ matrix.python-version }},branch=main
             type=edge,enable=${{ matrix.python-version == '3.10' }},branch=main
 
+      # Extract metadata (tags, labels) for Docker
+      - name: Extract Docker metadata
+        id: legacy-deps-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=edge,suffix=-legacydeps-py${{ matrix.python-version }},branch=main
+            type=edge,suffix=-legacydeps,enable=${{ matrix.python-version == '3.10' }},branch=main
+
       # Build and push Docker image with Buildx (don't push on PR)
       - name: Build and push Docker image
         id: build-and-push
@@ -70,7 +80,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          build-args: 
+          build-args: |
             PYTHON_VERSION=${{ matrix.python-version }}-bullseye
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -84,12 +94,12 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.legacy-deps
           platforms: linux/amd64,linux/arm64
-          build-args: 
+          build-args: |
             PYTHON_VERSION=${{ matrix.python-version }}-bullseye
+            LEGACY_DEPS=True
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}-legacydeps
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.legacy-deps-meta.outputs.tags }}
+          labels: ${{ steps.legacy-deps-meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

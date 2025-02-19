@@ -2,8 +2,6 @@ services:
 
   redis:
     image: redis:latest
-    ports:
-      - 6379:6379
 
   metadata-service:
     image: "ghcr.io/bsc-dom/dataclay:dev"
@@ -16,7 +14,7 @@ services:
     depends_on:
       - redis
     ports:
-      - 16587:16587
+      - 16587
     environment:
       - DATACLAY_KV_HOST=redis
       - DATACLAY_KV_PORT=6379
@@ -69,7 +67,7 @@ services:
   proxy:
       image: "ghcr.io/bsc-dom/dataclay:dev"
       ports:
-        - 8676:8676
+        - 8676
       depends_on:
         - metadata-service
         - backend_1
