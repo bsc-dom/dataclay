@@ -3,11 +3,11 @@ import nox
 # Define which Python versions to test with
 PYPROJECT = nox.project.load_toml("pyproject.toml")
 PYTHON_VERSIONS = nox.project.python_versions(PYPROJECT)
-DEFAULT_PYTHON = "3.10"  # Arbitrary decision, choose a reliable version
+DEFAULT_PYTHON = "3.10"  # Modern-ish version compatible with the legacy-deps
 
 # Default sessions (these will be executed in Github Actions)
 # Maintain a clear separation between code checking and code altering tasks (don't add format)
-nox.options.sessions = ["lint", "tests"]
+nox.options.sessions = ["lint", "tests", "legacy_deps_tests"]
 # nox.options.reuse_existing_virtualenvs = True # TODO: Check if necessary
 
 
