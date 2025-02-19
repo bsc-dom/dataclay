@@ -18,6 +18,7 @@ from google.protobuf.wrappers_pb2 import (
 )
 from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
+from dataclay import utils
 from dataclay.backend.api import BackendAPI
 from dataclay.config import session_var, settings
 from dataclay.event_loop import get_dc_event_loop, set_dc_event_loop
@@ -339,3 +340,9 @@ class BackendServicer(backend_pb2_grpc.BackendServiceServicer):
             request.remotes,
         )
         return Empty()
+
+    @ServicerMethod(backend_pb2.GetClassInfoResponse)
+    async def GetClassInfo(self, request, context):
+        cls = utils.get_class_by_name(request.class_name)
+        properties, activemethods = utils.get_class_info(cls)
+        return backend_pb2.GetClassInfoResponse(properties=properties, activemethods=activemethods)
