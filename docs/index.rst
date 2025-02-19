@@ -9,6 +9,7 @@ dataClay
    user-guide
    main-concepts
    alien-objects
+   stub-objects
    advanced-usage
    logging
    examples/index
