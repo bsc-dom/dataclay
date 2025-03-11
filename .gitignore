@@ -24,3 +24,4 @@ tests/mock/client.properties
 /.vscode
 .coverage*
 coverage.xml
+/src/dataclay/proto/
