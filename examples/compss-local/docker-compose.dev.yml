@@ -1,0 +1,64 @@
+services:
+  compss:
+    build:
+      context: components/compss
+    environment:
+      - DATACLAY_HOST=dataclay-mds
+    volumes:
+      - ./interface:/opt/COMPSs/Tools/storage/dataclay:ro
+      - ./app:/workdir/app:ro
+      - ./examples:/root/examples:ro
+      - ./dislib:/dislib:ro
+    command: /bin/bash -c "/usr/sbin/sshd -D" && sleep 10000000000000
+
+  dataclay-backend:
+    image: "ghcr.io/bsc-dom/dataclay:dev-compss"
+    build:
+      context: ../../
+      dockerfile: Dockerfile.dev
+      args:
+        EXTRA_DEPS: "numpy<2 scikit-learn"
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+      - DATACLAY_BACKEND_ID=9662bd3e-0844-4688-bba5-29cac7d83531
+      #- DATACLAY_LOGLEVEL=DEBUG
+    volumes:
+      - ./app/model:/workdir/model:ro
+      - ./examples:/root/examples:ro
+      - ./examples/hello_world/src/storage_model_hw:/workdir/storage_model_hw:ro
+      - ./examples/wordcount/src/storage_model_wc:/workdir/storage_model_wc:ro
+      - ./examples/kmeans/src/storage_model_kmeans:/workdir/storage_model_kmeans:ro
+      - ./examples/matmul/src/storage_model_matmul:/workdir/storage_model_matmul:ro
+      - ../..:/app:ro
+    command: python -m dataclay.backend
+
+  proxy:
+    image: "ghcr.io/bsc-dom/dataclay:dev-compss"
+    ports:
+      - 8676:8676
+    depends_on:
+      - dataclay-mds
+      - dataclay-backend
+    environment:
+      - DATACLAY_PROXY_MDS_HOST=dataclay-mds
+      - DATACLAY_KV_HOST=redis
+    command: python -m dataclay.proxy
+    volumes:
+      - ../..:/app:ro
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+
+  dataclay-mds:
+    image: "ghcr.io/bsc-dom/dataclay:dev-compss"
+    depends_on:
+      - redis
+    environment:
+      - DATACLAY_KV_HOST=redis
+    command: python -m dataclay.metadata
+    volumes:
+      - ../..:/app:ro
