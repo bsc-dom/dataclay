@@ -2,13 +2,14 @@ services:
   compss:
     build:
       context: components/compss
+      dockerfile: Dockerfile.dev
     environment:
       - DATACLAY_HOST=dataclay-mds
     volumes:
       - ./interface:/opt/COMPSs/Tools/storage/dataclay:ro
       - ./app:/workdir/app:ro
       - ./examples:/root/examples:ro
-      - ./dislib:/dislib:ro
+      - ./components/compss/dislib:/dislib:ro
     command: /bin/bash -c "/usr/sbin/sshd -D" && sleep 10000000000000
 
   dataclay-backend:

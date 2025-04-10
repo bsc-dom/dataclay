@@ -54,6 +54,7 @@ dataClay
    :caption: Developers
 
    contributing
+   compss-integration
 
 
 dataClay is a distributed data store that enables applications to store and access objects
