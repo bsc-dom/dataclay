@@ -34,39 +34,12 @@ def run_protoc():
     )
 
 
-def find_config_settings_in_hatchling() -> dict[str, Any]:
-    # Terrible workaround (their words, not mine) given by @virtuald
-    # https://github.com/pypa/hatch/issues/1072#issuecomment-2448985229
-    # Hopefully this will be fixed in the future
-    for frame_info in inspect.stack():
-        frame = frame_info.frame
-        module = inspect.getmodule(frame)
-        if (
-            module
-            and module.__name__.startswith("hatchling.build")
-            and "config_settings" in frame.f_locals
-        ):
-            return frame.f_locals["config_settings"] or {}
-
-    return {}
-
-
 class CustomBuildHook(BuildHookInterface):
     def initialize(self, version: str, build_data: dict[str, Any]) -> None:
         run_protoc()
 
     def dependencies(self):
-        if find_config_settings_in_hatchling().get("LEGACY_DEPS", "False").lower() in (
-            "true",
-            "on",
-            "1",
-            "y",
-            "yes",
-        ):
-            return ["grpcio-tools==1.48.2"]
-        else:
-            return ["grpcio-tools==1.67.1"]
-
+        return ["grpcio-tools==1.62.3"]
 
 if __name__ == "__main__":
     run_protoc()
