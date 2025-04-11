@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "dataclay"
 description = "Python distributed data store that enables remotely access and method execution."
 readme = "README.md"
-license = {text = "BSD-3-Clause"}
+license = "BSD-3-Clause"
 maintainers = [{name = "BSC-DOM", email = "support-dataclay@bsc.es"}]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
