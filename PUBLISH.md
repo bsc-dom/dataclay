@@ -64,11 +64,6 @@
         -t ghcr.io/bsc-dom/dataclay:$VERSION-py3.12-bookworm \
         --build-arg PYTHON_VERSION=3.12-bookworm --push .
 
-        # Build and push Python 3.13 bookworm
-        docker buildx build --platform linux/amd64,linux/arm64 \
-        -t ghcr.io/bsc-dom/dataclay:$VERSION-py3.13-bookworm \
-        --build-arg PYTHON_VERSION=3.13-bookworm --push .
-
         # Repeat for Python 3.9 and 3.10 with the _legacy dependency flavour_
         # Build and push Python 3.9 bookworm
         docker buildx build --platform linux/amd64,linux/arm64 \
