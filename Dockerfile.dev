@@ -1,17 +1,17 @@
-# syntax=docker/dockerfile:1
-
 ARG PYTHON_VERSION=3.10-bookworm
-
-# install dataclay
 FROM python:$PYTHON_VERSION
+
 COPY . /app
 
 ARG LEGACY_DEPS=False
 RUN python -m pip install --upgrade pip \
-  && python -m pip install --config-settings=LEGACY_DEPS=$LEGACY_DEPS -e /app[telemetry,dev]
+&& python -m pip install --config-settings=LEGACY_DEPS=$LEGACY_DEPS -e /app[telemetry,dev]
 
-# prepare dataclay storage dir
+ARG EXTRA_DEPS=""
+RUN if [ -n "$EXTRA_DEPS" ]; then \
+    python -m pip install $EXTRA_DEPS; \
+  fi
+
 RUN mkdir -p /data/storage; 
 
-# set workdir and entrypoint
 WORKDIR /workdir

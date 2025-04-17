@@ -1,0 +1,41 @@
+ARG DEBIAN_FRONTEND=noninteractive
+ARG BASE=base22
+ARG BASE_VERSION=240722-080958
+
+FROM compss/${BASE}_tutorial:${BASE_VERSION} as compss-tutorial
+
+ENV GRADLE_HOME /opt/gradle
+ENV PATH $PATH:/opt/gradle/bin
+ENV PATH $PATH:/opt/COMPSs/Runtime/scripts/user:/opt/COMPSs/Bindings/c/bin:/opt/COMPSs/Runtime/scripts/utils
+ENV PATH $PATH:/root/.local/bin
+ENV CLASSPATH $CLASSPATH:/opt/COMPSs/Runtime/compss-engine.jar
+ENV LD_LIBRARY_PATH /opt/COMPSs/Bindings/bindings-common/lib:$LD_LIBRARY_PATH
+ENV COMPSS_HOME=/opt/COMPSs/
+ENV PYTHONPATH=$COMPSS_HOME/Bindings/python/3:$PYTHONPATH
+ARG TZ=Etc/UTC
+
+# Install COMPSs
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libxml2-dev libpapi-dev python3-dev gfortran sudo firefox gnupg lsb-release libgraphviz-dev && \
+    apt-get autoclean && \
+    rm -rf /var/lib/apt/lists/* && \
+    wget https://services.gradle.org/distributions/gradle-5.4.1-bin.zip && \
+    unzip -d /opt gradle-5.4.1-bin.zip && \
+    rm gradle-5.4.1-bin.zip && \
+    mv /opt/gradle-5.4.1 /opt/gradle && \
+    git clone https://github.com/bsc-wdc/compss.git && \
+    cd compss && \
+    ./submodules_get.sh && \
+    python3 -m pip --no-cache-dir install pip wheel setuptools --upgrade && \
+    /compss/builders/buildlocal --no-python-style --no-pycompss-compile --no-cli --skip-tests --no-kafka /opt/COMPSs && \
+    python3 -m pip install --no-cache-dir rocrate==0.9.0 && \
+    python3 -m pip install --no-cache-dir dislib pycompss-cli && \
+    git clone https://github.com/bsc-wdc/jupyter-extension.git je && \
+    cd je && sed -i '/\"pycompss\"/d' ipycompss_kernel/pyproject.toml && \
+    python3 -m pip install ./ipycompss_kernel && cd ipycompss_lab_extension && \
+    jlpm install --network-timeout 600000 --network-concurrency 100 && \
+    jlpm run build:prod && python3 -m pip --no-cache-dir install . && cd ../.. && rm -r je
+
+EXPOSE 22
+EXPOSE 43000-44000
+CMD ["/usr/sbin/sshd","-D"]
