@@ -102,7 +102,9 @@ omit = [
 filterwarnings = [
     "error",
     "ignore::UserWarning",
+    "ignore:.*custom tp_new.*:DeprecationWarning",
 ]
+norecursedirs = ["examples"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dataclay", "src/storage"]
