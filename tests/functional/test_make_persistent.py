@@ -1,5 +1,7 @@
 import pytest
 
+from dataclay import DataClayObject
+from dataclay.exceptions import DataClayException
 from dataclay.contrib.modeltest.family import Dog, Family, Person
 from dataclay.contrib.modeltest.remote import MakePersistentTestClass
 
@@ -239,6 +241,15 @@ async def test_persistent_references_async(client):
     await family.a_make_persistent()
     assert family._dc_is_registered is True
     assert person == family.members[0]
+
+
+def test_persistent_error_unknown_module(client):
+    class InvalidClass(DataClayObject):
+        pass
+
+    a = InvalidClass()
+    with pytest.raises(DataClayException):
+        a.make_persistent()
 
 
 # Remote methods
