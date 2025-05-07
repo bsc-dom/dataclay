@@ -29,6 +29,7 @@ BACKEND_METHODS = [
     "Stop",
     "Drain",
     "NewObjectReplica",
+    "GetClassInfo",
 ]
 
 METADATA_METHODS = [
