@@ -111,7 +111,7 @@ packages = ["src/dataclay", "src/storage"]
 ignore-vcs = true
 
 [tool.hatch.build.targets.sdist]
-include = ["src/dataclay", "src/storage", "dataclay-common"]
+include = ["src/dataclay", "src/storage", "dataclay-common", "compile_protos.py"]
 
 [tool.hatch.version]
 path = "src/dataclay/__init__.py"
