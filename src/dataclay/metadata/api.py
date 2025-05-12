@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from typing import Callable, Optional, Union
 from uuid import UUID
 
@@ -19,6 +20,7 @@ from dataclay.metadata.kvdata import (
 )
 from dataclay.metadata.redismanager import RedisManager
 from dataclay.utils.telemetry import trace
+from dataclay.event_loop import get_dc_event_loop
 
 FEDERATOR_ACCOUNT_USERNAME = "Federator"
 EXTERNAL_OBJECTS_DATASET_NAME = "ExternalObjects"
@@ -36,8 +38,15 @@ class MetadataAPI:
     async def close(self):
         await self.kv_manager.close()
 
-    async def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
+    async def _is_ready(self, timeout, pause):
         return await self.kv_manager.is_ready(timeout=timeout, pause=pause)
+    
+    async def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
+        future = asyncio.run_coroutine_threadsafe(
+            self._is_ready(timeout, pause), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
+
 
     ###########
     # Account #
