@@ -3,6 +3,8 @@ import logging
 import os
 from typing import Any
 
+from dotenv import dotenv_values
+
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
 from dataclay.client.api import Client
@@ -72,6 +74,9 @@ def initWorker(config_file_path, **kwargs):
       and/or other Persistent Object Library requirements.
     """
     logger.info("Initialization of worker through storage.api")
+
+    env_vars = dotenv_values(config_file_path)
+    os.environ.update(env_vars)
 
     global _client
     _client = Client()
