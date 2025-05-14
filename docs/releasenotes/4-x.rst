@@ -56,3 +56,29 @@ Highlights
 - Support for PyCOMPSs 
   `constraints <https://compss-doc.readthedocs.io/en/stable/Sections/09_PyCOMPSs_Notebooks/syntax/5_UsingConstraints.html>`_.
   Should work out of the box with dataClay 4.1 and the upcoming COMPSs version.
+
+4.2 (May 2025)
+--------------
+
+An exciting new feature has been tested and is now available in this release: :doc:`StubDataClayObject`!
+
+Highlights
+~~~~~~~~~~
+
+- New :class:`~dataclay.StubDataClayObject` class. This is a new way to use dataClay classes
+  without triggering a waterfall requirement into the client. This is useful for creating lightweight
+  clients that can interact with demanding libraries. This scenario is common in edge computing and
+  IoT applications. It does not affect the requirements nor the performance on dataClay backends.
+
+Other changes
+~~~~~~~~~~~~~
+- Some changes on the requirements. The current requirements are much simpler and less strict,
+  which should make it easier to install dataClay in already existing environments.
+- Python 3.13 is no longer officially supported. The codebase is compatible with Python 3.13, but certain
+  combination of libraries are not compatible with it. In order to guarantee that existing
+  use cases and libraries work smoothly, we have decided to avoid Python 3.13. 
+  Support for Python 3.13 is expected in the next major release.
+- Miscellaneous improvements on exceptions and serialization.
+- Removed legacy code and annotations from certain examples and demos.
+- Better build flow with `Hatch <https://hatch.pypa.io/>`_.
+- Bug fixes.
