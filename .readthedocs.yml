@@ -18,7 +18,7 @@ build:
 submodules:
   # The pip install requires to build the protos,
   # and the protos are in the dataclay-common submodule
-  recursive: true
+  include: all
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
