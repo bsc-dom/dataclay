@@ -60,12 +60,12 @@ Highlights
 4.2 (May 2025)
 --------------
 
-An exciting new feature has been tested and is now available in this release: :doc:`StubDataClayObject`!
+An exciting new feature has been tested and is now available in this release: :doc:`/stub-objects`!
 
 Highlights
 ~~~~~~~~~~
 
-- New :class:`~dataclay.StubDataClayObject` class. This is a new way to use dataClay classes
+- New :class:`~dataclay.stub.StubDataClayObject` class. This is a new way to use dataClay classes
   without triggering a waterfall requirement into the client. This is useful for creating lightweight
   clients that can interact with demanding libraries. This scenario is common in edge computing and
   IoT applications. It does not affect the requirements nor the performance on dataClay backends.
