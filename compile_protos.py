@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import inspect
+import os.path
+import tempfile
 from typing import Any
 from importlib import resources
 from typing import Any
@@ -14,7 +15,7 @@ except ModuleNotFoundError:
     BuildHookInterface = object
 
 
-def run_protoc():
+def run_protoc(output_dir: str = "src") -> None:
     # Here because during the build process, CustomBuildHook will be imported
     # *before* knowing the dependencies of the hook itself.
     import grpc_tools.protoc
@@ -24,8 +25,8 @@ def run_protoc():
         [
             "grpc_tools.protoc",
             "--proto_path=dataclay-common",
-            "--python_out=src",
-            "--grpc_python_out=src",
+            f"--python_out={output_dir}",
+            f"--grpc_python_out={output_dir}",
             "dataclay-common/dataclay/proto/common/common.proto",
             "dataclay-common/dataclay/proto/backend/backend.proto",
             "dataclay-common/dataclay/proto/metadata/metadata.proto",
@@ -36,10 +37,16 @@ def run_protoc():
 
 class CustomBuildHook(BuildHookInterface):
     def initialize(self, version: str, build_data: dict[str, Any]) -> None:
-        run_protoc()
+        self._temp_directory = tempfile.TemporaryDirectory()
+
+        run_protoc(self._temp_directory.name)
+
+        compiled_protos = os.path.join(self._temp_directory.name, "dataclay", "proto")
+        build_data["force_include"][compiled_protos] = "dataclay/proto"
 
     def dependencies(self):
         return ["grpcio-tools==1.62.3"]
+
 
 if __name__ == "__main__":
     run_protoc()

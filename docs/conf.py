@@ -9,7 +9,7 @@
 import dataclay
 
 project = "dataClay"
-copyright = "2023, BSC Distributed Object Management"
+copyright = "2025, BSC Distributed Object Management"
 author = "BSC Distributed Object Management"
 release = dataclay.__version__
 
