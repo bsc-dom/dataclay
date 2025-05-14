@@ -15,6 +15,11 @@ build:
     # rust: "1.64"
     # golang: "1.19"
 
+submodules:
+  # The pip install requires to build the protos,
+  # and the protos are in the dataclay-common submodule
+  recursive: true
+
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   builder: html
