@@ -15,8 +15,13 @@ from dataclay.config import settings
 # and we need to access the single event loop from the main thread.
 dc_event_loop: AbstractEventLoop = None
 
-# Get available CPUs after numactl restriction
-cpu_count = len(psutil.Process().cpu_affinity())
+try:
+    # Get available CPUs after numactl restriction
+    cpu_count = len(psutil.Process().cpu_affinity())
+except AttributeError:
+    # Fallback to the default CPU count if cpu_affinity is not available
+    # (this happens, at least, on MacOS)
+    cpu_count = psutil.cpu_count()
 # For CPU-bound tasks, use the number of CPUs available
 cpu_bound_executor = concurrent.futures.ThreadPoolExecutor(max_workers=cpu_count)
 # For I/O-bound tasks, use a higher multiplier
