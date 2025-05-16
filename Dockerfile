@@ -6,9 +6,8 @@ ARG PYTHON_VERSION=3.10-bookworm
 FROM python:$PYTHON_VERSION
 COPY . /app
 
-ARG LEGACY_DEPS=False
 RUN python -m pip install --upgrade pip \
-  && python -m pip install --config-settings=LEGACY_DEPS=$LEGACY_DEPS /app[telemetry]
+  && python -m pip install /app[telemetry]
 
 # prepare dataclay storage dir
 RUN mkdir -p /data/storage; 

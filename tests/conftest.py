@@ -10,10 +10,8 @@ def python_version():
 
 @pytest.fixture(scope="session")
 def docker_setup(python_version, request):
-    legacy_deps = request.config.getoption("--build-legacy-deps")
-    legacy_arg = f" --build-arg LEGACY_DEPS=True " if legacy_deps else " "
     return [
-        f"build{ legacy_arg }--build-arg PYTHON_VERSION={python_version}-bookworm",
+        f"build --build-arg PYTHON_VERSION={python_version}-bookworm",
         "up -d",
     ]
 

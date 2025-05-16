@@ -3,9 +3,8 @@ FROM python:$PYTHON_VERSION
 
 COPY . /app
 
-ARG LEGACY_DEPS=False
 RUN python -m pip install --upgrade pip \
-&& python -m pip install --config-settings=LEGACY_DEPS=$LEGACY_DEPS -e /app[telemetry,dev]
+&& python -m pip install -e /app[telemetry,dev]
 
 ARG EXTRA_DEPS=""
 RUN if [ -n "$EXTRA_DEPS" ]; then \

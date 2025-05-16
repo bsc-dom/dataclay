@@ -7,7 +7,7 @@ DEFAULT_PYTHON = "3.10"  # Modern-ish version compatible with the legacy-deps
 
 # Default sessions (these will be executed in Github Actions)
 # Maintain a clear separation between code checking and code altering tasks (don't add format)
-nox.options.sessions = ["lint", "tests", "legacy_deps_tests"]
+nox.options.sessions = ["lint", "protos", "tests"]
 # nox.options.reuse_existing_virtualenvs = True # TODO: Check if necessary
 
 
@@ -19,13 +19,10 @@ def tests(session):
     session.run("pytest", "--cov", "--cov-report=term-missing")
 
 
-@nox.session(python=["3.9", "3.10"], tags=["citests"])
-def legacy_deps_tests(session):
-    """Run the test suite with legacy dependencies."""
-    session.install("pytest", "pytest-asyncio", "pytest-docker", "pytest-cov")
-
-    session.install("--config-settings=LEGACY_DEPS=True", ".")
-    session.run("pytest", "--disable-warnings", "--cov", "--cov-report=term-missing", "--build-legacy-deps", "tests/functional")
+@nox.session(python=DEFAULT_PYTHON)
+def protos(session):
+    session.install("grpcio-tools==1.62.3")
+    session.run("./compile_protos.py", external=True)
 
 
 @nox.session(python=DEFAULT_PYTHON)
