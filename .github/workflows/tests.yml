@@ -28,4 +28,4 @@ jobs:
         with:
           submodules: "true"
       - uses: wntrblm/nox@main
-      - run: nox -s "protos,${{ matrix.session }}"
+      - run: nox -s protos "${{ matrix.session }}"
