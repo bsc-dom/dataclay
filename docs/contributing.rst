@@ -41,6 +41,26 @@ Install dataClay in editable mode with the ``dev`` extra requirement:
 
    $ pip install -e .[dev,telemetry]
 
+.. note::
+   It is necessary to use the ``--recurse-submodules`` option to clone the repository, as it contains
+   submodules that are required for the installation.
+
+Compiling Protocol Buffers
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You usually don't need to compile Protocol Buffers manually. However, you **should recompile** them in the following cases:
+
+- You've made changes to any of the `.proto` files.
+- The gRPC or `protobuf` version used in the project has changed.
+
+To compile the protobuf definitions, run:
+
+.. code-block:: console
+
+   $ ./compile_protos.py
+
+This will regenerate the gRPC Python bindings used by dataClay.
+
 Running the tests
 -----------------
 
