@@ -22,6 +22,7 @@ from dataclay.lock_manager import lock_manager
 from dataclay.runtime import BackendRuntime
 from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcloads
 from dataclay.utils.telemetry import trace
+from dataclay.event_loop import get_dc_event_loop
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -44,7 +45,8 @@ class BackendAPI:
         self.runtime = BackendRuntime(kv_host, kv_port, self.backend_id)
         set_runtime(self.runtime)
 
-    async def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
+
+    async def _is_ready(self, timeout, pause):
         ref = time.time()
         now = ref
         if await self.runtime.metadata_service.is_ready(timeout):
@@ -59,6 +61,12 @@ class BackendAPI:
                     now = time.time()
 
         return False
+        
+    async def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
+        future = asyncio.run_coroutine_threadsafe(
+            self._is_ready(timeout, pause), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
 
     # Object Methods
     async def register_objects(self, serialized_objects: Iterable[bytes], make_replica: bool):

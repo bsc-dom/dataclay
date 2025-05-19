@@ -84,7 +84,7 @@ class BackendClientsManager(collections.abc.MutableMapping):
             )
         ):
             logger.debug("Existing backend already available: %s", backend_info.id)
-            if check_ready and not self._backend_clients[backend_info.id].is_ready(
+            if check_ready and not await self._backend_clients[backend_info.id].is_ready(
                 settings.timeout_channel_ready
             ):
                 logger.info("Backend %s gave a timeout, removing it from list", backend_info.id)

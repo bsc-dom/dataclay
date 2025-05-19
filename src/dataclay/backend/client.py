@@ -2,6 +2,7 @@ import logging
 from typing import Any, Iterable, Optional
 from uuid import UUID
 
+import asyncio
 import grpc
 from google.protobuf import any_pb2, empty_pb2
 from google.protobuf.wrappers_pb2 import BoolValue, FloatValue, Int32Value, StringValue
@@ -11,6 +12,7 @@ import dataclay
 from dataclay.config import session_var, settings
 from dataclay.proto.backend import backend_pb2, backend_pb2_grpc
 from dataclay.utils.decorators import grpc_aio_error_handler
+from dataclay.event_loop import get_dc_event_loop
 
 logger = logging.getLogger(__name__)
 
@@ -107,12 +109,18 @@ class BackendClient:
         logger.info("SSL configured: using authority %s", settings.ssl_target_authority)
 
     # NOTE: It may not be necessary if the channel_ready_future is check on __init__
-    async def is_ready(self, timeout: Optional[float] = None):
+    async def _is_ready(self, timeout):
         try:
             await self.channel.channel_ready()  # TODO: Maybe put a timeout here
             return True
         except grpc.FutureTimeoutError:
             return False
+        
+    async def is_ready(self, timeout: Optional[float] = None):
+        future = asyncio.run_coroutine_threadsafe(
+            self._is_ready(timeout), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
 
     def close(self):
         """Closing channel by deleting channel and stub"""

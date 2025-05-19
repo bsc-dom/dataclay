@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 from typing import TYPE_CHECKING, Optional
@@ -8,6 +9,7 @@ import redis.asyncio as redis
 from redis.exceptions import ConnectionError, RedisClusterException
 
 from dataclay.exceptions import AlreadyExistError, DoesNotExistError
+from dataclay.event_loop import get_dc_event_loop
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -58,7 +60,7 @@ class RedisManager:
         """Returns a pubsub object"""
         return self._client.pubsub()
 
-    async def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
+    async def _is_ready(self, timeout, pause):
         ref = time.time()
         now = ref
         while timeout is None or (now - ref) < timeout:
@@ -68,6 +70,12 @@ class RedisManager:
                 time.sleep(pause)
                 now = time.time()
         return False
+    
+    async def is_ready(self, timeout: Optional[float] = None, pause: float = 0.5):
+        future = asyncio.run_coroutine_threadsafe(
+            self._is_ready(timeout, pause), get_dc_event_loop()
+        )
+        return await asyncio.wrap_future(future)
 
     async def set_new(self, kv_object: KeyValue):
         """Sets a new key, failing if already exists.
