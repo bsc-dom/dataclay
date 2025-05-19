@@ -75,9 +75,14 @@ Alternatively, you can obtain the latest source code from `GitHub <https://githu
 
 .. code-block:: console
 
-   $ git clone https://github.com/bsc-dom/dataclay.git
+   $ git clone --recurse-submodules https://github.com/bsc-dom/dataclay.git
    $ cd dataclay
    $ pip install .
+
+
+.. note::
+   It is necessary to use the ``--recurse-submodules`` option to clone the repository, as it contains
+   submodules that are required for the installation.
 
 Usage
 -----
