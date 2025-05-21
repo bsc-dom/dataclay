@@ -29,7 +29,8 @@ class PyDataclay(PythonPackage):
     These two main features accelerate both the development of applications and their execution."""
 
     homepage = "https://dataclay.bsc.es/"
-    pypi = "dataclay/dataclay-4.1.0.tar.gz"
+    pypi = "dataclay/dataclay-4.2.0.tar.gz"
+    # pypi = "dataclay/dataclay-4.1.0.tar.gz"
     # pypi = "dataclay/dataclay-4.0.0.tar.gz"
     # pypi = "dataclay/dataclay-3.1.0.tar.gz"
     # pypi = "dataclay/dataclay-3.0.1.tar.gz"
@@ -41,6 +42,7 @@ class PyDataclay(PythonPackage):
     # notify when the package is updated.
     # maintainers("github_user1", "github_user2")
 
+    version("4.2.0", sha256="245cce8de1842aa85aea5f5bc620606baffc1415696ee784680e07e6358e58d2")
     version("4.1.0", sha256="9b2a7e8f719c55a2f8e3ac96a69c7cab7f0b2b86dc2f2663fe14d1e6ebf6815b")
     version("4.0.0", sha256="9e6293a9398205b70e2dafc9a280b47ff46d07c338243c7f01d8847cb046ee52")
     version("3.1.0", sha256="21b1e2301416d298bcee29d0b34e31a58c41bbb187f2881938e5a3a047c52405")

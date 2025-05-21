@@ -4,6 +4,19 @@
 
 **Prerequisite**: Have a dataClay's pypi and testpypi account with owner access.
 
+Pull the last code that has to be included in the release. Remember to use:
+```bash
+    git pull
+    #and the following command to initialize the submodules
+    git submodule update --init --recursive
+```
+or
+```bash
+    #if you only need to fetch the submodules
+    git pull --recurse-submodules
+```
+
+
 1. Run `nox` to check lint and tests.
 2. Push a new commit `release version <VERSION>` where you:
    - Update `dataclay.__version__` from `dataclay.__init__` to `<VERSION>`
