@@ -141,20 +141,18 @@ class DataManager:
                 path = f"{settings.storage_path}/{object_id}"
                 # TODO: Is it necessary dc_to_thread_cpu? Should be blocking
                 # to avoid bugs with parallel loads?
-                state, getstate = await dc_to_thread_cpu(pickle.load, open(path, "rb"))
+                metadata_dict, dc_properties, getstate = await dc_to_thread_cpu(pickle.load, open(path, "rb"))
                 self.dataclay_stored_objects.dec()
             except Exception as e:
                 raise ObjectNotFound(object_id) from e
-
-            # Delete outdated metadata (SSOT stored in Redis)
-            del state["_dc_meta"]
-            vars(instance).update(state)
 
             # NOTE: We need to set _dc_is_loaded before calling __setstate__
             # to avoid infinite recursion
             instance._dc_is_loaded = True
             if getstate is not None:
                 instance.__setstate__(getstate)
+            else:
+                vars(instance).update(dc_properties)
 
             self.add_hard_reference(instance)
             logger.debug("(%s) Loaded '%s'", object_id, instance.__class__.__name__)

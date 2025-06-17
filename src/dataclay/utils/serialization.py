@@ -10,9 +10,10 @@ from typing import Optional
 from uuid import UUID
 
 from dataclay import utils
-from dataclay.config import get_runtime
+from dataclay.config import LEGACY_DEPS, get_runtime
 from dataclay.dataclay_object import DataClayObject
 from dataclay.event_loop import dc_to_thread_cpu, get_dc_event_loop
+from dataclay.metadata.kvdata import ObjectMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -151,22 +152,29 @@ async def recursive_dcloads(object_binary, unserialized_objects: dict[UUID, Data
         unserialized_objects = {}
 
     # Use dc_to_thread_cpu to avoid blocking the event loop in `get_by_id_sync`
-    object_dict, state = await dc_to_thread_cpu(
+    object_metadata_dict, dc_properties, state = await dc_to_thread_cpu(
         RecursiveDataClayObjectUnpickler(io.BytesIO(object_binary), unserialized_objects).load
     )
 
-    object_id = object_dict["_dc_meta"].id
+    if LEGACY_DEPS:
+        dc_meta = ObjectMetadata.parse_obj(object_metadata_dict)
+    else:
+        dc_meta = ObjectMetadata.model_validate(object_metadata_dict)
+
+    object_id = dc_meta.id
     try:
         # In case it was already unserialized by a reference
         proxy_object = unserialized_objects[object_id]
     except KeyError:
-        cls: type[DataClayObject] = utils.get_class_by_name(object_dict["_dc_meta"].class_name)
+        cls: type[DataClayObject] = utils.get_class_by_name(dc_meta.class_name)
         proxy_object = cls.new_proxy_object()
         unserialized_objects[object_id] = proxy_object
 
-    vars(proxy_object).update(object_dict)
+    vars(proxy_object)["_dc_meta"] = dc_meta
     if state is not None:
         proxy_object.__setstate__(state)
+    else:
+        vars(proxy_object).update(dc_properties)
     return proxy_object
 
 
