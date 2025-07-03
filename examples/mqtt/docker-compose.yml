@@ -38,6 +38,9 @@ services:
       - MQTT_HOST=mqtt5
       - MQTT_PORT=1883
       - MQTT_PRODUCER_ID=client1
+      # Optional
+      # - MQTT_USERNAME=username
+      # - MQTT_PASSWORD=password
     command: bash -c "pip install --upgrade paho-mqtt && python -m dataclay.backend"
     volumes:
       - ./model:/workdir/model:ro
@@ -58,6 +61,9 @@ services:
       - MQTT_HOST=mqtt5
       - MQTT_PORT=1883
       - MQTT_PRODUCER_ID=client2
+      # Optional
+      # - MQTT_USERNAME=username
+      # - MQTT_PASSWORD=password
     command: bash -c "pip install --upgrade paho-mqtt && python -m dataclay.backend"
     volumes:
       - ./model:/workdir/model:ro

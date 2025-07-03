@@ -71,11 +71,15 @@ class MQTTMixin:
         mqtt_port = int(os.getenv("MQTT_PORT", "1883"))
         mqtt_client = os.getenv("MQTT_PRODUCER_ID", "dataclay_mqtt_producer")
         mqtt_address = f"{mqtt_host}:{mqtt_port}"
+        mqtt_username = os.getenv("MQTT_USERNAME", "")
+        mqtt_password = os.getenv("MQTT_PASSWORD", "")
         if mqtt_address in MQTT_PRODUCERS:
             mqtt_producer = MQTT_PRODUCERS[mqtt_address]
         else:
             mqtt_producer = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, mqtt_client)
             mqtt_producer.on_message = self.message_handling
+            if mqtt_username and mqtt_password:
+                mqtt_producer.username_pw_set(mqtt_username, mqtt_password)
             mqtt_producer.connect(mqtt_host, mqtt_port)
             mqtt_producer.loop_start()
             MQTT_PRODUCERS[mqtt_address] = mqtt_producer
