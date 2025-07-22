@@ -7,7 +7,11 @@ from dotenv import dotenv_values
 
 # "Publish" the StorageObject (which is a plain DataClayObject internally)
 from dataclay import DataClayObject as StorageObject
-from dataclay.contrib.persistent_block import PersistentBlock
+
+try:
+    from dataclay.contrib.persistent_block import PersistentBlock
+except ImportError:
+    from dataclay.contrib.dummy_persistent_block import PersistentBlock
 from dataclay.client.api import Client
 
 # Also "publish" the split method
