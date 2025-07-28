@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from threadpoolctl import threadpool_limits
 
 from dataclay import utils
-from dataclay.config import set_runtime, settings
+from dataclay.config import LEGACY_DEPS, set_runtime, settings
 from dataclay.event_loop import dc_to_thread_io
 from dataclay.exceptions import (
     DataClayException,
@@ -19,6 +19,7 @@ from dataclay.exceptions import (
     ObjectWithWrongBackendIdError,
 )
 from dataclay.lock_manager import lock_manager
+from ..metadata.kvdata import ObjectMetadata
 from dataclay.runtime import BackendRuntime
 from dataclay.utils.serialization import dcdumps, dcloads, recursive_dcloads
 from dataclay.utils.telemetry import trace
@@ -72,14 +73,22 @@ class BackendAPI:
     async def register_objects(self, serialized_objects: Iterable[bytes], make_replica: bool):
         logger.debug("Receiving (%d) objects to register", len(serialized_objects))
         for object_bytes in serialized_objects:
-            state, getstate = await dcloads(object_bytes)
-            instance = await self.runtime.get_object_by_id(state["_dc_meta"].id)
+            metadata_dict, dc_properties, getstate = await dcloads(object_bytes)
+
+            if LEGACY_DEPS:
+                dc_meta = ObjectMetadata.parse_obj(metadata_dict)
+            else:
+                dc_meta = ObjectMetadata.model_validate(metadata_dict)
+
+            instance = await self.runtime.get_object_by_id(dc_meta.id)
 
             if instance._dc_is_local:
                 assert instance._dc_is_replica
                 if make_replica:
                     logger.warning("Replica already exists with id=%s", instance._dc_meta.id)
                     continue
+
+            state = {"_dc_meta": dc_meta}
 
             async with lock_manager.get_lock(instance._dc_meta.id).writer_lock:
                 # Update object state and flags
@@ -88,6 +97,8 @@ class BackendAPI:
                 vars(instance).update(state)
                 if getstate:
                     instance.__setstate__(getstate)
+                else:
+                    vars(instance).update(dc_properties)
                 self.runtime.data_manager.add_hard_reference(instance)
 
                 if make_replica:

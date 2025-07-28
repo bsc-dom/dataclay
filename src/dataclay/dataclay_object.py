@@ -313,12 +313,16 @@ class DataClayObject:
     @property
     def _dc_state(self) -> tuple[dict, Any]:
         """Returns the object state"""
-        state = {"_dc_meta": self._dc_meta}
-        if hasattr(self, "__getstate__") and hasattr(self, "__setstate__"):
-            return state, self.__getstate__()
+
+        if LEGACY_DEPS:
+            metadata_dict = self._dc_meta.dict()
         else:
-            state.update(self._dc_properties)
-            return state, None
+            metadata_dict = self._dc_meta.model_dump()
+
+        if hasattr(self, "__getstate__") and hasattr(self, "__setstate__"):
+            return metadata_dict, None, self.__getstate__()
+        else:
+            return metadata_dict, self._dc_properties, None
 
     @property
     def _dc_all_backend_ids(self) -> set[UUID]:
