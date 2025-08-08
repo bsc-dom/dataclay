@@ -82,3 +82,24 @@ Other changes
 - Removed legacy code and annotations from certain examples and demos.
 - Better build flow with `Hatch <https://hatch.pypa.io/>`_.
 - Bug fixes.
+
+4.3 (August 2025)
+---------------
+
+This minor release introduces several enhancements, new features, and bug fixes aimed at improving integration, usability, and 
+system robustness.
+
+Highlights
+~~~~~~~~~~
+- A PersistentBlock component has been added to facilitate tighter integration between Dislib and dataClay. This enhancement 
+  enables the seamless persistence of distributed datasets, simplifying data management across distributed workflows.
+- LegacyDeps have been added to the serialization process. Also the dataclay object state has been divided into two:
+  - metadata_dict: contains user-defined and system metadata.
+  - dc_properties: stores internal properties specific to dataClay runtime.
+  This separation improves modularity and clarity in object management and debugging.
+
+Other changes
+~~~~~~~~~~~~~
+- Support for MQTT authentication has been expanded. It is now possible to configure the broker connection using environment 
+  variables for both username and password, allowing for more flexible and secure deployments.
+- Bug fixes.
