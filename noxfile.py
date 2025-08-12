@@ -2,7 +2,10 @@ import nox
 
 # Define which Python versions to test with
 PYPROJECT = nox.project.load_toml("pyproject.toml")
-PYTHON_VERSIONS = nox.project.python_versions(PYPROJECT)
+#PYTHON_VERSIONS = nox.project.python_versions(PYPROJECT)
+PYTHON_VERSIONS = [
+        "3.9", "3.10", "3.11", "3.12"
+    ]
 DEFAULT_PYTHON = "3.10"  # Modern-ish version compatible with the legacy-deps
 
 # Default sessions (these will be executed in Github Actions)
