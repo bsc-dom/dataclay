@@ -5,17 +5,19 @@
 **Prerequisite**: Have a dataClay's pypi and testpypi account with owner access.
 
 Pull the last code that has to be included in the release. Remember to use:
+
 ```bash
     git pull
     #and the following command to initialize the submodules
     git submodule update --init --recursive
 ```
+
 or
+
 ```bash
     #if you only need to fetch the submodules
     git pull --recurse-submodules
 ```
-
 
 1. Run `nox` to check lint and tests.
 2. Push a new commit `release version <VERSION>` where you:
@@ -96,6 +98,10 @@ or
 
 6. Publish the release distribution to PyPI:
 
+    > **WARNING**  
+    > If you encounter errors about duplicate filenames in the wheel archive during publishing, it's likely because protobuf files exist both in `src/dataclay/proto/` (pre-generated) and in the temporary directory created by the `compile_protos.py` build hook.  
+    > **Temporary Solution:** Remove the pre-generated protobuf files from `src/dataclay/proto/` before building. The build hook will generate fresh files during the build, and these are included in the wheel automatically. Keeping pre-generated files in the source tree is unnecessary and causes conflicts.
+
     ```bash
     # Create and source new virtual environment
     python3 -m venv venv.deploy && source venv.deploy/bin/activate
@@ -118,8 +124,9 @@ or
     ```
 
 7. Push a new commit `start version <NEW_VERSION>` where you:
-   - Update `dataclay.__version__` from `dataclay.__init__` to `<NEW_VERSION>.dev`
-   - Update orchestration/spack to point the new version in PyPI
+
+- Update `dataclay.__version__` from `dataclay.__init__` to `<NEW_VERSION>.dev`
+- Update orchestration/spack to point the new version in PyPI
 
 8. Update the _active versions_ on ReadTheDocs, i.e. go to the [versions page](https://readthedocs.org/projects/dataclay/versions/) and activate/deactivate versions accordingly. You probably must add the newly added release, and maybe you will need to deactivate patch versions that are irrelevant.
 
