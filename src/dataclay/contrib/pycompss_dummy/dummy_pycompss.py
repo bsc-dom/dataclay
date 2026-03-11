@@ -31,3 +31,4 @@ def task(*args, **kwargs):
 
 def constraint(*args, **kwargs):
     return lambda f: f
+

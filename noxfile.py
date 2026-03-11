@@ -4,7 +4,7 @@ import nox
 PYPROJECT = nox.project.load_toml("pyproject.toml")
 #PYTHON_VERSIONS = nox.project.python_versions(PYPROJECT)
 PYTHON_VERSIONS = [
-        "3.9", "3.10", "3.11", "3.12"
+        "3.10", "3.11", "3.12"
     ]
 DEFAULT_PYTHON = "3.10"  # Modern-ish version compatible with the legacy-deps
 
