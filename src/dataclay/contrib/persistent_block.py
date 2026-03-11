@@ -10,7 +10,7 @@ try:
     from pycompss.api.task import task
     from pycompss.api.parameter import IN
 except ImportError:
-    from dataclay.contrib.dummy_pycompss import task, IN
+    from dataclay.contrib.pycompss_dummy.dummy_pycompss import task, IN
 
 
 class PersistentBlock(DataClayObject):

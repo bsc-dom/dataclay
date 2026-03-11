@@ -8,7 +8,7 @@ try:
     from pycompss.api.parameter import CONCURRENT, INOUT
     from pycompss.api.task import task
 except ImportError:
-    from dataclay.contrib.dummy_pycompss import task, INOUT, CONCURRENT
+    from dataclay.contrib.pycompss_dummy.dummy_pycompss import task, INOUT, CONCURRENT
 
 from dataclay import DataClayObject, activemethod
 

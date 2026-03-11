@@ -21,7 +21,7 @@ from distutils.util import strtobool
 from functools import wraps
 
 from dataclay.config import settings
-from dataclay.contrib.dummy_pycompss import task
+from dataclay.contrib.pycompss_dummy.dummy_pycompss import task
 
 # Explicit and manually crafted list of CLASSES to be instrumentated
 CLASSES_WITH_EXTRAE_DECORATORS = {  # Similar to Java paraver/extrae AspectJ file.
