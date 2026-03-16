@@ -23,7 +23,7 @@ PyCOMPSs API - dummy - task.
 This file contains the dummy class task used as decorator.
 """
 
-from pycompss.api.dummy._decorator import _Dummy as Dummy
+from _decorator import _Dummy as Dummy
 
 Task = Dummy  # pylint: disable=invalid-name
 task = Dummy  # pylint: disable=invalid-name
