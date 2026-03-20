@@ -23,7 +23,7 @@ PyCOMPSs API - dummy - container.
 This file contains the dummy class container used as decorator.
 """
 
-from _decorator import _Dummy as Dummy
+from ._decorator import _Dummy as Dummy
 
 Container = Dummy  # pylint: disable=invalid-name
 container = Dummy  # pylint: disable=invalid-name

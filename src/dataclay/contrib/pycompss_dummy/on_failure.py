@@ -23,7 +23,7 @@ PyCOMPSs API - dummy - on failure.
 This file contains the dummy class on failure used as decorator.
 """
 
-from _decorator import _Dummy as Dummy
+from ._decorator import _Dummy as Dummy
 
 OnFailure = Dummy  # pylint: disable=invalid-name
 on_failure = Dummy  # pylint: disable=invalid-name
