@@ -115,5 +115,5 @@ include = ["src/dataclay", "src/storage", "dataclay-common", "compile_protos.py"
 [tool.hatch.version]
 path = "src/dataclay/__init__.py"
 
-[tool.hatch.build.hooks.custom]
-path = "compile_protos.py"
+#[tool.hatch.build.hooks.custom]
+#path = "compile_protos.py"
