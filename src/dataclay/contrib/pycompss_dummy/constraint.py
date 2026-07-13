@@ -23,7 +23,7 @@ PyCOMPSs API - dummy - constraint.
 This file contains the dummy class constraint used as decorator.
 """
 
-from pycompss.api.dummy._decorator import _Dummy as Dummy
+from ._decorator import _Dummy as Dummy
 
 Constraint = Dummy  # pylint: disable=invalid-name
 constraint = Dummy  # pylint: disable=invalid-name

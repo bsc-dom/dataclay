@@ -76,3 +76,7 @@ class PersistentBlock(DataClayObject):
     def partial_histogram(self, n_bins: int, n_dimensions: int) -> np.ndarray:
         values, _ = np.histogramdd(self.block_data, n_bins, [(0, 1)] * n_dimensions)
         return values
+
+    @activemethod
+    def block_apply(self, func, *args, **kwargs):
+        return func(self.block_data, *args, **kwargs)

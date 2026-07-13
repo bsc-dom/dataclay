@@ -23,7 +23,10 @@ PyCOMPSs API - dummy - decorator.
 This file contains the dummy class task used as decorator.
 """
 
-from pycompss.util.typing_helper import typing
+try:
+    from pycompss.util.typing_helper import typing
+except ModuleNotFoundError:
+    import typing
 
 
 class _Dummy:

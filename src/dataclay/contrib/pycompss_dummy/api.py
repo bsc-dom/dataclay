@@ -25,7 +25,10 @@ This file defines the public PyCOMPSs API functions without functionality.
 
 import os
 
-from pycompss.util.typing_helper import typing
+try:
+    from pycompss.util.typing_helper import typing
+except ModuleNotFoundError:
+    import typing
 
 
 def compss_start(
