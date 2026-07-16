@@ -11,7 +11,8 @@ try:
     from pycompss.api.parameter import IN
 except ImportError:
     from dataclay.contrib.pycompss_dummy.dummy_pycompss import task, IN
-
+import logging
+logger = logging.getLogger(__name__)
 
 class PersistentBlock(DataClayObject):
     block_data: np.ndarray
@@ -78,5 +79,10 @@ class PersistentBlock(DataClayObject):
         return values
 
     @activemethod
+    def collect(self, squeeze=True):
+        return self.block_data
+
+    @activemethod
     def block_apply(self, func, *args, **kwargs):
-        return func(self.block_data, *args, **kwargs)
+        self.block_data=func(self.block_data,*args, **kwargs)
+        return self.block_data 
